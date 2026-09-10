@@ -1,0 +1,2061 @@
+<title>Constellation Commander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;
+  --you:#e8a63b;--you-dim:rgba(232,166,59,.30);--bot:#4ea8dc;--bot-dim:rgba(78,168,220,.30);
+  --sq1:#2a3542;--sq2:#202934;--wall:#0c1015;--danger:#e5484d;--ok:#3ec27a;
+  --display:'Chakra Petch',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;
+  --jc:clamp(28px,3.2vw,44px);--cc:clamp(32px,4vw,54px);
+}
+*{box-sizing:border-box}
+.jgrid,.cgrid,.acts,button{touch-action:manipulation}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.45;padding:14px 20px 40px;margin:0}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 28px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:16px}
+h1{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.06em;margin:0;text-transform:uppercase;line-height:1}
+.tag{color:var(--mute);font-size:13px;margin-top:4px}
+.setup{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px}
+input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;width:76px;border-radius:3px;accent-color:var(--you)}
+.lbl{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--mute);font-weight:600}
+button{font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:8px 14px;border-radius:3px;cursor:pointer}
+button:hover{border-color:var(--mute)}
+button:focus-visible{outline:2px solid var(--you);outline-offset:2px}
+button.danger{border-color:var(--danger);color:#ffb4b6}
+button.primary{background:var(--you);color:#1a1200;border-color:var(--you)}
+button:disabled{opacity:.4;cursor:default}
+main{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+main>*{max-width:100%;min-width:0}
+.panel{background:var(--panel);border:1px solid var(--line);padding:14px;border-radius:4px}
+.jpanel{flex:1 1 300px;max-width:400px}
+.cpanel{flex:1 1 380px;max-width:530px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+.ph .lbl{color:var(--text)}
+.ph .sub{color:var(--mute);font-size:12px}
+
+/* star board */
+.jgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:#0e131a;padding:4px;border-radius:3px;user-select:none;touch-action:none;width:100%;max-width:calc(8*var(--jc) + 22px)}
+.jc{display:flex;align-items:center;justify-content:center;background:var(--sq2);cursor:pointer;position:relative;border-radius:2px;aspect-ratio:1;-webkit-user-drag:none}
+.jc.sel{box-shadow:inset 0 0 0 2px var(--you)}
+.jc.pick{box-shadow:inset 0 0 0 2px var(--danger)}
+.jc.hint{box-shadow:inset 0 0 0 2px var(--ok);animation:hintpulse 1s ease-in-out infinite alternate}
+@keyframes hintpulse{from{box-shadow:inset 0 0 0 2px var(--ok)}to{box-shadow:inset 0 0 0 4px rgba(62,194,122,.5)}}
+.jc.flash .gem{transform:scale(1.18);filter:brightness(1.6)}
+.jgrid.fly .jc{cursor:crosshair}
+#jprev[hidden]{display:none}
+.jgrid.mini{max-width:calc(8*var(--jc)*.62 + 22px);gap:1px;padding:3px}
+.jgrid.mini .jc{cursor:default;background:#161c25}
+.jgrid.mini .jc.q{background:repeating-linear-gradient(45deg,#1b222c 0 4px,#121820 4px 8px)}
+.jgrid.fly{box-shadow:0 0 0 3px var(--danger);animation:ring 1s ease-in-out infinite alternate}
+@keyframes ring{from{box-shadow:0 0 0 3px var(--danger)}to{box-shadow:0 0 0 6px rgba(229,72,77,.35)}}
+.status.warn{border-left-color:var(--danger);background:rgba(229,72,77,.12)}
+.gem{display:block;width:70%;height:70%;transition:transform .12s,filter .12s}
+.gem.g0,.gem.g1,.gem.g2,.gem.g3,.gem.g5{width:84%;height:84%}
+.g0{background:radial-gradient(circle at 50% 42%,#fff1f1 0,#ff8a8d 22%,#e5484d 55%,#8f1f23);clip-path:polygon(50% 0,61.8% 33.8%,97.6% 34.5%,69% 56.2%,79.4% 90.5%,50% 70%,20.6% 90.5%,31% 56.2%,2.4% 34.5%,38.2% 33.8%)}
+.g1{background:radial-gradient(circle at 50% 50%,#fff8e6 0,#ffd27a 25%,#f0a52b 55%,#8a5a10);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.g2{background:radial-gradient(circle at 50% 50%,#efffF4 0,#8ff0b6 25%,#3ec27a 55%,#176b3e);clip-path:polygon(50% 0,62.5% 28.3%,93.3% 25%,75% 50%,93.3% 75%,62.5% 71.7%,50% 100%,37.5% 71.7%,6.7% 75%,25% 50%,6.7% 25%,37.5% 28.3%)}
+.g3{background:radial-gradient(circle at 50% 50%,#f0f7ff 0,#9cc6ff 22%,#3f8ff0 55%,#1b4a8f);clip-path:polygon(50% 0,61.5% 22.3%,85.4% 14.6%,77.7% 38.5%,100% 50%,77.7% 61.5%,85.4% 85.4%,61.5% 77.7%,50% 100%,38.5% 77.7%,14.6% 85.4%,22.3% 61.5%,0 50%,22.3% 38.5%,14.6% 14.6%,38.5% 22.3%)}
+.g4{background:radial-gradient(circle,#ffffff 0,#f3e6ff 10%,#dcb5ff 22%,#b06ce8 42%,rgba(176,108,232,.35) 58%,rgba(176,108,232,0) 72%);border-radius:50%;width:96%;height:96%}
+.g5{background:radial-gradient(circle at 50% 50%,#ffffff 0,#f4f2ea 30%,#c9c5b4 60%,#8f8b7a);clip-path:polygon(50% 0,56% 44%,100% 50%,56% 56%,50% 100%,44% 56%,0 50%,44% 44%);transform:rotate(45deg)}
+.jc.flash .g5{transform:rotate(45deg) scale(1.18)}
+.blk{background:repeating-linear-gradient(45deg,#3a4049 0 5px,#2b3138 5px 10px);border:1px solid #4a525c;border-radius:2px;width:82%;height:82%}
+.jwrap{position:relative;width:100%;max-width:calc(8*var(--jc) + 22px)}
+#jpops{position:absolute;inset:0;pointer-events:none;overflow:visible}
+#jdim[hidden],#jwait[hidden]{display:none!important}
+#jdim,#jwait{position:absolute;inset:0;background:rgba(6,9,13,.78);display:flex;align-items:center;justify-content:center;z-index:6;border-radius:3px;cursor:not-allowed}
+#jdim .card,#jwait .card{font-family:var(--display);font-weight:700;font-size:clamp(15px,2.4vw,20px);letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--panel);border:2px solid var(--you);padding:14px 18px;border-radius:4px;text-align:center;max-width:85%;animation:cardpop .35s cubic-bezier(.2,1.4,.4,1)}
+#jdim .card small,#jwait .card small{display:block;font-family:var(--body);font-weight:400;font-size:12px;letter-spacing:0;text-transform:none;color:var(--mute);margin-top:6px}
+@keyframes cardpop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.cpanel.nudge{box-shadow:0 0 0 3px var(--you);animation:ring2 1s ease-in-out infinite alternate}
+@keyframes ring2{from{box-shadow:0 0 0 3px var(--you)}to{box-shadow:0 0 0 7px rgba(232,166,59,.3)}}
+.pop{position:absolute;transform:translate(-50%,-50%);font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.04em;color:#fff;background:rgba(14,19,26,.92);border:1px solid var(--you);padding:3px 9px;border-radius:3px;white-space:nowrap;z-index:5;animation:pop 1.4s ease-out forwards}
+.pop.bad{border-color:var(--danger)}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-20%)}12%{opacity:1;transform:translate(-50%,-50%)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-150%)}}
+.bmb{background:radial-gradient(circle at 38% 32%,#6a7280,#23282f 60%,#0b0d10);border-radius:50%;width:64%;height:64%;position:relative}
+.bmb::after{content:"";position:absolute;top:-14%;left:52%;width:22%;height:22%;border-radius:50%;background:var(--danger);box-shadow:0 0 6px var(--danger)}
+
+/* chess board */
+.cgrid{display:grid;grid-template-columns:repeat(9,1fr);gap:1px;background:#0e131a;padding:4px;border-radius:3px;user-select:none;width:100%;max-width:calc(9*var(--cc) + 16px)}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;aspect-ratio:1}
+.sq.l{background:var(--sq1)}.sq.d{background:var(--sq2)}
+.sq.own1{background:linear-gradient(var(--you-dim),var(--you-dim)),var(--sq1)}
+.sq.own2{background:linear-gradient(var(--bot-dim),var(--bot-dim)),var(--sq1)}
+.sq.own3{background:repeating-linear-gradient(45deg,var(--you-dim) 0 6px,var(--bot-dim) 6px 12px),var(--sq1)}
+.sq.wall{background:var(--wall);box-shadow:inset 0 0 0 1px #1c232c;cursor:default}
+.sq.master.m1{box-shadow:inset 0 0 0 2px var(--you)}
+.sq.master.m2{box-shadow:inset 0 0 0 2px var(--bot)}
+.mast{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.05em}
+.m1 .mast{color:var(--you)}.m2 .mast{color:var(--bot)}
+.sq.sel{box-shadow:inset 0 0 0 3px #fff}
+.sq.mv::after{content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.55)}
+.sq.cap::after{content:"";position:absolute;inset:4px;border:3px solid var(--danger);border-radius:4px}
+.sq.warpable{box-shadow:inset 0 0 0 1px rgba(232,166,59,.45)}
+.cdot{position:absolute;width:22%;height:22%;border-radius:50%;left:39%;top:39%;pointer-events:none}
+.sq.l .cdot{background:#f2eee2;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
+.sq.d .cdot{background:#d63b3f;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
+.sq.dest::before{content:"";position:absolute;inset:6px;border:2px dashed var(--you);border-radius:50%;opacity:.8}
+.dr{display:flex;align-items:center;justify-content:center;width:64%;height:64%;font-family:var(--display);font-weight:700;font-size:17px;background:#0e131a;border:2px solid;position:relative;z-index:1}
+.dr.s1{border-color:var(--you);color:var(--you)}.dr.s2{border-color:var(--bot);color:var(--bot)}
+.dr.tC{border-radius:50%}
+.dr.tG{border-radius:4px}
+.dr.tS{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);border:0;width:76%;height:76%}
+.dr.tS.s1{background:var(--you);color:#1a1200}.dr.tS.s2{background:var(--bot);color:#02121c}
+.dr.tH{clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);border:0;width:76%;height:76%;box-shadow:none}
+.dr.tH.s1{background:linear-gradient(135deg,var(--you) 50%,#0e131a 50%);color:#fff}.dr.tH.s2{background:linear-gradient(135deg,var(--bot) 50%,#0e131a 50%);color:#fff}
+.dr.tW{clip-path:polygon(25% 5%,75% 5%,100% 50%,75% 95%,25% 95%,0 50%);border:0;width:78%;height:78%}
+.dr.tW.s1{background:var(--you);color:#1a1200}.dr.tW.s2{background:var(--bot);color:#02121c}
+.dr.tX{border-radius:3px;border-width:3px;border-style:double;width:72%;height:72%}
+.coords{display:grid;grid-template-columns:repeat(9,1fr);padding:2px 4px 0;font-family:var(--mono);font-size:11px;color:var(--mute);text-align:center;width:100%;max-width:calc(9*var(--cc) + 16px)}
+.mast{font-size:clamp(12px,3.2vw,20px)}
+.dr{font-size:clamp(10px,2.6vw,17px)}
+
+/* side panel */
+.side{flex:1 1 260px;min-width:260px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-content:start}
+.clocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.clk{padding:10px 12px;border:1px solid var(--line);border-radius:3px;background:var(--panel2)}
+.clk .t{font-family:var(--mono);font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
+.clk.active{border-color:currentColor}
+.clk.c1{color:var(--you)}.clk.c2{color:var(--bot)}
+.clk .lbl{color:inherit;opacity:.8}
+.land{display:flex;flex-direction:column;gap:6px}
+.lrow{display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:#0e131a;border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%}
+.status{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.03em;padding:10px 12px;border-radius:3px;background:var(--panel2);border-left:3px solid var(--mute)}
+.status.you{border-left-color:var(--you)}.status.bot{border-left-color:var(--bot)}
+.status.over{border-left-color:var(--ok)}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.tipcard{background:var(--panel2);border-left:3px solid var(--you);padding:8px 28px 8px 10px;margin:0 0 8px;font-size:13px;line-height:1.45;position:relative;max-width:70ch}
+.tipcard b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;margin-right:4px}
+.tipcard .x{position:absolute;right:8px;top:4px;cursor:pointer;color:var(--mute);font-size:18px;line-height:1}
+.tipcard .off{display:inline-block;margin-left:6px;color:var(--mute);text-decoration:underline dotted;cursor:pointer;white-space:nowrap}
+.tipcard[hidden]{display:none}
+.hint{color:var(--mute);font-size:12px}
+#jsub.warn{color:var(--danger);font-weight:600}
+.log{font-family:var(--mono);font-size:11.5px;color:var(--mute);max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.log div:first-child{color:var(--text)}
+#shot[hidden]{display:none}
+#shot{position:fixed;inset:0;background:rgba(6,9,13,.85);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.shotbox{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;max-width:min(96vw,1240px);max-height:94vh;overflow:auto}
+#shotimg{display:block;max-width:100%;height:auto;border:1px solid var(--line)}
+details{margin-top:20px;max-width:72ch;color:var(--mute)}
+summary{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:12px;cursor:pointer;color:var(--text)}
+details p,details li{margin:4px 0}
+details strong{color:var(--text)}
+details table{border-collapse:collapse;margin:8px 0;font-size:13px}
+details td,details th{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}
+details th{color:var(--text);font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.tabs{display:none;gap:6px;margin:0 0 10px}
+.tabs button{flex:1;padding:9px 6px}
+.tabs button.on{background:var(--you);color:#1a1200;border-color:var(--you)}
+.status{margin-bottom:12px}
+.actbox{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.cpanel .acts,.cpanel .hint{margin-top:8px}
+.swipebar{display:none}
+@media (max-width:720px){
+  .swipebar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);height:52px;align-items:center;justify-content:space-around;touch-action:none;user-select:none;padding:0 6px}
+  .swipebar span{font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:8px 14px;border-radius:3px;flex:1;text-align:center}
+  .swipebar span.on{color:#1a1200;background:var(--you)}
+  .swipebar span.alert{box-shadow:inset 0 0 0 2px var(--you)}
+  body{padding-bottom:70px}
+}
+@media (max-width:720px){
+  body{padding:10px 8px 24px}
+  header{gap:8px 14px;margin-bottom:8px;padding-bottom:8px}
+  h1{font-size:20px}
+  .tag{display:none}
+  .setup{gap:6px 10px}
+  .setup .field .lbl{font-size:9px}
+  input[type=number]{width:60px;padding:4px 6px}
+  .tabs{display:flex}
+  .status{position:sticky;top:0;z-index:20;font-size:13px;padding:8px 10px}
+  main{display:flex;flex-wrap:nowrap;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  main::-webkit-scrollbar{display:none}
+  main>.jpanel,main>.cpanel,main>.side{flex:0 0 100%;max-width:100%;min-width:100%;scroll-snap-align:start;scroll-snap-stop:always}
+  .jpanel,.cpanel{max-width:100%}
+  .jgrid,.jwrap,.cgrid,.coords{max-width:100%}
+  .jgrid.mini{max-width:100%}
+  .side{display:flex;flex-direction:column}
+  #jprev{max-width:100%}
+  details{max-width:100%}
+}
+@media (prefers-reduced-motion:reduce){.gem{transition:none}}
+.phoneonly{display:none}
+@media (max-width:720px){
+  .phoneonly{display:inline-block}
+  header{align-items:center}
+  header>div:first-child{display:flex;align-items:center;gap:10px;width:100%}
+  header>div:first-child h1{font-size:18px;flex:1}
+  #btnSettings{margin-top:0;padding:6px 10px;font-size:11px}
+  .setup{display:none;width:100%}
+  .setup.open{display:flex}
+  .tabs{display:none !important}
+  .status{background:var(--panel);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  /* boards fit the screen height, not the width: status above, swipe bar below */
+  .jgrid,.jwrap{max-width:min(100%,max(220px,calc(100vh - 240px))) !important;margin:0 auto}
+  .jgrid.mini{max-width:min(100%,220px);margin:0}
+  .cgrid,.coords{max-width:min(100%,max(220px,calc(100vh - 400px))) !important;margin-left:auto;margin-right:auto}
+  .ph{margin-bottom:6px}
+  .panel{padding:10px}
+}
+.dr{display:flex;align-items:center;justify-content:center;width:72%;height:72%;border-radius:50%;background:#0e131a;border:2px solid;position:relative;z-index:1;clip-path:none;padding:9%}
+.dr.s1{border-color:var(--you)}.dr.s2{border-color:var(--bot)}
+.dr.tC,.dr.tG,.dr.tS,.dr.tH,.dr.tW,.dr.tX{border-radius:50%;clip-path:none;width:72%;height:72%;background:#0e131a;border-width:2px;border-style:solid;box-shadow:none}
+.dr.tS.s1,.dr.tS.s2,.dr.tW.s1,.dr.tW.s2,.dr.tH.s1,.dr.tH.s2{background:#0e131a;color:inherit}
+.dr.tX{border-width:2px;border-style:solid}
+.dr svg{width:100%;height:100%;display:block;overflow:visible}
+.dr svg .ic path,.dr svg .ic circle{fill:none}
+.dr svg .ic .f{fill:inherit;stroke:none}
+.dr svg .ic .s{fill:#0e131a}
+.dr svg .ic .h{fill:#161b23;stroke:inherit;stroke-width:1.1;stroke-linejoin:round}
+.dr svg .ic .hi{fill:none;stroke:#aab4c2;stroke-width:.9;opacity:.55;stroke-linecap:round}
+.dr svg .ic .l{fill:none;stroke:inherit;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.dr svg .ic .gap{fill:none;stroke:#0e131a;stroke-width:1.6}
+.dr.tW,.dr.tG,.dr.tC,.dr.tH,.dr.tS,.dr.tX{padding:4%}
+.dr.tS svg,.dr.tX svg{overflow:hidden}
+.dr.tG svg{overflow:hidden}
+.dr svg .ic .e{fill:#0e131a;stroke:inherit;stroke-width:1}
+.dr svg .ic .g{fill:#fff;stroke:none;opacity:.85}
+.dr svg .ic .b{fill:inherit;stroke:none;opacity:.32}
+.cgrid,.jgrid{aspect-ratio:1}
+#announce[hidden]{display:none}
+#announce{position:fixed;left:0;right:0;top:38%;z-index:60;pointer-events:none;display:flex;justify-content:center}
+#announce span{font-family:var(--display);font-weight:700;font-size:clamp(28px,9vw,54px);letter-spacing:.12em;color:#1a1200;background:var(--you);padding:10px 28px;border-radius:4px;animation:sweep .9s ease-in-out forwards}
+@keyframes sweep{0%{transform:translateX(-120vw);opacity:0}25%{transform:translateX(0);opacity:1}75%{transform:translateX(0);opacity:1}100%{transform:translateX(120vw);opacity:0}}
+#flipbar[hidden]{display:none}
+#flipbar{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--panel2);border:1px solid var(--you);border-radius:3px;font-family:var(--display);font-size:13px;letter-spacing:.04em}
+#flipbar span{flex:1}
+#flipbar button{padding:6px 12px}
+@media (max-width:720px){
+  #flipbar{position:fixed;left:0;right:0;bottom:52px;height:40vh;z-index:40;margin:0;border-radius:0;border:0;border-top:3px solid var(--you);background:rgba(14,19,26,.6);backdrop-filter:blur(1px);flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:16px;pointer-events:none}
+  #flipbar button{pointer-events:auto}
+  #flipbar span{text-shadow:0 1px 4px #000}
+  #flipbar span{flex:0;font-size:clamp(18px,5.5vw,26px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center}
+  #flipbar button{font-size:16px;padding:14px 28px;min-width:38vw}
+  #flipbar button#flipNow{background:var(--you);color:#1a1200;border-color:var(--you)}
+}
+</style>
+
+<header>
+  <div>
+    <h1>Constellation Commander</h1>
+    <div class="tag">Match stars to earn drones. Move drones to claim land. First to 46 squares, or take the enemy Commander, wins.</div>
+    <button id="btnSettings" class="phoneonly" style="margin-top:6px">Settings</button>
+  </div>
+  <form class="setup" id="setup" onsubmit="return false">
+    <div class="field"><span class="lbl">Star kinds</span><input type="number" id="inColors" min="4" max="6" value="5"></div>
+    <div class="field"><span class="lbl">Your blockers</span><input type="number" id="inBlock" min="0" max="30" value="13"></div>
+    <div class="field"><span class="lbl">Bot swaps / min</span><input type="number" id="inRate" min="1" max="60" step="1" value="8"></div>
+    <div class="field"><span class="lbl">Star hints</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inHint" checked> <span id="hintLbl">after 5 s idle</span></label></div>
+    <div class="field"><span class="lbl">Bot pace</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inPace" checked> match mine</label></div>
+    <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="20"></div>
+    <div class="field"><span class="lbl">Bot blockers</span><input type="number" id="inBotBlock" min="0" max="30" value="13"></div>
+    <div class="field"><span class="lbl">Handicap</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inAuto" checked> auto from ratings</label></div>
+    <div class="field"><span class="lbl">Drone tips</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
+    <div class="field"><span class="lbl">Secs per move</span><input type="number" id="inMove" min="0" max="600" step="5" value="60"></div>
+    <div class="field"><span class="lbl">Nudge after (s)</span><input type="number" id="inNudge" min="0" max="300" step="5" value="30"></div>
+    <div class="field"><span class="lbl">Clock (min)</span><input type="number" id="inClock" min="1" max="60" value="20"></div>
+    <button class="primary" id="btnStart">Start game</button>
+    <button id="btnShot">Screenshot</button>
+    <button id="btnCopy">Copy as text</button>
+    <button id="btnNet">Play a friend</button>
+    <a href="https://claude.ai/code/artifact/a2dd1efd-bcf8-47cb-8052-1228505240a5" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
+  </form>
+</header>
+
+<div class="status" id="status">Set the handicap and press Start.</div>
+<div class="panel" id="netbox" hidden style="margin:8px 0 0">
+  <span class="lbl">Play a friend on two phones</span>
+  <div class="hint" id="netstat" style="max-width:80ch"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px">
+    <input id="inName" placeholder="Your name" maxlength="12" autocomplete="off" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:6px 8px;width:120px;border-radius:3px">
+    <button type="button" id="btnHost">Host a match</button>
+    <input id="inCode" placeholder="CODE" maxlength="4" autocomplete="off" autocapitalize="characters" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:6px 8px;width:72px;border-radius:3px;text-transform:uppercase;letter-spacing:.15em">
+    <button type="button" id="btnJoin">Join</button>
+    <button type="button" id="btnLeave" hidden>Leave match</button>
+  </div>
+</div>
+<nav class="tabs" id="tabs"><button data-pane="0" class="on">Stars</button><button data-pane="1">Board</button><button data-pane="2">Info</button></nav>
+<main id="main">
+  <section class="panel jpanel">
+    <div class="ph"><span class="lbl">Your star board</span><span class="sub" id="jsub">Drag a star onto its neighbor</span></div>
+    <div class="jwrap"><div class="jgrid" id="jgrid"></div><div id="jpops"></div><div id="jdim" hidden><div class="card">Your move on the board<small>Move a drone, claim, fire, warp, fly down, or pass. Then the stars come back.</small><button id="goBoard" style="margin-top:10px">Go to the board</button></div></div><div id="jwait" hidden><div class="card"></div></div></div>
+    <div id="jprev" hidden><div class="lbl" style="margin:10px 0 6px">After removal · blanks are new tiles</div><div class="jgrid mini" id="jprevgrid"></div></div>
+  </section>
+
+  <section class="panel cpanel">
+    <div class="ph"><span class="lbl">The board</span><span class="sub">9 × 9 · bot at top, you at bottom</span></div>
+    <div class="cgrid" id="cgrid"></div>
+    <div class="coords">
+      <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span><span>i</span>
+    </div>
+    <div class="actbox">
+      <span class="lbl">Actions</span>
+      <div class="hint" id="acthint"></div>
+      <div class="tipcard" id="dtip" hidden></div>
+      <div class="acts" id="acts"></div>
+<div id="flipbar" hidden><span id="flipText">Back to stars in 4s</span><button id="flipStay">Stay and watch</button><button id="flipNow">Flip to stars</button></div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="clocks">
+      <div class="clk c1" id="clk1"><span class="lbl">You</span><div class="t">10:00</div></div>
+      <div class="clk c2" id="clk2"><span class="lbl">Bot</span><div class="t">10:00</div></div>
+    </div>
+<div class="panel" id="botpanel"><span class="lbl" id="botlbl">Bot's star board</span><div class="hint" id="bsub">Same rules, same luck. It swaps on a timer.</div><div class="jgrid mini" id="bgrid" style="margin-top:6px"></div></div>
+    <div class="panel"><span class="lbl">Your record</span><div id="record"></div></div>
+    <div class="panel land">
+      <span class="lbl">Land held · need 46</span>
+      <div class="lrow"><span style="color:var(--you)">You</span><div class="bar"><i id="bar1" style="background:var(--you);width:0"></i></div><span id="land1">0 / 46</span></div>
+      <div class="lrow"><span style="color:var(--bot)">Bot</span><div class="bar"><i id="bar2" style="background:var(--bot);width:0"></i></div><span id="land2">0 / 46</span></div>
+
+    </div>
+    <div class="panel">
+      <span class="lbl">Log</span>
+      <div class="log" id="log"></div>
+    </div>
+  </aside>
+</main>
+
+<div id="shot" hidden><div class="shotbox"><div class="ph"><span class="lbl">Screenshot</span><span class="hint" id="shotmsg">Long-press or right-click the picture to save it.</span></div><img id="shotimg" alt="Game screenshot"><div class="acts" style="margin-top:10px"><button id="shotCopy">Copy image</button><button id="shotClose">Close</button></div></div></div>
+<div id="announce" hidden><span id="announceText">YOUR MOVE</span></div>
+<nav class="swipebar" id="swipebar"><span data-pane="0" class="on">Stars</span><span data-pane="1">Board</span><span data-pane="2">Info</span></nav>
+<details id="spbox" style="margin-top:20px;max-width:none">
+  <summary>Self-play lab · the bot plays both sides</summary>
+  <div class="setup" style="margin:10px 0">
+    <div class="field"><span class="lbl">Games</span><input type="number" id="spGames" min="1" max="200" value="10"></div>
+    <div class="field"><span class="lbl">Top skill (bot side)</span><input type="number" id="spTop" min="0" max="100" step="10" value="50"></div>
+    <div class="field"><span class="lbl">Bottom skill</span><input type="number" id="spBottom" min="0" max="100" step="10" value="50"></div>
+    <div class="field"><span class="lbl">Swaps each per turn</span><input type="number" id="spSwaps" min="1" max="20" value="3"></div>
+    <div class="field"><span class="lbl">Max rounds</span><input type="number" id="spMax" min="50" max="2000" value="300"></div>
+    <button class="primary" id="spRun">Run</button><button id="spCopy">Copy results</button>
+  </div>
+  <p class="hint" style="max-width:80ch">Uses the star kinds and blockers from the setup bar. Your current game is saved before the run and put back after. Both sides use the bot's brain; the only difference between them is the skill number, so a fair game should split near 50/50 at equal skill.</p>
+  <pre id="spOut" style="font-family:var(--mono);font-size:12px;color:var(--text);background:var(--panel);border:1px solid var(--line);padding:12px;white-space:pre-wrap;max-width:100%;overflow-x:auto"></pre>
+</details>
+<details>
+  <summary>How it works, and where I guessed</summary>
+  <p><strong>Stars.</strong> Match 3 in a row or column clears tiles and nothing else. Diagonals only count from 4 up. Bigger shapes earn things. When you earn a drone, the free squares on your back row light up and you tap the one you want (or press Auto-place). Before the board opens you can also tap a back-row drone and tap another back-row square to shift it. With a full back row, at any point in the game, a stronger drone bumps the weakest one and the bumped one digs; the last claim drone is never bumped, so your guards always have a way to grow their land. If your back row is full, a new drone hovers over your star board instead and you tap the tile (or tiles) it removes.</p>
+  <table>
+    <tr><th>Shape</th><th>You get</th></tr>
+    <tr><td>4 in a line</td><td>Claim drone</td></tr>
+    <tr><td>5 in a line</td><td>Strike drone</td></tr>
+    <tr><td>Plus of two 3-lines, or an X of 5 (diagonals crossing in the middle)</td><td>Hunter drone</td></tr>
+    <tr><td>6 in a line, or an L of 4 and 3</td><td>Siege drone</td></tr>
+    <tr><td>7 in a line, a cross of 4 and 4, or a 5 crossing a 3</td><td>Warp drone</td></tr>
+    <tr><td>A 5 crossing a 4, or bigger crossings</td><td>Warp drone and a siege drone</td></tr>
+    <tr><td>2 × 2 block</td><td>Guard drone</td></tr>
+    <tr><td>2 × 3 block</td><td>Warp drone and a siege drone</td></tr>
+    <tr><td>3 × 3 block</td><td>Warp, siege drone and a hunter</td></tr>
+    <tr><td>L or T of two 3-lines</td><td>3 bombs drop onto your board</td></tr>
+    <tr><td>Plus of two 3-lines, or an X of 5 (diagonals crossing in the middle)</td><td>3 blockers land on the other player's board</td></tr>
+  </table>
+  <p><strong>Bombs</strong> sit on your board like blockers. When a tile next to a bomb is cleared, the bomb goes off and clears the 8 tiles around it, blockers included. Bombs set off other bombs.</p>
+  <p><strong>Rocks</strong> are the blockers each side starts with, 13 by default, laid out as a shape picked for the game (the same shape on both boards), and nothing adds more. A board with no moves does not reshuffle while you have a drone to fly down. They pace the game: slow while they block the board, faster as they clear, a flood once they are gone. Dig them out by flying drones down, or blow them up.</p>
+  <p><strong>The board</strong> opens when both sides have 3 drones on it. Then it is strict turns, one drone move per turn, on a chess clock, with a per-move limit (default 60 seconds) that passes the turn when it runs out. If you spend 30 seconds of your move on the jewels, the star board darkens until you act on the board. The clocks only run while both sides have a drone on the board; a side with none has its turn skipped. Clock at zero and you lose. Your star board never stops.</p>
+  <p><strong>Walking.</strong> Select a claim, guard or warp drone and tap a square more than one step away: that becomes its destination. On each of your turns, if you do nothing for 4 seconds, it takes one step toward it and the turn passes. Act sooner and it waits. Steps avoid squares next to enemy guards; a guard stops when it runs out of your land.</p>
+  <p><strong>Claim drone</strong> moves 1 square any direction. Whenever at least one square in the 3 × 3 around it is not yours, it can claim: unowned squares become yours, enemy squares become disputed, disputed become yours. Then it is used up. Fire it on a big empty patch for nine squares, or spend it on the last square you need.</p>
+  <p><strong>Start.</strong> Each side owns the five squares in front of its wall and has two guards on patrol there. Starting guards do not count toward the 3 drones that open the board.</p>
+  <p><strong>Guard drone</strong> moves 1 square, only onto land you own. Any enemy drone that stands on your land one square from a guard is removed at once; the guard stays. An enemy two squares away gets you an offer on your move: the guard jumps and takes it, and the guard is lost. A guard standing next to an enemy siege drone shields the wall: the siege drone cannot fire while the guard is there, and neither of them is harmed.</p>
+  <p><strong>Strike drone</strong> moves up to 4 squares diagonally and may bend mid-move. It takes any enemy drone it lands on.</p>
+  <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
+  <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
+  <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
+  <p><strong>Fly down.</strong> Before the board opens, any drone on your back row can fly down for free. Once it is open, on your turn any drone can drop to your star board instead of moving. A claim drone drops as a bomb: tap one tile and the 3 × 3 around it goes. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
+  <p><strong>Guesses in this build:</strong></p>
+  <ul>
+    <li>Vertical lines count for drones.</li>
+    <li>The 12 home squares (Commander plus walls) count as owned by that side toward 46. Walls a siege drone clears stop counting.</li>
+    <li>Guard sight is the 8 surrounding squares. Guards move 1 square.</li>
+    <li>Blockers and bombs fall with gravity.</li>
+    <li><strong>Bot skill is a 0 to 100 hardness dial</strong> and every step buys the bot something. 0 to 100: that share of its swaps are the best available. From 30: its guards jump more readily. 50 to 80: it learns your guards' kill zones. 60 to 100: it sees threats from your strike, hunter and group and pulls threatened drones back. 70 to 100: it plans its jewel swaps a move ahead. 90 to 100: it swaps up to 1.5 times your pace. Under 30 it also swaps slower than you, makes some random board moves and never jumps a guard. 20 is a new player's bot, 50 is regular, 70 is hard, 100 is unfair.</li>
+    <li>The bot plays its own star board, shown in the side column. With "bot pace: match mine" on (the default) it swaps as often as you did over the last three minutes, floor 3 a minute (slower than you under skill 30); off, it uses the "bot swaps / min" number. Same shapes, same rewards, same bombs.</li>
+    <li>Whoever reaches 3 drones first moves first.</li>
+  </ul>
+</details>
+
+<script>
+const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
+const BLK=-1,BOMB=-2;
+const BACKCOLS=[0,1,2,6,7,8];
+const DIRS8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]];
+const LINE_DIRS=[[0,1],[1,0],[1,1],[1,-1]];
+const TNAME={C:'claim drone',G:'guard drone',S:'strike drone',H:'hunter drone',W:'warp drone',X:'siege drone'};
+const TSHORT={C:'Claim',G:'Guard',S:'Strike',H:'Hunter',W:'Warp',X:'Siege'};
+const SNAME={1:'You',2:'Bot'};
+const rand=n=>Math.floor(Math.random()*n);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ck=(r,c)=>r*N+c, jk=(r,c)=>r*JW+c;
+const $=id=>document.getElementById(id);
+const sqName=(r,c)=>'abcdefghi'[c]+(N-r);
+
+let phase='setup',over=null,chess=[],jew=[],reserve={1:[],2:[]},clock={1:0,2:0},turn=0,moveLeft=0,turnMs=0,nudge=false,open=false,ready={1:false,2:false},first=0,botAcc=0,dropAcc=0,ids=1,logs=[];
+let sel=null,busy=false,flash=null,digQueue=[],bombQueue=0,rockQueue=0,bjew=[],botBombs=0,swapAcc=0,mySwaps=[],placeQueue=[],walkDone=false,boardStuck=false,hintCells=null,lastSwapAt=Date.now();
+let online=false,net=null; // two-phone match (see the online section near the end)
+
+// ---------- chess board
+function newChess(){
+  chess=[];
+  for(let r=0;r<N;r++){const row=[];for(let c=0;c<N;c++)row.push({own:0,wall:false,master:0,drone:null});chess.push(row);}
+  setHome(YOU,8,7);setHome(BOT,0,1);
+}
+function setHome(side,back,front){
+  chess[back][4].master=side;
+  for(const [r,c] of [[back,4],[back,3],[back,5],[front,3],[front,4],[front,5]]){chess[r][c].wall=true;chess[r][c].own=side;}
+  // the yard: five squares in front of the wall are yours from the start, with two guards on patrol.
+  // starting guards do not count toward the 3 drones needed to open the board.
+  const yard=side===YOU?front-1:front+1;
+  for(let c=2;c<=6;c++)chess[yard][c].own=side;
+  chess[yard][3].drone={id:ids++,type:'G',side,start:true};
+  chess[yard][5].drone={id:ids++,type:'G',side,start:true};
+}
+const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+const earnedOn=side=>dronesOf(side).filter(x=>!x.d.start).length;
+function isBackFree(side,r,c){const br=side===YOU?8:0;return r===br&&BACKCOLS.includes(c)&&!chess[r][c].drone&&!chess[r][c].wall;}
+function dronesOf(side){const o=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){const d=chess[r][c].drone;if(d&&d.side===side)o.push({r,c,d});}return o;}
+function landOf(side){let n=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(chess[r][c].own===side)n++;return n;}
+function masterPos(side){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(chess[r][c].master===side)return [r,c];return null;}
+
+function legalMoves(r,c){
+  const d=chess[r][c].drone,out=new Set();
+  if(d.type==='C'||d.type==='G'||d.type==='W'||d.type==='X'){
+    for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];
+      if(cell.wall||cell.drone)continue;if(d.type==='G'&&cell.own!==d.side)continue;out.add(ck(nr,nc));}
+  }else{
+    const steps=d.type==='H'?DIRS8:DIAG;
+    const dist=new Map([[ck(r,c),0]]);const q=[[r,c,0]];
+    while(q.length){const [cr,cc,dd]=q.shift();if(dd===4)continue;
+      for(const [dr,dc] of steps){const nr=cr+dr,nc=cc+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];if(cell.wall)continue;
+        const kk=ck(nr,nc);if(dist.has(kk))continue;dist.set(kk,dd+1);
+        if(cell.drone){if(cell.drone.side!==d.side&&cell.drone.type!=='X')out.add(kk);continue;}
+        out.add(kk);q.push([nr,nc,dd+1]);}
+    }
+  }
+  return out;
+}
+function countNonOwn(r,c,side){let n=0;for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];if(cell.wall)continue;if(cell.own!==side)n++;}return n;}
+const claimValid=(r,c,side)=>claimGain(r,c,side)>=1; // any square to take is enough (was 6)
+function claimGain(r,c,side){let g=countNonOwn(r,c,side);if(chess[r][c].own!==side)g++;return g;}
+function doClaim(r,c){
+  const side=chess[r][c].drone.side;let took=0,disp=0;
+  const touch=cell=>{if(cell.wall)return;if(cell.own===0||cell.own===3){cell.own=side;took++;}else if(cell.own!==side){cell.own=3;disp++;}};
+  touch(chess[r][c]);
+  for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(inB(nr,nc))touch(chess[nr][nc]);}
+  chess[r][c].drone=null;
+  log(`${SNAME[side]} claimed at ${sqName(r,c)}: ${took} squares taken${disp?', '+disp+' disputed':''}.`);
+  afterAction();
+}
+function warpAllowed(tr,tc,side){
+  // a warp cannot target a square with an enemy guard one square away (so a guard can never be warped)
+  const enemy=side===YOU?BOT:YOU;
+  for(const [dr,dc] of [[0,0],...DIRS8]){const r=tr+dr,c=tc+dc;if(!inB(r,c))continue;const d=chess[r][c].drone;if(d&&d.side===enemy&&d.type==='G')return false;}
+  return true;
+}
+function warpGain(tr,tc,side){let g=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r=tr+dr,c=tc+dc;if(!inB(r,c))continue;const cell=chess[r][c];if(cell.wall)continue;if(cell.own!==side)g++;if(cell.drone&&cell.drone.side!==side)g+=2;}return g;}
+function doWarp(fr,fc,tr,tc){
+  const side=chess[fr][fc].drone.side;let took=0,killed=0;
+  chess[fr][fc].drone=null;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r=tr+dr,c=tc+dc;if(!inB(r,c))continue;const cell=chess[r][c];if(cell.wall)continue;
+    if(cell.own!==side){cell.own=side;took++;}
+    if(cell.drone&&cell.drone.side!==side&&cell.drone.type!=='X'){cell.drone=null;killed++;}}
+  log(`${SNAME[side]} warped to ${sqName(tr,tc)}: ${took} squares taken${killed?', '+killed+' enemy drone'+(killed>1?'s':'')+' removed':''}.`);
+  afterAction();
+}
+function fireTargets(r,c,side){
+  const enemy=side===YOU?BOT:YOU,walls=[],guards=[];let master=false;
+  for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];
+    if(cell.master===enemy)master=true;else if(cell.wall&&cell.own===enemy)walls.push([nr,nc]);
+    if(cell.drone&&cell.drone.side===enemy&&cell.drone.type==='G')guards.push([nr,nc]);}
+  return {walls,guards,master};
+}
+const canFire=(r,c,side)=>{const t=fireTargets(r,c,side);return t.guards.length===0&&(t.walls.length>0||t.master);};
+const shielded=(r,c,side)=>fireTargets(r,c,side).guards.length>0;
+function doFire(r,c){
+  const side=chess[r][c].drone.side,t=fireTargets(r,c,side);
+  if(t.guards.length){const [gr,gc]=t.guards[0];
+    log(`${side===YOU?'Your':(SNAME[BOT]+"'s")} siege drone cannot fire: the guard at ${sqName(gr,gc)} is shielding the wall.`);return;}
+  if(t.walls.length){for(const [wr,wc] of t.walls){chess[wr][wc].wall=false;chess[wr][wc].own=0;}
+    log(`${SNAME[side]} fired from ${sqName(r,c)}: ${t.walls.length} wall${t.walls.length>1?'s':''} cleared.`);afterAction();return;}
+  if(t.master){gameOver(side,`${SNAME[side]} took the Commander.`);}
+}
+function doMove(fr,fc,tr,tc){
+  const d=chess[fr][fc].drone,t=chess[tr][tc];
+  const who=d.side===YOU?'Your':(SNAME[BOT]+"'s");
+  if(t.drone)log(`${who} ${TNAME[d.type]} took the ${TNAME[t.drone.type]} at ${sqName(tr,tc)}.`);
+  else log(`${SNAME[d.side]} moved ${TNAME[d.type]} ${sqName(fr,fc)} to ${sqName(tr,tc)}.`);
+  d.lastFrom=ck(fr,fc);t.drone=d;chess[fr][fc].drone=null;
+  afterAction();
+}
+function sweepGuards(){
+  // a guard removes any enemy drone standing on the guard's own land one square away. The guard stays.
+  const kill=[];
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const d=chess[r][c].drone;if(!d||d.type!=='G')continue;
+    for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];
+      if(cell.drone&&cell.drone.side!==d.side&&cell.drone.type!=='X'&&cell.own===d.side)kill.push({r:nr,c:nc,t:cell.drone.type,g:sqName(r,c),side:d.side});}}
+  for(const k of kill){if(chess[k.r][k.c].drone){chess[k.r][k.c].drone=null;log(`${k.side===YOU?'Your':(SNAME[BOT]+"'s")} guard at ${k.g} took the ${TNAME[k.t]} at ${sqName(k.r,k.c)}.`);}}
+}
+function lungeOffers(side){
+  // guards that could jump two squares onto an enemy drone (the guard is spent doing it)
+  const out=[];
+  for(const g of dronesOf(side)){if(g.d.type!=='G')continue;
+    for(const e of dronesOf(side===YOU?BOT:YOU)){if(e.d.type==='X')continue;const dist=Math.max(Math.abs(e.r-g.r),Math.abs(e.c-g.c));
+      if(dist===2)out.push({gr:g.r,gc:g.c,tr:e.r,tc:e.c,t:e.d.type});}}
+  return out;
+}
+function doLunge(gr,gc,tr,tc){
+  const g=chess[gr][gc].drone,t=chess[tr][tc].drone;if(!g||!t)return;
+  chess[tr][tc].drone=null;chess[gr][gc].drone=null;
+  log(`${g.side===YOU?'Your':(SNAME[BOT]+"'s")} guard jumped from ${sqName(gr,gc)} and took the ${TNAME[t.type]} at ${sqName(tr,tc)}. The guard is gone.`);
+  afterAction();
+}
+function sweepSiege(){
+  // a siege drone dies only when 4 enemy drones stand on the squares around it
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const d=chess[r][c].drone;if(!d||d.type!=='X')continue;
+    let n=0;for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const e=chess[nr][nc].drone;if(e&&e.side!==d.side)n++;}
+    if(n>=4){chess[r][c].drone=null;log(`${d.side===YOU?'Your':(SNAME[BOT]+"'s")} siege drone at ${sqName(r,c)} was surrounded by ${n} drones and destroyed.`);}}
+}
+function checkWin(){for(const s of [YOU,BOT]){if(landOf(s)>=WIN){gameOver(s,`${SNAME[s]} hold${s===YOU?'':'s'} ${WIN} squares.`);return true;}}return false;}
+function afterAction(){if(over)return;sweepGuards();sweepSiege();if(checkWin())return;endTurn();}
+function startTurn(side){
+  turn=side;moveLeft=Math.max(0,+$('inMove').value||0)*1000;turnMs=0;walkDone=false;if(nudge){nudge=false;renderNudge();}
+  if(side===YOU&&open)onYourTurnStart();else if(side===BOT&&open)onYourMoveDone();
+  if(turn===BOT&&!selfPlay&&!online)setTimeout(()=>botMove(BOT),botDelay());
+}
+function endTurn(){
+  const prev=turn===YOU?YOU:BOT,next=prev===YOU?BOT:YOU;sel=null;
+  const nNext=dronesOf(next).length,nPrev=dronesOf(prev).length;
+  if(nNext===0&&nPrev===0){turn=0;log('No drones on the board. Turns resume when one lands.');render();return;}
+  if(nNext===0){log(`${SNAME[next]} ${next===YOU?'have':'has'} no drones on the board. Turn passes.`);startTurn(prev);}
+  else startTurn(next);
+  render();
+}
+const botDelay=()=>7000+rand(2001); // the bot thinks for 7 to 9 seconds so your turn on the stars is a real turn
+const bothArmed=()=>dronesOf(YOU).length>0&&dronesOf(BOT).length>0;
+function gameOver(w,reason){if(over)return;over={w,reason};rateGame(w);log(`Game over. ${SNAME[w]} win${w===YOU?'':'s'}. ${reason}`);sel=null;render();}
+
+function place(side,idx,r,c){
+  const t=reserve[side].splice(idx,1)[0];
+  chess[r][c].drone={id:ids++,type:t,side};
+  log(`${SNAME[side]} placed a ${TNAME[t]} at ${sqName(r,c)}.`);
+  checkReady();
+  if(open&&turn===0&&!over){startTurn(side);log(`${SNAME[side]} move${side===YOU?'':'s'}.`);}
+  render();
+}
+function checkReady(){
+  if(open)return;
+  for(const s of [YOU,BOT]){if(!ready[s]&&earnedOn(s)>=3){ready[s]=true;if(!first)first=s;log(`${SNAME[s]} ${s===YOU?'have':'has'} 3 drones on the board.`);}}
+  if(ready[1]&&ready[2]){open=true;startTurn(first);log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);}
+}
+const RANK={C:1,G:2,S:3,H:4,W:5,X:6};
+function earn(side,t){
+if(earnHook)earnHook(side,t);  const auto=side===BOT||selfPlay;
+  const br=side===YOU?8:0;
+  const free=BACKCOLS.filter(c=>isBackFree(side,br,c));
+  const pending=!auto?placeQueue.length:0;
+  if(!auto&&free.length-pending>1){placeQueue.push(t);log(`Your ${TNAME[t]} is ready. Tap a free back-row square to place it.`);renderChess();renderSide();return;}
+  if(free.length-pending>=1){if(!auto&&pending){/* one square left: it goes to the drone that waited longest, this one waits */placeQueue.push(t);renderSide();return;}reserve[side].push(t);place(side,0,br,free[rand(free.length)]);return;}
+  { // any time the row is full: a stronger drone bumps the weakest one off, and the bumped drone digs
+    // (before v0.50 this only happened before the board opened; a warp earned onto a full row was wasted as a 1-tile dig)
+    // and the bumped drone digs the star board instead
+    let low=null;
+    const claims=BACKCOLS.filter(c=>chess[br][c].drone&&chess[br][c].drone.side===side&&chess[br][c].drone.type==='C').length;
+    for(const c of BACKCOLS){const d=chess[br][c].drone;if(!d||d.side!==side)continue;
+      if(d.type==='C'&&claims<=1&&t!=='C')continue; // always keep one claim drone so the guards have a way out
+      if(!low||RANK[d.type]<RANK[low.d.type])low={c,d};}
+    if(low&&RANK[t]>RANK[low.d.type]){
+      const old=low.d.type;chess[br][low.c].drone={id:ids++,type:t,side};
+      log(`${side===YOU?'Your':(SNAME[BOT]+"'s")} ${TNAME[t]} took ${sqName(br,low.c)} from a ${TNAME[old]}.`);
+      if(!auto){autoFly(old);renderChess();renderSide();}else botDig(old,side);
+      return;}
+  }
+  if(!auto)autoFly(t);else botDig(t,side);
+}
+const digNeed=t=>t==='G'?2:t==='S'?4:t==='H'?6:t==='X'?8:1;
+function autoFly(t){
+  // back row full: the drone hovers over the star board and the player picks what it removes.
+  const need=digNeed(t);
+  digQueue.push({t,need,line:null,blast:t==='C'});
+  log(`Back row full. Your ${TNAME[t]} is overhead. Pick up to ${need} tile${need>1?'s':''} to remove.`);
+}
+function startDig(){
+  if(over||phase!=='play'||!digQueue.length||(sel&&sel.kind==='fly'))return;
+  const d=digQueue.shift();sel={kind:'fly',auto:true,t:d.t,need:d.need,line:d.line,blast:!!d.blast,picks:[]};render();
+}
+function sabotage(target){
+  if(target===YOU){rockQueue+=3;log('Bot dropped 3 blockers onto your board.');}
+  else{withBotBoard(()=>{for(let i=0;i<3;i++)placeRock();});log("You dropped 3 blockers onto the bot's board.");renderBotBoard();}
+}
+// ---------- the bot's own star board. Every board function reads the global `jew`,
+// so the bot's turn swaps that reference in, works, and swaps it back before anything renders.
+// ---------- self-play plumbing: the bot's brain can drive either side
+let selfPlay=false,headless=false,sp={top:50,bottom:50},earnHook=null;
+const skillFor=side=>selfPlay?(side===BOT?sp.top:sp.bottom):skillPct();
+function withBoard(side,fn){return side===BOT?withBotBoard(fn):fn();}
+const rocksOf=side=>(side===BOT?bjew:jew).flat().filter(v=>v===BLK).length;
+function swapCountOf(side){return withBoard(side,()=>allSwaps().length);}
+function withBotBoard(fn){const save=jew;jew=bjew;try{return fn();}finally{jew=save;}}
+function botSettle(){
+  // clear matches on the bot board until it is still; returns the drones it earned
+  const earned=[];let guard=0;
+  while(guard++<40){const m=findMatches();if(!m.cells.size)break;
+    for(const k of m.cells)jew[Math.floor(k/JW)][k%JW]=null;
+    for(const t of m.drones){if(t==='SAB')earned.push('SAB');else if(t==='BOMB')botBombs+=3;else earned.push(t);}
+    detonate(true);gravity();
+    if(botBombs){dropBombs(botBombs,true);botBombs=0;}}
+  if(!hasMove())shuffle();
+  return earned;
+}
+const RVAL={C:1,G:1,BOMB:1,SAB:2,S:3,H:5,W:8,X:8};
+function swapScore(m){return Math.max(0,...m.drones.map(t=>RVAL[t]||0))*10+m.cells.size;}
+function allSwaps(){
+  // every matching swap on the current `jew`, with its immediate score
+  const out=[];
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)for(const [dr,dc] of [[0,1],[1,0]]){const nr=r+dr,nc=c+dc;if(nr>=JH||nc>=JW)continue;
+    const a=jew[r][c],b=jew[nr][nc];if(a==null||b==null||a<0||b<0||a===b)continue;
+    jew[r][c]=b;jew[nr][nc]=a;const m=findMatches();jew[r][c]=a;jew[nr][nc]=b;if(!m.cells.size)continue;
+    out.push({p:[r,c,nr,nc],s:swapScore(m)});}
+  return out;
+}
+function simAfter(p){
+  // what the board looks like after this swap settles (random refill, no side effects)
+  const g=jew.map(r=>r.slice()),save=jew;jew=g;
+  const [r,c,nr,nc]=p;const t=jew[r][c];jew[r][c]=jew[nr][nc];jew[nr][nc]=t;
+  let guard=0;while(guard++<30){const m=findMatches();if(!m.cells.size)break;for(const k of m.cells)jew[Math.floor(k/JW)][k%JW]=null;gravity();}
+  const next=allSwaps().reduce((a,x)=>Math.max(a,x.s),0);
+  jew=save;return next;
+}
+function botPickSwap(side=BOT){
+  const cands=allSwaps();if(!cands.length)return null;
+  const s=skillFor(side)/100;
+  if(Math.random()>=s)return cands[rand(cands.length)].p;          // a hurried, random match
+  cands.sort((a,b)=>b.s-a.s);
+  if(Math.random()<ramp(skillFor(side),70,100)){                       // plan one move ahead
+    let best=null,bs=-1;for(const cnd of cands.slice(0,6)){const tot=cnd.s+0.6*simAfter(cnd.p)+Math.random();if(tot>bs){bs=tot;best=cnd;}}
+    return best.p;}
+  return cands[0].p;
+}
+function botSwap(side=BOT){
+  const earned=withBoard(side,()=>{let p=botPickSwap(side);if(!p){if(dronesOf(side).length)return [];shuffle();p=botPickSwap(side);if(!p)return [];}
+    const [r,c,nr,nc]=p;const t=jew[r][c];jew[r][c]=jew[nr][nc];jew[nr][nc]=t;return botSettle();});
+  for(const t of earned){if(t==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,t);}
+  if(side===BOT)renderBotBoard();else renderJewels();
+}
+function botDigCore(side,need,blast){
+  // remove up to `need` tiles from the bot board, blockers first, then settle; returns what it earned
+  let dug=0,rocks=0;
+  const earned=withBoard(side,()=>{
+    const blocks=[],others=[];
+    for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){if(jew[r][c]===BLK)blocks.push([r,c]);else if(jew[r][c]!=null&&jew[r][c]!==BOMB)others.push([r,c]);}
+    blocks.sort(()=>Math.random()-.5);others.sort(()=>Math.random()-.5);
+    let picks=blocks.slice(0,need).concat(others.slice(0,Math.max(0,need-blocks.length)));
+    if(blast){let best=null,bs=-1;for(let r=1;r<JH-1;r++)for(let c=1;c<JW-1;c++){let s=Math.random();for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(jew[r+dr][c+dc]===BLK)s+=1;if(s>bs){bs=s;best=[r,c];}}picks=blastCells([best]);}
+    rocks=picks.filter(([r,c])=>jew[r][c]===BLK).length;dug=picks.length;
+    for(const [r,c] of picks)jew[r][c]=null;
+    detonate(true);gravity();return botSettle();});
+  return {dug,rocks,earned};
+}
+function botDig(t,side=BOT){
+  // back row full: the bot's new drone digs its own board instead of landing
+  const {dug,rocks,earned}=botDigCore(side,digNeed(t),t==='C');
+  log(`${side===BOT?(SNAME[BOT]+"'s"):'Your'} back row is full. ${side===BOT?'Its':'The'} ${TNAME[t]} dug ${dug} tile${dug===1?'':'s'} on its own board${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
+  for(const x of earned){if(x==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,x);}
+  renderBotBoard();
+}
+function botFlyDown(r,c){
+  // a deliberate chess move: the bot spends a drone to dig its clogged board
+  const d=chess[r][c].drone;chess[r][c].drone=null;
+  const side=d.side;const {dug,rocks,earned}=botDigCore(side,digNeed(d.type),d.type==='C');
+  log(`${side===BOT?(SNAME[BOT]+"'s"):'Your'} ${TNAME[d.type]} flew down and dug ${dug} tile${dug===1?'':'s'}${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
+  for(const x of earned){if(x==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,x);}
+  renderBotBoard();afterAction();
+}
+const botRocks=()=>bjew.flat().filter(v=>v===BLK).length;
+function botSwapCount(){return withBotBoard(()=>{let n=0;for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)for(const [dr,dc] of [[0,1],[1,0]]){const nr=r+dr,nc=c+dc;if(nr>=JH||nc>=JW)continue;const a=jew[r][c],b=jew[nr][nc];if(a==null||b==null||a<0||b<0||a===b)continue;jew[r][c]=b;jew[nr][nc]=a;if(findMatches().cells.size)n++;jew[r][c]=a;jew[nr][nc]=b;}return n;});}
+function myPace(){const now=Date.now();mySwaps=mySwaps.filter(t=>now-t<=180000);return mySwaps.length/3;} // swaps per minute over the last 3 minutes
+function botRate(){
+  if($('inPace').checked){const s=skillPct();const slow=s<30?Math.max(0.4,s/30):1;return Math.max(3,myPace()*slow)*(1+ramp(s,90,100)*0.5);}
+  return Math.max(0.5,+$('inRate').value||8);
+}
+function newBotBoard(nBlock){withBotBoard(()=>{newJewels(nBlock);bjew=jew;});}
+function renderBotBoard(){if(headless)return;
+  let h='';for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){const v=bjew[r]?bjew[r][c]:null;
+    h+=`<div class="jc">${v==null?'':(v===BLK?'<i class="gem blk"></i>':v===BOMB?'<i class="gem bmb"></i>':`<i class="gem g${v}"></i>`)}</div>`;}
+  $('bgrid').innerHTML=h;
+}
+
+// ---------- bot
+// ---------- the hardness ladder: bot skill 0..100 buys something every step of the way
+const skillPct=()=>Math.max(0,Math.min(100,+$('inSkill').value||0));
+const ramp=(s,a,b)=>Math.max(0,Math.min(1,(s-a)/(b-a)));
+let botSense={zone:false,threat:false};
+function rollSense(me=BOT){const s=skillFor(me);botSense={zone:Math.random()<ramp(s,50,80),threat:Math.random()<ramp(s,60,100)};}
+function threatened(r,c,side){
+  // can an enemy strike, hunter or siege drone land here next move?
+  const enemy=side===YOU?BOT:YOU;
+  for(const e of dronesOf(enemy)){if(e.d.type!=='S'&&e.d.type!=='H')continue;if(legalMoves(e.r,e.c).has(ck(r,c)))return true;}
+  return false;
+}
+// ---------- walking: a claim, guard or warp drone can be given a destination and steps toward it
+// on its own, one square per turn, after 4 seconds of your turn with no other action
+const WALKERS={C:1,G:1,W:1,X:1};
+function walkers(side){return dronesOf(side).filter(m=>m.d.dest!=null&&WALKERS[m.d.type]);}
+function walkStep(m){
+  // the legal step that gets closest to the destination, skipping squares next to enemy guards
+  const dr=Math.floor(m.d.dest/N),dc=m.d.dest%N;const cur=Math.max(Math.abs(dr-m.r),Math.abs(dc-m.c));
+  let best=null,bd=cur;
+  for(const k of legalMoves(m.r,m.c)){const r=Math.floor(k/N),c=k%N;if(deadly(r,c,m.d.side))continue;
+    const d=Math.max(Math.abs(dr-r),Math.abs(dc-c))+(chess[r][c].own===m.d.side?0:0.1);if(d<bd){bd=d;best=k;}}
+  return best;
+}
+function doWalk(m){
+  if(m.d.type==='X'&&canFire(m.r,m.c,m.d.side)){doFire(m.r,m.c);return true;}
+  const k=walkStep(m);if(k==null)return false;
+  const r=Math.floor(k/N),c=k%N;const arrive=k===m.d.dest;
+  if(arrive){m.d.dest=null;log(`Your ${TNAME[m.d.type]} arrived at ${sqName(r,c)}.`);}
+  doMove(m.r,m.c,r,c);return true;
+}
+function walkWhy(m){
+  // a short reason a walker cannot step right now
+  if(walkStep(m)!=null)return '';
+  if(m.d.type==='X'&&shielded(m.r,m.c,m.d.side))return 'an enemy guard is shielding the wall';
+  const dr=Math.floor(m.d.dest/N),dc=m.d.dest%N,t=chess[dr][dc];
+  if(t.drone&&t.drone.side===m.d.side)return 'your own drone is on it';
+  const legal=[...legalMoves(m.r,m.c)];
+  if(!legal.length)return m.d.type==='G'?'guards only walk on your land':'boxed in';
+  if(legal.every(k=>deadly(Math.floor(k/N),k%N,m.d.side)))return 'every step is next to an enemy guard';
+  return m.d.type==='G'?'no path over your land':'no step gets closer';
+}
+function pendingWalk(){for(const m of walkers(YOU))if(walkStep(m)!=null||(m.d.type==='X'&&canFire(m.r,m.c,YOU)))return m;return null;}
+function deadly(r,c,side){
+  // a square on the enemy's land next to an enemy guard: whoever steps there is removed at once
+  const enemy=side===YOU?BOT:YOU;if(chess[r][c].own!==enemy)return false;
+  for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const e=chess[nr][nc].drone;if(e&&e.side===enemy&&e.type==='G')return true;}
+  return false;
+}
+function safeMoves(r,c){
+  // the bot's legal moves minus squares it has the sense to avoid this move
+  const d=chess[r][c].drone,pr={X:5,W:4,H:3,C:3,S:2,G:1},out=new Set();
+  const base=legalMoves(r,c);
+  if(base.size>1&&d.lastFrom!=null&&base.has(d.lastFrom)){const t=chess[Math.floor(d.lastFrom/N)][d.lastFrom%N].drone;if(!(t&&t.side!==d.side))base.delete(d.lastFrom);} // no shuffling back and forth
+  for(const k of base){const tr=Math.floor(k/N),tc=k%N;const t=chess[tr][tc].drone;const goodTrade=t&&t.side!==d.side&&pr[t.type]>=pr[d.type];
+    if(botSense.zone&&deadly(tr,tc,d.side)&&!goodTrade)continue;
+    if(botSense.threat&&threatened(tr,tc,d.side)&&!goodTrade)continue;
+    out.add(k);}
+  return out.size?out:base;
+}
+function botMove(me=BOT){if(online)return;
+  const foe=me===YOU?BOT:YOU,br=me===BOT?0:8,fwd=r=>me===BOT?r:N-1-r;
+  if(over||!open||turn!==me||phase!=='play')return;
+  rollSense(me);
+  const mine=dronesOf(me),foesAll=dronesOf(foe),pr={X:5,W:4,H:3,C:3,S:2,G:1};
+  const at=k=>[Math.floor(k/N),k%N];
+  // newbie band: under skill 30 the bot makes a random legal move part of the time (2/3 at 10, 1/3 at 20)
+  if(skillFor(me)<30&&Math.random()<1-skillFor(me)/30){
+    const movers=mine.map(m=>({m,mv:[...legalMoves(m.r,m.c)]})).filter(x=>x.mv.length);
+    if(movers.length){const x=movers[rand(movers.length)],k=x.mv[rand(x.mv.length)];const [r,c]=at(k);doMove(x.m.r,x.m.c,r,c);return;}}
+  // 1 siege drone fires
+  for(const m of mine)if(m.d.type==='X'&&canFire(m.r,m.c,me)){doFire(m.r,m.c);return;}
+  // 4b guards hunt: step next to an enemy on bot land (auto-take fires), or close on a claim drone near bot land
+  {let gbest=null,gs=0;
+    for(const m of mine)if(m.d.type==='G')for(const k of safeMoves(m.r,m.c)){const [r2,c2]=at(k);let s=0;
+      for(const [dr,dc] of DIRS8){const nr=r2+dr,nc=c2+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];const e=cell.drone;
+        if(e&&e.side===foe){if(cell.own===me)s+=10+pr[e.type];else if(e.type==='C')s+=3;}}
+      for(const f of foesAll)if(f.d.type==='C'&&Math.max(Math.abs(f.r-r2),Math.abs(f.c-c2))===2&&claimGain(f.r,f.c,foe)>=5)s+=2;
+      if(s>gs){gs=s;gbest={m,k};}}
+    if(gbest){const [r,c]=at(gbest.k);doMove(gbest.m.r,gbest.m.c,r,c);return;}}
+  // 1e retreat: with threat sense on, pull the most valuable threatened drone to a safe square
+  if(botSense.threat){let rb=null;
+    for(const m of mine){if((m.d.type==='G'&&m.d.start)||m.d.type==='X')continue;if(!threatened(m.r,m.c,me))continue;if(!rb||pr[m.d.type]>pr[rb.d.type])rb=m;}
+    if(rb){let best=null,bs=-1;for(const k of safeMoves(rb.r,rb.c)){const [r2,c2]=at(k);if(threatened(r2,c2,me)||(botSense.zone&&deadly(r2,c2,me)))continue;const s=(chess[r2][c2].own===me?2:0)+Math.random();if(s>bs){bs=s;best=k;}}
+      if(best!=null){const [r,c]=at(best);doMove(rb.r,rb.c,r,c);return;}}}
+  // 1f cash in: a cornered drone (threatened, no safe square) is spent on purpose rather than lost.
+  // a claim drone claims where it stands; anything else flies down and digs.
+  if(botSense.threat){
+    for(const m of mine.slice().sort((a,b)=>pr[b.d.type]-pr[a.d.type])){
+      if((m.d.type==='G'&&m.d.start)||m.d.type==='X')continue;if(!threatened(m.r,m.c,me))continue;
+      const escape=[...safeMoves(m.r,m.c)].some(k=>{const [r2,c2]=at(k);return !threatened(r2,c2,me)&&!deadly(r2,c2,me);});
+      if(escape)continue;
+      if(m.d.type==='C'&&claimGain(m.r,m.c,me)>=1){log(`${SNAME[me]} cash${me===YOU?'':'es'} in a cornered claim drone.`);doClaim(m.r,m.c);return;}
+      if(m.d.type!=='G'||!m.d.start){log(`${SNAME[me]} fl${me===YOU?'y':'ies'} a cornered ${TNAME[m.d.type]} down rather than lose it.`);botFlyDown(m.r,m.c);return;}}}
+  // 1d dig by hand: only when the board is dry or nearly dry (2 swaps or fewer). Rocks it can play around stay,
+  // so the bot's opening is as slow as the player's (it used to strip all its rocks the moment the board opened).
+  {const sc=swapCountOf(me);if(sc<=2){
+    const digPow=t=>t==='C'?9:digNeed(t);let bd=null;for(const m of mine){if(m.d.type==='G'&&m.d.start)continue;if(!bd||digPow(m.d.type)>digPow(bd.d.type))bd=m;}
+    if(bd){botFlyDown(bd.r,bd.c);return;}}}
+  // 1c un-hoard: with 4+ drones parked on the back row, move one out before routine play
+  if(rocksOf(me)<3&&BACKCOLS.filter(c=>chess[br][c].drone&&chess[br][c].drone.side===me).length>=4){
+    let ub=null,us=-1;
+    for(const c of BACKCOLS){const m={r:br,c,d:chess[br][c].drone};if(!m.d||m.d.side!==me)continue;for(const k of safeMoves(br,c)){const [r2,c2]=at(k);if(r2===br)continue;
+      const s=(m.d.type==='G'?1:m.d.type==='C'?3:2)*10+fwd(r2)+Math.random();if(s>us){us=s;ub={m,k};}}}
+    if(ub){const [r,c]=at(ub.k);doMove(ub.m.r,ub.m.c,r,c);return;}}
+  // 1b guard jump: worth a guard when the target's value clears a bar that drops as bot skill rises
+  {const skill=skillFor(me)/100;const bar=skillFor(me)<30?10:7-skill*4;
+    let lb=null,lv=-1;
+    for(const o of lungeOffers(me)){const v=o.t==='X'||o.t==='W'?9:o.t==='H'?5:o.t==='S'?4:o.t==='C'?claimGain(o.tr,o.tc,foe):1;if(v>=bar&&v>lv){lv=v;lb=o;}}
+    if(lb){doLunge(lb.gr,lb.gc,lb.tr,lb.tc);return;}}
+  // 2 warp
+  for(const m of mine)if(m.d.type==='W'){let best=null,bg=0;
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(chess[r][c].wall||!warpAllowed(r,c,me))continue;const g=warpGain(r,c,me);if(g>bg){bg=g;best=[r,c];}}
+    if(best){doWarp(m.r,m.c,best[0],best[1]);return;}}
+  // 3 claim
+  let best=null,bg=0;
+  for(const m of mine)if(m.d.type==='C'){const g=claimGain(m.r,m.c,me);if(g<1)continue;let adj=0;for(const k of safeMoves(m.r,m.c)){const [r2,c2]=at(k);adj=Math.max(adj,claimGain(r2,c2,me));}if((g>=5||g>=adj)&&g>bg){bg=g;best=m;}}
+  if(best){doClaim(best.r,best.c);return;}
+  // 4 capture with strike drone or group
+  let cap=null,cs=0;
+  for(const m of mine)if(m.d.type==='S'||m.d.type==='H')for(const k of safeMoves(m.r,m.c)){const [r,c]=at(k);const t=chess[r][c];if(t.drone&&t.drone.type!=='X'&&pr[t.drone.type]>cs){cs=pr[t.drone.type];cap={m,k};}}
+  if(cap){const [r,c]=at(cap.k);doMove(cap.m.r,cap.m.c,r,c);return;}
+  // 5 siege drone advances on the human home
+  const hm=masterPos(foe)||(me===BOT?[8,4]:[0,4]);let xm=null,xs=Infinity;
+  for(const m of mine)if(m.d.type==='X')for(const k of safeMoves(m.r,m.c)){const [r,c]=at(k);const s=(canFire(r,c,me)?-10:0)+Math.max(Math.abs(hm[0]-r),Math.abs(hm[1]-c))+Math.random()*.5;if(s<xs){xs=s;xm={m,k};}}
+  if(xm){const [r,c]=at(xm.k);doMove(xm.m.r,xm.m.c,r,c);return;}
+  // 6 claim drone advances
+  let adv=null,as=-1;
+  for(const m of mine)if(m.d.type==='C')for(const k of safeMoves(m.r,m.c)){const [r2,c2]=at(k);
+    const s=claimGain(r2,c2,me)*12+countNonOwn(r2,c2,me)*2+fwd(r2)*1.5+Math.random();
+    if(s>as){as=s;adv={m,k};}}
+  if(adv){const [r,c]=at(adv.k);doMove(adv.m.r,adv.m.c,r,c);return;}
+  // 7 strike drone hunts
+  const foes=dronesOf(foe);let sm=null,ss=Infinity;
+  for(const m of mine)if(m.d.type==='S'||m.d.type==='H'){const reach=m.d.type==='H'?foes:foes.filter(f=>(f.r+f.c)%2===(m.r+m.c)%2);for(const k of safeMoves(m.r,m.c)){const [r2,c2]=at(k);
+    const dm=reach.length?Math.min(...reach.map(f=>Math.max(Math.abs(f.r-r2),Math.abs(f.c-c2)))):Math.abs(4-r2)+Math.random();
+    if(dm<ss){ss=dm;sm={m,k};}}}
+  if(sm){const [r,c]=at(sm.k);doMove(sm.m.r,sm.m.c,r,c);return;}
+  // 8 guard wanders
+  const gs=mine.filter(m=>m.d.type==='G').map(m=>({m,mv:[...safeMoves(m.r,m.c)]})).filter(x=>x.mv.length);
+  if(gs.length){const x=gs[rand(gs.length)],k=x.mv[rand(x.mv.length)];const [r,c]=at(k);doMove(x.m.r,x.m.c,r,c);return;}
+  // 9 never pass with a drone in hand: fly the least valuable one down and dig (a stuck guard first)
+  {let fd=null;for(const m of mine){const stuck=legalMoves(m.r,m.c).size===0;const v=(stuck?0:10)+pr[m.d.type];if(!fd||v<fd.v)fd={m,v};}
+    if(fd){botFlyDown(fd.m.r,fd.m.c);return;}}
+  log(SNAME[me]+(me===YOU?' pass.':' passes.'));endTurn();
+}
+// measured 2026-09-07 from 3000 simulated swaps of a reward-seeking player (see DESIGN.md)
+
+// ---------- star board
+const get=(r,c)=>(r<0||r>=JH||c<0||c>=JW)?null:jew[r][c];
+function pickSafe(r,c){
+  const bad=new Set();
+  for(const [dr,dc] of [[0,-1],[-1,0],[-1,-1],[-1,1]]){const a=get(r+dr,c+dc),b=get(r+2*dr,c+2*dc);if(a!=null&&a>=0&&a===b)bad.add(a);}
+  const p=get(r-1,c-1),q=get(r-1,c),s=get(r,c-1);if(p!=null&&p>=0&&p===q&&q===s)bad.add(p);
+  const opts=[];for(let k=0;k<NC;k++)if(!bad.has(k))opts.push(k);
+  return opts.length?opts[rand(opts.length)]:rand(NC);
+}
+// ---------- rock shapes: 13-cell patterns, one per game, the same for both sides
+const ROCK_SHAPES={
+  'the X':      [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[1,7],[2,6],[3,5],[5,3],[6,2],[7,1]],
+  'the plus':   [[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[4,1],[4,2],[4,3],[4,5],[4,6],[4,7]],
+  'the ring':   [[2,2],[2,3],[2,4],[2,5],[3,2],[3,5],[4,2],[4,5],[5,2],[5,3],[5,4],[5,5],[7,0]],
+  'the diamond':[[1,4],[2,3],[2,5],[3,2],[3,6],[4,1],[4,7],[5,2],[5,6],[6,3],[6,5],[7,4],[4,4]],
+  'the stairs': [[7,0],[6,0],[6,1],[5,1],[5,2],[4,2],[4,3],[3,3],[3,4],[2,4],[2,5],[1,5],[1,6]],
+  'the pillars':[[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[1,5],[2,5],[3,5],[4,5],[5,5],[6,5],[7,5]],
+  'the smile':  [[2,2],[2,5],[4,1],[5,2],[6,3],[6,4],[5,5],[4,6],[3,0],[3,7],[7,3],[7,4],[1,7]],
+  'the zigzag': [[1,0],[1,1],[2,2],[3,3],[3,4],[2,5],[1,6],[1,7],[5,0],[6,1],[7,2],[6,3],[5,4]],
+  'the arrow':  [[1,4],[2,3],[2,5],[3,2],[3,6],[4,1],[4,7],[3,4],[4,4],[5,4],[6,4],[7,4],[2,4]],
+  'scattered':  null
+};
+let rockShape='scattered';
+function pickRockShape(){const names=Object.keys(ROCK_SHAPES);return names[rand(names.length)];}
+function rockCells(nBlock,name){
+  let cells=(ROCK_SHAPES[name]||[]).map(([r,c])=>[r,c]);
+  const key=([r,c])=>r*JW+c;const have=new Set(cells.map(key));
+  while(cells.length>nBlock)cells.splice(rand(cells.length),1);
+  let tries=0;while(cells.length<nBlock&&tries++<500){const r=rand(JH),c=rand(JW);if(!have.has(r*JW+c)){have.add(r*JW+c);cells.push([r,c]);}}
+  return cells;
+}
+function newJewels(nBlock){
+  jew=[];for(let r=0;r<JH;r++){const row=[];for(let c=0;c<JW;c++)row.push(null);jew.push(row);}
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)jew[r][c]=pickSafe(r,c);
+  for(const [r,c] of rockCells(nBlock,rockShape))jew[r][c]=BLK;
+  if(!hasMove())shuffle();
+}
+function shuffle(){
+  for(let t=0;t<30;t++){
+    for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)if(jew[r][c]>=0)jew[r][c]=null;
+    for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)if(jew[r][c]==null)jew[r][c]=pickSafe(r,c);
+    if(hasMove()&&findMatches().cells.size===0)return;}
+}
+function findMatches(){
+  const cells=new Set(),drones=[],threes=[];
+  // blocks first: 3-lines that sit inside a block are part of the block, not an L or T
+  const box=new Set();
+  for(let r=0;r<JH-1;r++)for(let c=0;c<JW-1;c++){const v=jew[r][c];if(v==null||v<0)continue;
+    if(jew[r][c+1]===v&&jew[r+1][c]===v&&jew[r+1][c+1]===v){box.add(jk(r,c));box.add(jk(r,c+1));box.add(jk(r+1,c));box.add(jk(r+1,c+1));}}
+  const runs=[];
+  for(let di=0;di<LINE_DIRS.length;di++){const [dr,dc]=LINE_DIRS[di];
+    for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){const v=jew[r][c];if(v==null||v<0)continue;if(get(r-dr,c-dc)===v)continue;
+      let len=1;while(get(r+len*dr,c+len*dc)===v)len++;
+      if(len===3&&di>=2)continue; // a diagonal 3 is not a match; diagonals need 4 or more
+      if(len>=3){const run=[];for(let i=0;i<len;i++){const k=jk(r+i*dr,c+i*dc);cells.add(k);run.push(k);}
+        // a 3-line inside a block belongs to the block, not to an L or T
+        if(len===3&&run.some(k=>box.has(k)))continue;
+        runs.push({di,len,run,used:false});}}
+  }
+  // the X: a center tile with all four diagonal neighbors matching (5 tiles). Diagonal 3s don't clear
+  // on their own, but two of them crossing in the middle are a shape: blockers to the other side.
+  for(let r=1;r<JH-1;r++)for(let c=1;c<JW-1;c++){const v=jew[r][c];if(v==null||v<0)continue;
+    if(jew[r-1][c-1]===v&&jew[r-1][c+1]===v&&jew[r+1][c-1]===v&&jew[r+1][c+1]===v){
+      for(const [dr,dc] of [[0,0],[-1,-1],[-1,1],[1,-1],[1,1]])cells.add(jk(r+dr,c+dc));drones.push('H');}}
+  // crossings: two runs in different directions sharing a cell.
+  // 3+3 at an end (L, T) = bombs. 3+3 at both middles (plus, X) = blockers to the other side.
+  // crossings pay by size: 4+3 = siege drone, 4+4 or 5+3 = warp, 5+4 and up = warp + siege.
+  for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
+    if(a.used||b.used||a.di===b.di)continue;
+    if(!a.run.some(k=>b.run.includes(k)))continue;
+    a.used=b.used=true;
+    const shared=a.run.find(k=>b.run.includes(k));
+    const sum=a.len+b.len;
+    if(sum>=9){drones.push('W');drones.push('X');}else if(sum===8)drones.push('W');else if(sum===7)drones.push('X');
+    else drones.push(a.run[1]===shared&&b.run[1]===shared?'H':'BOMB');}
+  for(const x of runs){if(x.used||x.len===3)continue;drones.push(x.len===4?'C':x.len===5?'S':x.len===6?'X':'W');}
+  // blocks: 2x2 components, graded by the biggest rectangle inside
+  const seen=new Set();
+  for(const k0 of box){if(seen.has(k0))continue;const comp=new Set([k0]);const q=[k0];seen.add(k0);
+    while(q.length){const k=q.pop();const r=Math.floor(k/JW),c=k%JW;
+      for(const [dr,dc] of [[0,1],[1,0],[0,-1],[-1,0]]){const nr=r+dr,nc=c+dc;if(nr<0||nr>=JH||nc<0||nc>=JW)continue;const kk=jk(nr,nc);if(box.has(kk)&&!seen.has(kk)){seen.add(kk);comp.add(kk);q.push(kk);}}}
+    const has=(r,c,h,w)=>{for(let i=0;i<h;i++)for(let j=0;j<w;j++)if(!comp.has(jk(r+i,c+j)))return false;return true;};
+    let grade='G';
+    outer:for(const k of comp){const r=Math.floor(k/JW),c=k%JW;
+      if(r+2<JH&&c+2<JW&&has(r,c,3,3)){grade='WX';break outer;}
+      if((r+1<JH&&c+2<JW&&has(r,c,2,3))||(r+2<JH&&c+1<JW&&has(r,c,3,2)))grade='WX';}
+    if(grade==='WX'){drones.push('W');drones.push('X');}else drones.push(grade);}
+  for(const k of box)cells.add(k);
+  return {cells,drones};
+}
+function gravity(){
+  for(let c=0;c<JW;c++){let w=JH-1;
+    for(let r=JH-1;r>=0;r--){if(jew[r][c]!=null){if(w!==r){jew[w][c]=jew[r][c];jew[r][c]=null;}w--;}}
+    for(let r=w;r>=0;r--)jew[r][c]=rand(NC);}
+}
+function hasMove(){
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)for(const [dr,dc] of [[0,1],[1,0]]){const nr=r+dr,nc=c+dc;if(nr>=JH||nc>=JW)continue;
+    const a=jew[r][c],b=jew[nr][nc];if(a==null||b==null||a<0||b<0||a===b)continue;
+    jew[r][c]=b;jew[nr][nc]=a;const ok=findMatches().cells.size>0;jew[r][c]=a;jew[nr][nc]=b;if(ok)return true;}
+  return false;
+}
+function explodeAt(r,c){
+  jew[r][c]=null;
+  for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(nr<0||nr>=JH||nc<0||nc>=JW)continue;
+    if(jew[nr][nc]===BOMB)explodeAt(nr,nc);else jew[nr][nc]=null;}
+}
+function detonate(silent){
+  // any bomb touching a freshly cleared (empty) cell goes off; returns how many went off
+  let n=0,found=true;
+  while(found){found=false;
+    for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){if(jew[r][c]!==BOMB)continue;
+      const lit=DIRS8.some(([dr,dc])=>{const nr=r+dr,nc=c+dc;return nr>=0&&nr<JH&&nc>=0&&nc<JW&&jew[nr][nc]==null;});
+      if(lit){explodeAt(r,c);n++;found=true;}}}
+  if(n&&!silent)log(`${n} bomb${n>1?'s':''} went off.`);
+  return n;
+}
+function popAt(cells,text,i,bad){
+  // floating label over the star board at the middle of the matched cells
+  let sr=0,sc=0,n=0;for(const k of cells){sr+=Math.floor(k/JW);sc+=k%JW;n++;}
+  if(!n)return;const r=sr/n,c=sc/n;
+  const el=document.createElement('div');el.className='pop'+(bad?' bad':'');el.textContent=text;
+  el.style.left=((c+0.5)/JW*100)+'%';el.style.top=(((r+0.5)/JH*100)-(i||0)*9)+'%';
+  $('jpops').appendChild(el);setTimeout(()=>el.remove(),1500);
+}
+function dropBombs(n,silent){
+  let placed=0,tries=0;
+  while(placed<n&&tries<40){tries++;const c=rand(JW);if(jew[0][c]===BOMB||jew[0][c]==null)continue;jew[0][c]=BOMB;placed++;}
+  if(placed&&!silent)log(`${placed} bomb${placed>1?'s':''} dropped onto your board.`);
+}
+function placeRock(){
+  const spots=[];for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)if(jew[r][c]!=null&&jew[r][c]>=0)spots.push([r,c]);
+  if(!spots.length)return;const [r,c]=spots[rand(spots.length)];
+  if(sel&&sel.kind==='jewel'&&sel.r===r&&sel.c===c)sel=null;
+  jew[r][c]=BLK;
+}
+function rockDrop(){
+  const c=rand(JW);if(jew[0][c]<0)return;
+  if(sel&&sel.kind==='jewel'&&sel.r===0&&sel.c===c)sel=null;
+  jew[0][c]=BLK;log(`A rock fell onto column ${c+1} of your board.`);
+  if(!hasMove()){if(dronesOf(YOU).length){boardStuck=true;log('No moves left. Fly a drone down to open the board.');}else{shuffle();log('No moves left and no drones to dig with. Board reshuffled.');}}else boardStuck=false;
+  renderJewels();
+}
+async function resolve(){
+  busy=true;
+  while(true){const m=findMatches();if(m.cells.size===0)break;
+    flash=m.cells;renderJewels();await sleep(170);
+    for(const k of m.cells)jew[Math.floor(k/JW)][k%JW]=null;
+    for(const t of m.drones){if(t==='SAB')sabotage(BOT);else if(t==='BOMB')bombQueue+=3;else earn(YOU,t);}
+    m.drones.forEach((t,i)=>popAt(m.cells,t==='SAB'?'3 blockers to bot':t==='BOMB'?'3 bombs incoming':'+ '+TNAME[t],i,t==='BOMB'));
+    if(detonate()){renderJewels();await sleep(200);}
+    flash=null;renderJewels();await sleep(110);
+    gravity();
+    if(bombQueue){dropBombs(bombQueue);bombQueue=0;}
+    renderJewels();await sleep(130);}
+  if(!hasMove()){if(dronesOf(YOU).length){boardStuck=true;log('No moves left. Fly a drone down to open the board.');}else{shuffle();log('No moves left and no drones to dig with. Board reshuffled.');}}else boardStuck=false;
+  busy=false;renderJewels();startDig();
+}
+async function trySwap(a,b){
+  lastSwapAt=Date.now();hintCells=null;
+  busy=true;
+  const t=jew[a[0]][a[1]];jew[a[0]][a[1]]=jew[b[0]][b[1]];jew[b[0]][b[1]]=t;
+  renderJewels();
+  if(findMatches().cells.size===0){await sleep(140);jew[b[0]][b[1]]=jew[a[0]][a[1]];jew[a[0]][a[1]]=t;busy=false;renderJewels();return;}
+  mySwaps.push(Date.now());
+  await resolve();
+}
+function blastCells(picks){
+  const seen=new Set(),out=[];
+  for(const [pr,pc] of picks)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r=pr+dr,c=pc+dc;if(r<0||r>=JH||c<0||c>=JW)continue;const k=jk(r,c);if(seen.has(k))continue;seen.add(k);out.push([r,c]);}
+  return out;
+}
+async function finishFly(){
+  lastSwapAt=Date.now();hintCells=null;
+  const s=sel;sel=null;
+  let cells=s.blast?blastCells(s.picks):s.picks;
+  if(s.line){const [pr,pc]=s.picks[0];cells=[];
+    if(s.line==='row')for(let c=0;c<JW;c++)cells.push([pr,c]);else for(let r=0;r<JH;r++)cells.push([r,pc]);}
+  for(const [pr,pc] of cells){if(jew[pr][pc]===BOMB)explodeAt(pr,pc);else jew[pr][pc]=null;}
+  const n=cells.length,word=s.blast?`a 3 × 3 blast (${n} tiles)`:`${n} tile${n>1?'s':''}`;
+  if(s.auto){log(`Your ${TNAME[s.t]} removed ${word}.`);}
+  else{const d=chess[s.r][s.c].drone;chess[s.r][s.c].drone=null;log(`Your ${TNAME[d.type]} flew down and removed ${word}.`);if(open)afterAction();else render();}
+  busy=true;renderJewels();await sleep(120);detonate();renderJewels();await sleep(120);gravity();renderJewels();await sleep(120);await resolve();
+}
+
+// ---------- input
+function jewelClick(r,c){
+  if(phase!=='play'||over||selfPlay||netWait())return;
+  if(sel&&sel.kind==='fly'){if(busy||jew[r][c]==null)return;
+    const i=sel.picks.findIndex(p=>p[0]===r&&p[1]===c);if(i>=0)sel.picks.splice(i,1);else sel.picks.push([r,c]);
+    if(sel.picks.length===sel.need){finishFly();return;}renderJewels();renderSide();return;}
+  if(busy||nudge)return;
+  if(jew[r][c]<0){sel=null;render();return;}
+  if(sel&&sel.kind==='jewel'){
+    if(Math.abs(sel.r-r)+Math.abs(sel.c-c)===1){const a=[sel.r,sel.c];sel=null;renderChess();trySwap(a,[r,c]);return;}
+    sel=(sel.r===r&&sel.c===c)?null:{kind:'jewel',r,c};
+  }else sel={kind:'jewel',r,c};
+  render();
+}
+function chessClick(r,c){
+  if(phase!=='play'||over||selfPlay||netWait())return;
+  const cell=chess[r][c];tip=null;
+  if(placeQueue.length&&isBackFree(YOU,r,c)){const t=placeQueue.shift();reserve[YOU].push(t);sel=null;place(YOU,0,r,c);return;}
+  if(sel&&sel.kind==='warp'){if(!cell.wall&&warpAllowed(r,c,YOU)){const fr=sel.r,fc=sel.c;sel=null;doWarp(fr,fc,r,c);}else if(!cell.wall){log(`Can't warp to ${sqName(r,c)}: an enemy guard is next to it.`);renderSide();}else{sel=null;render();}return;}
+  if(sel&&sel.kind==='drone'&&sel.moves.has(ck(r,c))){const fr=sel.r,fc=sel.c;sel=null;doMove(fr,fc,r,c);return;}
+  if(open&&sel&&sel.kind==='drone'&&WALKERS[chess[sel.r][sel.c].drone.type]&&!cell.wall&&!(cell.drone&&cell.drone.side===YOU)&&!(sel.r===r&&sel.c===c)){
+    const d=chess[sel.r][sel.c].drone;d.dest=ck(r,c);log(`Your ${TNAME[d.type]} at ${sqName(sel.r,sel.c)} will walk to ${sqName(r,c)}.`);sel=null;render();return;}
+  if(!open&&sel&&sel.kind==='drone'&&sel.r===8&&isBackFree(YOU,r,c)){
+    chess[r][c].drone=chess[sel.r][sel.c].drone;chess[sel.r][sel.c].drone=null;sel=null;render();return;}
+  if(cell.drone)tip={type:cell.drone.type,side:cell.drone.side};
+  if(cell.drone&&cell.drone.side===YOU&&!(sel&&sel.kind==='drone'&&sel.r===r&&sel.c===c)){
+    sel={kind:'drone',r,c,moves:(open&&turn===YOU)?legalMoves(r,c):new Set()};
+  }else sel=null;
+  render();
+}
+// star board: drag a tile onto a neighbor to swap; a tap without a drag still works as a click
+let drag=null;
+const JG=$('jgrid');
+JG.addEventListener('pointerdown',e=>{const el=e.target.closest('.jc');if(!el)return;
+  drag={r:+el.dataset.r,c:+el.dataset.c,x:e.clientX,y:e.clientY,done:false};
+  try{JG.setPointerCapture(e.pointerId);}catch(_){}
+  e.preventDefault();});
+JG.addEventListener('pointermove',e=>{if(!drag||drag.done)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)<12)return;
+  drag.done=true;let dr=0,dc=0;if(Math.abs(dx)>Math.abs(dy))dc=dx>0?1:-1;else dr=dy>0?1:-1;
+  dragSwap(drag.r,drag.c,drag.r+dr,drag.c+dc);});
+JG.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;if(!d.done)jewelClick(d.r,d.c);});
+JG.addEventListener('pointercancel',()=>{drag=null;});
+function dragSwap(r,c,nr,nc){
+  if(phase!=='play'||over||busy||nudge||netWait())return;
+  if(sel&&sel.kind==='fly')return;
+  if(nr<0||nr>=JH||nc<0||nc>=JW)return;
+  const a=jew[r][c],b=jew[nr][nc];if(a==null||b==null||a<0||b<0)return;
+  sel=null;renderChess();trySwap([r,c],[nr,nc]);
+}
+$('cgrid').addEventListener('click',e=>{const el=e.target.closest('.sq');if(!el)return;chessClick(+el.dataset.r,+el.dataset.c);});
+$('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+  if(a==='pass'){log('You pass.');endTurn();}
+  else if(a==='claim'){const {r,c}=sel;sel=null;doClaim(r,c);}
+  else if(a==='fire'){const {r,c}=sel;sel=null;doFire(r,c);}
+  else if(a==='warp'){sel={kind:'warp',r:sel.r,c:sel.c};render();}
+  else if(a==='fly'||a==='flyrow'||a==='flycol'){const d=chess[sel.r][sel.c].drone;sel={kind:'fly',r:sel.r,c:sel.c,need:digNeed(d.type),line:null,blast:d.type==='C',picks:[]};render();}
+  else if(a==='lunge'){const [gr,gc]=b.dataset.g.split(',').map(Number),[tr,tc]=b.dataset.t.split(',').map(Number);sel=null;doLunge(gr,gc,tr,tc);}
+  else if(a==='flydone'){if(sel&&sel.kind==='fly'&&sel.picks.length)finishFly();}
+  else if(a==='autoplace'){while(placeQueue.length){const free=BACKCOLS.filter(c=>isBackFree(YOU,8,c));if(!free.length)break;const t=placeQueue.shift();reserve[YOU].push(t);place(YOU,0,8,free[rand(free.length)]);}render();}
+  else if(a==='walk'){const w=pendingWalk();if(w){walkDone=true;sel=null;doWalk(w);}}
+  else if(a==='nowalk'){if(sel&&sel.kind==='drone'){chess[sel.r][sel.c].drone.dest=null;log('Walk cancelled.');}sel=null;render();}
+  else if(a==='cancel'){sel=null;render();}
+  else if(a==='new'){clearSave();phase='setup';over=null;sel=null;nudge=false;render();}
+});
+$('btnStart').addEventListener('click',()=>{if(phase==='play'&&open&&!over&&!selfPlay){if(!confirm('Start a new game? The one on the board counts as a loss.'))return;over={w:BOT,reason:'The game was abandoned.'};rateGame(BOT);render();}if(online)netLeave();startGame();});
+
+function startGame(){
+  if(!netStarting&&!online)autoRocks();
+  const nb=Math.max(0,Math.min(30,+$('inBlock').value||0));
+  const mins=Math.max(1,+$('inClock').value||10);
+  NC=Math.max(4,Math.min(6,+$('inColors').value||5));rockShape=pickRockShape();
+  newChess();newJewels(nb);newBotBoard(Math.max(0,Math.min(30,+$('inBotBlock').value||0)));gameRocks={1:nb,2:Math.max(0,Math.min(30,+$('inBotBlock').value||0))};
+  reserve={1:[],2:[]};clock={1:mins*60000,2:mins*60000};turn=0;open=false;ready={1:false,2:false};first=0;botAcc=0;dropAcc=0;over=null;sel=null;busy=false;flash=null;logs=[];
+  digQueue=[];bombQueue=0;rockQueue=0;botBombs=0;swapAcc=0;mySwaps=[];placeQueue=[];turnMs=0;nudge=false;boardStuck=false;hintCells=null;lastSwapAt=Date.now();
+  phase='play';
+  log(`New game. ${nb} rocks laid out as ${rockShape} (bot has ${+$('inBotBlock').value}), bot ${$('inPace').checked?'matching your pace':'at '+(+$('inRate').value)+' swaps a minute'}, ${mins} minute clocks.`);
+  log('Board opens when both sides have 3 drones on it.');
+  render();
+}
+
+// ---------- clock and bot timer
+setInterval(()=>{
+  if(phase!=='play'||over||selfPlay||netWait())return;
+  const rate=botRate();const step=60000/rate;
+  if(!online){swapAcc+=100;while(swapAcc>=step){swapAcc-=step;botSwap();}}
+  const idle=!busy&&!(sel&&sel.kind==='fly');
+  if(rockQueue>0&&idle){while(rockQueue>0){placeRock();rockQueue--;}if(!hasMove()){shuffle();log('No moves left. Board reshuffled.');}renderJewels();}
+  if($('inHint').checked&&!hintCells&&!busy&&!boardStuck&&!nudge&&!netWait()&&!(sel&&sel.kind==='fly')&&Date.now()-lastSwapAt>hintDelayMs()){const all=allSwaps();if(all.length){const b=hintPick(all);hintCells=[[b.p[0],b.p[1]],[b.p[2],b.p[3]]];renderJewels();}}
+  if(open&&turn===YOU&&!over&&!walkDone&&turnMs>=4000&&!(sel&&(sel.kind==='fly'||sel.kind==='warp'))&&!busy){const w=pendingWalk();if(w){walkDone=true;sel=null;doWalk(w);}}
+  if(open&&turn===YOU&&bothArmed()){turnMs+=100;const ns=Math.max(0,+$('inNudge').value||0)*1000;if(ns>0&&!nudge&&turnMs>=ns){nudge=true;log('Time to make a move on the board.');renderNudge();if(isPhone())goPane(1);}}
+  if(open&&turn&&bothArmed()&&moveLeft>0&&(!online||turn===YOU)){moveLeft-=100;if(moveLeft<=0){moveLeft=0;log(`${SNAME[turn]} ran out of move time. Turn passes.`);endTurn();}}
+  if(open&&turn&&bothArmed()){clock[turn]-=100;if(clock[turn]<=0){clock[turn]=0;gameOver(turn===YOU?BOT:YOU,`${SNAME[turn]} ran out of time.`);}}
+  renderClocks();if(open&&turn===YOU&&moveLeft>0&&tickN%10===0)renderSide();tickFlip();
+  if(online){if(tickN%10===0)renderNet();if(tickN%50===0)netPresence();}
+  if(tickN%10===0&&!online)$('bsub').textContent=$('inPace').checked?`Matching your pace: you ${myPace().toFixed(1)}/min, bot ${botRate().toFixed(1)}/min (3-minute average, floor 3).`:`Fixed pace: ${botRate()} swaps/min.`;
+},100);
+
+// ---------- render
+function log(s){logs.unshift(s);if(logs.length>60)logs.pop();renderLog();}
+function renderLog(){$('log').innerHTML=logs.map(s=>`<div>${s}</div>`).join('');}
+function fmt(ms){const s=Math.ceil(ms/1000);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function renderClocks(){if(headless)return;
+  for(const s of [1,2]){const el=$('clk'+s);el.querySelector('.t').textContent=fmt(clock[s]);el.classList.toggle('active',open&&turn===s&&!over&&bothArmed());}
+}
+function previewAfter(picks,blast){if(blast)picks=blastCells(picks);
+  // copy the board, remove the picks (bombs go off), drop everything, leave the gaps empty
+  const g=jew.map(r=>r.slice());
+  const boom=(r,c)=>{g[r][c]=null;for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(nr<0||nr>=JH||nc<0||nc>=JW)continue;if(g[nr][nc]===BOMB)boom(nr,nc);else g[nr][nc]=null;}};
+  for(const [r,c] of picks){if(g[r][c]===BOMB)boom(r,c);else g[r][c]=null;}
+  let found=true;while(found){found=false;for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){if(g[r][c]!==BOMB)continue;
+    if(DIRS8.some(([dr,dc])=>{const nr=r+dr,nc=c+dc;return nr>=0&&nr<JH&&nc>=0&&nc<JW&&g[nr][nc]==null;})){boom(r,c);found=true;}}}
+  for(let c=0;c<JW;c++){let w=JH-1;for(let r=JH-1;r>=0;r--){if(g[r][c]!=null){if(w!==r){g[w][c]=g[r][c];g[r][c]=null;}w--;}}}
+  return g;
+}
+function renderPreview(){if(headless)return;
+  const on=sel&&sel.kind==='fly'&&sel.picks.length>0;
+  $('jprev').hidden=!on;if(!on)return;
+  const g=previewAfter(sel.picks,sel.blast);let h='';
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){const v=g[r][c];
+    h+=`<div class="jc${v==null?' q':''}">${v==null?'':(v===BLK?'<i class="gem blk"></i>':v===BOMB?'<i class="gem bmb"></i>':`<i class="gem g${v}"></i>`)}</div>`;}
+  $('jprevgrid').innerHTML=h;
+}
+function renderJewels(){if(headless)return;
+  let h='';
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){const v=jew[r]?jew[r][c]:null;const cls=['jc'];
+    if(sel&&sel.kind==='jewel'&&sel.r===r&&sel.c===c)cls.push('sel');
+    if(sel&&sel.kind==='fly'&&sel.picks.some(p=>p[0]===r&&p[1]===c))cls.push('pick');
+    if(flash&&flash.has(jk(r,c)))cls.push('flash');
+    if(hintCells&&hintCells.some(p=>p[0]===r&&p[1]===c))cls.push('hint');
+    const inner=v==null?'':(v===BLK?'<i class="gem blk"></i>':v===BOMB?'<i class="gem bmb"></i>':`<i class="gem g${v}"></i>`);
+    h+=`<div class="${cls.join(' ')}" data-r="${r}" data-c="${c}">${inner}</div>`;}
+  const g=$('jgrid');g.innerHTML=h;g.classList.toggle('fly',!!(sel&&sel.kind==='fly'));
+  const js=$('jsub');
+  if(sel&&sel.kind==='fly'){const left=sel.need-sel.picks.length;js.textContent=(sel.auto?'Drone overhead. ':'')+(sel.blast?'Tap the center tile: the 3 × 3 around it goes':`Tap up to ${left} more tile${left===1?'':'s'}, then Done`);}
+  else if(boardStuck){js.textContent='No moves left. Fly a drone down to open the board.';}
+  else js.textContent='Drag a star onto its neighbor';
+  js.classList.toggle('warn',!!(sel&&sel.kind==='fly')||boardStuck);renderPreview();
+}
+// ---------- drone icons: what a drone does, at a glance
+// ---------- drone icons, from the user's ship designs. Hull = near-black with one gloss line; lightning = side color.
+// ---------- drone icons. The warp is the user's ship design (see WARPS for the four candidates).
+const WARPS={
+  // the Toroid Reactor: hollow ring, a ball of energy in the core, forks crawling to the rim
+  toroid:'<circle cx="12" cy="12" r="8.5" class="h" stroke-width="1.4"/><circle cx="12" cy="12" r="4.2" class="s"/><circle cx="12" cy="12" r="2.4" class="f"/><path d="M13.5 10.5l2.2-1.4-1 -2M10.4 13.6l-2.4 1.2 1.2 2.2M14 13.8l2.2 1.6-.6 2.2" class="l"/><path d="M6.5 8.5a7 7 0 0 1 4-3.6" class="hi"/>',
+  // the Delta Fracture: stealth arrowhead split down the middle, lightning holding it together
+  delta:'<path d="M12 2.5L21.5 20.5 12 16.5 2.5 20.5z" class="h"/><path d="M12 3.5v13" class="gap"/><path d="M12 4l-1.2 3.2 2.2 2.4-1.8 3 1.4 2.6" class="l"/><path d="M21 20l1.6-2.6M3 20l-1.6-2.6" class="l"/>',
+  // the Rail-Prong: faceted chassis, twin forward prongs, an electrical web arcing between them
+  prong:'<path d="M9.5 11.5h5l1 10.5h-7z" class="h"/><path d="M9.5 12L7.5 3.2M14.5 12l2-8.8" stroke-width="1.8"/><path d="M8 5.5l2 1.2-1.6 1.6 2.4 1.2 1.8-1.6 1.2 2.2 2.2-1.4" class="l"/><path d="M10.5 13.5v6" class="hi"/>',
+  // the Overcharged Scarab: oval armor, plate seams, lightning leaking from the seams
+  scarab:'<ellipse cx="12" cy="12.5" rx="6.6" ry="8.6" class="h"/><path d="M6 9.5h12M5.6 13h12.8M6.4 16.5h11.2" class="hi"/><path d="M4.5 8l1.6 1.2-1.2 1.4M19.5 8l-1.6 1.2 1.2 1.4M4 15l1.8 1-1 1.6M20 15l-1.8 1 1 1.6M10 3.5l1 1.4-1.6.8M14 3.5l-1 1.4 1.6.8" class="l"/>'
+};
+// ---------- guard candidates, from the user's four designs. Beams and lenses light in the side color.
+const GUARDS={
+  // the Riot Wall: curved shield from above, bumpered front edge, three lenses behind it, twin spotlights
+  riot:'<path d="M4 20V10q8-6 16 0v10z" class="h"/><path d="M4.5 10.5q7.5-5.4 15 0" class="hi" stroke-width="2.2" opacity=".9"/><circle cx="9" cy="15" r="1.7" class="e"/><circle cx="12" cy="14" r="1.7" class="e"/><circle cx="15" cy="15" r="1.7" class="e"/><circle cx="9.5" cy="14.4" r=".5" class="g"/><circle cx="12.5" cy="13.4" r=".5" class="g"/><circle cx="15.5" cy="14.4" r=".5" class="g"/><path d="M5 11L2.5 1.5h4z M19 11l2.5-9.5h-4z" class="b"/>',
+  // the Panopticon Hex: hexagonal shell, a recessed channel of lenses all the way round, four corner spotlights in an X
+  hex:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" class="h"/><path d="M12 6.2l5.2 3v5.6L12 17.8l-5.2-3V9.2z" class="l" stroke-width="1.2" opacity=".9"/><circle cx="12" cy="6.2" r=".7" class="f"/><circle cx="17.2" cy="9.2" r=".7" class="f"/><circle cx="17.2" cy="14.8" r=".7" class="f"/><circle cx="12" cy="17.8" r=".7" class="f"/><circle cx="6.8" cy="14.8" r=".7" class="f"/><circle cx="6.8" cy="9.2" r=".7" class="f"/><path d="M5 7.5L1 2l3.5-1z M19 7.5L23 2l-3.5-1z M5 16.5L1 22l3.5 1z M19 16.5L23 22l-3.5 1z" class="b"/>',
+  // the Aegis Chevron: blunt thick wedge, one panoramic visor across the front, two shoulder floodlights
+  aegis:'<path d="M4 21V13l8-6 8 6v8z" class="h"/><path d="M5.2 12.4L12 7.4l6.8 5" class="l" stroke-width="2.4"/><path d="M6.5 21v-6h11v6" class="hi"/><path d="M5.5 12L3 2h5z M18.5 12L21 2h-5z" class="b"/>',
+  // the Gimbal Iris: armored shutter disc, one huge central lens, two small arms holding spotlights
+  iris:'<circle cx="12" cy="12" r="8.5" class="h"/><path d="M12 3.5l2.5 4.4M20.5 12l-4.4 2.5M12 20.5l-2.5-4.4M3.5 12l4.4-2.5M18 6l-3.3 3.7M18 18l-3.7-3.3M6 18l3.3-3.7M6 6l3.7 3.3" class="hi"/><circle cx="12" cy="12" r="3.6" class="e" stroke-width="1.4"/><circle cx="13.2" cy="10.8" r=".9" class="g"/><path d="M3.5 12h-2M20.5 12h2" stroke-width="1.6"/><circle cx="1.5" cy="12" r="1.2" class="f"/><circle cx="22.5" cy="12" r="1.2" class="f"/><path d="M1.5 11L0 1l3.5 .5z M22.5 11L24 1l-3.5 .5z" class="b"/>'
+};
+const ICON={
+  C:'<path d="M7 3v18" stroke-width="2"/><path d="M7 4h11l-3.2 4 3.2 4H7z" class="f"/>',
+  G:GUARDS.riot,
+  S:'<path d="M6 18L18 6M18 6h-7.5M18 6v7.5" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  H:'<circle cx="12" cy="12" r="5.5" stroke-width="2" fill="none"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" class="f"/>',
+  W:WARPS.toroid,
+  X:'<path d="M12 3l3.2 6h-6.4z M6 12.5l3.2 6H2.8z M18 12.5l3.2 6h-6.4z" class="f"/>'
+};
+// ---------- the warp ship: the user's Delta Fracture asset. LIGHT = lightning color, SIDE = id suffix.
+const WARP_SHIP=`<svg viewBox="0 0 128 128" aria-label="warp drone">
+  <defs>
+    <pattern id="cfSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <path d="M 56 10 L 12 90 L 44 82 L 56 106 L 52 80 L 58 50 L 54 30 Z M 72 10 L 116 90 L 84 82 L 72 106 L 76 80 L 70 50 L 74 30 Z" fill="url(#cfSIDE)"/>
+  <path d="M 56 10 L 12 90 L 44 82 L 56 106 L 52 80 L 58 50 L 54 30 Z M 72 10 L 116 90 L 84 82 L 72 106 L 76 80 L 70 50 L 74 30 Z" fill="url(#waxSIDE)"/>
+  <path d="M 56 10 L 12 90 L 32 85 L 56 40 Z M 72 10 L 116 90 L 96 85 L 72 40 Z" fill="#ffffff" opacity="0.12"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="LIGHT" stroke-width="5" opacity="0.4"/>
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="LIGHT" stroke-width="2" opacity="0.8"/>
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="#ffffff" stroke-width="1"/>
+  </g>
+</svg>`;
+function warpSVG(side){return WARP_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ---------- the guard: the user's Gimbal Iris asset. SIDE = id suffix; LIGHT = beam color; EYE1..3 = eye gradient stops.
+const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
+  <defs>
+    <linearGradient id="beamSIDE" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="LIGHT" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="LIGHT" stop-opacity="0.1"/>
+      <stop offset="80%" stop-color="LIGHT" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="eyeGlowSIDE" cx="50%" cy="50%" fx="30%" fy="30%" r="50%">
+      <stop offset="0%" stop-color="EYE1"/>
+      <stop offset="40%" stop-color="EYE2"/>
+      <stop offset="85%" stop-color="EYE3"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="armorMetalSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#333333"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <linearGradient id="steelArmSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcc6cc"/>
+      <stop offset="50%" stop-color="#8a959e"/>
+      <stop offset="100%" stop-color="#3c444a"/>
+    </linearGradient>
+    <pattern id="hazardSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#ffcc00"/>
+      <rect width="4" height="8" fill="#111111"/>
+    </pattern>
+    <polygon id="bladeSIDE" points="64,34 110,18 110,64" fill="#222" stroke="#111" stroke-width="1.5"/>
+    <clipPath id="shutterClipSIDE"><circle cx="64" cy="64" r="38"/></clipPath>
+  </defs>
+  <g transform="translate(-4, 0) rotate(-55, 34, 64)">
+    <polygon points="16,58 -20,0 52,0" fill="url(#beamSIDE)"/>
+    <path d="M 12 48 L 36 44 L 40 64 L 36 84 L 12 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 16 52 L 32 49 L 34 79 L 16 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
+    <circle cx="34" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
+    <circle cx="34" cy="64" r="3" fill="#111"/>
+    <circle cx="16" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+    <ellipse cx="16" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+  <g>
+    <polygon points="112,58 72,0 152,0" fill="url(#beamSIDE)"/>
+    <path d="M 116 48 L 92 44 L 88 64 L 92 84 L 116 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 112 52 L 96 49 L 94 79 L 112 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
+    <circle cx="94" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
+    <circle cx="94" cy="64" r="3" fill="#111"/>
+    <circle cx="112" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+    <ellipse cx="112" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+  <circle cx="64" cy="64" r="40" fill="url(#armorMetalSIDE)" stroke="#050505" stroke-width="3"/>
+  <g clip-path="url(#shutterClipSIDE)">
+    <use href="#bladeSIDE" transform="rotate(0 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(60 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(120 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(180 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(240 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(300 64 64)"/>
+  </g>
+  <circle cx="64" cy="64" r="26" fill="none" stroke="#444" stroke-width="4"/>
+  <circle cx="64" cy="64" r="24" fill="#050505"/>
+  <circle cx="64" cy="64" r="22" fill="url(#eyeGlowSIDE)"/>
+  <ellipse cx="56" cy="56" rx="3" ry="14" fill="#000000" transform="rotate(-35, 56, 56)"/>
+  <circle cx="64" cy="64" r="22" fill="none" stroke="#000000" stroke-width="4" opacity="0.7"/>
+  <path d="M 46 48 A 18 18 0 0 1 82 48 A 24 24 0 0 0 46 48 Z" fill="#ffffff" opacity="0.35"/>
+  <circle cx="76" cy="76" r="3" fill="#ffffff" opacity="0.2"/>
+</svg>`;
+function guardSVG(side){
+  const you=side===YOU;
+  return GUARD_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffea00':'#4ec9ff')
+    .replace(/EYE1/g,you?'#ffcc00':'#9fe6ff').replace(/EYE2/g,you?'#ff5500':'#1f8fe0').replace(/EYE3/g,you?'#660000':'#002a55');
+}
+// ---------- the claim drone: the user's planted spider. SIDE = id suffix; LIGHT = energy color.
+const CLAIM_SHIP=`<svg viewBox="0 0 128 128" aria-label="claim drone">
+  <defs>
+    <pattern id="cfCSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <radialGradient id="waxCSIDE" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+    </radialGradient>
+    <g id="legCSIDE">
+      <path d="M 60 64 L 68 64 L 66 35 L 62 35 Z" fill="#2a2a2a" stroke="#111" stroke-width="1.5"/>
+      <path d="M 62 60 L 66 60 L 65 38 L 63 38 Z" fill="#3a3a3a"/>
+      <path d="M 61 35 L 67 35 L 65 10 L 63 10 Z" fill="#1a1a1a" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="35" r="5" fill="#444" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="35" r="2" fill="#222"/>
+      <polygon points="61,10 67,10 64,6" fill="#111" stroke="LIGHT" stroke-width="1"/>
+      <circle cx="64" cy="10" r="1.5" fill="LIGHT"/>
+    </g>
+    <g id="legRCSIDE">
+      <path d="M 56 42 L 72 42 L 68 28 L 60 28 Z" fill="#444" stroke="#111" stroke-width="1.5"/>
+      <path d="M 58 39 L 70 39 L 66 31 L 62 31 Z" fill="#666"/>
+      <circle cx="64" cy="28" r="6" fill="#777" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="28" r="3" fill="#333"/>
+      <path d="M 60 28 L 68 28 L 66 12 L 62 12 Z" fill="#555" stroke="#111" stroke-width="1.5"/>
+      <rect x="60" y="8" width="8" height="6" rx="1" fill="#222" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="8" r="4" fill="#fff"/>
+      <circle cx="64" cy="8" r="8" fill="LIGHT" opacity="0.6"/>
+    </g>
+    <g id="boltsCSIDE">
+      <path d="M 24 24 L 16 14 L 10 18 L 4 4 M 16 14 L 12 8 M 10 18 L 4 20"/>
+      <path d="M 104 104 L 112 114 L 118 110 L 124 124 M 112 114 L 116 120 M 118 110 L 124 108"/>
+    </g>
+  </defs>
+  <g fill="none" stroke-linecap="square">
+    <path d="M 4 20 L 4 4 L 20 4" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
+    <path d="M 4 20 L 4 4 L 20 4" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="4" cy="4" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
+    <path d="M 124 108 L 124 124 L 108 124" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
+    <path d="M 124 108 L 124 124 L 108 124" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="124" cy="124" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
+  </g>
+  <use href="#legCSIDE" transform="rotate(0 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(45 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(90 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(180 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(225 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(270 64 64)"/>
+  <circle cx="64" cy="64" r="32" fill="url(#cfCSIDE)" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="64" r="32" fill="url(#waxCSIDE)"/>
+  <g stroke="#000000" stroke-width="1.5" opacity="0.6">
+    <path d="M 64 32 L 64 96 M 32 64 L 96 64"/>
+    <path d="M 41.3 41.3 L 86.7 86.7 M 41.3 86.7 L 86.7 41.3"/>
+  </g>
+  <circle cx="64" cy="64" r="14" fill="#111" stroke="#222" stroke-width="2"/>
+  <circle cx="64" cy="64" r="10" fill="#000"/>
+  <circle cx="64" cy="64" r="8" fill="LIGHT" opacity="0.8"/>
+  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
+  <g stroke="LIGHT" stroke-width="2" opacity="0.5">
+    <path d="M 64 78 L 64 96 M 64 50 L 64 32"/>
+    <path d="M 78 64 L 96 64 M 50 64 L 32 64"/>
+  </g>
+  <use href="#legRCSIDE" transform="rotate(315 64 64)"/>
+  <use href="#legRCSIDE" transform="rotate(135 64 64)"/>
+  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="5" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="2" opacity="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <use href="#boltsCSIDE" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+function claimSVG(side){return CLAIM_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ---------- the hunter: the user's net-gun turret. SIDE = id suffix; LIGHT = net/coil color; LENS1/LENS2 = eye gradient.
+const HUNTER_SHIP=`<svg viewBox="0 0 128 128" aria-label="hunter drone">
+  <defs>
+    <pattern id="cfHSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <radialGradient id="waxHSIDE" cx="40%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+    </radialGradient>
+    <linearGradient id="metalHSIDE" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="50%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <radialGradient id="lensHSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="LENS1"/>
+      <stop offset="60%" stop-color="LENS2"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <g id="netHSIDE" fill="none" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M 34 108 L 44 98 L 54 110 L 64 100 L 74 110 L 84 98 L 94 108" />
+      <path d="M 34 108 L 42 116 L 52 104 L 64 116 L 76 104 L 86 116 L 94 108" />
+      <path d="M 34 108 L 48 106 L 64 108 L 80 106 L 94 108" />
+      <path d="M 44 98 L 52 104 M 54 110 L 64 108 M 64 100 L 76 104 M 74 110 L 86 116" />
+      <path d="M 42 116 L 48 106 M 84 98 L 80 106 M 54 110 L 48 106 M 74 110 L 80 106" />
+    </g>
+    <g id="gunHSIDE">
+      <path d="M -16 10 L 16 10 L 12 45 L -12 45 Z" fill="url(#metalHSIDE)" stroke="#111" stroke-width="2"/>
+      <rect x="-10" y="20" width="20" height="20" fill="#1a1a1a" stroke="#050505" stroke-width="1.5"/>
+      <line x1="-12" y1="35" x2="12" y2="35" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
+      <line x1="-12" y1="39" x2="12" y2="39" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
+      <rect x="-16" y="45" width="32" height="15" rx="3" fill="#222" stroke="#000" stroke-width="2"/>
+      <path d="M -10 45 L -10 60 M 10 45 L 10 60" stroke="#444" stroke-width="1.5"/>
+      <circle cx="0" cy="60" r="10" fill="#000" stroke="#333" stroke-width="2"/>
+      <circle cx="0" cy="60" r="6" fill="LIGHT" opacity="0.5"/>
+      <circle cx="0" cy="60" r="2" fill="#ffffff"/>
+    </g>
+  </defs>
+  <circle cx="64" cy="56" r="44" fill="url(#cfHSIDE)" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="56" r="44" fill="url(#waxHSIDE)"/>
+  <g stroke="#000000" stroke-width="2" opacity="0.6">
+    <path d="M 32 26 L 96 26 M 25 80 L 103 80" />
+    <path d="M 64 12 L 64 26 M 46 80 L 46 96 M 82 80 L 82 96" />
+  </g>
+  <use href="#gunHSIDE" transform="translate(64, 56) rotate(30)"/>
+  <use href="#gunHSIDE" transform="translate(64, 56) rotate(-30)"/>
+  <polygon points="64,30 86,42 86,70 64,82 42,70 42,42" fill="url(#metalHSIDE)" stroke="#050505" stroke-width="2"/>
+  <polygon points="64,36 80,45 80,67 64,76 48,67 48,45" fill="#1a1a1a" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="56" r="15" fill="#050505" stroke="#333" stroke-width="2"/>
+  <circle cx="64" cy="56" r="12" fill="url(#lensHSIDE)"/>
+  <path d="M 54 50 A 10 10 0 0 1 74 50 A 12 12 0 0 0 54 50 Z" fill="#ffffff" opacity="0.35"/>
+  <circle cx="68" cy="60" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="53" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="53" cy="45" r="2" fill="#ff0033" opacity="0.8"/>
+  <circle cx="75" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="75" cy="45" r="2" fill="#00ff33" opacity="0.8"/>
+  <circle cx="64" cy="71" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="64" cy="71" r="2" fill="#ffcc00" opacity="0.8"/>
+  <use href="#netHSIDE" stroke="LIGHT" stroke-width="6" opacity="0.3"/>
+  <use href="#netHSIDE" stroke="LIGHT" stroke-width="2" opacity="0.9"/>
+  <use href="#netHSIDE" stroke="#ffffff" stroke-width="1" opacity="1.0"/>
+</svg>`;
+function hunterSVG(side){const you=side===YOU;return HUNTER_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/LENS1/g,you?'#ff9a00':'#0066ff').replace(/LENS2/g,you?'#3d2000':'#001144');}
+// ---------- the strike drone: the user's corner-engine missile. SIDE = id suffix; LIGHT = flame/exhaust color; EN1/EN2 = warhead gradient.
+const STRIKE_SHIP=`<svg viewBox="0 0 128 128" aria-label="strike drone">
+  <defs>
+    <pattern id="cfSSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxSSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="cylSSIDE" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.0"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.0"/>
+      <stop offset="85%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="metalSSIDE" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="50%" stop-color="#777777"/>
+      <stop offset="100%" stop-color="#222222"/>
+    </linearGradient>
+    <radialGradient id="energySSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="EN1"/>
+      <stop offset="70%" stop-color="EN2"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <g id="podSSIDE">
+      <rect x="-4" y="6" width="8" height="10" fill="#222" stroke="#111" stroke-width="2"/>
+      <rect x="-10" y="-14" width="20" height="24" rx="4" fill="url(#metalSSIDE)" stroke="#050505" stroke-width="2"/>
+      <path d="M -10 -4 L 10 -4 M -10 4 L 10 4" stroke="#111" stroke-width="1.5"/>
+      <ellipse cx="0" cy="10" rx="6" ry="3" fill="#000" stroke="#333" stroke-width="1"/>
+      <ellipse cx="0" cy="-14" rx="8" ry="4" fill="LIGHT"/>
+      <path d="M -8 -14 L 8 -14 L 0 -34 Z" fill="LIGHT" opacity="0.6"/>
+      <path d="M -4 -14 L 4 -14 L 0 -26 Z" fill="#ffffff" opacity="0.9"/>
+    </g>
+  </defs>
+  <g>
+    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 40 L 28 16 L 32 16 L 52 44 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 76 40 L 100 16 L 96 16 L 76 44 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 88 L 28 112 L 32 112 L 52 84 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 76 88 L 100 112 L 96 112 L 76 84 Z" fill="#ffffff" opacity="0.15"/>
+  </g>
+  <use href="#podSSIDE" transform="translate(22, 22) rotate(-45)"/>
+  <use href="#podSSIDE" transform="translate(106, 22) rotate(45)"/>
+  <use href="#podSSIDE" transform="translate(22, 106) rotate(-135)"/>
+  <use href="#podSSIDE" transform="translate(106, 106) rotate(135)"/>
+  <path d="M 52 96 L 76 96 L 72 104 L 56 104 Z" fill="#222" stroke="#111" stroke-width="1.5"/>
+  <path d="M 56 104 L 72 104 L 64 126 Z" fill="LIGHT" opacity="0.5"/>
+  <path d="M 58 104 L 70 104 L 64 118 Z" fill="#ffffff" opacity="0.9"/>
+  <g>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cfSSIDE)" stroke="#050505" stroke-width="2"/>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cylSSIDE)"/>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 50 L 76 50 M 52 70 L 76 70 M 52 86 L 76 86" stroke="#000000" stroke-width="1.5" opacity="0.7"/>
+    <path d="M 64 36 L 64 96" stroke="#000000" stroke-width="1.5" opacity="0.4"/>
+  </g>
+  <path d="M 52 36 L 76 36 L 64 10 Z" fill="#111" stroke="#050505" stroke-width="2"/>
+  <path d="M 55 34 L 73 34 L 64 14 Z" fill="url(#energySSIDE)"/>
+  <path d="M 59 32 L 69 32 L 64 20 Z" fill="#ffffff" opacity="0.8"/>
+  <path d="M 55 34 L 64 14 L 60 34 Z" fill="#ffffff" opacity="0.4"/>
+</svg>`;
+function strikeSVG(side){const you=side===YOU;return STRIKE_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/EN1/g,you?'#ffb84a':'#00e5ff').replace(/EN2/g,you?'#a35a00':'#0077aa');}
+// ---------- the siege drone: the user's jet-powered ram, pushed toward the other ships. SIDE = id suffix; LIGHT = energy color.
+const SIEGE_SHIP=`<svg viewBox="0 0 128 128" aria-label="siege drone">
+  <defs>
+    <pattern id="cfXSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxXSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="steelXSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d7dee6"/>
+      <stop offset="45%" stop-color="#8a959e"/>
+      <stop offset="100%" stop-color="#2e353c"/>
+    </linearGradient>
+    <linearGradient id="darkXSIDE" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a5560"/>
+      <stop offset="100%" stop-color="#151a20"/>
+    </linearGradient>
+    <linearGradient id="flameXSIDE" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="LIGHT"/>
+      <stop offset="100%" stop-color="LIGHT" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="headXSIDE" cx="70%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="LIGHT"/>
+      <stop offset="100%" stop-color="#1a1e24"/>
+    </radialGradient>
+    <pattern id="hazXSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#e8b400"/>
+      <rect width="4" height="8" fill="#111"/>
+    </pattern>
+  </defs>
+
+  <!-- thruster flames, three layers each -->
+  <g>
+    <polygon points="18,54 -14,64 18,74" fill="url(#flameXSIDE)" opacity="0.55"/>
+    <polygon points="18,58 -2,64 18,70" fill="#ffffff" opacity="0.85"/>
+    <polygon points="22,27 -4,33 22,39" fill="url(#flameXSIDE)" opacity="0.6"/>
+    <polygon points="22,30 8,33 22,36" fill="#ffffff" opacity="0.8"/>
+    <polygon points="22,89 -4,95 22,101" fill="url(#flameXSIDE)" opacity="0.6"/>
+    <polygon points="22,92 8,95 22,98" fill="#ffffff" opacity="0.8"/>
+  </g>
+
+  <!-- shock rings ahead of the head -->
+  <g fill="none" stroke="LIGHT" stroke-linecap="round">
+    <path d="M 122 44 A 26 26 0 0 1 122 84" stroke-width="2" opacity="0.35"/>
+    <path d="M 124 50 A 18 18 0 0 1 124 78" stroke-width="2.5" opacity="0.6"/>
+  </g>
+
+  <!-- rail channel -->
+  <rect x="24" y="49" width="74" height="30" rx="3" fill="#07090c" stroke="#1c232c" stroke-width="1.5"/>
+  <path d="M 28 52 L 94 52 M 28 76 L 94 76" stroke="#1c232c" stroke-width="1"/>
+
+  <!-- the ram rod, charged -->
+  <rect x="14" y="57" width="106" height="14" rx="2" fill="url(#steelXSIDE)" stroke="#111" stroke-width="1.5"/>
+  <path d="M 34 57 v14 M 54 57 v14 M 74 57 v14 M 94 57 v14" stroke="#2e353c" stroke-width="1.5"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="4" opacity="0.35" stroke-linejoin="round"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="1.6" opacity="0.95" stroke-linejoin="round"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="#ffffff" stroke-width="0.7" stroke-linejoin="round"/>
+
+  <!-- rod jet nozzle -->
+  <rect x="10" y="51" width="12" height="26" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="12" y="55" width="8" height="18" rx="1" fill="#0a0d11"/>
+  <rect x="13" y="58" width="6" height="12" fill="LIGHT" opacity="0.5"/>
+
+  <!-- tungsten impact head -->
+  <polygon points="118,50 127,55 127,73 118,78" fill="#2a3037" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <polygon points="119,52 126,56 126,72 119,76" fill="url(#headXSIDE)" opacity="0.9"/>
+  <rect x="126" y="56" width="2" height="16" fill="#ffffff"/>
+
+  <!-- engines -->
+  <rect x="20" y="22" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="20" y="86" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <path d="M 26 26 h12 M 26 30 h12 M 26 90 h12 M 26 94 h12" stroke="LIGHT" stroke-width="1.2" opacity="0.7"/>
+
+  <!-- carbon hull, waxed -->
+  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#waxXSIDE)"/>
+  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#waxXSIDE)"/>
+  <path d="M 32 20 L 60 25.5 L 60 22 L 32 18 Z" fill="#ffffff" opacity="0.18"/>
+  <path d="M 60 27 v21 M 60 80 v21" stroke="#0a0d11" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- clamps with hazard paint -->
+  <rect x="44" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="47" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
+  <rect x="74" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="77" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
+
+  <!-- warning lamps -->
+  <circle cx="51" cy="41" r="2.4" fill="#ef4444"/><circle cx="51" cy="87" r="2.4" fill="#ef4444"/>
+  <circle cx="81" cy="41" r="2.4" fill="#eab308"/><circle cx="81" cy="87" r="2.4" fill="#eab308"/>
+  <circle cx="51" cy="41" r="4.5" fill="#ef4444" opacity="0.25"/><circle cx="81" cy="87" r="4.5" fill="#eab308" opacity="0.25"/>
+</svg>`;
+function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+function droneSVG(t,side){if(t==='W')return warpSVG(side);if(t==='G')return guardSVG(side);if(t==='C')return claimSVG(side);if(t==='H')return hunterSVG(side);if(t==='S')return strikeSVG(side);if(t==='X')return siegeSVG(side);const col=side===YOU?'var(--you)':'var(--bot)';return `<svg viewBox="0 0 24 24" aria-label="${TNAME[t]}" style="stroke:${col};fill:${col}"><g class="ic">${ICON[t]||''}</g></svg>`;}
+function renderChess(){if(headless)return;
+  let h='';
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const cell=chess[r][c];const cls=['sq',(r+c)%2?'d':'l'];
+    if(cell.wall)cls.push('wall');
+    if(cell.master)cls.push('master','m'+cell.master);
+    else if(cell.own&&!cell.wall)cls.push('own'+cell.own);
+    if(sel){
+      if((sel.kind==='drone'||sel.kind==='fly'||sel.kind==='warp')&&sel.r===r&&sel.c===c)cls.push('sel');
+      if(sel.kind==='drone'&&sel.moves.has(ck(r,c)))cls.push(cell.drone?'cap':'mv');
+      if(!open&&sel.kind==='drone'&&sel.r===8&&isBackFree(YOU,r,c))cls.push('mv');
+      if(sel.kind==='warp'&&!cell.wall&&warpAllowed(r,c,YOU))cls.push('warpable');}
+    if(placeQueue.length&&isBackFree(YOU,r,c))cls.push('mv');
+    if(walkers(YOU).some(m=>m.d.dest===ck(r,c)))cls.push('dest');
+    let inner=(cell.own&&!cell.wall)?'<i class="cdot"></i>':'';
+    if(cell.master)inner='<span class="mast">&#9733;</span>';
+    if(cell.drone)inner+=`<span class="dr t${cell.drone.type} s${cell.drone.side}" title="${TNAME[cell.drone.type]}">${droneSVG(cell.drone.type,cell.drone.side)}</span>`;
+    h+=`<div class="${cls.join(' ')}" data-r="${r}" data-c="${c}">${inner}</div>`;}
+  $('cgrid').innerHTML=h;
+}
+function renderSide(){if(headless)return;
+  const st=$('status');st.className='status';
+  if(phase==='setup')st.textContent='Set the handicap and press Start.';
+  else if(over){st.classList.add('over');st.textContent=`${SNAME[over.w]} win${over.w===YOU?'':'s'}. ${over.reason}`;}
+  else if(!open)st.textContent=`Board opens at 3 earned drones each. You ${Math.min(3,earnedOn(YOU))}/3 · ${SNAME[BOT]} ${Math.min(3,earnedOn(BOT))}/3`;
+  else if(turn===0)st.textContent='Waiting for a drone to land.';
+  else{st.classList.add(turn===YOU?'you':'bot');st.textContent=(turn===YOU?'Your move.'+(moveLeft>0?' '+Math.ceil(moveLeft/1000)+'s':'')+((()=>{const ws=walkers(YOU);if(!ws.length)return '';const w=pendingWalk();if(w&&!walkDone)return ` Walk steps in ${Math.max(0,Math.ceil((4000-turnMs)/1000))}s.`;const stuck=ws.filter(x=>walkStep(x)==null);return stuck.length?` Walk to ${sqName(Math.floor(stuck[0].d.dest/N),stuck[0].d.dest%N)} blocked: ${walkWhy(stuck[0])}.`:'';})()):SNAME[BOT]+' is moving.')+(bothArmed()?'':' Clock paused: '+(dronesOf(YOU).length?'bot has':'you have')+' no drones.');}
+  if(phase==='play'&&!over&&placeQueue.length&&!(sel&&sel.kind==='fly')){st.className='status warn';st.textContent=`${placeQueue.length} drone${placeQueue.length>1?'s':''} waiting: ${TSHORT[placeQueue[0]]} first. Tap a lit back-row square.`;}
+if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status warn';const left=sel.need-sel.picks.length;st.textContent=sel.line?'Drone overhead. Tap a tile on your star board: its whole row goes.':`Drone overhead. Tap ${left} tile${left===1?'':'s'} on your star board.`;}
+  for(const s of [1,2]){const n=landOf(s);$('land'+s).textContent=`${n} / ${WIN}`;$('bar'+s).style.width=Math.min(100,n/WIN*100)+'%';}
+  const acts=[],hint=[];
+  if(phase==='play'&&!over&&placeQueue.length)acts.push('<button data-a="autoplace">Auto-place waiting drones</button>');
+  if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){hint.push(`Your back row is full. Tap up to ${sel.need-sel.picks.length} more tile${sel.need-sel.picks.length===1?'':'s'} on your star board for the drone to remove. The small board shows where things land. Swaps wait until you pick.`);if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');}
+  else if(phase==='play'&&!over&&open&&turn===YOU){
+    if(sel&&sel.kind==='drone'){const d=chess[sel.r][sel.c].drone;hint.push(`${TSHORT[d.type]} at ${sqName(sel.r,sel.c)}. Tap a marked square to move${WALKERS[d.type]?', or tap a far square to set a destination and it walks there a step a turn':''}.`);
+      if(d.type==='C')acts.push(`<button data-a="claim" ${claimValid(sel.r,sel.c,YOU)?'':'disabled'}>Claim here</button>`);
+      if(d.type==='W')acts.push('<button data-a="warp">Warp</button>');
+      if(d.type==='X')acts.push(`<button data-a="fire" ${canFire(sel.r,sel.c,YOU)?'':'disabled'}>Fire</button>`);
+      acts.push(d.type==='C'?'<button data-a="fly">Fly down: blast 3 × 3</button>':`<button data-a="fly">Fly down (up to ${digNeed(d.type)})</button>`);}
+    else if(sel&&sel.kind==='warp'){hint.push('Tap a lit square. The 3 × 3 patch around it becomes yours. Squares next to an enemy guard are off limits.');acts.push('<button data-a="cancel">Cancel</button>');}
+    else if(sel&&sel.kind==='fly'){hint.push('Tap tiles on your star board. The small board shows where things land.');if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');acts.push('<button data-a="cancel">Cancel</button>');}
+    else hint.push('Pick one of your drones on the board.');
+    {const w=pendingWalk();if(w&&!walkDone){acts.push(`<button data-a="walk">Step now: ${TSHORT[w.d.type]} ${sqName(w.r,w.c)} → ${sqName(Math.floor(w.d.dest/N),w.d.dest%N)}</button>`);}
+    if(sel&&sel.kind==='drone'&&chess[sel.r][sel.c].drone.dest!=null)acts.push('<button data-a="nowalk">Cancel walk</button>');}
+    for(const o of lungeOffers(YOU))acts.push(`<button data-a="lunge" data-g="${o.gr},${o.gc}" data-t="${o.tr},${o.tc}" class="danger">Guard ${sqName(o.gr,o.gc)}: jump 2, take ${TSHORT[o.t].toLowerCase()} at ${sqName(o.tr,o.tc)} (guard lost)</button>`);
+    acts.push('<button data-a="pass">Pass</button>');
+  }else if(phase==='play'&&!over&&!open){
+    if(sel&&sel.kind==='drone'){const d=chess[sel.r][sel.c].drone;hint.push(`${TSHORT[d.type]} at ${sqName(sel.r,sel.c)}. Tap another back-row square to shift it, or fly it down now for free.`);acts.push(d.type==='C'?'<button data-a="fly">Fly down free: blast 3 × 3</button>':`<button data-a="fly">Fly down free (up to ${digNeed(d.type)})</button>`);}
+    else if(sel&&sel.kind==='fly'){hint.push('Tap tiles on your star board. The small board shows where things land.');if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');acts.push('<button data-a="cancel">Cancel</button>');}
+    else hint.push('Match 4 or more. Drones land on your back row. The board opens at 3 each. Before it opens, any drone can fly down for free to dig your board.');}
+  else if(phase==='play'&&!over)hint.push('Waiting for the bot.');
+  if(over)acts.push('<button data-a="new" class="primary">New game</button>');
+  $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
+  renderClocks();
+}
+function renderNudge(){if(headless)return;
+  const on=nudge&&!over&&phase==='play'&&!(sel&&sel.kind==='fly');
+  $('jdim').hidden=!on;
+  document.querySelector('.cpanel').classList.toggle('nudge',on);renderWait();
+}
+function render(){if(headless)return;renderJewels();renderChess();renderSide();renderNudge();renderBotBoard();renderTabs();renderTip();saveState();netSync();}
+
+// ---------- screenshot: draw the game to a canvas (the sandbox can't save files, so we show it)
+const GEMCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8','#e8e4d3'];
+function drawGem(ctx,v,x,y,s){
+  const cx=x+s/2,cy=y+s/2,r=s*0.34;ctx.save();
+  if(v===BLK){ctx.fillStyle='#343a43';ctx.fillRect(x+s*.1,y+s*.1,s*.8,s*.8);ctx.strokeStyle='#4a525c';ctx.lineWidth=1;for(let i=-s;i<s;i+=6){ctx.beginPath();ctx.moveTo(x+s*.1+i,y+s*.9);ctx.lineTo(x+s*.1+i+s*.8,y+s*.1);ctx.stroke();}ctx.restore();return;}
+  if(v===BOMB){ctx.fillStyle='#23282f';ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.fillStyle='#e5484d';ctx.beginPath();ctx.arc(cx+r*.5,cy-r*.9,r*.28,0,7);ctx.fill();ctx.restore();return;}
+  ctx.fillStyle=GEMCOL[v]||'#888';ctx.beginPath();
+  if(v===0)ctx.arc(cx,cy,r,0,7);
+  else if(v===1){ctx.roundRect(cx-r,cy-r,2*r,2*r,r*.3);}
+  else if(v===2){ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy);ctx.lineTo(cx,cy+r);ctx.lineTo(cx-r,cy);ctx.closePath();}
+  else if(v===3){for(let i=0;i<6;i++){const a=Math.PI/3*i;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();}
+  else if(v===4){ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy+r);ctx.lineTo(cx-r,cy+r);ctx.closePath();}
+  else{for(let i=0;i<8;i++){const a=Math.PI/4*i+Math.PI/8;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();}
+  ctx.fill();ctx.restore();
+}
+function drawJewelGrid(ctx,g,x,y,cell,label){
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText(label,x,y-8);
+  ctx.fillStyle='#0e131a';ctx.fillRect(x,y,cell*JW+4,cell*JH+4);
+  for(let r=0;r<JH;r++)for(let c=0;c<JW;c++){const px=x+2+c*cell,py=y+2+r*cell;ctx.fillStyle='#202934';ctx.fillRect(px+1,py+1,cell-2,cell-2);const v=g[r]?g[r][c]:null;if(v!=null)drawGem(ctx,v,px,py,cell);}
+}
+function drawChess(ctx,x,y,cell){
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText('The board',x,y-8);
+  ctx.fillStyle='#0e131a';ctx.fillRect(x,y,cell*N+4,cell*N+4);
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const q=chess[r][c],px=x+2+c*cell,py=y+2+r*cell;
+    ctx.fillStyle=(r+c)%2?'#202934':'#2a3542';ctx.fillRect(px,py,cell-1,cell-1);
+    if(q.wall){ctx.fillStyle='#0c1015';ctx.fillRect(px,py,cell-1,cell-1);}
+    else if(q.own===1){ctx.fillStyle='rgba(232,166,59,.35)';ctx.fillRect(px,py,cell-1,cell-1);}
+    else if(q.own===2){ctx.fillStyle='rgba(78,168,220,.35)';ctx.fillRect(px,py,cell-1,cell-1);}
+    else if(q.own===3){ctx.fillStyle='rgba(232,166,59,.25)';ctx.fillRect(px,py,cell-1,cell-1);ctx.fillStyle='rgba(78,168,220,.35)';for(let i=0;i<cell;i+=8)ctx.fillRect(px+i,py,4,cell-1);}
+    if(q.master){const col=q.master===1?'#e8a63b':'#4ea8dc';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(px+1,py+1,cell-3,cell-3);ctx.fillStyle=col;ctx.font='bold '+Math.round(cell*.45)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('2605',px+cell/2,py+cell/2);ctx.textAlign='left';ctx.textBaseline='alphabetic';}
+    const d=q.drone;if(d){const col=d.side===1?'#e8a63b':'#4ea8dc';ctx.fillStyle='#0e131a';ctx.beginPath();ctx.arc(px+cell/2,py+cell/2,cell*.32,0,7);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=col;ctx.font='bold '+Math.round(cell*.4)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d.type,px+cell/2,py+cell/2+1);ctx.textAlign='left';ctx.textBaseline='alphabetic';}}
+  ctx.fillStyle='#8d99a8';ctx.font='11px monospace';for(let c=0;c<N;c++)ctx.fillText('abcdefghi'[c],x+2+c*cell+cell/2-3,y+cell*N+16);
+}
+function settingsLine(){
+  return 'blockers '+$('inBlock').value+'/'+$('inBotBlock').value+' · skill '+$('inSkill').value+' · pace '+($('inPace').checked?'match':$('inRate').value+'/min')+' · move '+$('inMove').value+'s · nudge '+$('inNudge').value+'s · clock '+$('inClock').value+'m';
+}
+function snapshot(){
+  const W=1180,H=720,cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ctx.fillStyle='#121820';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 22px sans-serif';ctx.fillText('CONSTELLATION COMMANDER',20,34);
+  ctx.fillStyle='#8d99a8';ctx.font='12px sans-serif';ctx.fillText(new Date().toLocaleString()+'  ·  '+$('status').textContent,190,34);
+  drawJewelGrid(ctx,jew,20,80,40,'Your star board');
+  drawChess(ctx,380,80,52);
+  drawJewelGrid(ctx,bjew,880,80,30,'Bot star board');
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText('Clocks',880,360);ctx.font='20px monospace';ctx.fillStyle='#e8a63b';ctx.fillText('You '+fmt(clock[1]),880,388);ctx.fillStyle='#4ea8dc';ctx.fillText('Bot '+fmt(clock[2]),1010,388);
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText('Land · need '+WIN,880,420);ctx.font='14px monospace';ctx.fillStyle='#e8a63b';ctx.fillText('You '+landOf(1),880,442);ctx.fillStyle='#4ea8dc';ctx.fillText('Bot '+landOf(2),1010,442);
+  ctx.fillStyle='#8d99a8';ctx.font='11px monospace';ctx.fillText(settingsLine(),20,H-14);
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText('Log',20,450);ctx.font='11px monospace';ctx.fillStyle='#8d99a8';logs.slice(0,14).forEach((l,i)=>ctx.fillText(l.slice(0,60),20,470+i*15));
+  ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText('Bot log lines',880,470);ctx.font='11px monospace';ctx.fillStyle='#8d99a8';logs.filter(l=>l.startsWith('Bot')).slice(0,12).forEach((l,i)=>ctx.fillText(l.slice(0,44),880,490+i*15));
+  return cv;
+}
+let lastShot=null;
+$('btnShot').addEventListener('click',()=>{const cv=snapshot();lastShot=cv;$('shotimg').src=cv.toDataURL('image/png');$('shotmsg').textContent='Long-press or right-click the picture to save it.';$('shot').hidden=false;});
+$('shotClose').addEventListener('click',()=>{$('shot').hidden=true;});
+$('shotCopy').addEventListener('click',async()=>{try{const blob=await new Promise(r=>lastShot.toBlob(r,'image/png'));await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);$('shotmsg').textContent='Copied. Paste it into the chat.';}catch(e){$('shotmsg').textContent='Copy is blocked here. Long-press or right-click the picture to save or copy it.';}});
+function gameText(){
+  const rowJ=g=>g.map(r=>r.map(v=>v==null?'.':v===BLK?'#':v===BOMB?'*':'RAGBPW'[v]).join('')).join('\n');
+  const rowC=chess.map(r=>r.map(c=>c.drone?(c.drone.side===1?c.drone.type:c.drone.type.toLowerCase()):c.master?'M':c.wall?'#':c.own===1?'y':c.own===2?'b':c.own===3?'?':'.').join('')).join('\n');
+  return 'CONSTELLATION COMMANDER '+new Date().toLocaleString()+'\n'+$('status').textContent+'\nLand you '+landOf(1)+' bot '+landOf(2)+' need '+WIN+' · clocks you '+fmt(clock[1])+' bot '+fmt(clock[2])+'\nSettings: '+settingsLine()+'\n\nBOARD (rows 9..1 top to bottom; UPPER = your drones, lower = bot drones, M commander, # wall, y/b/? land, . open)\n'+rowC+'\n\nYOUR STARS (R red A amber G green B blue P purple W white # rock * bomb)\n'+rowJ(jew)+'\n\nBOT STARS\n'+rowJ(bjew)+'\n\nLOG (newest first)\n'+logs.slice(0,20).join('\n');
+}
+$('btnCopy').addEventListener('click',async()=>{const t=gameText();try{await navigator.clipboard.writeText(t);log('Game copied as text.');}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:0;top:0;width:100%;height:60%;z-index:60';document.body.appendChild(ta);ta.select();log('Clipboard blocked: text shown at the top of the page, copy it by hand, then tap outside to close.');ta.addEventListener('blur',()=>ta.remove());ta.focus();}});
+// ---------- self-play: the bot plays both sides, fast and headless, and we read the results
+function snapshotAll(){return JSON.stringify({chess,jew,bjew,reserve,clock,turn,open,ready,first,swapAcc,ids,logs,over,digQueue,bombQueue,rockQueue,botBombs,moveLeft,turnMs,nudge,placeQueue,phase,NC,mySwaps,walkDone});}
+function restoreAll(s){const o=JSON.parse(s);({chess,jew,bjew,reserve,clock,turn,open,ready,first,swapAcc,ids,logs,over,digQueue,bombQueue,rockQueue,botBombs,moveLeft,turnMs,nudge,placeQueue,phase,NC,mySwaps,walkDone}=o);sel=null;busy=false;flash=null;}
+function selfPlayGame(o){
+  NC=o.kinds;rockShape=pickRockShape();newChess();newJewels(o.blk);newBotBoard(o.blk);
+  reserve={1:[],2:[]};clock={1:1e9,2:1e9};turn=0;open=false;ready={1:false,2:false};first=0;over=null;sel=null;busy=false;
+  digQueue=[];bombQueue=0;rockQueue=0;botBombs=0;placeQueue=[];logs=[];walkDone=false;phase='play';
+  const st={turns:0,passes:{1:0,2:0},earned:{1:{},2:{}},openedAt:null,swaps:0};
+  earnHook=(side,t)=>{st.earned[side][t]=(st.earned[side][t]||0)+1;};
+  let guard=0;
+  while(!over&&guard++<o.maxTurns){
+    for(let i=0;i<o.swapsPerTurn;i++){botSwap(BOT);botSwap(YOU);st.swaps+=2;if(over)break;}
+    if(over)break;
+    if(open&&st.openedAt==null)st.openedAt=guard;
+    if(open&&turn){const mover=turn;const n0=logs.length;botMove(mover);st.turns++;const fresh=logs.slice(0,logs.length-n0);if(fresh.some(l=>/ pass(es)?\.$/.test(l)))st.passes[mover]++;}
+  }
+  earnHook=null;
+  return {winner:over?over.w:0,reason:over?over.reason:('no result after '+o.maxTurns+' rounds'),rounds:guard,turns:st.turns,openedAt:st.openedAt,land:[landOf(YOU),landOf(BOT)],earned:st.earned,passes:st.passes,swaps:st.swaps,tail:logs.slice(0,6)};
+}
+function runSelfPlay(){
+  const games=Math.max(1,Math.min(200,+$('spGames').value||10));
+  const o={kinds:Math.max(4,Math.min(6,+$('inColors').value||5)),blk:Math.max(0,+$('inBlock').value||0),swapsPerTurn:Math.max(1,+$('spSwaps').value||3),maxTurns:Math.max(50,+$('spMax').value||300)};
+  sp={top:Math.max(0,Math.min(100,+$('spTop').value||0)),bottom:Math.max(0,Math.min(100,+$('spBottom').value||0))};
+  const saved=snapshotAll();selfPlay=true;headless=true;
+  const results=[];let i=0;const out=$('spOut');out.textContent='Running...';
+  const step=()=>{
+    const t0=Date.now();
+    while(i<games&&Date.now()-t0<400){
+      try{results.push(selfPlayGame(o));}
+      catch(e){results.push({winner:0,reason:'ERROR '+e.message,rounds:0,turns:0,openedAt:null,land:[0,0],earned:{1:{},2:{}},passes:{1:0,2:0},swaps:0,tail:logs.slice(0,6)});}
+      i++;}
+    out.textContent='Running... '+i+'/'+games;
+    if(i<games){setTimeout(step,0);return;}
+    selfPlay=false;headless=false;earnHook=null;restoreAll(saved);render();
+    reportSelfPlay(results,o);
+  };
+  setTimeout(step,0);
+}
+function reportSelfPlay(rs,o){
+  const n=rs.length,wTop=rs.filter(r=>r.winner===BOT).length,wBot=rs.filter(r=>r.winner===YOU).length,none=n-wTop-wBot;
+  const byReason={};for(const r of rs){const k=r.reason.replace(/^(You|Bot) /,'').replace(/^hold(s)? /,'');byReason[k]=(byReason[k]||0)+1;}
+  const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length):0;
+  const fin=rs.filter(r=>r.winner);
+  const sumE=side=>{const t={};for(const r of rs)for(const k in r.earned[side])t[k]=(t[k]||0)+r.earned[side][k];return t;};
+  const fmtE=e=>Object.entries(e).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+':'+(v/n).toFixed(1)).join('  ');
+  const pT=avg(rs.map(r=>r.passes[BOT])),pB=avg(rs.map(r=>r.passes[YOU]));
+  const odd=rs.map((r,i)=>({r,i})).filter(x=>!x.r.winner||(x.r.turns>0&&(x.r.passes[BOT]+x.r.passes[YOU])/x.r.turns>0.3)||x.r.reason.startsWith('ERROR'));
+  let s='SELF-PLAY '+n+' games  ·  top (bot side) skill '+sp.top+' vs bottom (player side) skill '+sp.bottom+'  ·  '+o.kinds+' kinds  ·  '+o.swapsPerTurn+' swaps each per turn  ·  '+o.blk+' blockers each\n';
+  s+='Top won '+wTop+' ('+Math.round(wTop/n*100)+'%)  ·  Bottom won '+wBot+' ('+Math.round(wBot/n*100)+'%)  ·  no result '+none+'\n';
+  s+='How games ended: '+Object.entries(byReason).map(([k,v])=>v+'x '+k).join('  ·  ')+'\n';
+  s+='Finished games: avg '+avg(fin.map(r=>r.turns)).toFixed(0)+' chess turns, board opened after ~'+avg(fin.map(r=>r.openedAt||0)).toFixed(1)+' rounds, avg land top '+avg(fin.map(r=>r.land[1])).toFixed(0)+' / bottom '+avg(fin.map(r=>r.land[0])).toFixed(0)+'\n';
+  s+='Passes per game (a side with nothing to move): top '+pT.toFixed(1)+'  ·  bottom '+pB.toFixed(1)+'\n';
+  s+='Drones earned per game  ·  top: '+fmtE(sumE(BOT))+'\n                           bottom: '+fmtE(sumE(YOU))+'\n';
+  if(odd.length){s+='\nODD GAMES ('+odd.length+'): no result, error, or more than 30% passes\n';for(const x of odd.slice(0,8))s+='  #'+(x.i+1)+': '+x.r.reason+'  ·  turns '+x.r.turns+'  ·  passes top '+x.r.passes[BOT]+' / bottom '+x.r.passes[YOU]+'  ·  land top '+x.r.land[1]+' / bottom '+x.r.land[0]+'\n    '+x.r.tail.slice(0,3).join(' | ')+'\n';}
+  else s+='\nNo odd games.\n';
+  $('spOut').textContent=s;lastSelfPlay={rs,o,sp:Object.assign({},sp)};
+}
+let lastSelfPlay=null;
+$('spRun').addEventListener('click',runSelfPlay);
+$('spCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('spOut').textContent);}catch(e){}});
+// ---------- phone: three screens you swipe between; tabs do the same
+const MAIN=$('main');const paneW=()=>Math.max(1,MAIN.getBoundingClientRect().width||MAIN.clientWidth);
+function goPane(i){MAIN.scrollTo({left:i*paneW(),behavior:'smooth'});}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)goPane(+b.dataset.pane);});
+$('goBoard').addEventListener('click',()=>goPane(1));
+MAIN.addEventListener('scroll',()=>{const i=Math.round(MAIN.scrollLeft/paneW());[...$('tabs').children].forEach((b,j)=>b.classList.toggle('on',j===i));},{passive:true});
+// bottom swipe bar: slide a thumb across it to change screens, or tap a name
+const SB=$('swipebar');let sbx=null;
+SB.addEventListener('pointerdown',e=>{sbx=e.clientX;try{SB.setPointerCapture(e.pointerId);}catch(_){}});
+SB.addEventListener('pointerup',e=>{if(sbx==null)return;const dx=e.clientX-sbx;sbx=null;const cur=Math.round(MAIN.scrollLeft/paneW());
+  if(Math.abs(dx)>=40){goPane(Math.max(0,Math.min(2,cur+(dx<0?1:-1))));return;}
+  const s=e.target.closest('span');if(s)goPane(+s.dataset.pane);});
+SB.addEventListener('pointercancel',()=>{sbx=null;});
+const isPhone=()=>getComputedStyle(SB).display!=='none';
+MAIN.addEventListener('scroll',()=>{const i=Math.round(MAIN.scrollLeft/paneW());[...SB.children].forEach((s,j)=>s.classList.toggle('on',j===i));},{passive:true});
+function renderTabs(){
+  const b=$('tabs').children[1];const yours=open&&turn===YOU&&!over;const waiting=placeQueue.length>0;
+  b.textContent='Board'+(yours?' · your move':waiting?' · drone waiting':'');
+  b.style.borderColor=(yours||waiting)&&!b.classList.contains('on')?'var(--you)':'';
+  const sb=SB.children[1];sb.textContent='Board'+(yours?' ·':waiting?' ·':'');sb.classList.toggle('alert',(yours||waiting)&&!sb.classList.contains('on'));
+}
+$('btnSettings').addEventListener('click',()=>{document.querySelector('.setup').classList.toggle('open');});
+// ---------- phone turn flow: your move flips you to the board; after your move a countdown flips you back
+let flipBack=null;
+function announce(text){if(!isPhone()||headless)return;const a=$('announce');$('announceText').textContent=text;a.hidden=false;clearTimeout(a._t);a._t=setTimeout(()=>{a.hidden=true;},950);}
+function onYourTurnStart(){if(!isPhone()||headless||selfPlay)return;flipBack=null;$('flipbar').hidden=true;announce('YOUR MOVE');setTimeout(()=>{if(turn===YOU&&open&&!over)goPane(1);},650);}
+function onYourMoveDone(){if(!isPhone()||headless||selfPlay)return;flipBack=Date.now()+4000;$('flipbar').hidden=false;$('flipText').textContent='Move made. Flipping to stars in 4s';}
+function tickFlip(){if(flipBack==null)return;if(turn===YOU&&open){flipBack=null;$('flipbar').hidden=true;return;}const left=Math.ceil((flipBack-Date.now())/1000);if(left<=0){flipBack=null;$('flipbar').hidden=true;goPane(0);}else $('flipText').textContent='Move made. Flipping to stars in '+left+'s';}
+$('flipStay').addEventListener('click',()=>{flipBack=null;$('flipText').textContent='Staying on the board';setTimeout(()=>{if(flipBack==null)$('flipbar').hidden=true;},1200);});
+$('flipNow').addEventListener('click',()=>{flipBack=null;$('flipbar').hidden=true;goPane(0);});
+// ---------- save and restore, so a page reload (including a republish) doesn't lose the game
+const SAVE_KEY='dronemaster.save.v1';
+function saveState(){
+  if(phase!=='play'||headless)return;
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify({chess,jew,bjew,reserve,clock,turn,open,ready,first,swapAcc,dropAcc,ids,logs,over,digQueue,bombQueue,rockQueue,botBombs,
+    moveLeft,turnMs,nudge,placeQueue,settings:{b:$('inBlock').value,bb:$('inBotBlock').value,sk:$('inSkill').value,col:NC,r:$('inRate').value,c:$('inClock').value,m:$('inMove').value,n:$('inNudge').value}}));}catch(_){}
+}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(_){}}
+function loadState(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(_){return false;}
+  if(!s||!s.chess||!s.jew)return false;
+  chess=s.chess;jew=s.jew;bjew=s.bjew||bjew;reserve=s.reserve||{1:[],2:[]};clock=s.clock;turn=s.turn||0;open=!!s.open;ready=s.ready||{1:false,2:false};first=s.first||0;
+  swapAcc=s.swapAcc||0;dropAcc=s.dropAcc||0;ids=s.ids||1;logs=s.logs||[];over=s.over||null;digQueue=s.digQueue||[];bombQueue=s.bombQueue||0;rockQueue=s.rockQueue||0;botBombs=s.botBombs||0;
+  if(s.settings){/* blockers and star kinds only matter at Start, so the boxes keep their defaults; the live game keeps its own kind count */if(s.settings.sk!=null)$('inSkill').value=s.settings.sk;if(s.settings.col){NC=s.settings.col;}$('inRate').value=s.settings.r;$('inClock').value=s.settings.c;if(s.settings.m!=null)$('inMove').value=s.settings.m;if(s.settings.n!=null)$('inNudge').value=s.settings.n;}moveLeft=s.moveLeft||0;turnMs=s.turnMs||0;nudge=!!s.nudge;placeQueue=s.placeQueue||[];
+  phase='play';sel=null;busy=false;flash=null;
+  log('Page reloaded. Game restored where it was.');
+  if(jew.flat().some(v=>v==null))gravity();
+  return true;
+}
+let tickN=0;
+setInterval(()=>{if(++tickN%10===0)saveState();},100);
+
+// ---------- two phones. One match document in a Firebase Realtime Database, reached with plain
+// fetch (writes) and an event stream (reads). Everything on the wire is in the HOST's frame:
+// host = side 1 at the bottom rows. The guest flips rows and sides both ways. Each phone keeps its
+// own star board; only board cells and turn state cross the wire. Whoever changes a cell writes it.
+const NET_BASE='https://constellation-commander-default-rtdb.firebaseio.com';
+const NET_KEY='cc_net',NET_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ';
+const netUrl=code=>`${NET_BASE}/matches/${code}.json`;
+const wSide=s=>(!net||net.role==='host')?s:(s===1?2:s===2?1:s);   // local side <-> wire side (same map both ways)
+const wRow=r=>(!net||net.role==='host')?r:N-1-r;                    // local row  <-> wire row
+const wDest=d=>d==null?null:wRow(Math.floor(d/N))*N+d%N;
+function cellOut(r,c){const q=chess[r][c];const o={o:wSide(q.own||0),w:q.wall?1:0,m:wSide(q.master||0)};
+  if(q.drone){const d=q.drone;o.d={i:d.id,t:d.type,s:wSide(d.side)};if(d.start)o.d.st=1;if(d.dest!=null)o.d.de=wDest(d.dest);}
+  return o;}
+function cellIn(r,c,v){if(!v)return;const q=chess[r][c];q.own=wSide(v.o||0);q.wall=!!v.w;q.master=wSide(v.m||0);
+  if(v.d){q.drone={id:v.d.i,type:v.d.t,side:wSide(v.d.s)};if(v.d.st)q.drone.start=true;if(v.d.de!=null)q.drone.dest=wDest(v.d.de);}else q.drone=null;}
+const overKind=o=>!o?0:{w:wSide(o.w),k:/squares/.test(o.reason)?'land':/Commander/.test(o.reason)?'cmd':/time/.test(o.reason)?'time':'other'};
+function overText(w,k){const n=SNAME[w],s=w===YOU?'':'s';return k==='land'?`${n} hold${s} ${WIN} squares.`:k==='cmd'?`${n} took the Commander.`:k==='time'?`${SNAME[w===YOU?BOT:YOU]} ran out of time.`:'';}
+function metaOut(){return {turn:wSide(turn||0),open:open?1:0,first:wSide(first||0),rd1:ready[wSide(1)]?1:0,rd2:ready[wSide(2)]?1:0,ck1:clock[wSide(1)],ck2:clock[wSide(2)],over:overKind(over)};}
+function metaIn(k,v){
+  if(k==='turn')turn=wSide(v||0);else if(k==='open')open=!!v;else if(k==='first')first=wSide(v||0);
+  else if(k==='rd1')ready[wSide(1)]=!!v;else if(k==='rd2')ready[wSide(2)]=!!v;
+  else if(k==='ck1'){if(typeof v==='number')clock[wSide(1)]=v;}else if(k==='ck2'){if(typeof v==='number')clock[wSide(2)]=v;}
+  else if(k==='over'){if(v&&v.w){const w=wSide(v.w);over={w,reason:overText(w,v.k)};}}
+}
+// the stream hands us paths at any depth; flatten to the leaves we write: cells/c_R_C, meta/x, and top-level keys
+function netFlatten(path,data,out){
+  const segs=path.split('/').filter(Boolean);
+  if(!segs.length){if(data&&typeof data==='object')for(const k in data)netFlatten('/'+k,data[k],out);return;}
+  const depth=(segs[0]==='cells'||segs[0]==='meta')?2:1;
+  if(segs.length<depth){if(data&&typeof data==='object')for(const k in data)netFlatten('/'+segs.concat(k).join('/'),data[k],out);return;}
+  if(segs.length===depth)out[segs.join('/')]=data;
+  // deeper than a leaf never happens: every write replaces a whole leaf
+}
+function applyRemote(out,isFull){
+  if(!net)return;
+  if(!isFull&&('s_'+net.role[0]) in out)return;            // my own write coming back
+  const prevTurn=turn,prevOpen=open,prevOver=over;
+  for(const k in out){const v=out[k];
+    if(k.startsWith('cells/')){const p=k.slice(8).split('_');const r=wRow(+p[0]),c=+p[1];cellIn(r,c,v);net.lastSent[k]=JSON.stringify(cellOut(r,c));}
+    else if(k.startsWith('meta/')){const mk=k.slice(5);metaIn(mk,v);if(mk!=='ck1'&&mk!=='ck2')net.lastSent[k]=JSON.stringify(metaOut()[mk]);}
+    else if(k==='host'&&v&&net.role==='guest'){net.opp=v.n||'Host';SNAME[BOT]=net.opp;net.oppR=v.r||BASE_R;}
+    else if(k==='set'&&v&&net.role==='guest')netTakeHandicap(v);
+    else if(k==='guest'&&v&&net.role==='host'){if(!net.opp)log(`${v.n||'A friend'} joined the match.`);net.opp=v.n||'Friend';SNAME[BOT]=net.opp;net.oppR=v.r||BASE_R;netSetHandicap();}
+    else if(k==='p_h'||k==='p_g'){if(k!=='p_'+net.role[0]&&typeof v==='number')net.oppSeen=v;}
+  }
+  if(turn!==prevTurn){if(turn===YOU){sel=null;startTurn(YOU);log('Your move.');}else if(turn===BOT){sel=null;moveLeft=0;if(open)onYourMoveDone();}}
+  if(open&&!prevOpen)log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);
+  if(over&&!prevOver){log(`Game over. ${SNAME[over.w]} win${over.w===YOU?'':'s'}. ${over.reason}`);rateGame(over.w);}
+  render();renderNet();
+}
+// after every render: send whatever changed since the last send, as one write
+function netSync(){
+  if(!online||!net||!net.live)return;const p={};
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const key=`cells/c_${wRow(r)}_${c}`,val=cellOut(r,c),js=JSON.stringify(val);if(net.lastSent[key]!==js){p[key]=val;net.lastSent[key]=js;}}
+  const m=metaOut();
+  for(const k of ['turn','open','first','rd1','rd2','over']){const key='meta/'+k,js=JSON.stringify(m[k]);if(net.lastSent[key]!==js){p[key]=m[k];net.lastSent[key]=js;}}
+  if(('meta/turn' in p)||('meta/over' in p)){p['meta/ck1']=m.ck1;p['meta/ck2']=m.ck2;}
+  if(!Object.keys(p).length)return;
+  p['s_'+net.role[0]]=++net.seq;netWrite(p);
+}
+function netWrite(p){const n=net;n.q=n.q.then(()=>fetch(netUrl(n.code),{method:'PATCH',body:JSON.stringify(p)})).then(r=>{n.err=r.ok?null:'write failed ('+r.status+')';}).catch(()=>{n.err='no connection';});}
+function netPresence(){if(!online||!net||!net.live)return;netWrite({['p_'+net.role[0]]:{'.sv':'timestamp'}});}
+function netListen(){
+  if(!net)return;if(net.es)net.es.close();
+  const es=new EventSource(netUrl(net.code));net.es=es;
+  const onEv=(e,full)=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}if(!m)return;const out={};netFlatten(m.path||'/',m.data,out);applyRemote(out,full&&m.path==='/');};
+  es.addEventListener('put',e=>onEv(e,true));
+  es.addEventListener('patch',e=>onEv(e,false));
+  es.addEventListener('cancel',()=>{if(net)net.err='stream stopped';});
+  es.addEventListener('auth_revoked',()=>netListen());
+  es.onerror=()=>{if(net)net.err='reconnecting';};es.onopen=()=>{if(net)net.err=null;};
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&net&&net.live&&(!net.es||net.es.readyState===2))netListen();});
+const netInfo=()=>{let s=null;try{s=JSON.parse(localStorage.getItem(NET_KEY)||'null');}catch(_){}
+  if(!s){const h=/^#cc-([A-Z]{4})-(host|guest)-([a-z0-9]+)-(.*)$/.exec(location.hash||'');if(h)s={code:h[1],role:h[2],uid:h[3],name:decodeURIComponent(h[4])};}return s;};
+function netRemember(){if(!net)return;const s={code:net.code,role:net.role,uid:net.uid,name:net.name};try{localStorage.setItem(NET_KEY,JSON.stringify(s));}catch(_){}
+  try{history.replaceState(null,'',`#cc-${s.code}-${s.role}-${s.uid}-${encodeURIComponent(s.name)}`);}catch(_){}}
+function netForget(){try{localStorage.removeItem(NET_KEY);}catch(_){}try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}}
+const myUid=()=>{let u=null;try{u=localStorage.getItem('cc_uid');}catch(_){}if(!u){u=Math.random().toString(36).slice(2,10);try{localStorage.setItem('cc_uid',u);}catch(_){}}return u;};
+const myName=()=>($('inName').value.trim()||'Player').slice(0,12);
+function netStart(role,code,name){net={code,role,name,uid:myUid(),seq:0,q:Promise.resolve(),lastSent:{},live:false,opp:null,oppR:BASE_R,oppSeen:0,err:null,es:null,hd:false};online=true;}
+function netStatus(t){$('netstat').textContent=t;}
+async function netHost(){
+  if(online)return;const name=myName();netStatus('Setting up the match…');
+  prof.n=name;saveProf();netStarting=true;startGame();netStarting=false;netStart('host',Array.from({length:4},()=>NET_ALPHA[rand(NET_ALPHA.length)]).join(''),name);SNAME[BOT]='Friend';ids=1;logs=[];
+  const doc={t:Date.now(),host:{n:name,u:net.uid,r:prof.r},set:{k:NC,rh:+$('inBlock').value||0,rg:+$('inBotBlock').value||0,c:+$('inClock').value||10,m:+$('inMove').value||0},shape:rockShape,cells:{},meta:{},s_h:1,s_g:0};
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const k=`c_${r}_${c}`;doc.cells[k]=cellOut(r,c);net.lastSent['cells/'+k]=JSON.stringify(doc.cells[k]);}
+  const m=metaOut();for(const k in m){doc.meta[k]=m[k];net.lastSent['meta/'+k]=JSON.stringify(m[k]);}
+  try{const r=await fetch(netUrl(net.code),{method:'PUT',body:JSON.stringify(doc)});if(!r.ok)throw new Error(r.status);}
+  catch(e){online=false;net=null;SNAME[BOT]='Bot';netStatus('Could not reach the match server. From the claude.ai link this is expected: online play needs the downloaded copy of the game.');return;}
+  net.live=true;netRemember();netListen();
+  log(`Match ${net.code}. Tell your friend the code. The board opens when you both have 3 drones on it.`);render();renderNet();
+}
+async function netJoin(){
+  if(online)return;const code=$('inCode').value.trim().toUpperCase(),name=myName();
+  if(!/^[A-Z]{4}$/.test(code)){netStatus('Type the 4-letter code from the host.');return;}
+  netStatus('Looking for the match…');let doc=null;
+  try{const r=await fetch(netUrl(code));if(!r.ok)throw new Error(r.status);doc=await r.json();}
+  catch(e){netStatus('Could not reach the match server. From the claude.ai link this is expected: online play needs the downloaded copy of the game.');return;}
+  if(!doc||!doc.host){netStatus(`No match called ${code}. Check the code with the host.`);return;}
+  const uid=myUid();if(doc.guest&&doc.guest.u!==uid){netStatus(`Match ${code} already has two players.`);return;}
+  if(doc.meta&&doc.meta.over){netStatus(`Match ${code} is already over.`);return;}
+  prof.n=name;saveProf();netStart('guest',code,name);netApplySettings(doc);netStarting=true;startGame();netStarting=false;rockShape=doc.shape||rockShape;newJewels(0);
+  SNAME[BOT]=doc.host.n||'Host';ids=100000;logs=[];
+  const out={};netFlatten('/',doc,out);net.live=false;applyRemote(out,true);
+  net.live=true;netWrite({guest:{n:name,u:uid,r:prof.r}});netRemember();netListen();
+  log(`Joined ${SNAME[BOT]}'s match ${code}. The board opens when you both have 3 drones on it.`);render();renderNet();
+}
+function netApplySettings(doc){const s=doc.set||{};if(s.k)$('inColors').value=s.k;$('inBlock').value=(net&&net.role==='host')?(s.rh||0):(s.rg||0);$('inBotBlock').value=(net&&net.role==='host')?(s.rg||0):(s.rh||0);if(s.c)$('inClock').value=s.c;if(s.m!=null)$('inMove').value=s.m;}
+async function netResume(info,restored){
+  netStart(info.role,info.code,info.name||'Player');net.uid=info.uid||net.uid;$('inName').value=net.name;
+  let doc=null;try{const r=await fetch(netUrl(net.code));if(r.ok)doc=await r.json();}catch(_){}
+  if(!doc||!doc.host||(doc.meta&&doc.meta.over)||Date.now()-(doc.t||0)>12*3600e3){online=false;net=null;netForget();renderNet();return;}
+  net.hd=!!(doc.set&&doc.set.hd);if(doc.set&&doc.set.hd)gameRocks=net.role==='host'?{1:+doc.set.rh||0,2:+doc.set.rg||0}:{1:+doc.set.rg||0,2:+doc.set.rh||0};
+  if(!restored){netApplySettings(doc);netStarting=true;startGame();netStarting=false;rockShape=doc.shape||rockShape;newJewels(net.role==='host'?(+doc.set.rh||0):(+doc.set.rg||0));logs=[];}
+  if(net.role==='guest')ids=Math.max(ids,100000);
+  SNAME[BOT]=net.role==='host'?(doc.guest?doc.guest.n:'Friend'):(doc.host.n||'Host');net.opp=net.role==='host'?(doc.guest?doc.guest.n:null):(doc.host.n||'Host');
+  const out={};netFlatten('/',doc,out);applyRemote(out,true);
+  net.live=true;netListen();log(`Back in match ${net.code}.`);render();renderNet();
+}
+function netLeave(){if(net&&net.es)net.es.close();online=false;net=null;netForget();SNAME[BOT]='Bot';renderWait();log('Left the match. The bot takes the other side from here.');render();renderNet();}
+function netBoot(restored){const info=netInfo();if(info&&info.code)netResume(info,restored);else renderNet();}
+function renderNet(){
+  const on=!!(online&&net);
+  $('btnHost').hidden=on;$('btnJoin').hidden=on;$('inCode').hidden=on;$('inName').disabled=on;$('btnLeave').hidden=!on;
+  if(!on){netStatus('One phone hosts and reads out the 4-letter code, the other joins with it. Each of you keeps your own star board; only the shared board travels. Needs the downloaded copy of the game, not the claude.ai link.');$('botlbl').textContent="Bot's star board";$('bgrid').hidden=false;return;}
+  const seen=net.oppSeen?Math.round((Date.now()-net.oppSeen)/1000):null;
+  const who=net.opp?`${net.opp} ${seen==null?'joined':seen<20?'connected':'last seen '+(seen<120?seen+' s':Math.round(seen/60)+' min')+' ago'}`:'waiting for a friend to join';
+  netStatus(`Match ${net.code} · you are the ${net.role} · ${who}${net.err?' · '+net.err:''}`);
+  $('botlbl').textContent=net.opp||'Your friend';$('bgrid').hidden=true;
+  $('bsub').textContent=net.opp?`${who}. Their star board stays on their phone; you see their drones land on the board.`:`Waiting. Code ${net.code}.`;
+}
+$('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden;renderNet();});
+$('btnHost').addEventListener('click',netHost);$('btnJoin').addEventListener('click',netJoin);$('btnLeave').addEventListener('click',netLeave);
+// ---------- ratings and handicaps. One number per player, kept on this phone and sent along in an
+// online match. Elo-style: you start at 1000, the bot at skill S is rated 800 + 12·S (skill 20 = a new
+// player, 50 = 1400, 100 = 2000). Rocks are the handicap: 1 rock = 50 rating points. A fair game gives
+// the stronger side one extra rock per 50 points of gap; the rating change is then worked out from
+// the gap that is left after the rocks, so a well-handicapped game moves the numbers only a little.
+const PROF_KEY='cc_prof',ROCK_PTS=50,BASE_R=1000,BASE_ROCKS=13;
+let prof=loadProf(),gameRocks={1:BASE_ROCKS,2:BASE_ROCKS},netStarting=false;
+function loadProf(){let p=null;try{p=JSON.parse(localStorage.getItem(PROF_KEY)||'null');}catch(_){}return (p&&typeof p.r==='number')?p:{n:'',r:BASE_R,g:0,w:0,l:0,h:[]};}
+function saveProf(){try{localStorage.setItem(PROF_KEY,JSON.stringify(prof));}catch(_){}}
+const botRating=s=>800+12*s;
+const kFactor=g=>g<10?40:24;
+function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
+function handicapRocks(rA,rB,base){ // the gap in rocks is split: half onto the stronger side, half off the weaker side (the weaker side never goes below 0, the stronger never above 30)
+  base=Math.max(0,Math.min(30,base|0));const extra=Math.floor(Math.abs(rA-rB)/ROCK_PTS);let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(30-base,up+(Math.floor(extra/2)-down));
+  return rA>=rB?[base+up,base-down]:[base-down,base+up];}
+// hints as a handicap: a brand-new player (800) sees the best swap at once; 1100 waits 5 s; 1400 and up waits 10 s and only gets the first swap the scan finds
+function hintDelayMs(){if(!$('inAuto').checked)return 5000;return Math.round(Math.max(0,Math.min(10,(prof.r-800)/60))*1000);}
+function hintPick(all){return ($('inAuto').checked&&prof.r>=1200)?all[0]:all.reduce((x,y)=>y.s>x.s?y:x);}
+function hintWords(){const d=hintDelayMs()/1000;return (d===0?'at once':'after '+(Math.round(d*10)/10)+' s idle')+($('inAuto').checked&&prof.r>=1200?', first swap found':', best swap');}
+function autoRocks(){if(!$('inAuto').checked)return;const [a,b]=handicapRocks(prof.r,botRating(skillPct()),+$('inBlock').value||BASE_ROCKS);$('inBlock').value=a;$('inBotBlock').value=b;}
+function rateGame(w){
+  if(headless||selfPlay||!over||over.rated||phase!=='play')return;over.rated=true;
+  const isNet=!!(online&&net),oppName=isNet?SNAME[BOT]:'Bot '+skillPct(),oppR=isNet?(net.oppR||BASE_R):botRating(skillPct());
+  const score=w===YOU?1:0,E=expected(prof.r,oppR,gameRocks[1],gameRocks[2]),d=Math.round(kFactor(prof.g)*(score-E)),before=prof.r;
+  prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;
+  prof.h.unshift({t:Date.now(),o:oppName,or:oppR,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
+  log(`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oppName} was rated ${oppR}; rocks ${gameRocks[1]} to ${gameRocks[2]}.`);
+  if(isNet)netWrite({['players/'+net.uid]:{n:prof.n||net.name,r:prof.r,g:prof.g,w:prof.w,l:prof.l,t:{'.sv':'timestamp'}}});
+  renderRecord();
+}
+function renderRecord(){if(headless)return;const el=$('record');if(!el)return;
+  const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
+  const opp=(online&&net)?`${SNAME[BOT]} is rated ${net.oppR||BASE_R}.`:`Bot at skill ${skillPct()} is rated ${botRating(skillPct())}.`;
+  el.innerHTML=`<div class="lrow"><span>${prof.n?prof.n+' · ':''}Rating</span><span style="font-family:var(--mono);font-size:18px">${prof.r}</span></div>
+  <div class="hint">${prof.g} game${prof.g===1?'':'s'} · ${prof.w} won · ${prof.l} lost${prof.g?' · last: '+last:''}</div>
+  <div class="hint">${opp} This game's rocks: you ${gameRocks[1]}, them ${gameRocks[2]}. Handicap: 1 rock per 50 points of gap, split between the two sides. Hints ${hintWords()}.</div>`;
+  const hl=$('hintLbl');if(hl)hl.textContent=hintWords();
+}
+const netWait=()=>!!(online&&net&&!net.hd);
+function netSetHandicap(){ // host, the moment the guest is in: decide both rock counts, re-lay own rocks, tell the guest
+  if(!net||net.role!=='host'||net.hd)return;net.hd=true;
+  const base=+$('inBlock').value||BASE_ROCKS;
+  const [rh,rg]=$('inAuto').checked?handicapRocks(prof.r,net.oppR||BASE_R,base):[base,+$('inBotBlock').value||0];
+  newJewels(rh);gameRocks={1:rh,2:rg};
+  netWrite({set:{k:NC,rh,rg,c:+$('inClock').value||10,m:+$('inMove').value||0,hd:1}});
+  log(`Match set. You ${rh} rocks (rated ${prof.r}), ${SNAME[BOT]} ${rg} rocks (rated ${net.oppR||BASE_R}). Your star board is open.`);
+  renderJewels();renderNudge();renderRecord();
+}
+function netTakeHandicap(s){ // guest: the host has decided
+  if(!net||net.role!=='guest'||net.hd||!s||!s.hd)return;net.hd=true;
+  const rg=+s.rg||0,rh=+s.rh||0;newJewels(rg);gameRocks={1:rg,2:rh};
+  log(`Match set. You ${rg} rocks (rated ${prof.r}), ${SNAME[BOT]} ${rh} rocks (rated ${net.oppR||BASE_R}). Your star board is open.`);
+  renderJewels();renderNudge();renderRecord();
+}
+function renderWait(){const w=netWait()&&phase==='play'&&!over;const el=$('jwait');el.hidden=!w;if(w)el.querySelector('.card').innerHTML=net.role==='host'?`Waiting for a friend to join<small>Code <b style="font-family:var(--mono);letter-spacing:.2em">${net.code}</b>. Your star board opens when they are in and the rocks are set from both ratings.</small>`:`Waiting for the host<small>${SNAME[BOT]} is setting the rocks from both ratings. Your star board opens in a moment.</small>`;}
+if(prof.n)$('inName').value=prof.n;
+$('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
+$('inSkill').addEventListener('change',renderRecord);
+renderRecord();
+// ---------- drone tips: tap a drone, read how it works. Off in Settings.
+const TIPS={
+  C:'Moves 1 square any way. Tap Claim and it takes the 3 × 3 around it: open land becomes yours, enemy land becomes disputed, disputed becomes yours. That uses it up. Tap a far square and it walks there a step a turn. Flying down onto your stars: tap one tile, the 3 × 3 around it goes.',
+  G:'Moves 1 square, only on your land. Any enemy drone on your land next to it is removed at once, and the guard stays. An enemy two squares away gets you an offer: jump and take it, and the guard is lost. Standing next to an enemy siege drone it shields your wall. Flying down: pick 2 tiles.',
+  S:'Moves up to 4 squares on the diagonals and can bend, so it stays on its own color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 4 tiles.',
+  H:'Moves up to 4 squares in any direction and can bend, so it can change color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 6 tiles.',
+  W:'Tap Warp, then any square that is not on or next to an enemy guard: the 3 × 3 there becomes yours outright and enemy drones in it are removed (siege drones stay). That uses it up. It can also walk 1 square a turn. Flying down: pick 1 tile.',
+  X:'Moves 1 square. Tap a far square and it walks there a step a turn. Beside the enemy wall it fires by itself: one shot clears the walls next to it, the next takes the Commander and wins. It cannot take drones and cannot be taken. An enemy guard next to it blocks its shot. Four enemy drones around it destroy it. Flying down: pick 8 tiles.'
+};
+let tip=null;
+// the same card from the other side: their land, their stars, and no "tap" instructions for a drone you can't tap
+function tipText(t,side){let s=TIPS[t];if(side===YOU)return s;return s.replace(/\byour\b/g,'their').replace(/\byours\b/g,'theirs').replace(/Tap (Claim|Warp|a far square) and /g,'').replace(/^it /,'It ').replace(/\. it /g,'. It ');}
+const tipsOn=()=>$('inTips').checked;
+function renderTip(){if(headless)return;const el=$('dtip');if(!tip||!tipsOn()||phase!=='play'){el.hidden=true;return;}
+  el.hidden=false;el.innerHTML=`<span class="x" title="close">×</span><b style="color:${tip.side===YOU?'var(--you)':'var(--bot)'}">${tip.side===YOU?'Your':SNAME[BOT]+"'s"} ${TNAME[tip.type]}</b> ${tipText(tip.type,tip.side)} <span class="off">Turn tips off</span>`;}
+$('dtip').addEventListener('click',e=>{if(e.target.classList.contains('x')){tip=null;renderTip();}else if(e.target.classList.contains('off')){$('inTips').checked=false;try{localStorage.setItem('cc_tips','0');}catch(_){}tip=null;renderTip();}});
+$('inTips').addEventListener('change',()=>{try{localStorage.setItem('cc_tips',$('inTips').checked?'1':'0');}catch(_){}renderTip();});
+try{if(localStorage.getItem('cc_tips')==='0')$('inTips').checked=false;}catch(_){}
+// initial boards so the page has shape before Start
+newChess();newJewels(0);newBotBoard(0);
+const restored=loadState();
+if(restored){render();if(!over){resolve();if(open&&turn===BOT)setTimeout(()=>botMove(BOT),botDelay());}}
+else startGame(); // no saved game: start one with the default settings so the rocks are on the board from the first look
+netBoot(restored);
+</script>
