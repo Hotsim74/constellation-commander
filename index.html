@@ -205,6 +205,8 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 .dr.tS.s1,.dr.tS.s2,.dr.tW.s1,.dr.tW.s2,.dr.tH.s1,.dr.tH.s2{background:#0e131a;color:inherit}
 .dr.tX{border-width:2px;border-style:solid}
 .dr svg{width:100%;height:100%;display:block;overflow:visible}
+.dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:1.15em;line-height:1;color:#fff;text-shadow:0 0 2px #000,0 0 4px #000,0 0 7px #000,0 1px 1px #000;pointer-events:none;z-index:3;letter-spacing:0}
+.dr.s1 .lt{color:#fff7e0}.dr.s2 .lt{color:#e6fbff}
 .dr svg .ic path,.dr svg .ic circle{fill:none}
 .dr svg .ic .f{fill:inherit;stroke:none}
 .dr svg .ic .s{fill:#0e131a}
@@ -286,6 +288,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 
   <section class="panel cpanel">
     <div class="ph"><span class="lbl">The board</span><span class="sub">9 × 9 · bot at top, you at bottom</span></div>
+    <div class="hint legend" style="margin:-4px 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.02em"><b>C</b> claim · <b>G</b> guard · <b>S</b> strike · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege</div>
     <div class="cgrid" id="cgrid"></div>
     <div class="coords">
       <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span><span>i</span>
@@ -363,7 +366,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
   <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
   <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
-  <p><strong>Fly down.</strong> Before the board opens, any drone on your back row can fly down for free. Once it is open, on your turn any drone can drop to your star board instead of moving. A claim drone drops as a bomb: tap one tile and the 3 × 3 around it goes. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
+  <p><strong>Fly down.</strong> Before the board opens, any drone on your back row can fly down for free. Once it is open, on your turn any drone can drop to your star board instead of moving. A claim drone removes 1 tile. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
   <p><strong>Guesses in this build:</strong></p>
   <ul>
     <li>Vertical lines count for drones.</li>
@@ -577,7 +580,7 @@ const digNeed=t=>t==='G'?2:t==='S'?4:t==='H'?6:t==='X'?8:1;
 function autoFly(t){
   // back row full: the drone hovers over the star board and the player picks what it removes.
   const need=digNeed(t);
-  digQueue.push({t,need,line:null,blast:t==='C'});
+  digQueue.push({t,need,line:null,blast:false});
   log(`Back row full. Your ${TNAME[t]} is overhead. Pick up to ${need} tile${need>1?'s':''} to remove.`);
 }
 function startDig(){
@@ -659,7 +662,7 @@ function botDigCore(side,need,blast){
 }
 function botDig(t,side=BOT){
   // back row full: the bot's new drone digs its own board instead of landing
-  const {dug,rocks,earned}=botDigCore(side,digNeed(t),t==='C');
+  const {dug,rocks,earned}=botDigCore(side,digNeed(t),false);
   log(`${side===BOT?(SNAME[BOT]+"'s"):'Your'} back row is full. ${side===BOT?'Its':'The'} ${TNAME[t]} dug ${dug} tile${dug===1?'':'s'} on its own board${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
   for(const x of earned){if(x==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,x);}
   renderBotBoard();
@@ -1622,7 +1625,7 @@ function renderChess(){if(headless)return;
     if(walkers(YOU).some(m=>m.d.dest===ck(r,c)))cls.push('dest');
     let inner=(cell.own&&!cell.wall)?'<i class="cdot"></i>':'';
     if(cell.master)inner='<span class="mast">&#9733;</span>';
-    if(cell.drone)inner+=`<span class="dr t${cell.drone.type} s${cell.drone.side}" title="${TNAME[cell.drone.type]}">${droneSVG(cell.drone.type,cell.drone.side)}</span>`;
+    if(cell.drone)inner+=`<span class="dr t${cell.drone.type} s${cell.drone.side}" title="${TNAME[cell.drone.type]}">${droneSVG(cell.drone.type,cell.drone.side)}<b class="lt">${cell.drone.type}</b></span>`;
     h+=`<div class="${cls.join(' ')}" data-r="${r}" data-c="${c}">${inner}</div>`;}
   $('cgrid').innerHTML=h;
 }
@@ -2036,7 +2039,7 @@ $('inSkill').addEventListener('change',renderRecord);
 renderRecord();
 // ---------- drone tips: tap a drone, read how it works. Off in Settings.
 const TIPS={
-  C:'Moves 1 square any way. Tap Claim and it takes the 3 × 3 around it: open land becomes yours, enemy land becomes disputed, disputed becomes yours. That uses it up. Tap a far square and it walks there a step a turn. Flying down onto your stars: tap one tile, the 3 × 3 around it goes.',
+  C:'Moves 1 square any way. Tap Claim and it takes the 3 × 3 around it: open land becomes yours, enemy land becomes disputed, disputed becomes yours. That uses it up. Tap a far square and it walks there a step a turn. Flying down onto your stars: pick 1 tile.',
   G:'Moves 1 square, only on your land. Any enemy drone on your land next to it is removed at once, and the guard stays. An enemy two squares away gets you an offer: jump and take it, and the guard is lost. Standing next to an enemy siege drone it shields your wall. Flying down: pick 2 tiles.',
   S:'Moves up to 4 squares on the diagonals and can bend, so it stays on its own color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 4 tiles.',
   H:'Moves up to 4 squares in any direction and can bend, so it can change color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 6 tiles.',
