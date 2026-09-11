@@ -126,6 +126,9 @@ main>*{max-width:100%;min-width:0}
 .status.you{border-left-color:var(--you)}.status.bot{border-left-color:var(--bot)}
 .status.over{border-left-color:var(--ok)}
 .acts{display:flex;flex-wrap:wrap;gap:6px}
+.coach{background:rgba(232,166,59,.12);border-left:3px solid var(--you);padding:8px 10px;margin:0 0 8px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:calc(8*var(--jc) + 22px)}
+.coach b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;color:var(--you)}
+.coach[hidden]{display:none}
 .tipcard{background:var(--panel2);border-left:3px solid var(--you);padding:8px 28px 8px 10px;margin:0 0 8px;font-size:13px;line-height:1.45;position:relative;max-width:70ch}
 .tipcard b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;margin-right:4px}
 .tipcard .x{position:absolute;right:8px;top:4px;cursor:pointer;color:var(--mute);font-size:18px;line-height:1}
@@ -282,6 +285,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 <main id="main">
   <section class="panel jpanel">
     <div class="ph"><span class="lbl">Your star board</span><span class="sub" id="jsub">Drag a star onto its neighbor</span></div>
+    <div id="coach" class="coach" hidden></div>
     <div class="jwrap"><div class="jgrid" id="jgrid"></div><div id="jpops"></div><div id="jdim" hidden><div class="card">Your move on the board<small>Move a drone, claim, fire, warp, fly down, or pass. Then the stars come back.</small><button id="goBoard" style="margin-top:10px">Go to the board</button></div></div><div id="jwait" hidden><div class="card"></div></div></div>
     <div id="jprev" hidden><div class="lbl" style="margin:10px 0 6px">After removal · blanks are new tiles</div><div class="jgrid mini" id="jprevgrid"></div></div>
   </section>
@@ -558,8 +562,8 @@ if(earnHook)earnHook(side,t);  const auto=side===BOT||selfPlay;
   const br=side===YOU?8:0;
   const free=BACKCOLS.filter(c=>isBackFree(side,br,c));
   const pending=!auto?placeQueue.length:0;
-  if(!auto&&free.length-pending>1){placeQueue.push(t);log(`Your ${TNAME[t]} is ready. Tap a free back-row square to place it.`);renderChess();renderSide();return;}
-  if(free.length-pending>=1){if(!auto&&pending){/* one square left: it goes to the drone that waited longest, this one waits */placeQueue.push(t);renderSide();return;}reserve[side].push(t);place(side,0,br,free[rand(free.length)]);return;}
+  if(!auto&&free.length-pending>1){placeQueue.push(t);log(`Your ${TNAME[t]} is ready. Tap a free back-row square to place it.`);renderChess();renderSide();renderCoach();renderTabs();return;}
+  if(free.length-pending>=1){if(!auto&&pending){/* one square left: it goes to the drone that waited longest, this one waits */placeQueue.push(t);renderSide();renderCoach();renderTabs();return;}reserve[side].push(t);place(side,0,br,free[rand(free.length)]);return;}
   { // any time the row is full: a stronger drone bumps the weakest one off, and the bumped drone digs
     // (before v0.50 this only happened before the board opened; a warp earned onto a full row was wasted as a 1-tile dig)
     // and the bumped drone digs the star board instead
@@ -1669,7 +1673,7 @@ function renderNudge(){if(headless)return;
   $('jdim').hidden=!on;
   document.querySelector('.cpanel').classList.toggle('nudge',on);renderWait();
 }
-function render(){if(headless)return;renderJewels();renderChess();renderSide();renderNudge();renderBotBoard();renderTabs();renderTip();saveState();netSync();}
+function render(){if(headless)return;renderJewels();renderChess();renderSide();renderNudge();renderBotBoard();renderTabs();renderTip();renderCoach();saveState();netSync();}
 
 // ---------- screenshot: draw the game to a canvas (the sandbox can't save files, so we show it)
 const GEMCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8','#e8e4d3'];
@@ -2055,6 +2059,14 @@ function renderTip(){if(headless)return;const el=$('dtip');if(!tip||!tipsOn()||p
 $('dtip').addEventListener('click',e=>{if(e.target.classList.contains('x')){tip=null;renderTip();}else if(e.target.classList.contains('off')){$('inTips').checked=false;try{localStorage.setItem('cc_tips','0');}catch(_){}tip=null;renderTip();}});
 $('inTips').addEventListener('change',()=>{try{localStorage.setItem('cc_tips',$('inTips').checked?'1':'0');}catch(_){}renderTip();});
 try{if(localStorage.getItem('cc_tips')==='0')$('inTips').checked=false;}catch(_){}
+// ---------- a little hand-holding: a new drone is waiting, and the place to put it is on the other board
+function waitingWords(){const n={};for(const t of placeQueue)n[t]=(n[t]||0)+1;
+  const parts=Object.keys(n).map(t=>n[t]===1?`a ${TNAME[t]}`:`${n[t]} ${TNAME[t]}s`);
+  return parts.length<=1?parts.join(''):parts.slice(0,-1).join(', ')+' and '+parts[parts.length-1];}
+function renderCoach(){if(headless)return;const el=$('coach');const on=placeQueue.length>0&&phase==='play'&&!over&&tipsOn();el.hidden=!on;if(!on)return;
+  const many=placeQueue.length>1;
+  el.innerHTML=`<span><b>${many?'Drones':'Drone'} ready.</b> ${isPhone()?'Swipe to the Board':'On the board'}, tap a lit square on your bottom row, and ${many?'they land':'it lands'} there. Waiting: ${waitingWords()}.</span>${isPhone()?'<button type="button" id="coachGo">Go to the board</button>':''}`;
+  const b=$('coachGo');if(b)b.addEventListener('click',()=>goPane(1));}
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
