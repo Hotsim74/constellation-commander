@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.95';
+const VERSION='0.96';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -454,8 +454,8 @@ function setHome(side,back,front){
   // starting guards do not count toward the 3 drones needed to open the board.
   const yard=side===YOU?front-1:front+1;
   for(let c=2;c<=6;c++)chess[yard][c].own=side;
-  chess[yard][3].drone={id:ids++,type:'G',side,start:true};
-  chess[yard][5].drone={id:ids++,type:'G',side,start:true};
+  chess[yard][2].drone={id:ids++,type:'G',side,start:true}; // guards start at the ends of the yard (c and g), so the middle of the wall can be sieged unless a guard walks over to cover it
+  chess[yard][6].drone={id:ids++,type:'G',side,start:true};
 }
 const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
 const earnedOn=side=>dronesOf(side).filter(x=>!x.d.start).length;
@@ -776,7 +776,8 @@ function walkWhy(m){
   if(legal.every(k=>deadly(Math.floor(k/N),k%N,m.d.side)))return 'every step is next to an enemy guard';
   return m.d.type==='G'?'no path over your land':'no step gets closer';
 }
-function pendingWalk(){for(const m of walkers(YOU))if(walkStep(m)!=null||(m.d.type==='X'&&canFire(m.r,m.c,YOU)))return m;return null;}
+function pendingWalk(){for(const m of dronesOf(YOU))if(m.d.type==='X'&&canFire(m.r,m.c,YOU))return m; // a siege drone that can fire does, walk order or not
+  for(const m of walkers(YOU))if(walkStep(m)!=null)return m;return null;}
 function deadly(r,c,side){
   // a square on the enemy's land next to an enemy guard: whoever steps there is removed at once
   const enemy=side===YOU?BOT:YOU;if(chess[r][c].own!==enemy)return false;
@@ -1682,7 +1683,7 @@ function renderSide(){if(headless)return;
   else if(over){st.classList.add('over');st.textContent=`${SNAME[over.w]} win${over.w===YOU?'':'s'}. ${over.reason}`;}
   else if(!open)st.textContent=`Board opens at 3 earned drones each. You ${Math.min(3,earnedOn(YOU))}/3 · ${SNAME[BOT]} ${Math.min(3,earnedOn(BOT))}/3`;
   else if(turn===0)st.textContent='Waiting for a drone to land.';
-  else{st.classList.add(turn===YOU?'you':'bot');st.textContent=(turn===YOU?'Your move.'+(moveLeft>0?' '+Math.ceil(moveLeft/1000)+'s':'')+((()=>{const ws=walkers(YOU);if(!ws.length)return '';const w=pendingWalk();if(w&&!walkDone)return ` Walk steps in ${Math.max(0,Math.ceil((4000-turnMs)/1000))}s.`;const stuck=ws.filter(x=>walkStep(x)==null);return stuck.length?` Walk to ${sqName(Math.floor(stuck[0].d.dest/N),stuck[0].d.dest%N)} blocked: ${walkWhy(stuck[0])}.`:'';})()):SNAME[BOT]+' is moving.')+(bothArmed()?'':' Clock paused: '+(dronesOf(YOU).length?'bot has':'you have')+' no drones.');}
+  else{st.classList.add(turn===YOU?'you':'bot');st.textContent=(turn===YOU?'Your move.'+(moveLeft>0?' '+Math.ceil(moveLeft/1000)+'s':'')+((()=>{const sx=dronesOf(YOU).find(m=>m.d.type==='X'&&shielded(m.r,m.c,YOU)&&(fireTargets(m.r,m.c,YOU).walls.length||fireTargets(m.r,m.c,YOU).master));if(sx){const g=fireTargets(sx.r,sx.c,YOU).guards[0];return ` Siege drone at ${sqName(sx.r,sx.c)} is shielded by the guard at ${sqName(g[0],g[1])}. Move it along the wall, or take that guard.`;}const w=pendingWalk();if(w&&!walkDone)return (w.d.type==='X'&&canFire(w.r,w.c,YOU)?` Siege drone at ${sqName(w.r,w.c)} fires in `:` Walk steps in `)+`${Math.max(0,Math.ceil((4000-turnMs)/1000))}s.`;const ws=walkers(YOU);if(!ws.length)return '';const stuck=ws.filter(x=>walkStep(x)==null);return stuck.length?` Walk to ${sqName(Math.floor(stuck[0].d.dest/N),stuck[0].d.dest%N)} blocked: ${walkWhy(stuck[0])}.`:'';})()):SNAME[BOT]+' is moving.')+(bothArmed()?'':' Clock paused: '+(dronesOf(YOU).length?'bot has':'you have')+' no drones.');}
   if(phase==='play'&&!over&&placeQueue.length&&!(sel&&sel.kind==='fly')){st.className='status warn';st.textContent=`${placeQueue.length} drone${placeQueue.length>1?'s':''} waiting: ${TSHORT[placeQueue[0]]} first. Tap a lit back-row square.`;}
 if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status warn';const left=sel.need-sel.picks.length;st.textContent=sel.line?'Drone overhead. Tap a tile on your star board: its whole row goes.':`Drone overhead. Tap ${left} tile${left===1?'':'s'} on your star board.`;}
   for(const s of [1,2]){const n=landOf(s);$('land'+s).textContent=`${n} / ${WIN}`;$('bar'+s).style.width=Math.min(100,n/WIN*100)+'%';}
