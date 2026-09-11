@@ -404,7 +404,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   <p><strong>Strike drone</strong> moves up to 4 squares diagonally and may bend mid-move. It takes any enemy drone it lands on.</p>
   <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
   <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
-  <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
+  <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. You can have two on the board at once; a third one you earn digs your star board instead of landing. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
   <p><strong>Fly down.</strong> Once the board is open, on your turn any drone can drop to your star board instead of moving. Before it opens, drones wait on the back row; only a full back row sends the newest one down to dig. A claim drone removes 1 tile. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
   <p><strong>Guesses in this build:</strong></p>
   <ul>
@@ -594,6 +594,8 @@ function checkReady(){
 const RANK={C:1,G:2,S:3,H:4,W:5,X:6};
 function earn(side,t){
 if(earnHook)earnHook(side,t);  const auto=side===BOT||selfPlay;
+  if(t==='X'&&dronesOf(side).filter(m=>m.d.type==='X').length>=2){ // two siege drones out at once is the limit; a third digs instead
+    log(`${side===YOU?'Your':SNAME[BOT]+"'s"} siege drone can't land: two are already on the board. It digs instead.`);if(!auto)autoFly(t,'Two siege drones are out.');else botDig(t,side,'Two siege drones are out.');return;}
   const br=side===YOU?8:0;
   const free=BACKCOLS.filter(c=>isBackFree(side,br,c));
   const pending=!auto?placeQueue.length:0;
@@ -616,11 +618,11 @@ if(earnHook)earnHook(side,t);  const auto=side===BOT||selfPlay;
   if(!auto)autoFly(t);else botDig(t,side);
 }
 const digNeed=t=>t==='G'?2:t==='S'?4:t==='H'?6:t==='X'?8:1;
-function autoFly(t){
+function autoFly(t,why='Back row full.'){
   // back row full: the drone hovers over the star board and the player picks what it removes.
   const need=digNeed(t);
   digQueue.push({t,need,line:null,blast:false});
-  log(`Back row full. Your ${TNAME[t]} is overhead. Pick up to ${need} tile${need>1?'s':''} to remove.`);
+  log(`${why} Your ${TNAME[t]} is overhead. Pick up to ${need} tile${need>1?'s':''} to remove.`);
 }
 function startDig(){
   if(over||phase!=='play'||!digQueue.length||(sel&&sel.kind==='fly'))return;
@@ -700,10 +702,10 @@ function botDigCore(side,need,blast){
     detonate(true);gravity();return botSettle();});
   return {dug,rocks,earned};
 }
-function botDig(t,side=BOT){
+function botDig(t,side=BOT,why=null){
   // back row full: the bot's new drone digs its own board instead of landing
   const {dug,rocks,earned}=botDigCore(side,digNeed(t),false);
-  log(`${side===BOT?(SNAME[BOT]+"'s"):'Your'} back row is full. ${side===BOT?'Its':'The'} ${TNAME[t]} dug ${dug} tile${dug===1?'':'s'} on its own board${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
+  log(`${why||((side===BOT?(SNAME[BOT]+"'s"):'Your')+' back row is full.')} ${side===BOT?'Its':'The'} ${TNAME[t]} dug ${dug} tile${dug===1?'':'s'} on its own board${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
   for(const x of earned){if(x==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,x);}
   renderBotBoard();
 }
@@ -2088,7 +2090,7 @@ const TIPS={
   S:'Moves up to 4 squares on the diagonals and can bend, so it stays on its own color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 4 tiles.',
   H:'Moves up to 4 squares in any direction and can bend, so it can change color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 6 tiles.',
   W:'Tap Warp, then any square that is not on or next to an enemy guard: the 3 × 3 there becomes yours outright and enemy drones in it are removed (siege drones stay). That uses it up. It can also walk 1 square a turn. Flying down: pick 1 tile.',
-  X:'Moves 1 square. Tap a far square and it walks there a step a turn. Beside the enemy wall it fires by itself: one shot clears the walls next to it, the next takes the Commander and wins. It cannot take drones and cannot be taken. An enemy guard next to it blocks its shot. Four enemy drones around it destroy it. Flying down: pick 8 tiles.'
+  X:'Moves 1 square. Only two can be on the board at once; a third digs instead. Tap a far square and it walks there a step a turn. Beside the enemy wall it fires by itself: one shot clears the walls next to it, the next takes the Commander and wins. It cannot take drones and cannot be taken. An enemy guard next to it blocks its shot. Four enemy drones around it destroy it. Flying down: pick 8 tiles.'
 };
 let tip=null;
 // the same card from the other side: their land, their stars, and no "tap" instructions for a drone you can't tap
