@@ -2047,7 +2047,8 @@ function autoRocks(){if(!$('inAuto').checked)return;const [a,b]=handicapRocks(pr
 function rateGame(w){
   if(headless||selfPlay||!over||over.rated||phase!=='play')return;over.rated=true;
   const isNet=!!(online&&net),oppName=isNet?SNAME[BOT]:'Bot '+skillPct(),oppR=isNet?(net.oppR||BASE_R):botRating(skillPct());
-  const score=w===YOU?1:0,E=expected(prof.r,oppR,gameRocks[1],gameRocks[2]),d=Math.round(kFactor(prof.g)*(score-E)),before=prof.r;
+  const weight=isNet?1:Math.max(0.1,skillPct()/100); // bot games count by the bot's skill: skill 20 moves you a fifth as far as a person would
+  const score=w===YOU?1:0,E=expected(prof.r,oppR,gameRocks[1],gameRocks[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;
   prof.h.unshift({t:Date.now(),o:oppName,or:oppR,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   log(`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oppName} was rated ${oppR}; rocks ${gameRocks[1]} to ${gameRocks[2]}.`);
@@ -2056,7 +2057,7 @@ function rateGame(w){
 }
 function renderRecord(){if(headless)return;const el=$('record');if(!el)return;
   const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
-  const opp=(online&&net)?`${SNAME[BOT]} is rated ${net.oppR||BASE_R}.`:`Bot at skill ${skillPct()} is rated ${botRating(skillPct())}.`;
+  const opp=(online&&net)?`${SNAME[BOT]} is rated ${net.oppR||BASE_R}.`:`Bot at skill ${skillPct()} is rated ${botRating(skillPct())}; a game against it moves your rating at ${Math.max(10,skillPct())}% of the rate a game against a person does.`;
   el.innerHTML=`<div class="lrow"><span>${prof.n?prof.n+' · ':''}Rating</span><span style="font-family:var(--mono);font-size:18px">${prof.r}</span></div>
   <div class="hint">${prof.g} game${prof.g===1?'':'s'} · ${prof.w} won · ${prof.l} lost${prof.g?' · last: '+last:''}</div>
   <div class="hint">${opp} This game's rocks: you ${gameRocks[1]}, them ${gameRocks[2]}. Handicap: 1 rock per 50 points of gap, split between the two sides. Hints ${hintWords()}.</div>`;
