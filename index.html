@@ -140,6 +140,15 @@ main>*{max-width:100%;min-width:0}
 .coach{background:rgba(232,166,59,.12);border-left:3px solid var(--you);padding:8px 10px;margin:0 0 8px;font-size:13px;line-height:1.45;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:calc(8*var(--jc) + 22px)}
 .coach b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;color:var(--you)}
 .coach[hidden]{display:none}
+#intro{position:fixed;inset:0;z-index:60;background:rgba(6,9,13,.82);display:flex;align-items:center;justify-content:center;padding:16px}
+#intro[hidden]{display:none}
+#intro .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:22px 22px 18px;max-width:460px;width:100%;color:#fff;font-size:18px;line-height:1.5;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+#intro h2{font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px;color:var(--you)}
+#intro ol{margin:0 0 16px;padding-left:24px}
+#intro li{margin:0 0 10px}
+#intro li b{color:#fff}
+#intro button{font-size:18px;padding:14px 22px;width:100%;background:var(--you);color:#1a1200;border-color:var(--you)}
+#intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
 .tipcard{background:var(--panel2);border-left:3px solid var(--you);padding:8px 28px 8px 10px;margin:0 0 8px;font-size:13px;line-height:1.45;position:relative;max-width:70ch}
 .tipcard b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;margin-right:4px}
 .tipcard .x{position:absolute;right:8px;top:4px;cursor:pointer;color:var(--mute);font-size:18px;line-height:1}
@@ -277,6 +286,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <button id="btnShot">Screenshot</button>
     <button id="btnCopy">Copy as text</button>
     <button id="btnNet">Play a friend</button>
+    <button id="btnHow">How to play</button>
     <a href="https://hotsim74.github.io/constellation-commander/rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
   </form>
 </header>
@@ -314,6 +324,19 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
       <div class="hint" id="acthint"></div>
       <div class="tipcard" id="dtip" hidden></div>
       <div class="acts" id="acts"></div>
+<div id="intro" hidden>
+  <div class="card">
+    <h2>How this works</h2>
+    <ol>
+      <li><b>Start on the star board.</b> Drag a star onto the one next to it to make a line of 4 or more. That earns you a drone.</li>
+      <li><b>Drones land on the Board</b>, the other screen, on your bottom row. Tap a lit square to put one down.</li>
+      <li><b>When you both have 3 drones there, the Board opens.</b> Take your turn there, move one drone, then come back and earn more.</li>
+      <li><b>Hold 46 squares and you win.</b></li>
+    </ol>
+    <button type="button" id="introGo">Got it, let's play</button>
+    <small>Read this again any time from Settings, How to play.</small>
+  </div>
+</div>
 <div id="flipbar" hidden><span id="flipText">Back to stars in 4s</span><button id="flipStay">Stay and watch</button><button id="flipNow">Flip to stars</button></div>
     </div>
   </section>
@@ -2128,6 +2151,11 @@ $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',
 document.addEventListener('pointerdown',()=>{if(soundOn()){soundStart();if(AC&&!humTimer)humSwell();}},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(AC&&!document.hidden&&soundOn())AC.resume();});
 try{if(localStorage.getItem('cc_sound')==='1')$('inSound').checked=true;}catch(_){}
+// ---------- first-time note: four lines and a button, shown once, back any time from Settings
+function showIntro(){$('intro').hidden=false;}
+$('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc_intro','1');}catch(_){}});
+$('btnHow').addEventListener('click',showIntro);
+try{if(localStorage.getItem('cc_intro')!=='1')showIntro();}catch(_){showIntro();}
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
