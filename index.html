@@ -1715,17 +1715,18 @@ function render(){if(headless)return;renderJewels();renderChess();renderSide();r
 // ---------- screenshot: draw the game to a canvas (the sandbox can't save files, so we show it)
 const GEMCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8','#e8e4d3'];
 function drawGem(ctx,v,x,y,s){
-  const cx=x+s/2,cy=y+s/2,r=s*0.34;ctx.save();
+  // the screenshot's star tiles: same shapes as the board. red 5-point, gold 4-point, green 6, blue 8, purple glow, white thin 4 turned
+  const cx=x+s/2,cy=y+s/2,r=s*0.40;ctx.save();
   if(v===BLK){ctx.fillStyle='#343a43';ctx.fillRect(x+s*.1,y+s*.1,s*.8,s*.8);ctx.strokeStyle='#4a525c';ctx.lineWidth=1;for(let i=-s;i<s;i+=6){ctx.beginPath();ctx.moveTo(x+s*.1+i,y+s*.9);ctx.lineTo(x+s*.1+i+s*.8,y+s*.1);ctx.stroke();}ctx.restore();return;}
-  if(v===BOMB){ctx.fillStyle='#23282f';ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.fillStyle='#e5484d';ctx.beginPath();ctx.arc(cx+r*.5,cy-r*.9,r*.28,0,7);ctx.fill();ctx.restore();return;}
-  ctx.fillStyle=GEMCOL[v]||'#888';ctx.beginPath();
-  if(v===0)ctx.arc(cx,cy,r,0,7);
-  else if(v===1){ctx.roundRect(cx-r,cy-r,2*r,2*r,r*.3);}
-  else if(v===2){ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy);ctx.lineTo(cx,cy+r);ctx.lineTo(cx-r,cy);ctx.closePath();}
-  else if(v===3){for(let i=0;i<6;i++){const a=Math.PI/3*i;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();}
-  else if(v===4){ctx.moveTo(cx,cy-r);ctx.lineTo(cx+r,cy+r);ctx.lineTo(cx-r,cy+r);ctx.closePath();}
-  else{for(let i=0;i<8;i++){const a=Math.PI/4*i+Math.PI/8;ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}ctx.closePath();}
-  ctx.fill();ctx.restore();
+  if(v===BOMB){ctx.fillStyle='#23282f';ctx.beginPath();ctx.arc(cx,cy,r*.8,0,7);ctx.fill();ctx.fillStyle='#e5484d';ctx.beginPath();ctx.arc(cx+r*.4,cy-r*.7,r*.22,0,7);ctx.fill();ctx.restore();return;}
+  const col=GEMCOL[v]||'#888';
+  if(v===4){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'#ffffff');g.addColorStop(.25,'#dcb5ff');g.addColorStop(.5,col);g.addColorStop(1,'rgba(176,108,232,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.restore();return;}
+  const pts=v===0?5:v===1?4:v===2?6:v===3?8:4,inner=v===1?0.42:v===5?0.28:v===0?0.45:v===2?0.55:0.6,rot=v===5?Math.PI/4:0;
+  ctx.fillStyle=col;ctx.beginPath();
+  for(let i=0;i<pts*2;i++){const a=-Math.PI/2+rot+Math.PI/pts*i,rr=i%2?r*inner:r;ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(cx,cy,r*.22,0,7);ctx.fill();
+  ctx.restore();
 }
 function drawJewelGrid(ctx,g,x,y,cell,label){
   ctx.fillStyle='#e4e9ef';ctx.font='bold 13px sans-serif';ctx.fillText(label,x,y-8);
@@ -1741,7 +1742,7 @@ function drawChess(ctx,x,y,cell){
     else if(q.own===1){ctx.fillStyle='rgba(232,166,59,.35)';ctx.fillRect(px,py,cell-1,cell-1);}
     else if(q.own===2){ctx.fillStyle='rgba(78,168,220,.35)';ctx.fillRect(px,py,cell-1,cell-1);}
     else if(q.own===3){ctx.fillStyle='rgba(232,166,59,.25)';ctx.fillRect(px,py,cell-1,cell-1);ctx.fillStyle='rgba(78,168,220,.35)';for(let i=0;i<cell;i+=8)ctx.fillRect(px+i,py,4,cell-1);}
-    if(q.master){const col=q.master===1?'#e8a63b':'#4ea8dc';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(px+1,py+1,cell-3,cell-3);ctx.fillStyle=col;ctx.font='bold '+Math.round(cell*.45)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('2605',px+cell/2,py+cell/2);ctx.textAlign='left';ctx.textBaseline='alphabetic';}
+    if(q.master){const col=q.master===1?'#e8a63b':'#4ea8dc';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(px+1,py+1,cell-3,cell-3);ctx.fillStyle=col;ctx.font='bold '+Math.round(cell*.45)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',px+cell/2,py+cell/2);ctx.textAlign='left';ctx.textBaseline='alphabetic';}
     const d=q.drone;if(d){const col=d.side===1?'#e8a63b':'#4ea8dc';ctx.fillStyle='#0e131a';ctx.beginPath();ctx.arc(px+cell/2,py+cell/2,cell*.32,0,7);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=col;ctx.font='bold '+Math.round(cell*.4)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d.type,px+cell/2,py+cell/2+1);ctx.textAlign='left';ctx.textBaseline='alphabetic';}}
   ctx.fillStyle='#8d99a8';ctx.font='11px monospace';for(let c=0;c<N;c++)ctx.fillText('abcdefghi'[c],x+2+c*cell+cell/2-3,y+cell*N+16);
 }
@@ -1752,7 +1753,7 @@ function snapshot(){
   const W=1180,H=720,cv=document.createElement('canvas');cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
   ctx.fillStyle='#121820';ctx.fillRect(0,0,W,H);
   ctx.fillStyle='#e4e9ef';ctx.font='bold 22px sans-serif';ctx.fillText('CONSTELLATION COMMANDER',20,34);
-  ctx.fillStyle='#8d99a8';ctx.font='12px sans-serif';ctx.fillText(new Date().toLocaleString()+'  ·  '+$('status').textContent,190,34);
+  ctx.fillStyle='#8d99a8';ctx.font='12px sans-serif';ctx.fillText(new Date().toLocaleString()+'  ·  '+$('status').textContent,20,56);
   drawJewelGrid(ctx,jew,20,80,40,'Your star board');
   drawChess(ctx,380,80,52);
   drawJewelGrid(ctx,bjew,880,80,30,'Bot star board');
