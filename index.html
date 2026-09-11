@@ -394,7 +394,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <tr><td>L or T of two 3-lines</td><td>3 bombs drop onto your board</td></tr>
     <tr><td>Plus of two 3-lines, or an X of 5 (diagonals crossing in the middle)</td><td>3 blockers land on the other player's board</td></tr>
   </table>
-  <p><strong>Bombs</strong> sit on your board like blockers. When a tile next to a bomb is cleared, the bomb goes off and clears the 8 tiles around it, blockers included. Bombs set off other bombs.</p>
+  <p><strong>Rocks to the other side.</strong> Match an L or T of two 3-lines and 3 rocks drop onto the other side's star board, on the top row. Both sides can do it.</p>
   <p><strong>Rocks</strong> are the blockers each side starts with, 13 by default, laid out as a shape picked for the game (the same shape on both boards), and nothing adds more. A board with no moves does not reshuffle while you have a drone to fly down. They pace the game: slow while they block the board, faster as they clear, a flood once they are gone. Dig them out by flying drones down, or blow them up.</p>
   <p><strong>The board</strong> opens when both sides have 3 drones on it. Then it is strict turns, one drone move per turn, on a chess clock, with a per-move limit (default 60 seconds) that passes the turn when it runs out. If you spend 30 seconds of your move on the jewels, the star board darkens until you act on the board. The clocks only run while both sides have a drone on the board; a side with none has its turn skipped. Clock at zero and you lose. Your star board never stops.</p>
   <p><strong>Walking.</strong> Select a claim, guard or warp drone and tap a square more than one step away: that becomes its destination. On each of your turns, if you do nothing for 4 seconds, it takes one step toward it and the turn passes. Act sooner and it waits. Steps avoid squares next to enemy guards; a guard stops when it runs out of your land.</p>
@@ -411,9 +411,9 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <li>Vertical lines count for drones.</li>
     <li>The 12 home squares (Commander plus walls) count as owned by that side toward 46. Walls a siege drone clears stop counting.</li>
     <li>Guard sight is the 8 surrounding squares. Guards move 1 square.</li>
-    <li>Blockers and bombs fall with gravity.</li>
+    <li>Blockers fall with gravity.</li>
     <li><strong>Bot skill is a 0 to 100 hardness dial</strong> and every step buys the bot something. 0 to 100: that share of its swaps are the best available. From 30: its guards jump more readily. 50 to 80: it learns your guards' kill zones. 60 to 100: it sees threats from your strike, hunter and group and pulls threatened drones back. 70 to 100: it plans its jewel swaps a move ahead. 90 to 100: it swaps up to 1.5 times your pace. Under 30 it also swaps slower than you, makes some random board moves and never jumps a guard. 20 is a new player's bot, 50 is regular, 70 is hard, 100 is unfair.</li>
-    <li>The bot plays its own star board, shown in the side column. With "bot pace: match mine" on (the default) it swaps as often as you did over the last three minutes, floor 3 a minute (slower than you under skill 30); off, it uses the "bot swaps / min" number. Same shapes, same rewards, same bombs.</li>
+    <li>The bot plays its own star board, shown in the side column. With "bot pace: match mine" on (the default) it swaps as often as you did over the last three minutes, floor 3 a minute (slower than you under skill 30); off, it uses the "bot swaps / min" number. Same shapes, same rewards, same rocks.</li>
     <li>Whoever reaches 3 drones first moves first.</li>
   </ul>
 </details>
@@ -624,9 +624,10 @@ function autoFly(t){
 }
 function startDig(){
   if(over||phase!=='play'||!digQueue.length||(sel&&sel.kind==='fly'))return;
-  const d=digQueue.shift();sel={kind:'fly',auto:true,t:d.t,need:d.need,line:d.line,blast:!!d.blast,picks:[]};render();
+  const d=digQueue[0];sel={kind:'fly',auto:true,t:d.t,need:d.need,line:d.line,blast:!!d.blast,picks:[]};render();
 }
 function sabotage(target){
+  if(online&&net&&target===BOT){net.rkOut=(net.rkOut||0)+3;netWrite({['rk_'+(net.role==='host'?'g':'h')]:net.rkOut});log(`You dropped 3 blockers onto ${SNAME[BOT]}'s board.`);return;}
   if(target===YOU){rockQueue+=3;log('Bot dropped 3 blockers onto your board.');}
   else{withBotBoard(()=>{for(let i=0;i<3;i++)placeRock();});log("You dropped 3 blockers onto the bot's board.");renderBotBoard();}
 }
@@ -950,7 +951,7 @@ function findMatches(){
     const shared=a.run.find(k=>b.run.includes(k));
     const sum=a.len+b.len;
     if(sum>=9){drones.push('W');drones.push('X');}else if(sum===8)drones.push('W');else if(sum===7)drones.push('X');
-    else drones.push(a.run[1]===shared&&b.run[1]===shared?'H':'BOMB');}
+    else drones.push(a.run[1]===shared&&b.run[1]===shared?'H':'SAB');} // L or T of two 3-lines: 3 rocks to the other side (bombs retired 2026-09-11)
   for(const x of runs){if(x.used||x.len===3)continue;drones.push(x.len===4?'C':x.len===5?'S':x.len===6?'X':'W');}
   // blocks: 2x2 components, graded by the biggest rectangle inside
   const seen=new Set();
@@ -1024,7 +1025,7 @@ async function resolve(){
     flash=m.cells;renderJewels();await sleep(170);
     for(const k of m.cells)jew[Math.floor(k/JW)][k%JW]=null;
     for(const t of m.drones){if(t==='SAB')sabotage(BOT);else if(t==='BOMB')bombQueue+=3;else earn(YOU,t);}
-    m.drones.forEach((t,i)=>popAt(m.cells,t==='SAB'?'3 blockers to bot':t==='BOMB'?'3 bombs incoming':'+ '+TNAME[t],i,t==='BOMB'));
+    m.drones.forEach((t,i)=>popAt(m.cells,t==='SAB'?'3 rocks to '+SNAME[BOT]:t==='BOMB'?'3 bombs incoming':'+ '+TNAME[t],i,t==='BOMB'));
     if(detonate()){renderJewels();await sleep(200);}
     flash=null;renderJewels();await sleep(110);
     gravity();
@@ -1049,7 +1050,7 @@ function blastCells(picks){
 }
 async function finishFly(){
   lastSwapAt=Date.now();hintCells=null;
-  const s=sel;sel=null;
+  const s=sel;sel=null;if(s.auto)digQueue.shift(); // the overhead drone leaves the queue only now, so a board move in between can no longer lose it
   let cells=s.blast?blastCells(s.picks):s.picks;
   if(s.line){const [pr,pc]=s.picks[0];cells=[];
     if(s.line==='row')for(let c=0;c<JW;c++)cells.push([pr,c]);else for(let r=0;r<JH;r++)cells.push([r,pc]);}
@@ -1147,6 +1148,7 @@ setInterval(()=>{
   const rate=botRate();const step=60000/rate;
   if(!online){swapAcc+=100;while(swapAcc>=step){swapAcc-=step;botSwap();}}
   const idle=!busy&&!(sel&&sel.kind==='fly');
+  if(digQueue.length&&sel==null&&!busy&&!over)startDig(); // re-offer a waiting overhead drone once the player is not mid-move on the board
   if(rockQueue>0&&idle){while(rockQueue>0){placeRock();rockQueue--;}if(!hasMove()){shuffle();log('No moves left. Board reshuffled.');}renderJewels();}
   if($('inHint').checked&&!hintCells&&!busy&&!boardStuck&&!nudge&&!netWait()&&!(sel&&sel.kind==='fly')&&Date.now()-lastSwapAt>hintDelayMs()){const all=allSwaps();if(all.length){const b=hintPick(all);hintCells=[[b.p[0],b.p[1]],[b.p[2],b.p[3]]];renderJewels();}}
   if(open&&turn===YOU&&!over&&!walkDone&&turnMs>=4000&&!(sel&&(sel.kind==='fly'||sel.kind==='warp'))&&!busy){const w=pendingWalk();if(w){walkDone=true;sel=null;doWalk(w);}}
@@ -1927,6 +1929,8 @@ function applyRemote(out,isFull){
     else if(k==='set'&&v&&net.role==='guest')netTakeHandicap(v);
     else if(k==='guest'&&v&&net.role==='host'){if(!net.opp)log(`${v.n||'A friend'} joined the match.`);net.opp=v.n||'Friend';SNAME[BOT]=net.opp;net.oppR=v.r||BASE_R;netSetHandicap();}
     else if(k==='p_h'||k==='p_g'){if(k!=='p_'+net.role[0]&&typeof v==='number')net.oppSeen=v;}
+    else if(k==='rk_'+net.role[0]){const n=+v||0;if(!isFull){const d=n-(net.rkSeen||0);if(d>0){rockQueue+=d;log(`${SNAME[BOT]} dropped ${d} blockers onto your board.`);}}net.rkSeen=n;}
+    else if(k==='rk_h'||k==='rk_g'){net.rkOut=+v||0;}
   }
   if(turn!==prevTurn){if(turn===YOU){sel=null;startTurn(YOU);log('Your move.');}else if(turn===BOT){sel=null;moveLeft=0;if(open)onYourMoveDone();}}
   if(open&&!prevOpen){say('open');log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);}

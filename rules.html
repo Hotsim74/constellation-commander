@@ -42,7 +42,7 @@ a{color:var(--you)}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, current to version 0.81. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
+<p class="sub">The rulebook, current to version 0.86. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
 
 <nav class="toc">
 <a href="#goal">Goal</a><a href="#stars">Star board</a><a href="#shapes">Shapes and spawn rates</a><a href="#drones">The drones</a><a href="#backrow">Back row</a><a href="#board">The board</a><a href="#turns">Turns and clocks</a><a href="#walking">Walking</a><a href="#guards">Guards</a><a href="#siege">Taking the Commander</a><a href="#digging">Flying down</a><a href="#twophones">Two phones</a><a href="#ratings">Ratings and handicaps</a><a href="#bot">The bot</a><a href="#settings">Settings</a>
@@ -57,8 +57,8 @@ a{color:var(--you)}
 <li><strong>Rows and columns</strong> match at 3 or more. <strong>Diagonals</strong> only match at 4 or more. A lone diagonal 3 does nothing.</li>
 <li>A match of 3 clears tiles and pays nothing. Bigger shapes pay, see the table below.</li>
 <li>Cleared tiles fall out, everything above drops, new stars fall in from the top. Any match that forms on its own pays the same as one you made.</li>
-<li><strong>Rocks</strong> are tiles nothing can match. Both sides start with 13 (a setting), laid out as a shape picked for the game: the X, the plus, the ring, the diamond, the stairs, the pillars, the smile, the zigzag, the arrow, or scattered. Both boards get the same shape. Nothing adds rocks later. They are the pacing of the game: a quiet opening while they block the board, a sweet spot as they clear, then the flood once they are gone. Dig them out by flying drones down, or blow them up with a bomb. A difference between the two rock settings is a handicap.</li>
-<li><strong>Bombs</strong> sit on your board like rocks. When a tile next to a bomb is cleared, the bomb goes off and clears the 8 tiles around it, rocks included. Bombs set off other bombs.</li>
+<li><strong>Rocks</strong> are tiles nothing can match. Both sides start with 13 (a setting), laid out as a shape picked for the game: the X, the plus, the ring, the diamond, the stairs, the pillars, the smile, the zigzag, the arrow, or scattered. Both boards get the same shape. An L or T of two 3-lines drops 3 more onto the other side's board. They are the pacing of the game: a quiet opening while they block the board, a sweet spot as they clear, then the flood once they are gone. Dig them out by flying drones down. A difference between the two rock settings is a handicap.</li>
+<li><strong>Rocks to the other side.</strong> Match an L or T made of two 3-lines and 3 rocks drop onto your opponent's star board, on the top row, where they fall in with everything else. Both sides can do it. The way out is the same as always: dig them with a drone or match around them.</li>
 <li>If no swap on your board can make a match, the board does <strong>not</strong> reshuffle while you have a drone to fly down. The header turns red: dig your way out. Only with no drones at all does the board reshuffle. The bot lives by the same rule.</li>
 </ul>
 
@@ -71,13 +71,13 @@ a{color:var(--you)}
 <tr><td>5 in a line</td><td>Strike drone</td><td class="num">18</td><td class="num">5.7</td></tr>
 <tr><td>Plus of two 3-lines, or an X of 5 diagonals crossing in the middle</td><td>Hunter drone</td><td class="num">17</td><td class="num">5.1</td></tr>
 <tr><td>6 in a line, or an L of 4 and 3</td><td>Siege drone</td><td class="num">18</td><td class="num">6.2</td></tr>
-<tr><td>L or T of two 3-lines</td><td>3 bombs drop onto your own board</td><td class="num">8.7</td><td class="num">4.1</td></tr>
+<tr><td>L or T of two 3-lines</td><td>3 rocks drop onto the other side's board</td><td class="num">8.7</td><td class="num">4.1</td></tr>
 <tr><td>7 in a line, a cross of 4 and 4, or a 5 crossing a 3</td><td>Warp drone</td><td class="num">2.6</td><td class="num">1.2</td></tr>
 <tr><td>A 5 crossing a 4, or bigger crossings</td><td>Warp drone and a siege drone</td><td class="num" colspan="2">rare</td></tr>
 <tr><td>2 × 3 block</td><td>Warp drone and a siege drone</td><td class="num" colspan="2">counted in the warp row</td></tr>
 <tr><td>3 × 3 block</td><td>Warp, siege drone and a hunter</td><td class="num">never seen</td><td class="num">never seen</td></tr>
 </table></div>
-<div class="note">A 3-line that is part of a block belongs to the block. A 3 × 3 has never come up in simulation, so treat it as a legend. This ladder is the version 0.39 experiment: rocks-to-the-other-side was removed and every ship moved down one shape so the rarer drones show up in normal play.</div>
+<div class="note">A 3-line that is part of a block belongs to the block. A 3 × 3 has never come up in simulation, so treat it as a legend. This ladder is the version 0.39 one, with rocks-to-the-other-side back in the L or T slot since version 0.86 (it replaced the bombs).</div>
 
 <h2 id="drones">The drones</h2>
 <div class="tw"><table>
@@ -157,7 +157,7 @@ a{color:var(--you)}
 </ul>
 <p>Online, each phone applies its own hint rule, and the host sets both rock counts the moment the friend joins, from both ratings. Both star boards are locked until then, so nobody gets a head start. Turn the checkbox off to set rocks by hand; the rating change still counts whatever rock difference you chose.</p>
 <h2 id="bot">The bot</h2>
-<p>The bot plays a real star board, shown beside the clocks. Same shapes, same rewards, same rocks and bombs. It has no draw table and no hidden income; every drone it gets, it matched for.</p>
+<p>The bot plays a real star board, shown beside the clocks. Same shapes, same rewards, same rocks. It has no draw table and no hidden income; every drone it gets, it matched for.</p>
 <ul>
 <li><strong>Pace.</strong> With "match mine" on, it swaps as often as you did over the last three minutes, floor 3 a minute. Off, it uses the fixed swaps-per-minute number.</li>
 <li><strong>Skill</strong> is a 0 to 100 hardness dial. Every step buys the bot something:</li>
