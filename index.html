@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.92';
+const VERSION='0.93';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2176,7 +2176,8 @@ async function checkVersion(){
   try{const r=await fetch(location.href.split('#')[0],{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);
     if(m&&m[1]!==VERSION){newverSeen=true;$('newver').hidden=false;}}catch(_){}
 }
-$('btnReload').addEventListener('click',()=>{saveState();location.reload();});
+$('btnReload').addEventListener('click',()=>{saveState();const u=location.pathname+'?fresh='+Date.now()+location.hash;location.replace(u);}); // a stamped address gets past the phone's cached copy; the stamp is dropped again on load
+try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash);}catch(_){}
 $('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
 setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion();});
