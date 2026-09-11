@@ -42,7 +42,7 @@ a{color:var(--you)}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, current to version 0.92. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
+<p class="sub">The rulebook, current to version 0.95. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
 
 <nav class="toc">
 <a href="#goal">Goal</a><a href="#stars">Star board</a><a href="#shapes">Shapes and spawn rates</a><a href="#drones">The drones</a><a href="#backrow">Back row</a><a href="#board">The board</a><a href="#turns">Turns and clocks</a><a href="#walking">Walking</a><a href="#guards">Guards</a><a href="#siege">Taking the Commander</a><a href="#digging">Flying down</a><a href="#twophones">Two phones</a><a href="#ratings">Ratings and handicaps</a><a href="#bot">The bot</a><a href="#settings">Settings</a>
@@ -149,7 +149,7 @@ a{color:var(--you)}
 <li><strong>Leave match</strong> hands the other side back to the bot on your phone.</li>
 </ul>
 <h2 id="ratings">Ratings and handicaps</h2>
-<p>Every player has one rating, kept on their own phone and shown in the Your record panel. You start at <strong>1000</strong>. The bot at skill S is rated <strong>800 + 12 × S</strong>: skill 20 is 1040, about a new player; 50 is 1400; 100 is 2000. A win or loss moves your rating the chess way (Elo): a big move for a surprise, a small one for the expected result. The first 10 games move it faster. A game you abandon by pressing Start while the board is open counts as a loss. Games against the bot count by its skill: at skill 20 your rating moves a fifth as far as it would against a person, at skill 50 half, at 100 the full amount. Games against a person always count in full.</p>
+<p>Every player has one rating, kept on their own phone and shown in the Your record panel. You start at <strong>1000</strong>. The bot at skill S is rated <strong>800 + 12 × S</strong>: skill 10 is 920, the beginner setting and the default; 20 is 1040; 50 is 1400; 100 is 2000. A win or loss moves your rating the chess way (Elo): a big move for a surprise, a small one for the expected result. The first 10 games move it faster. A game you abandon by pressing Start while the board is open counts as a loss. Games against the bot count by its skill: at skill 10 your rating moves a tenth as far as it would against a person, at 20 a fifth, at 50 half, at 100 the full amount. Games against a person always count in full.</p>
 <p>With <strong>Handicap: auto from ratings</strong> on (the default), the game is made fair before it starts, from the rating gap:</p>
 <ul>
 <li><strong>Rocks.</strong> One rock per 50 points of gap, split both ways: half go onto the stronger side's star board, half come off the weaker side's. From the base of 13, a 400-point gap makes it 17 rocks against 9. The stronger side never goes above 30, the weaker never below 0. The rating change after the game is worked out from the gap that is left after the rocks, so a well-handicapped game moves both numbers only a little.</li>
@@ -181,7 +181,7 @@ a{color:var(--you)}
 <tr><td>Star kinds</td><td class="num">5</td><td>How many star colors. Fewer means more matches and far more big shapes. 6 is the original game.</td></tr>
 <tr><td>Your blockers</td><td class="num">13</td><td>Rocks on your board at the start. The pace of the opening. The gap between the two rock settings is the handicap: give the weaker side fewer.</td></tr>
 <tr><td>Bot blockers</td><td class="num">13</td><td>Rocks on the bot's board at the start.</td></tr>
-<tr><td>Bot skill %</td><td class="num">20</td><td>The hardness dial above.</td></tr>
+<tr><td>Bot skill %</td><td class="num">10</td><td>The hardness dial above. 10 is right for beginners; 20 for someone who knows the drones; 50 for a regular; 70 hard; 100 unfair.</td></tr>
 <tr><td>Star hints</td><td class="num">on</td><td>After 5 seconds without a swap, the best-paying swap on your board gets a green ring. A handicap for new players; switch it off when you no longer want it.</td></tr>
 <tr><td>Bot pace: match mine</td><td class="num">on</td><td>Bot swaps as often as you do.</td></tr>
 <tr><td>Bot swaps / min</td><td class="num">8</td><td>Used only when pace matching is off.</td></tr>

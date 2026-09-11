@@ -274,7 +274,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <div class="field"><span class="lbl">Bot swaps / min</span><input type="number" id="inRate" min="1" max="60" step="1" value="8"></div>
     <div class="field"><span class="lbl">Star hints</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inHint" checked> <span id="hintLbl">after 5 s idle</span></label></div>
     <div class="field"><span class="lbl">Bot pace</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inPace" checked> match mine</label></div>
-    <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="20"></div>
+    <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"></div>
     <div class="field"><span class="lbl">Bot blockers</span><input type="number" id="inBotBlock" min="0" max="30" value="13"></div>
     <div class="field"><span class="lbl">Handicap</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inAuto" checked> auto from ratings</label></div>
     <div class="field"><span class="lbl">Drone tips</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.94';
+const VERSION='0.95';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
