@@ -258,6 +258,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <div class="field"><span class="lbl">Bot blockers</span><input type="number" id="inBotBlock" min="0" max="30" value="13"></div>
     <div class="field"><span class="lbl">Handicap</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inAuto" checked> auto from ratings</label></div>
     <div class="field"><span class="lbl">Drone tips</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
+    <div class="field"><span class="lbl">Sound</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inSound"> hum and voice</label></div>
     <div class="field"><span class="lbl">Secs per move</span><input type="number" id="inMove" min="0" max="600" step="5" value="60"></div>
     <div class="field"><span class="lbl">Nudge after (s)</span><input type="number" id="inNudge" min="0" max="300" step="5" value="30"></div>
     <div class="field"><span class="lbl">Clock (min)</span><input type="number" id="inClock" min="1" max="60" value="20"></div>
@@ -491,7 +492,7 @@ function doFire(r,c){
 function doMove(fr,fc,tr,tc){
   const d=chess[fr][fc].drone,t=chess[tr][tc];
   const who=d.side===YOU?'Your':(SNAME[BOT]+"'s");
-  if(t.drone)log(`${who} ${TNAME[d.type]} took the ${TNAME[t.drone.type]} at ${sqName(tr,tc)}.`);
+  if(t.drone){log(`${who} ${TNAME[d.type]} took the ${TNAME[t.drone.type]} at ${sqName(tr,tc)}.`);say(d.side===YOU?'took':'lost');}
   else log(`${SNAME[d.side]} moved ${TNAME[d.type]} ${sqName(fr,fc)} to ${sqName(tr,tc)}.`);
   d.lastFrom=ck(fr,fc);t.drone=d;chess[fr][fc].drone=null;
   afterAction();
@@ -541,7 +542,7 @@ function endTurn(){
 }
 const botDelay=()=>7000+rand(2001); // the bot thinks for 7 to 9 seconds so your turn on the stars is a real turn
 const bothArmed=()=>dronesOf(YOU).length>0&&dronesOf(BOT).length>0;
-function gameOver(w,reason){if(over)return;over={w,reason};rateGame(w);log(`Game over. ${SNAME[w]} win${w===YOU?'':'s'}. ${reason}`);sel=null;render();}
+function gameOver(w,reason){if(over)return;over={w,reason};rateGame(w);say(w===YOU?'win':'loss');log(`Game over. ${SNAME[w]} win${w===YOU?'':'s'}. ${reason}`);sel=null;render();}
 
 function place(side,idx,r,c){
   const t=reserve[side].splice(idx,1)[0];
@@ -554,7 +555,7 @@ function place(side,idx,r,c){
 function checkReady(){
   if(open)return;
   for(const s of [YOU,BOT]){if(!ready[s]&&earnedOn(s)>=3){ready[s]=true;if(!first)first=s;log(`${SNAME[s]} ${s===YOU?'have':'has'} 3 drones on the board.`);}}
-  if(ready[1]&&ready[2]){open=true;startTurn(first);log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);}
+  if(ready[1]&&ready[2]){open=true;say('open');startTurn(first);log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);}
 }
 const RANK={C:1,G:2,S:3,H:4,W:5,X:6};
 function earn(side,t){
@@ -562,7 +563,7 @@ if(earnHook)earnHook(side,t);  const auto=side===BOT||selfPlay;
   const br=side===YOU?8:0;
   const free=BACKCOLS.filter(c=>isBackFree(side,br,c));
   const pending=!auto?placeQueue.length:0;
-  if(!auto&&free.length-pending>1){placeQueue.push(t);log(`Your ${TNAME[t]} is ready. Tap a free back-row square to place it.`);renderChess();renderSide();renderCoach();renderTabs();return;}
+  if(!auto&&free.length-pending>1){say('drone');placeQueue.push(t);log(`Your ${TNAME[t]} is ready. Tap a free back-row square to place it.`);renderChess();renderSide();renderCoach();renderTabs();return;}
   if(free.length-pending>=1){if(!auto&&pending){/* one square left: it goes to the drone that waited longest, this one waits */placeQueue.push(t);renderSide();renderCoach();renderTabs();return;}reserve[side].push(t);place(side,0,br,free[rand(free.length)]);return;}
   { // any time the row is full: a stronger drone bumps the weakest one off, and the bumped drone digs
     // (before v0.50 this only happened before the board opened; a warp earned onto a full row was wasted as a 1-tile dig)
@@ -1100,7 +1101,7 @@ function startGame(){
   newChess();newJewels(nb);newBotBoard(Math.max(0,Math.min(30,+$('inBotBlock').value||0)));gameRocks={1:nb,2:Math.max(0,Math.min(30,+$('inBotBlock').value||0))};
   reserve={1:[],2:[]};clock={1:mins*60000,2:mins*60000};turn=0;open=false;ready={1:false,2:false};first=0;botAcc=0;dropAcc=0;over=null;sel=null;busy=false;flash=null;logs=[];
   digQueue=[];bombQueue=0;rockQueue=0;botBombs=0;swapAcc=0;mySwaps=[];placeQueue=[];turnMs=0;nudge=false;boardStuck=false;hintCells=null;lastSwapAt=Date.now();
-  phase='play';
+  phase='play';saidThisGame={};say('start');
   log(`New game. ${nb} rocks laid out as ${rockShape} (bot has ${+$('inBotBlock').value}), bot ${$('inPace').checked?'matching your pace':'at '+(+$('inRate').value)+' swaps a minute'}, ${mins} minute clocks.`);
   log('Board opens when both sides have 3 drones on it.');
   render();
@@ -1117,7 +1118,7 @@ setInterval(()=>{
   if(open&&turn===YOU&&!over&&!walkDone&&turnMs>=4000&&!(sel&&(sel.kind==='fly'||sel.kind==='warp'))&&!busy){const w=pendingWalk();if(w){walkDone=true;sel=null;doWalk(w);}}
   if(open&&turn===YOU&&bothArmed()){turnMs+=100;const ns=Math.max(0,+$('inNudge').value||0)*1000;if(ns>0&&!nudge&&turnMs>=ns){nudge=true;log('Time to make a move on the board.');renderNudge();if(isPhone())goPane(1);}}
   if(open&&turn&&bothArmed()&&moveLeft>0&&(!online||turn===YOU)){moveLeft-=100;if(moveLeft<=0){moveLeft=0;log(`${SNAME[turn]} ran out of move time. Turn passes.`);endTurn();}}
-  if(open&&turn&&bothArmed()){clock[turn]-=100;if(clock[turn]<=0){clock[turn]=0;gameOver(turn===YOU?BOT:YOU,`${SNAME[turn]} ran out of time.`);}}
+  if(open&&turn&&bothArmed()){clock[turn]-=100;if(turn===YOU&&clock[YOU]<60000&&clock[YOU]>59000)say('clock');if(clock[turn]<=0){clock[turn]=0;gameOver(turn===YOU?BOT:YOU,`${SNAME[turn]} ran out of time.`);}}
   renderClocks();if(open&&turn===YOU&&moveLeft>0&&tickN%10===0)renderSide();tickFlip();
   if(online){if(tickN%10===0)renderNet();if(tickN%50===0)netPresence();}
   if(tickN%10===0&&!online)$('bsub').textContent=$('inPace').checked?`Matching your pace: you ${myPace().toFixed(1)}/min, bot ${botRate().toFixed(1)}/min (3-minute average, floor 3).`:`Fixed pace: ${botRate()} swaps/min.`;
@@ -1894,7 +1895,7 @@ function applyRemote(out,isFull){
     else if(k==='p_h'||k==='p_g'){if(k!=='p_'+net.role[0]&&typeof v==='number')net.oppSeen=v;}
   }
   if(turn!==prevTurn){if(turn===YOU){sel=null;startTurn(YOU);log('Your move.');}else if(turn===BOT){sel=null;moveLeft=0;if(open)onYourMoveDone();}}
-  if(open&&!prevOpen)log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);
+  if(open&&!prevOpen){say('open');log(`The board is open. ${SNAME[turn]} move${turn===YOU?'':'s'} first.`);}
   if(over&&!prevOver){log(`Game over. ${SNAME[over.w]} win${over.w===YOU?'':'s'}. ${over.reason}`);rateGame(over.w);}
   render();renderNet();
 }
@@ -2067,6 +2068,55 @@ function renderCoach(){if(headless)return;const el=$('coach');const on=placeQueu
   const many=placeQueue.length>1;
   el.innerHTML=`<span><b>${many?'Drones':'Drone'} ready.</b> ${isPhone()?'Swipe to the Board':'On the board'}, tap a lit square on your bottom row, and ${many?'they land':'it lands'} there. Waiting: ${waitingWords()}.</span>${isPhone()?'<button type="button" id="coachGo">Go to the board</button>':''}`;
   const b=$('coachGo');if(b)b.addEventListener('click',()=>goPane(1));}
+// ---------- sound: a low choral hum that swells and rests, with the spoken lines dropped into the rests.
+// Pattern: hum, line, hum, hum, line. The hum is four synthesized voices with a closed-mouth tone
+// (low-pass plus a bump around 250 Hz), moving through a slow chord cycle. Lines are recordings in
+// voice/<id>.mp3 next to the game; a missing file is skipped without fuss. Starts only from a tap.
+const VOICE_LINES={start:'Alright. Boards up.',drone:'There is one. Go put it somewhere useful.',open:'Both sides are in. Now it counts.',took:'That one is yours now.',lost:'Lost one. You have more where that came from.',down:'Pushed down is not put down. Get back up there.',wall:'Ram is at the wall. Hold on.',clock:'Clock is running. Quit thinking and move.',win:'That is how it is done.',loss:'Lost this one. Learned something though. Run it back.'};
+const HUM_CHORDS=[[73.42,110,146.83,220],[98,146.83,196,293.66],[110,164.81,220,277.18],[123.47,185,246.94,293.66]]; // D, G, A, Bm
+let AC=null,hum=null,humChord=0,humTimer=null,lineQ=[],swellsSinceLine=9,lineBusy=false,saidThisGame={};
+const soundOn=()=>$('inSound').checked;
+function soundStart(){
+  if(AC)return AC.resume&&AC.resume();
+  const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;AC=new Ctx();
+  const master=AC.createGain();master.gain.value=0.9;master.connect(AC.destination);
+  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=650;lp.Q.value=0.8;
+  const mouth=AC.createBiquadFilter();mouth.type='peaking';mouth.frequency.value=250;mouth.gain.value=7;mouth.Q.value=1.3;
+  lp.connect(mouth);mouth.connect(master);
+  hum={master,voices:[]};
+  for(let i=0;i<4;i++){const g=AC.createGain();g.gain.value=0;g.connect(lp);const os=[];
+    for(const d of [-5,5]){const o=AC.createOscillator();o.type=i===0?'sawtooth':'triangle';o.detune.value=d;o.connect(g);o.start();os.push(o);}
+    hum.voices.push({g,os});}
+  humSwell();
+}
+function humSwell(){
+  if(!AC||!soundOn()){humTimer=null;return;}
+  const t=AC.currentTime,ch=HUM_CHORDS[humChord];humChord=(humChord+1)%HUM_CHORDS.length;
+  hum.voices.forEach((v,i)=>{for(const o of v.os)o.frequency.setTargetAtTime(ch[i],t,0.4);
+    const peak=i===0?0.16:0.10;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(v.g.gain.value,t);
+    v.g.gain.linearRampToValueAtTime(peak,t+1.8);v.g.gain.setValueAtTime(peak,t+3.2);v.g.gain.linearRampToValueAtTime(0.012,t+5.0);});
+  swellsSinceLine++;
+  humTimer=setTimeout(()=>{ // the rest between swells: a line goes here when two swells have passed since the last one
+    if(lineQ.length&&swellsSinceLine>=2&&!lineBusy)playLine(lineQ.shift());else humSwell();
+  },5600);
+}
+function playLine(id){
+  lineBusy=true;swellsSinceLine=0;
+  const a=new Audio('voice/'+id+'.mp3');let done=false;const finish=()=>{if(done)return;done=true;lineBusy=false;if(hum)hum.master.gain.setTargetAtTime(0.9,AC.currentTime,0.3);humSwell();};
+  a.addEventListener('ended',finish);a.addEventListener('error',finish);
+  if(hum)hum.master.gain.setTargetAtTime(0.35,AC.currentTime,0.2);
+  a.play().catch(finish);setTimeout(finish,8000);
+}
+function say(id){ // ask for a line at the next rest; a moment says its line once a game unless it is a repeatable one
+  if(!VOICE_LINES[id]||headless||selfPlay)return;
+  const once={start:1,drone:1,open:1,win:1,loss:1,clock:1};if(once[id]&&saidThisGame[id])return;saidThisGame[id]=true;
+  if(!soundOn())return;if(lineQ.length>2)lineQ.shift();lineQ.push(id);
+  if(AC&&!humTimer&&!lineBusy)humSwell();
+}
+$('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',soundOn()?'1':'0');}catch(_){}if(soundOn()){soundStart();if(!humTimer)humSwell();}});
+document.addEventListener('pointerdown',()=>{if(soundOn()){soundStart();if(AC&&!humTimer)humSwell();}},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(AC&&!document.hidden&&soundOn())AC.resume();});
+try{if(localStorage.getItem('cc_sound')==='1')$('inSound').checked=true;}catch(_){}
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
