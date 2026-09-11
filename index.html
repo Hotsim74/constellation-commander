@@ -405,7 +405,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   <p><strong>Strike drone</strong> moves up to 4 squares diagonally and may bend mid-move. It takes any enemy drone it lands on.</p>
   <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
   <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
-  <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. You can have two on the board at once; a third one you earn digs your star board instead of landing. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
+  <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. You can have two on the board at once; a third one you earn digs your star board instead of landing. It cannot fire while an enemy guard stands next to it: the guard shields the wall. Move along the wall to a square no guard covers, or ram the guard: the guard is destroyed and the siege drone burns out with it.</p>
   <p><strong>Fly down.</strong> Once the board is open, on your turn any drone can drop to your star board instead of moving. Before it opens, drones wait on the back row; only a full back row sends the newest one down to dig. A claim drone removes 1 tile. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
   <p><strong>Guesses in this build:</strong></p>
   <ul>
@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.96';
+const VERSION='0.97';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -518,10 +518,12 @@ function fireTargets(r,c,side){
 }
 const canFire=(r,c,side)=>{const t=fireTargets(r,c,side);return t.guards.length===0&&(t.walls.length>0||t.master);};
 const shielded=(r,c,side)=>fireTargets(r,c,side).guards.length>0;
-function doFire(r,c){
+function doFire(r,c,ram){
   const side=chess[r][c].drone.side,t=fireTargets(r,c,side);
   if(t.guards.length){const [gr,gc]=t.guards[0];
-    log(`${side===YOU?'Your':(SNAME[BOT]+"'s")} siege drone cannot fire: the guard at ${sqName(gr,gc)} is shielding the wall.`);return;}
+    if(!ram){log(`${side===YOU?'Your':(SNAME[BOT]+"'s")} siege drone cannot fire: the guard at ${sqName(gr,gc)} is shielding the wall.`);return;}
+    chess[gr][gc].drone=null;chess[r][c].drone=null; // the ram: the shot takes the shielding guard and the siege drone burns out with it; walls untouched
+    log(`${side===YOU?'Your':(SNAME[BOT]+"'s")} siege drone rammed the guard at ${sqName(gr,gc)}. Both are gone.`);afterAction();return;}
   if(t.walls.length){for(const [wr,wc] of t.walls){chess[wr][wc].wall=false;chess[wr][wc].own=0;}
     log(`${SNAME[side]} fired from ${sqName(r,c)}: ${t.walls.length} wall${t.walls.length>1?'s':''} cleared.`);afterAction();return;}
   if(t.master){gameOver(side,`${SNAME[side]} took the Commander.`);}
@@ -715,7 +717,7 @@ function botDig(t,side=BOT,why=null){
 function botFlyDown(r,c){
   // a deliberate chess move: the bot spends a drone to dig its clogged board
   const d=chess[r][c].drone;chess[r][c].drone=null;
-  const side=d.side;const {dug,rocks,earned}=botDigCore(side,digNeed(d.type),d.type==='C');
+  const side=d.side;const {dug,rocks,earned}=botDigCore(side,digNeed(d.type),false);
   log(`${side===BOT?(SNAME[BOT]+"'s"):'Your'} ${TNAME[d.type]} flew down and dug ${dug} tile${dug===1?'':'s'}${rocks?` (${rocks} blocker${rocks>1?'s':''})`:''}.`);
   for(const x of earned){if(x==='SAB')sabotage(side===BOT?YOU:BOT);else earn(side,x);}
   renderBotBoard();afterAction();
@@ -807,6 +809,8 @@ function botMove(me=BOT){if(online)return;
     if(movers.length){const x=movers[rand(movers.length)],k=x.mv[rand(x.mv.length)];const [r,c]=at(k);doMove(x.m.r,x.m.c,r,c);return;}}
   // 1 siege drone fires
   for(const m of mine)if(m.d.type==='X'&&canFire(m.r,m.c,me)){doFire(m.r,m.c);return;}
+  // 1b ram: with two siege drones out and one of them shielded at the wall, trade it for the guard so the other can fire
+  if(mine.filter(m=>m.d.type==='X').length>=2)for(const m of mine)if(m.d.type==='X'&&shielded(m.r,m.c,me)&&(fireTargets(m.r,m.c,me).walls.length||fireTargets(m.r,m.c,me).master)){doFire(m.r,m.c,true);return;}
   // 4b guards hunt: step next to an enemy on bot land (auto-take fires), or close on a claim drone near bot land
   {let gbest=null,gs=0;
     for(const m of mine)if(m.d.type==='G')for(const k of safeMoves(m.r,m.c)){const [r2,c2]=at(k);let s=0;
@@ -1122,6 +1126,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
   if(a==='pass'){log('You pass.');endTurn();}
   else if(a==='claim'){const {r,c}=sel;sel=null;doClaim(r,c);}
   else if(a==='fire'){const {r,c}=sel;sel=null;doFire(r,c);}
+  else if(a==='ram'){const {r,c}=sel;sel=null;doFire(r,c,true);}
   else if(a==='warp'){sel={kind:'warp',r:sel.r,c:sel.c};render();}
   else if(a==='fly'||a==='flyrow'||a==='flycol'){if(!open)return;const d=chess[sel.r][sel.c].drone;sel={kind:'fly',r:sel.r,c:sel.c,need:digNeed(d.type),line:null,blast:false,picks:[]};render();}
   else if(a==='lunge'){const [gr,gc]=b.dataset.g.split(',').map(Number),[tr,tc]=b.dataset.t.split(',').map(Number);sel=null;doLunge(gr,gc,tr,tc);}
@@ -1683,7 +1688,7 @@ function renderSide(){if(headless)return;
   else if(over){st.classList.add('over');st.textContent=`${SNAME[over.w]} win${over.w===YOU?'':'s'}. ${over.reason}`;}
   else if(!open)st.textContent=`Board opens at 3 earned drones each. You ${Math.min(3,earnedOn(YOU))}/3 · ${SNAME[BOT]} ${Math.min(3,earnedOn(BOT))}/3`;
   else if(turn===0)st.textContent='Waiting for a drone to land.';
-  else{st.classList.add(turn===YOU?'you':'bot');st.textContent=(turn===YOU?'Your move.'+(moveLeft>0?' '+Math.ceil(moveLeft/1000)+'s':'')+((()=>{const sx=dronesOf(YOU).find(m=>m.d.type==='X'&&shielded(m.r,m.c,YOU)&&(fireTargets(m.r,m.c,YOU).walls.length||fireTargets(m.r,m.c,YOU).master));if(sx){const g=fireTargets(sx.r,sx.c,YOU).guards[0];return ` Siege drone at ${sqName(sx.r,sx.c)} is shielded by the guard at ${sqName(g[0],g[1])}. Move it along the wall, or take that guard.`;}const w=pendingWalk();if(w&&!walkDone)return (w.d.type==='X'&&canFire(w.r,w.c,YOU)?` Siege drone at ${sqName(w.r,w.c)} fires in `:` Walk steps in `)+`${Math.max(0,Math.ceil((4000-turnMs)/1000))}s.`;const ws=walkers(YOU);if(!ws.length)return '';const stuck=ws.filter(x=>walkStep(x)==null);return stuck.length?` Walk to ${sqName(Math.floor(stuck[0].d.dest/N),stuck[0].d.dest%N)} blocked: ${walkWhy(stuck[0])}.`:'';})()):SNAME[BOT]+' is moving.')+(bothArmed()?'':' Clock paused: '+(dronesOf(YOU).length?'bot has':'you have')+' no drones.');}
+  else{st.classList.add(turn===YOU?'you':'bot');st.textContent=(turn===YOU?'Your move.'+(moveLeft>0?' '+Math.ceil(moveLeft/1000)+'s':'')+((()=>{const sx=dronesOf(YOU).find(m=>m.d.type==='X'&&shielded(m.r,m.c,YOU)&&(fireTargets(m.r,m.c,YOU).walls.length||fireTargets(m.r,m.c,YOU).master));if(sx){const g=fireTargets(sx.r,sx.c,YOU).guards[0];return ` Siege drone at ${sqName(sx.r,sx.c)} is shielded by the guard at ${sqName(g[0],g[1])}. Move it along the wall, take that guard, or tap the siege drone to ram it (both are lost).`;}const w=pendingWalk();if(w&&!walkDone)return (w.d.type==='X'&&canFire(w.r,w.c,YOU)?` Siege drone at ${sqName(w.r,w.c)} fires in `:` Walk steps in `)+`${Math.max(0,Math.ceil((4000-turnMs)/1000))}s.`;const ws=walkers(YOU);if(!ws.length)return '';const stuck=ws.filter(x=>walkStep(x)==null);return stuck.length?` Walk to ${sqName(Math.floor(stuck[0].d.dest/N),stuck[0].d.dest%N)} blocked: ${walkWhy(stuck[0])}.`:'';})()):SNAME[BOT]+' is moving.')+(bothArmed()?'':' Clock paused: '+(dronesOf(YOU).length?'bot has':'you have')+' no drones.');}
   if(phase==='play'&&!over&&placeQueue.length&&!(sel&&sel.kind==='fly')){st.className='status warn';st.textContent=`${placeQueue.length} drone${placeQueue.length>1?'s':''} waiting: ${TSHORT[placeQueue[0]]} first. Tap a lit back-row square.`;}
 if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status warn';const left=sel.need-sel.picks.length;st.textContent=sel.line?'Drone overhead. Tap a tile on your star board: its whole row goes.':`Drone overhead. Tap ${left} tile${left===1?'':'s'} on your star board.`;}
   for(const s of [1,2]){const n=landOf(s);$('land'+s).textContent=`${n} / ${WIN}`;$('bar'+s).style.width=Math.min(100,n/WIN*100)+'%';}
@@ -1694,7 +1699,7 @@ if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status 
     if(sel&&sel.kind==='drone'){const d=chess[sel.r][sel.c].drone;hint.push(`${TSHORT[d.type]} at ${sqName(sel.r,sel.c)}. Tap a marked square to move${WALKERS[d.type]?', or tap a far square to set a destination and it walks there a step a turn':''}.`);
       if(d.type==='C')acts.push(`<button data-a="claim" ${claimValid(sel.r,sel.c,YOU)?'':'disabled'}>Claim here</button>`);
       if(d.type==='W')acts.push('<button data-a="warp">Warp</button>');
-      if(d.type==='X')acts.push(`<button data-a="fire" ${canFire(sel.r,sel.c,YOU)?'':'disabled'}>Fire</button>`);
+      if(d.type==='X'){const ft=fireTargets(sel.r,sel.c,YOU);if(ft.guards.length&&(ft.walls.length||ft.master))acts.push(`<button data-a="ram" class="danger">Ram the guard at ${sqName(ft.guards[0][0],ft.guards[0][1])} (both lost)</button>`);else acts.push(`<button data-a="fire" ${canFire(sel.r,sel.c,YOU)?'':'disabled'}>Fire</button>`);}
       acts.push(`<button data-a="fly">Fly down (up to ${digNeed(d.type)})</button>`);}
     else if(sel&&sel.kind==='warp'){hint.push('Tap a lit square. The 3 × 3 patch around it becomes yours. Squares next to an enemy guard are off limits.');acts.push('<button data-a="cancel">Cancel</button>');}
     else if(sel&&sel.kind==='fly'){hint.push('Tap tiles on your star board. The small board shows where things land.');if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');acts.push('<button data-a="cancel">Cancel</button>');}
@@ -2096,7 +2101,7 @@ const TIPS={
   S:'Moves up to 4 squares on the diagonals and can bend, so it stays on its own color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 4 tiles.',
   H:'Moves up to 4 squares in any direction and can bend, so it can change color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 6 tiles.',
   W:'Tap Warp, then any square that is not on or next to an enemy guard: the 3 × 3 there becomes yours outright and enemy drones in it are removed (siege drones stay). That uses it up. It can also walk 1 square a turn. Flying down: pick 1 tile.',
-  X:'Moves 1 square. Only two can be on the board at once; a third digs instead. Tap a far square and it walks there a step a turn. Beside the enemy wall it fires by itself: one shot clears the walls next to it, the next takes the Commander and wins. It cannot take drones and cannot be taken. An enemy guard next to it blocks its shot. Four enemy drones around it destroy it. Flying down: pick 8 tiles.'
+  X:'Moves 1 square. Only two can be on the board at once; a third digs instead. Tap a far square and it walks there a step a turn. Beside the enemy wall it fires by itself: one shot clears the walls next to it, the next takes the Commander and wins. It cannot take drones and cannot be taken. An enemy guard next to it blocks its shot; you can ram that guard instead, and both are lost. Four enemy drones around it destroy it. Flying down: pick 8 tiles.'
 };
 let tip=null;
 // the same card from the other side: their land, their stars, and no "tap" instructions for a drone you can't tap
