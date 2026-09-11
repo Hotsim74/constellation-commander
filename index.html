@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.93';
+const VERSION='0.94';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2133,7 +2133,29 @@ function soundStart(){
   for(let i=0;i<4;i++){const g=AC.createGain();g.gain.value=0;g.connect(lp);const os=[];
     for(const d of [-5,5]){const o=AC.createOscillator();o.type=i===0?'sawtooth':'triangle';o.detune.value=d;o.connect(g);o.start();os.push(o);}
     hum.voices.push({g,os});}
+  growlBuild();
   humSwell();
+}
+// growls: a sub-bass rumble with a fast rattle on it, a little grit, and a breath of low noise. Rides under a swell now and then.
+function growlBuild(){
+  const shaper=AC.createWaveShaper();const curve=new Float32Array(256);for(let i=0;i<256;i++){const x=i/128-1;curve[i]=Math.tanh(2.6*x);}shaper.curve=curve;
+  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=170;lp.Q.value=1.1;
+  const g=AC.createGain();g.gain.value=0;shaper.connect(lp);lp.connect(g);g.connect(hum.master);
+  const osc=AC.createOscillator();osc.type='sawtooth';osc.frequency.value=55;osc.connect(shaper);osc.start();
+  const sub=AC.createOscillator();sub.type='square';sub.frequency.value=27.5;const sg=AC.createGain();sg.gain.value=0.5;sub.connect(sg);sg.connect(shaper);sub.start();
+  const trem=AC.createGain();trem.gain.value=1;const lfo=AC.createOscillator();lfo.type='sine';lfo.frequency.value=22;const depth=AC.createGain();depth.gain.value=0.45;lfo.connect(depth);depth.connect(trem.gain);lfo.start();
+  shaper.disconnect();shaper.connect(trem);trem.connect(lp);
+  const nb=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const noise=AC.createBufferSource();noise.buffer=nb;noise.loop=true;const nf=AC.createBiquadFilter();nf.type='bandpass';nf.frequency.value=110;nf.Q.value=0.9;const ng=AC.createGain();ng.gain.value=0;noise.connect(nf);nf.connect(ng);ng.connect(hum.master);noise.start();
+  hum.growl={g,osc,sub,lfo,ng};
+}
+function growl(){
+  if(!AC||!hum||!hum.growl||!soundOn()||lineBusy)return;const G=hum.growl,t=AC.currentTime,len=1.4+Math.random()*1.2,f0=58+Math.random()*10,f1=42+Math.random()*6;
+  G.osc.frequency.cancelScheduledValues(t);G.osc.frequency.setValueAtTime(f0,t);G.osc.frequency.exponentialRampToValueAtTime(f1,t+len);
+  G.sub.frequency.cancelScheduledValues(t);G.sub.frequency.setValueAtTime(f0/2,t);G.sub.frequency.exponentialRampToValueAtTime(f1/2,t+len);
+  G.lfo.frequency.cancelScheduledValues(t);G.lfo.frequency.setValueAtTime(16,t);G.lfo.frequency.linearRampToValueAtTime(30,t+len);
+  G.g.gain.cancelScheduledValues(t);G.g.gain.setValueAtTime(0,t);G.g.gain.linearRampToValueAtTime(0.26,t+0.4);G.g.gain.setValueAtTime(0.26,t+len*0.6);G.g.gain.linearRampToValueAtTime(0,t+len+0.5);
+  G.ng.gain.cancelScheduledValues(t);G.ng.gain.setValueAtTime(0,t);G.ng.gain.linearRampToValueAtTime(0.06,t+0.5);G.ng.gain.linearRampToValueAtTime(0,t+len+0.4);
 }
 function humSwell(){
   if(!AC||!soundOn()){humTimer=null;return;}
@@ -2142,6 +2164,7 @@ function humSwell(){
     const peak=i===0?0.16:0.10;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(v.g.gain.value,t);
     v.g.gain.linearRampToValueAtTime(peak,t+1.8);v.g.gain.setValueAtTime(peak,t+3.2);v.g.gain.linearRampToValueAtTime(0.012,t+5.0);});
   swellsSinceLine++;
+  if(Math.random()<0.35)setTimeout(growl,500+Math.random()*1500); // a growl under about a third of the swells
   humTimer=setTimeout(()=>{ // the rest between swells: a line goes here when two swells have passed since the last one
     if(lineQ.length&&swellsSinceLine>=2&&!lineBusy)playLine(lineQ.shift());else humSwell();
   },5600);
