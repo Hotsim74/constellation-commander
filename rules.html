@@ -42,7 +42,7 @@ a{color:var(--you)}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, current to version 0.89. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
+<p class="sub">The rulebook, current to version 0.92. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
 
 <nav class="toc">
 <a href="#goal">Goal</a><a href="#stars">Star board</a><a href="#shapes">Shapes and spawn rates</a><a href="#drones">The drones</a><a href="#backrow">Back row</a><a href="#board">The board</a><a href="#turns">Turns and clocks</a><a href="#walking">Walking</a><a href="#guards">Guards</a><a href="#siege">Taking the Commander</a><a href="#digging">Flying down</a><a href="#twophones">Two phones</a><a href="#ratings">Ratings and handicaps</a><a href="#bot">The bot</a><a href="#settings">Settings</a>
@@ -59,7 +59,7 @@ a{color:var(--you)}
 <li>Cleared tiles fall out, everything above drops, new stars fall in from the top. Any match that forms on its own pays the same as one you made.</li>
 <li><strong>Rocks</strong> are tiles nothing can match. Both sides start with 13 (a setting), laid out as a shape picked for the game: the X, the plus, the ring, the diamond, the stairs, the pillars, the smile, the zigzag, the arrow, or scattered. Both boards get the same shape. An L or T of two 3-lines drops 3 more onto the other side's board. They are the pacing of the game: a quiet opening while they block the board, a sweet spot as they clear, then the flood once they are gone. Dig them out by flying drones down. A difference between the two rock settings is a handicap.</li>
 <li><strong>Rocks to the other side.</strong> Match an L or T made of two 3-lines and 3 rocks drop onto your opponent's star board, on the top row, where they fall in with everything else. Both sides can do it. The way out is the same as always: dig them with a drone or match around them.</li>
-<li>If no swap on your board can make a match, the board does <strong>not</strong> reshuffle while you have a drone to fly down. The header turns red: dig your way out. Only with no drones at all does the board reshuffle. The bot lives by the same rule.</li>
+<li>Before the board opens you may <strong>reshuffle</strong> your stars yourself, up to 3 times a game (a button on the star board; rocks stay put), and a dead board reshuffles on its own. Once the board is open, if no swap can make a match it does <strong>not</strong> reshuffle while you have a drone to fly down. The header turns red: dig your way out. Only with no drones at all does the board reshuffle. The bot lives by the same rule.</li>
 </ul>
 
 <h2 id="shapes">Shapes and spawn rates</h2>

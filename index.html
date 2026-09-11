@@ -306,7 +306,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 <nav class="tabs" id="tabs"><button data-pane="0" class="on">Stars</button><button data-pane="1">Board</button><button data-pane="2">Info</button></nav>
 <main id="main">
   <section class="panel jpanel">
-    <div class="ph"><span class="lbl">Your star board</span><span class="sub" id="jsub">Drag a star onto its neighbor</span></div>
+    <div class="ph"><span class="lbl">Your star board</span><span class="sub" id="jsub">Drag a star onto its neighbor</span><button type="button" id="btnShuffle" hidden style="padding:4px 10px;font-size:11px">Reshuffle (3)</button></div>
     <div id="coach" class="coach" hidden></div>
     <div class="jwrap"><div class="jgrid" id="jgrid"></div><div id="jpops"></div><div id="jdim" hidden><div class="card">Your move on the board<small>Move a drone, claim, fire, warp, fly down, or pass. Then the stars come back.</small><button id="goBoard" style="margin-top:10px">Go to the board</button></div></div><div id="jwait" hidden><div class="card"></div></div></div>
     <div id="jprev" hidden><div class="lbl" style="margin:10px 0 6px">After removal · blanks are new tiles</div><div class="jgrid mini" id="jprevgrid"></div></div>
@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.91';
+const VERSION='0.92';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -437,6 +437,7 @@ const $=id=>document.getElementById(id);
 const sqName=(r,c)=>'abcdefghi'[c]+(N-r);
 
 let phase='setup',over=null,chess=[],jew=[],reserve={1:[],2:[]},clock={1:0,2:0},turn=0,moveLeft=0,turnMs=0,nudge=false,open=false,ready={1:false,2:false},first=0,botAcc=0,dropAcc=0,ids=1,logs=[];
+let reshuffles=3; // manual reshuffles left, only before the board opens
 let sel=null,busy=false,flash=null,digQueue=[],bombQueue=0,rockQueue=0,bjew=[],botBombs=0,swapAcc=0,mySwaps=[],placeQueue=[],walkDone=false,boardStuck=false,hintCells=null,lastSwapAt=Date.now();
 let online=false,net=null; // two-phone match (see the online section near the end)
 
@@ -1139,7 +1140,7 @@ function startGame(){
   NC=Math.max(4,Math.min(6,+$('inColors').value||5));rockShape=pickRockShape();
   newChess();newJewels(nb);newBotBoard(Math.max(0,Math.min(30,+$('inBotBlock').value||0)));gameRocks={1:nb,2:Math.max(0,Math.min(30,+$('inBotBlock').value||0))};
   reserve={1:[],2:[]};clock={1:mins*60000,2:mins*60000};turn=0;open=false;ready={1:false,2:false};first=0;botAcc=0;dropAcc=0;over=null;sel=null;busy=false;flash=null;logs=[];
-  digQueue=[];bombQueue=0;rockQueue=0;botBombs=0;swapAcc=0;mySwaps=[];placeQueue=[];turnMs=0;nudge=false;boardStuck=false;hintCells=null;lastSwapAt=Date.now();
+  digQueue=[];bombQueue=0;rockQueue=0;botBombs=0;swapAcc=0;mySwaps=[];placeQueue=[];turnMs=0;nudge=false;boardStuck=false;hintCells=null;lastSwapAt=Date.now();reshuffles=3;
   phase='play';saidThisGame={};say('start');
   log(`New game. ${nb} rocks laid out as ${rockShape} (bot has ${+$('inBotBlock').value}), bot ${$('inPace').checked?'matching your pace':'at '+(+$('inRate').value)+' swaps a minute'}, ${mins} minute clocks.`);
   log('Board opens when both sides have 3 drones on it.');
@@ -1204,6 +1205,7 @@ function renderJewels(){if(headless)return;
   else if(boardStuck){js.textContent='No moves left. Fly a drone down to open the board.';}
   else js.textContent='Drag a star onto its neighbor';
   js.classList.toggle('warn',!!(sel&&sel.kind==='fly')||boardStuck);renderPreview();
+  const sb=$('btnShuffle');sb.hidden=!(phase==='play'&&!over&&!open&&reshuffles>0&&!netWait());sb.textContent=`Reshuffle (${reshuffles})`;sb.disabled=busy||!!(sel&&sel.kind==='fly');
 }
 // ---------- drone icons: what a drone does, at a glance
 // ---------- drone icons, from the user's ship designs. Hull = near-black with one gloss line; lightning = side color.
@@ -1873,14 +1875,14 @@ const SAVE_KEY='dronemaster.save.v1';
 function saveState(){
   if(phase!=='play'||headless)return;
   try{localStorage.setItem(SAVE_KEY,JSON.stringify({chess,jew,bjew,reserve,clock,turn,open,ready,first,swapAcc,dropAcc,ids,logs,over,digQueue,bombQueue,rockQueue,botBombs,
-    moveLeft,turnMs,nudge,placeQueue,settings:{b:$('inBlock').value,bb:$('inBotBlock').value,sk:$('inSkill').value,col:NC,r:$('inRate').value,c:$('inClock').value,m:$('inMove').value,n:$('inNudge').value}}));}catch(_){}
+    moveLeft,turnMs,nudge,placeQueue,reshuffles,settings:{b:$('inBlock').value,bb:$('inBotBlock').value,sk:$('inSkill').value,col:NC,r:$('inRate').value,c:$('inClock').value,m:$('inMove').value,n:$('inNudge').value}}));}catch(_){}
 }
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(_){}}
 function loadState(){
   let s=null;try{s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch(_){return false;}
   if(!s||!s.chess||!s.jew)return false;
   chess=s.chess;jew=s.jew;bjew=s.bjew||bjew;reserve=s.reserve||{1:[],2:[]};clock=s.clock;turn=s.turn||0;open=!!s.open;ready=s.ready||{1:false,2:false};first=s.first||0;
-  swapAcc=s.swapAcc||0;dropAcc=s.dropAcc||0;ids=s.ids||1;logs=s.logs||[];over=s.over||null;digQueue=s.digQueue||[];bombQueue=s.bombQueue||0;rockQueue=s.rockQueue||0;botBombs=s.botBombs||0;
+  swapAcc=s.swapAcc||0;dropAcc=s.dropAcc||0;ids=s.ids||1;logs=s.logs||[];over=s.over||null;reshuffles=s.reshuffles==null?3:s.reshuffles;digQueue=s.digQueue||[];bombQueue=s.bombQueue||0;rockQueue=s.rockQueue||0;botBombs=s.botBombs||0;
   if(s.settings){/* blockers and star kinds only matter at Start, so the boxes keep their defaults; the live game keeps its own kind count */if(s.settings.sk!=null)$('inSkill').value=s.settings.sk;if(s.settings.col){NC=s.settings.col;}$('inRate').value=s.settings.r;$('inClock').value=s.settings.c;if(s.settings.m!=null)$('inMove').value=s.settings.m;if(s.settings.n!=null)$('inNudge').value=s.settings.n;}moveLeft=s.moveLeft||0;turnMs=s.turnMs||0;nudge=!!s.nudge;placeQueue=s.placeQueue||[];
   phase='play';sel=null;busy=false;flash=null;
   log('Page reloaded. Game restored where it was.');
@@ -2178,6 +2180,12 @@ $('btnReload').addEventListener('click',()=>{saveState();location.reload();});
 $('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
 setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion();});
+// ---------- manual reshuffle before the board opens: three a game, rocks stay put
+$('btnShuffle').addEventListener('click',()=>{
+  if(phase!=='play'||over||open||reshuffles<=0||busy||(sel&&sel.kind==='fly')||netWait())return;
+  reshuffles--;shuffle();hintCells=null;lastSwapAt=Date.now();boardStuck=false;
+  log(`You reshuffled the stars. ${reshuffles} reshuffle${reshuffles===1?'':'s'} left before the board opens.`);renderJewels();
+});
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
