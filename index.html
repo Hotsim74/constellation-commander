@@ -366,7 +366,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
   <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
   <p><strong>Siege drone</strong> moves one square a turn in any direction. Give it an order by tapping a square and it walks there on its own; when it reaches the enemy wall it fires on its own: one shot clears every enemy wall beside it, and with the Commander beside it the next shot takes the Commander and wins. It cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. It cannot fire while an enemy guard stands next to it: the guard shields the wall, and neither is harmed. Move along the wall to a square no guard covers.</p>
-  <p><strong>Fly down.</strong> Before the board opens, any drone on your back row can fly down for free. Once it is open, on your turn any drone can drop to your star board instead of moving. A claim drone removes 1 tile. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
+  <p><strong>Fly down.</strong> Once the board is open, on your turn any drone can drop to your star board instead of moving. Before it opens, drones wait on the back row; only a full back row sends the newest one down to dig. A claim drone removes 1 tile. A warp drone removes 1 tile, a guard up to 2, a strike drone up to 4, a hunter up to 6, a siege drone up to 8, all of your choosing. While you pick, a small board shows where everything lands, so you can set up a shape on purpose. The drone is spent.</p>
   <p><strong>Guesses in this build:</strong></p>
   <ul>
     <li>Vertical lines count for drones.</li>
@@ -679,7 +679,7 @@ const botRocks=()=>bjew.flat().filter(v=>v===BLK).length;
 function botSwapCount(){return withBotBoard(()=>{let n=0;for(let r=0;r<JH;r++)for(let c=0;c<JW;c++)for(const [dr,dc] of [[0,1],[1,0]]){const nr=r+dr,nc=c+dc;if(nr>=JH||nc>=JW)continue;const a=jew[r][c],b=jew[nr][nc];if(a==null||b==null||a<0||b<0||a===b)continue;jew[r][c]=b;jew[nr][nc]=a;if(findMatches().cells.size)n++;jew[r][c]=a;jew[nr][nc]=b;}return n;});}
 function myPace(){const now=Date.now();mySwaps=mySwaps.filter(t=>now-t<=180000);return mySwaps.length/3;} // swaps per minute over the last 3 minutes
 function botRate(){
-  if($('inPace').checked){const s=skillPct();const slow=s<30?Math.max(0.4,s/30):1;return Math.max(3,myPace()*slow)*(1+ramp(s,90,100)*0.5);}
+  if($('inPace').checked){const s=skillPct();const slow=s<30?Math.max(0.4,s/30):1;return Math.max(open?3:6,myPace()*slow)*(1+ramp(s,90,100)*0.5);} // floor 6 a minute until the board opens, so the bot reaches its 3 drones in about a minute
   return Math.max(0.5,+$('inRate').value||8);
 }
 function newBotBoard(nBlock){withBotBoard(()=>{newJewels(nBlock);bjew=jew;});}
@@ -1077,7 +1077,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
   else if(a==='claim'){const {r,c}=sel;sel=null;doClaim(r,c);}
   else if(a==='fire'){const {r,c}=sel;sel=null;doFire(r,c);}
   else if(a==='warp'){sel={kind:'warp',r:sel.r,c:sel.c};render();}
-  else if(a==='fly'||a==='flyrow'||a==='flycol'){const d=chess[sel.r][sel.c].drone;sel={kind:'fly',r:sel.r,c:sel.c,need:digNeed(d.type),line:null,blast:d.type==='C',picks:[]};render();}
+  else if(a==='fly'||a==='flyrow'||a==='flycol'){if(!open)return;const d=chess[sel.r][sel.c].drone;sel={kind:'fly',r:sel.r,c:sel.c,need:digNeed(d.type),line:null,blast:false,picks:[]};render();}
   else if(a==='lunge'){const [gr,gc]=b.dataset.g.split(',').map(Number),[tr,tc]=b.dataset.t.split(',').map(Number);sel=null;doLunge(gr,gc,tr,tc);}
   else if(a==='flydone'){if(sel&&sel.kind==='fly'&&sel.picks.length)finishFly();}
   else if(a==='autoplace'){while(placeQueue.length){const free=BACKCOLS.filter(c=>isBackFree(YOU,8,c));if(!free.length)break;const t=placeQueue.shift();reserve[YOU].push(t);place(YOU,0,8,free[rand(free.length)]);}render();}
@@ -1647,7 +1647,7 @@ if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status 
       if(d.type==='C')acts.push(`<button data-a="claim" ${claimValid(sel.r,sel.c,YOU)?'':'disabled'}>Claim here</button>`);
       if(d.type==='W')acts.push('<button data-a="warp">Warp</button>');
       if(d.type==='X')acts.push(`<button data-a="fire" ${canFire(sel.r,sel.c,YOU)?'':'disabled'}>Fire</button>`);
-      acts.push(d.type==='C'?'<button data-a="fly">Fly down: blast 3 × 3</button>':`<button data-a="fly">Fly down (up to ${digNeed(d.type)})</button>`);}
+      acts.push(`<button data-a="fly">Fly down (up to ${digNeed(d.type)})</button>`);}
     else if(sel&&sel.kind==='warp'){hint.push('Tap a lit square. The 3 × 3 patch around it becomes yours. Squares next to an enemy guard are off limits.');acts.push('<button data-a="cancel">Cancel</button>');}
     else if(sel&&sel.kind==='fly'){hint.push('Tap tiles on your star board. The small board shows where things land.');if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');acts.push('<button data-a="cancel">Cancel</button>');}
     else hint.push('Pick one of your drones on the board.');
@@ -1656,9 +1656,9 @@ if(phase==='play'&&!over&&sel&&sel.kind==='fly'&&sel.auto){st.className='status 
     for(const o of lungeOffers(YOU))acts.push(`<button data-a="lunge" data-g="${o.gr},${o.gc}" data-t="${o.tr},${o.tc}" class="danger">Guard ${sqName(o.gr,o.gc)}: jump 2, take ${TSHORT[o.t].toLowerCase()} at ${sqName(o.tr,o.tc)} (guard lost)</button>`);
     acts.push('<button data-a="pass">Pass</button>');
   }else if(phase==='play'&&!over&&!open){
-    if(sel&&sel.kind==='drone'){const d=chess[sel.r][sel.c].drone;hint.push(`${TSHORT[d.type]} at ${sqName(sel.r,sel.c)}. Tap another back-row square to shift it, or fly it down now for free.`);acts.push(d.type==='C'?'<button data-a="fly">Fly down free: blast 3 × 3</button>':`<button data-a="fly">Fly down free (up to ${digNeed(d.type)})</button>`);}
+    if(sel&&sel.kind==='drone'){const d=chess[sel.r][sel.c].drone;hint.push(`${TSHORT[d.type]} at ${sqName(sel.r,sel.c)}. Tap another back-row square to shift it. Drones wait here until the board opens.`);}
     else if(sel&&sel.kind==='fly'){hint.push('Tap tiles on your star board. The small board shows where things land.');if(sel.picks.length)acts.push('<button data-a="flydone" class="primary">Done, remove them</button>');acts.push('<button data-a="cancel">Cancel</button>');}
-    else hint.push('Match 4 or more. Drones land on your back row. The board opens at 3 each. Before it opens, any drone can fly down for free to dig your board.');}
+    else hint.push('Match 4 or more. Drones land on your back row. The board opens at 3 each. Only a full back row sends a drone down before then.');}
   else if(phase==='play'&&!over)hint.push('Waiting for the bot.');
   if(over)acts.push('<button data-a="new" class="primary">New game</button>');
   $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
