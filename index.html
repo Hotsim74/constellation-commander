@@ -265,7 +265,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 <header>
   <div>
     <h1>Constellation Commander</h1>
-    <div class="tag">Match stars to earn drones. Move drones to claim land. First to 46 squares, or take the enemy Commander, wins.</div>
+    <div class="tag">Match stars to earn drones. Move drones to claim land. First to 46 squares, or take the enemy Commander, wins. <span id="ver" style="color:var(--mute)"></span></div>
     <button id="btnSettings" class="phoneonly" style="margin-top:6px">Settings</button>
   </div>
   <form class="setup" id="setup" onsubmit="return false">
@@ -337,6 +337,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <small>Read this again any time from Settings, How to play.</small>
   </div>
 </div>
+<div id="newver" hidden style="position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px"><span>A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
 <div id="flipbar" hidden><span id="flipText">Back to stars in 4s</span><button id="flipStay">Stay and watch</button><button id="flipNow">Flip to stars</button></div>
     </div>
   </section>
@@ -419,6 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
+const VERSION='0.90';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2164,6 +2166,18 @@ function showIntro(){$('intro').hidden=false;}
 $('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc_intro','1');}catch(_){}});
 $('btnHow').addEventListener('click',showIntro);
 try{if(localStorage.getItem('cc_intro')!=='1')showIntro();}catch(_){showIntro();}
+// ---------- version: shown in the header; every few minutes the page peeks at the server copy and offers a reload when it is newer
+$('ver').textContent='v'+VERSION;
+let newverSeen=false;
+async function checkVersion(){
+  if(newverSeen||!/^https?:/.test(location.protocol))return;
+  try{const r=await fetch(location.href.split('#')[0],{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);
+    if(m&&m[1]!==VERSION){newverSeen=true;$('newver').hidden=false;}}catch(_){}
+}
+$('btnReload').addEventListener('click',()=>{saveState();location.reload();});
+$('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
+setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion();});
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
