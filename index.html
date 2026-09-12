@@ -401,7 +401,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   <p><strong>Walking.</strong> Select a claim, guard or warp drone and tap a square more than one step away: that becomes its destination. On each of your turns, if you do nothing for 4 seconds, it takes one step toward it and the turn passes. Act sooner and it waits. Steps avoid squares next to enemy guards; a guard stops when it runs out of your land.</p>
   <p><strong>Claim drone</strong> moves 1 square any direction. Whenever at least one square in the 3 × 3 around it is not yours, it can claim: unowned squares become yours, enemy squares become disputed, disputed become yours. Then it is used up. Fire it on a big empty patch for nine squares, or spend it on the last square you need.</p>
   <p><strong>Start.</strong> Each side owns the five squares in front of its wall and has two guards on patrol there. Starting guards do not count toward the 3 drones that open the board.</p>
-  <p><strong>Guard drone</strong> moves 1 square, only onto land you own. Any enemy drone that stands on your land one square from a guard is removed at once; the guard stays. An enemy two squares away gets you an offer on your move: the guard jumps and takes it, and the guard is lost. A guard standing next to an enemy siege drone shields the wall: the siege drone cannot fire while the guard is there, and neither of them is harmed.</p>
+  <p><strong>Guard drone</strong> moves 1 square, only onto land you own. An enemy claim, warp or guard drone that stands on your land one square from a guard is removed at once; the guard stays. Strike, hunter and siege drones are not: they can stand next to a guard and fight it. An enemy two squares away gets you an offer on your move: the guard jumps and takes it, and the guard is lost. A guard standing next to an enemy siege drone shields the wall: the siege drone cannot fire while the guard is there, and neither of them is harmed.</p>
   <p><strong>Strike drone</strong> moves up to 4 squares diagonally and may bend mid-move. It takes any enemy drone it lands on.</p>
   <p><strong>Hunter drone</strong> moves up to 4 squares in any direction and may bend mid-move, so it is the one strike piece that can leave its color. It takes any enemy drone it lands on.</p>
   <p><strong>Warp drone</strong> is one use. Warp to any square on the board: the 3 × 3 patch around it becomes yours outright, and enemy drones in it are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</p>
@@ -420,7 +420,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.98';
+const VERSION='0.99';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -537,11 +537,12 @@ function doMove(fr,fc,tr,tc){
   afterAction();
 }
 function sweepGuards(){
-  // a guard removes any enemy drone standing on the guard's own land one square away. The guard stays.
+  // a guard removes an enemy claim, warp or guard drone standing on the guard's own land one square away. The guard stays.
+  // strike, hunter and siege drones are not swept (v0.99): they can stand beside a guard and fight; the guard's answer is the 2-square jump.
   const kill=[];
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){const d=chess[r][c].drone;if(!d||d.type!=='G')continue;
     for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const cell=chess[nr][nc];
-      if(cell.drone&&cell.drone.side!==d.side&&cell.drone.type!=='X'&&cell.own===d.side)kill.push({r:nr,c:nc,t:cell.drone.type,g:sqName(r,c),side:d.side});}}
+      if(cell.drone&&cell.drone.side!==d.side&&(cell.drone.type==='C'||cell.drone.type==='W'||cell.drone.type==='G')&&cell.own===d.side)kill.push({r:nr,c:nc,t:cell.drone.type,g:sqName(r,c),side:d.side});}}
   for(const k of kill){if(chess[k.r][k.c].drone){chess[k.r][k.c].drone=null;log(`${k.side===YOU?'Your':(SNAME[BOT]+"'s")} guard at ${k.g} took the ${TNAME[k.t]} at ${sqName(k.r,k.c)}.`);}}
 }
 function lungeOffers(side){
@@ -757,7 +758,7 @@ function walkStep(m){
   // the legal step that gets closest to the destination, skipping squares next to enemy guards
   const dr=Math.floor(m.d.dest/N),dc=m.d.dest%N;const cur=Math.max(Math.abs(dr-m.r),Math.abs(dc-m.c));
   let best=null,bd=cur;
-  for(const k of legalMoves(m.r,m.c)){const r=Math.floor(k/N),c=k%N;if(deadly(r,c,m.d.side))continue;
+  for(const k of legalMoves(m.r,m.c)){const r=Math.floor(k/N),c=k%N;if(deadly(r,c,m.d.side,m.d.type))continue;
     const d=Math.max(Math.abs(dr-r),Math.abs(dc-c))+(chess[r][c].own===m.d.side?0:0.1);if(d<bd){bd=d;best=k;}}
   return best;
 }
@@ -776,12 +777,13 @@ function walkWhy(m){
   if(t.drone&&t.drone.side===m.d.side)return 'your own drone is on it';
   const legal=[...legalMoves(m.r,m.c)];
   if(!legal.length)return m.d.type==='G'?'guards only walk on your land':'boxed in';
-  if(legal.every(k=>deadly(Math.floor(k/N),k%N,m.d.side)))return 'every step is next to an enemy guard';
+  if(legal.every(k=>deadly(Math.floor(k/N),k%N,m.d.side,m.d.type)))return 'every step is next to an enemy guard';
   return m.d.type==='G'?'no path over your land':'no step gets closer';
 }
 function pendingWalk(){for(const m of dronesOf(YOU))if(m.d.type==='X'&&canFire(m.r,m.c,YOU))return m; // a siege drone that can fire does, walk order or not
   for(const m of walkers(YOU))if(walkStep(m)!=null)return m;return null;}
-function deadly(r,c,side){
+function deadly(r,c,side,type){
+  if(type==='S'||type==='H'||type==='X')return false; // attack drones are not swept by guards
   // a square on the enemy's land next to an enemy guard: whoever steps there is removed at once
   const enemy=side===YOU?BOT:YOU;if(chess[r][c].own!==enemy)return false;
   for(const [dr,dc] of DIRS8){const nr=r+dr,nc=c+dc;if(!inB(nr,nc))continue;const e=chess[nr][nc].drone;if(e&&e.side===enemy&&e.type==='G')return true;}
@@ -793,7 +795,7 @@ function safeMoves(r,c){
   const base=legalMoves(r,c);
   if(base.size>1&&d.lastFrom!=null&&base.has(d.lastFrom)){const t=chess[Math.floor(d.lastFrom/N)][d.lastFrom%N].drone;if(!(t&&t.side!==d.side))base.delete(d.lastFrom);} // no shuffling back and forth
   for(const k of base){const tr=Math.floor(k/N),tc=k%N;const t=chess[tr][tc].drone;const goodTrade=t&&t.side!==d.side&&pr[t.type]>=pr[d.type];
-    if(botSense.zone&&deadly(tr,tc,d.side)&&!goodTrade)continue;
+    if(botSense.zone&&deadly(tr,tc,d.side,d.type)&&!goodTrade)continue;
     if(botSense.threat&&threatened(tr,tc,d.side)&&!goodTrade)continue;
     out.add(k);}
   return out.size?out:base;
@@ -823,14 +825,14 @@ function botMove(me=BOT){if(online)return;
   // 1e retreat: with threat sense on, pull the most valuable threatened drone to a safe square
   if(botSense.threat){let rb=null;
     for(const m of mine){if((m.d.type==='G'&&m.d.start)||m.d.type==='X')continue;if(!threatened(m.r,m.c,me))continue;if(!rb||pr[m.d.type]>pr[rb.d.type])rb=m;}
-    if(rb){let best=null,bs=-1;for(const k of safeMoves(rb.r,rb.c)){const [r2,c2]=at(k);if(threatened(r2,c2,me)||(botSense.zone&&deadly(r2,c2,me)))continue;const s=(chess[r2][c2].own===me?2:0)+Math.random();if(s>bs){bs=s;best=k;}}
+    if(rb){let best=null,bs=-1;for(const k of safeMoves(rb.r,rb.c)){const [r2,c2]=at(k);if(threatened(r2,c2,me)||(botSense.zone&&deadly(r2,c2,me,rb.d.type)))continue;const s=(chess[r2][c2].own===me?2:0)+Math.random();if(s>bs){bs=s;best=k;}}
       if(best!=null){const [r,c]=at(best);doMove(rb.r,rb.c,r,c);return;}}}
   // 1f cash in: a cornered drone (threatened, no safe square) is spent on purpose rather than lost.
   // a claim drone claims where it stands; anything else flies down and digs.
   if(botSense.threat){
     for(const m of mine.slice().sort((a,b)=>pr[b.d.type]-pr[a.d.type])){
       if((m.d.type==='G'&&m.d.start)||m.d.type==='X')continue;if(!threatened(m.r,m.c,me))continue;
-      const escape=[...safeMoves(m.r,m.c)].some(k=>{const [r2,c2]=at(k);return !threatened(r2,c2,me)&&!deadly(r2,c2,me);});
+      const escape=[...safeMoves(m.r,m.c)].some(k=>{const [r2,c2]=at(k);return !threatened(r2,c2,me)&&!deadly(r2,c2,me,m.d.type);});
       if(escape)continue;
       if(m.d.type==='C'&&claimGain(m.r,m.c,me)>=1){log(`${SNAME[me]} cash${me===YOU?'':'es'} in a cornered claim drone.`);doClaim(m.r,m.c);return;}
       if(m.d.type!=='G'||!m.d.start){log(`${SNAME[me]} fl${me===YOU?'y':'ies'} a cornered ${TNAME[m.d.type]} down rather than lose it.`);botFlyDown(m.r,m.c);return;}}}
@@ -2098,7 +2100,7 @@ renderRecord();
 // ---------- drone tips: tap a drone, read how it works. Off in Settings.
 const TIPS={
   C:'Moves 1 square any way. Tap Claim and it takes the 3 × 3 around it: open land becomes yours, enemy land becomes disputed, disputed becomes yours. That uses it up. Tap a far square and it walks there a step a turn. Flying down onto your stars: pick 1 tile.',
-  G:'Moves 1 square, only on your land. Any enemy drone on your land next to it is removed at once, and the guard stays. An enemy two squares away gets you an offer: jump and take it, and the guard is lost. Standing next to an enemy siege drone it shields your wall. Flying down: pick 2 tiles.',
+  G:'Moves 1 square, only on your land. An enemy claim, warp or guard drone on your land next to it is removed at once, and the guard stays. Strikes, hunters and siege drones are not swept; they can stand beside it and fight. An enemy two squares away gets you an offer: jump and take it, and the guard is lost. Standing next to an enemy siege drone it shields your wall. Flying down: pick 2 tiles.',
   S:'Moves up to 4 squares on the diagonals and can bend, so it stays on its own color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 4 tiles.',
   H:'Moves up to 4 squares in any direction and can bend, so it can change color. Takes any enemy drone it lands on, except a siege drone. Flying down: pick 6 tiles.',
   W:'Tap Warp, then any square that is not on or next to an enemy guard: the 3 × 3 there becomes yours outright and enemy drones in it are removed (siege drones stay). That uses it up. It can also walk 1 square a turn. Flying down: pick 1 tile.',
