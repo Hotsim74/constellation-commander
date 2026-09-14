@@ -301,6 +301,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <div class="field"><span class="lbl">Handicap</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inAuto" checked> auto from ratings</label></div>
     <div class="field"><span class="lbl">Drone tips</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
     <div class="field phoneonly"><span class="lbl">Phone layout</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inOne" checked> one screen, no swiping</label></div>
+    <div class="field"><span class="lbl">Relaxed</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inRelax"> no move timer, no nudge</label></div>
     <div class="field"><span class="lbl">Sound</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inSound"> hum and voice</label></div>
     <div class="field"><span class="lbl">Secs per move</span><input type="number" id="inMove" min="0" max="600" step="5" value="60"></div>
     <div class="field"><span class="lbl">Nudge after (s)</span><input type="number" id="inNudge" min="0" max="300" step="5" value="30"></div>
@@ -443,7 +444,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.103';
+const VERSION='0.104';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2248,6 +2249,13 @@ function applyOne(){document.body.classList.toggle('one',$('inOne').checked);ren
 try{const v=localStorage.getItem('cc_one');if(v==='0')$('inOne').checked=false;}catch(_){}
 $('inOne').addEventListener('change',()=>{try{localStorage.setItem('cc_one',$('inOne').checked?'1':'0');}catch(_){}applyOne();});
 document.body.classList.toggle('one',$('inOne').checked);
+// ---------- relaxed: no per-move timer, no nudge, a long clock. For people who want to think, or who find the clock stressful.
+function applyRelax(){if(!$('inRelax').checked)return;$('inMove').value=0;$('inNudge').value=0;$('inClock').value=60;}
+$('inRelax').addEventListener('change',()=>{try{localStorage.setItem('cc_relax',$('inRelax').checked?'1':'0');}catch(_){}
+  if($('inRelax').checked){applyRelax();moveLeft=0;if(nudge){nudge=false;renderNudge();}log('Relaxed: no move timer and no nudge. Clocks are 60 minutes from the next game.');}
+  else{$('inMove').value=60;$('inNudge').value=30;$('inClock').value=20;log('Timers are back: 60 seconds a move, nudge at 30 seconds, 20-minute clocks from the next game.');}
+  renderSide();});
+try{if(localStorage.getItem('cc_relax')==='1'){$('inRelax').checked=true;applyRelax();}}catch(_){}
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
