@@ -204,6 +204,25 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   details{max-width:100%}
 }
 @media (prefers-reduced-motion:reduce){.gem{transition:none}}
+/* one-screen phone layout: both boards stacked and sized by height, no swiping */
+@media (max-width:720px){
+  body.one{padding-bottom:10px}
+  body.one main{display:block;overflow:visible;scroll-snap-type:none}
+  body.one main>.jpanel,body.one main>.cpanel,body.one main>.side{flex:none;width:100%;max-width:100%;min-width:0;scroll-snap-align:none;padding:6px 8px;margin-bottom:6px}
+  body.one .tabs,body.one .swipebar,body.one .legend,body.one .cpanel .ph .sub{display:none!important}
+  body.one .jgrid,body.one .jwrap{max-width:min(100%,calc(34vh))!important;margin:0 auto}
+  body.one .cgrid,body.one .coords{max-width:min(100%,calc(36vh))!important;margin:0 auto}
+  body.one .jgrid{gap:1px;padding:2px}body.one .cgrid{gap:1px;padding:2px}
+  body.one .ph{margin-bottom:3px}
+  body.one .status{position:static;margin:4px 0 6px;padding:5px 10px;font-size:12px}
+  body.one header{margin-bottom:4px;padding-bottom:4px}
+  body.one h1{font-size:15px}
+  body.one .coach{font-size:12px;padding:5px 8px;margin-bottom:4px}
+  body.one .coords{font-size:9px;padding-top:0}
+  body.one .cpanel .acts,body.one .cpanel .hint{margin-top:4px}
+  body.one .tipcard{font-size:12px}
+  body.one #jsub{font-size:10px}
+}
 .phoneonly{display:none}
 @media (max-width:720px){
   .phoneonly{display:inline-block}
@@ -278,6 +297,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
     <div class="field"><span class="lbl">Bot blockers</span><input type="number" id="inBotBlock" min="0" max="30" value="13"></div>
     <div class="field"><span class="lbl">Handicap</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inAuto" checked> auto from ratings</label></div>
     <div class="field"><span class="lbl">Drone tips</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
+    <div class="field phoneonly"><span class="lbl">Phone layout</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inOne" checked> one screen, no swiping</label></div>
     <div class="field"><span class="lbl">Sound</span><label style="display:flex;align-items:center;gap:6px;padding:6px 0"><input type="checkbox" id="inSound"> hum and voice</label></div>
     <div class="field"><span class="lbl">Secs per move</span><input type="number" id="inMove" min="0" max="600" step="5" value="60"></div>
     <div class="field"><span class="lbl">Nudge after (s)</span><input type="number" id="inNudge" min="0" max="300" step="5" value="30"></div>
@@ -420,7 +440,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.101';
+const VERSION='0.102';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2219,6 +2239,11 @@ $('btnShuffle').addEventListener('click',()=>{
   reshuffles--;shuffle();hintCells=null;lastSwapAt=Date.now();boardStuck=false;
   log(`You reshuffled the stars. ${reshuffles} reshuffle${reshuffles===1?'':'s'} left before the board opens.`);renderJewels();
 });
+// ---------- one-screen phone layout: on by default on phones; the swipe layout is the alternative
+function applyOne(){document.body.classList.toggle('one',$('inOne').checked);renderTabs();render();}
+try{const v=localStorage.getItem('cc_one');if(v==='0')$('inOne').checked=false;}catch(_){}
+$('inOne').addEventListener('change',()=>{try{localStorage.setItem('cc_one',$('inOne').checked?'1':'0');}catch(_){}applyOne();});
+document.body.classList.toggle('one',$('inOne').checked);
 // initial boards so the page has shape before Start
 newChess();newJewels(0);newBotBoard(0);
 const restored=loadState();
