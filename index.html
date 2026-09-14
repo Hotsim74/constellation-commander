@@ -210,10 +210,13 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
   body.one main{display:block;overflow:visible;scroll-snap-type:none}
   body.one main>.jpanel,body.one main>.cpanel,body.one main>.side{flex:none;width:100%;max-width:100%;min-width:0;scroll-snap-align:none;padding:6px 8px;margin-bottom:6px}
   body.one .tabs,body.one .swipebar,body.one .legend,body.one .cpanel .ph .sub{display:none!important}
-  body.one .jgrid,body.one .jwrap{max-width:min(100%,calc(34vh))!important;margin:0 auto}
-  body.one .cgrid,body.one .coords{max-width:min(100%,calc(36vh))!important;margin:0 auto}
+  body.one .jgrid,body.one .jwrap{max-width:min(100%,calc(32vh))!important;margin:0 auto}
+  body.one .cgrid,body.one .coords{max-width:min(100%,calc(35vh))!important;margin:0 auto}
   body.one .jgrid{gap:1px;padding:2px}body.one .cgrid{gap:1px;padding:2px}
-  body.one .ph{margin-bottom:3px}
+  body.one .ph{margin-bottom:3px;flex-wrap:nowrap;gap:6px}
+  body.one .jpanel .lbl,body.one .cpanel .lbl{white-space:nowrap;font-size:10px}
+  body.one #btnShuffle{padding:3px 6px;font-size:10px;white-space:nowrap}
+  body.one #jsub{font-size:10px;line-height:1.2;text-align:right}
   body.one .status{position:static;margin:4px 0 6px;padding:5px 10px;font-size:12px}
   body.one header{margin-bottom:4px;padding-bottom:4px}
   body.one h1{font-size:15px}
@@ -440,7 +443,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.102';
+const VERSION='0.103';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2226,7 +2229,8 @@ let newverSeen=false;
 async function checkVersion(){
   if(newverSeen||!/^https?:/.test(location.protocol))return;
   try{const r=await fetch(location.href.split('#')[0],{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);
-    if(m&&m[1]!==VERSION){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=`You have v${VERSION}. v${m[1]} is out.`;}}catch(_){}
+    const num=v=>v.split('.').map(Number);const newer=m&&(num(m[1])[0]>num(VERSION)[0]||(num(m[1])[0]===num(VERSION)[0]&&num(m[1])[1]>num(VERSION)[1]));
+    if(newer){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=`You have v${VERSION}. v${m[1]} is out.`;}}catch(_){}
 }
 $('btnReload').addEventListener('click',async()=>{saveState();$('btnReload').textContent='Reloading…';try{await fetch(location.pathname,{cache:'reload'});}catch(_){}const u=location.pathname+'?fresh='+Date.now()+location.hash;location.replace(u);}); // refresh the cache entry first, then load a stamped address; the stamp is dropped again on load
 try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash);}catch(_){}
