@@ -444,7 +444,7 @@ details th{color:var(--text);font-family:var(--display);font-size:11px;letter-sp
 </details>
 
 <script>
-const VERSION='0.104';
+const VERSION='0.105';
 const YOU=1,BOT=2,N=9,JW=8,JH=8,WIN=46;let NC=5;
 const BLK=-1,BOMB=-2;
 const BACKCOLS=[0,1,2,6,7,8];
@@ -2229,11 +2229,12 @@ $('ver').textContent='v'+VERSION;
 let newverSeen=false;
 async function checkVersion(){
   if(newverSeen||!/^https?:/.test(location.protocol))return;
+  try{const t=+localStorage.getItem('cc_upd')||0;if(Date.now()-t<10*60000)return;}catch(_){} // just reloaded from the bar: give the site's cache ten minutes to catch up before asking again
   try{const r=await fetch(location.href.split('#')[0],{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);
     const num=v=>v.split('.').map(Number);const newer=m&&(num(m[1])[0]>num(VERSION)[0]||(num(m[1])[0]===num(VERSION)[0]&&num(m[1])[1]>num(VERSION)[1]));
     if(newer){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=`You have v${VERSION}. v${m[1]} is out.`;}}catch(_){}
 }
-$('btnReload').addEventListener('click',async()=>{saveState();$('btnReload').textContent='Reloading…';try{await fetch(location.pathname,{cache:'reload'});}catch(_){}const u=location.pathname+'?fresh='+Date.now()+location.hash;location.replace(u);}); // refresh the cache entry first, then load a stamped address; the stamp is dropped again on load
+$('btnReload').addEventListener('click',async()=>{saveState();try{localStorage.setItem('cc_upd',String(Date.now()));}catch(_){}$('btnReload').textContent='Reloading…';try{await fetch(location.pathname,{cache:'reload'});}catch(_){}const u=location.pathname+'?fresh='+Date.now()+location.hash;location.replace(u);}); // refresh the cache entry first, then load a stamped address; the stamp is dropped again on load
 try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash);}catch(_){}
 $('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
 setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
