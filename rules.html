@@ -13,184 +13,89 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;--you:#e8a63b;--bot:#4ea8dc;--danger:#e5484d;--ok:#3ec27a;
+:root{--bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;--you:#e8a63b;--bot:#4ea8dc;
   --display:'Chakra Petch',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.55;margin:0;padding:24px 20px 60px}
-.wrap{max-width:860px;margin:0 auto}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding:24px 20px 60px}
+.wrap{max-width:820px;margin:0 auto}
 h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;line-height:1}
 .sub{color:var(--mute);margin:0 0 22px}
 h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--you);margin:34px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
-h3{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin:18px 0 6px}
 p{margin:8px 0;max-width:70ch}
-ul{margin:6px 0 6px 0;padding-left:20px;max-width:70ch}
-li{margin:4px 0}
-table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:14px}
+ul{margin:6px 0;padding-left:20px;max-width:70ch}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:15px}
 th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
-th{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text);background:var(--panel2)}
-td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+th{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--panel2)}
 .tw{overflow-x:auto}
-code{font-family:var(--mono);font-size:13px;background:var(--panel2);padding:1px 5px;border-radius:3px}
-.tag{display:inline-block;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.06em;padding:1px 7px;border-radius:3px;border:1px solid}
-.tag.y{color:var(--you);border-color:var(--you)}.tag.b{color:var(--bot);border-color:var(--bot)}
-.note{border-left:3px solid var(--mute);background:var(--panel);padding:8px 12px;margin:10px 0;color:var(--mute);max-width:70ch}
 .toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:0 0 6px}
 .toc a{color:var(--mute);text-decoration:none;border-bottom:1px dotted var(--line)}
-.toc a:hover{color:var(--text)}
 a{color:var(--you)}
-@media (max-width:600px){body{padding:16px 12px 40px}h1{font-size:24px}}
+@media (max-width:600px){body{padding:16px 12px 40px;font-size:15px}h1{font-size:24px}}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, current to version 0.100. Every number here is either a rule in the code or a rate measured by running the star engine 3,000 swaps at a time.</p>
-
-<nav class="toc">
-<a href="#goal">Goal</a><a href="#stars">Star board</a><a href="#shapes">Shapes and spawn rates</a><a href="#drones">The drones</a><a href="#backrow">Back row</a><a href="#board">The board</a><a href="#turns">Turns and clocks</a><a href="#walking">Walking</a><a href="#guards">Guards</a><a href="#siege">Taking the Commander</a><a href="#digging">Flying down</a><a href="#twophones">Two phones</a><a href="#ratings">Ratings and handicaps</a><a href="#bot">The bot</a><a href="#settings">Settings</a>
-</nav>
-
-<h2 id="goal">Goal</h2>
-<p>Two players, each with a private star board, share one 9 by 9 board. Matching stars earns drones. Drones go to your back row of the shared board and from there they claim land, guard it, or take enemy drones. You win when you hold <strong>46 squares</strong>, or when a siege drone <strong>takes the enemy Commander</strong>. You lose if your chess clock runs out.</p>
-
-<h2 id="stars">Star board</h2>
-<p>An 8 by 8 board of five star kinds (a setting, 4 to 6), played in real time. It never pauses for the other board. Drag a star onto a neighbor to swap them. A swap that makes no match snaps back.</p>
-<ul>
-<li><strong>Rows and columns</strong> match at 3 or more. <strong>Diagonals</strong> only match at 4 or more. A lone diagonal 3 does nothing.</li>
-<li>A match of 3 clears tiles and pays nothing. Bigger shapes pay, see the table below.</li>
-<li>Cleared tiles fall out, everything above drops, new stars fall in from the top. Any match that forms on its own pays the same as one you made.</li>
-<li><strong>Rocks</strong> are tiles nothing can match. Both sides start with 13 (a setting), laid out as a shape picked for the game: the X, the plus, the ring, the diamond, the stairs, the pillars, the smile, the zigzag, the arrow, or scattered. Both boards get the same shape. An L or T of two 3-lines drops 3 more onto the other side's board. They are the pacing of the game: a quiet opening while they block the board, a sweet spot as they clear, then the flood once they are gone. Dig them out by flying drones down. A difference between the two rock settings is a handicap.</li>
-<li><strong>Rocks to the other side.</strong> Match an L or T made of two 3-lines and 3 rocks drop onto your opponent's star board, on the top row, where they fall in with everything else. Both sides can do it. The way out is the same as always: dig them with a drone or match around them.</li>
-<li>Before the board opens you may <strong>reshuffle</strong> your stars yourself, up to 3 times a game (a button on the star board; rocks stay put), and a dead board reshuffles on its own. Once the board is open, if no swap can make a match it does <strong>not</strong> reshuffle while you have a drone to fly down. The header turns red: dig your way out. Only with no drones at all does the board reshuffle. The bot lives by the same rule.</li>
-</ul>
-
-<h2 id="shapes">Shapes and spawn rates</h2>
-<p>Rates are per 100 swaps with five star kinds. "Strong player" always takes the best-paying swap on the board. "Casual player" takes any match they see. You will sit between the two; cascades count. A strong player earns close to two drones a swap on this ladder.</p>
-<div class="tw"><table>
-<tr><th>Shape</th><th>You get</th><th>Strong player</th><th>Casual player</th></tr>
-<tr><td>4 in a line</td><td>Claim drone</td><td class="num">85</td><td class="num">51</td></tr>
-<tr><td>2 × 2 block</td><td>Guard drone</td><td class="num">32</td><td class="num">19</td></tr>
-<tr><td>5 in a line</td><td>Strike drone</td><td class="num">18</td><td class="num">5.7</td></tr>
-<tr><td>Plus of two 3-lines, or an X of 5 diagonals crossing in the middle</td><td>Hunter drone</td><td class="num">17</td><td class="num">5.1</td></tr>
-<tr><td>6 in a line, or an L of 4 and 3</td><td>Siege drone</td><td class="num">18</td><td class="num">6.2</td></tr>
-<tr><td>L or T of two 3-lines</td><td>3 rocks drop onto the other side's board</td><td class="num">8.7</td><td class="num">4.1</td></tr>
-<tr><td>7 in a line, a cross of 4 and 4, or a 5 crossing a 3</td><td>Warp drone</td><td class="num">2.6</td><td class="num">1.2</td></tr>
-<tr><td>A 5 crossing a 4, or bigger crossings</td><td>Warp drone and a siege drone</td><td class="num" colspan="2">rare</td></tr>
-<tr><td>2 × 3 block</td><td>Warp drone and a siege drone</td><td class="num" colspan="2">counted in the warp row</td></tr>
-<tr><td>3 × 3 block</td><td>Warp, siege drone and a hunter</td><td class="num">never seen</td><td class="num">never seen</td></tr>
-</table></div>
-<div class="note">A 3-line that is part of a block belongs to the block. A 3 × 3 has never come up in simulation, so treat it as a legend. This ladder is the version 0.39 one, with rocks-to-the-other-side back in the L or T slot since version 0.86 (it replaced the bombs).</div>
-
-<h2 id="drones">The drones</h2>
-<div class="tw"><table>
-<tr><th>Drone</th><th>Ship and its letter (the letter sits on the drone on the board)</th><th>Moves</th><th>On the board</th><th>Flying down</th></tr>
-<tr><td>Claim</td><td>Planted spider (C)</td><td>1 square, any direction</td><td>One use. Claims everything in the 3 × 3 around it that isn't yours: unowned becomes yours, enemy land becomes disputed, disputed becomes yours. Can fire whenever at least one square in reach isn't yours.</td><td>Pick 1 tile</td></tr>
-<tr><td>Guard</td><td>Gimbal Iris (G)</td><td>1 square, only onto land you own</td><td>An enemy claim, warp or guard drone on your land one square away is removed at once; the guard stays. Strike, hunter and siege drones are not swept: they can stand beside a guard and fight it. An enemy two squares away gets you an offer to jump and take it; the guard is lost. A guard beside an enemy siege drone shields the wall: it cannot fire while the guard is there, and neither is harmed.</td><td>Up to 2 tiles of your choice</td></tr>
-<tr><td>Strike</td><td>Corner-engine missile (S)</td><td>Up to 4 squares diagonally, may bend mid-move, stays on its color</td><td>Takes any enemy drone it lands on. Not spent by taking.</td><td>Up to 4 tiles of your choice</td></tr>
-<tr><td>Hunter</td><td>Net-gun turret (H)</td><td>Up to 4 squares in any direction, may bend</td><td>Same as a strike drone but it can leave its color, so it reaches the whole board.</td><td>Up to 6 tiles of your choice</td></tr>
-<tr><td>Warp</td><td>Delta Fracture (W)</td><td>1 square, any direction</td><td>One use. Warps to any square on the board: the 3 × 3 around it becomes yours outright and enemy drones inside are removed. It cannot target a square with an enemy guard next to it, so a guard can never be warped away and the land beside your guards is warp-proof.</td><td>1 tile</td></tr>
-<tr><td>Siege drone</td><td>Jet-powered ram on rails: a charged rod, tungsten head, two thrusters, hazard clamps</td><td>1 square, any direction. Tap a square to give it an order and it walks there a step a turn on its own.</td><td>Cannot take pieces and cannot be taken: strikes and hunters can't land on it, guards can't remove it, a warp leaves it standing. The only way to destroy it is to surround it with 4 drones on the squares around it. You can have two on the board at once; a third one you earn digs your star board instead of landing. Next to the enemy wall it fires on its own: one shot clears every enemy wall beside it; with the Commander beside it, the next shot takes the Commander and wins. It cannot fire while an enemy guard stands beside it: the guard shields the wall. It can ram that guard instead: the guard is destroyed and the siege drone burns out with it, walls untouched. The starting guards stand at the two ends of the yard, so the middle of the wall is open until a guard walks over to cover it, and then the ends are.</td><td>Up to 8 tiles of your choice</td></tr>
-</table></div>
-<p>Drones are the same for both sides. Yours show in <span class="tag y">amber</span>, the bot's in <span class="tag b">blue</span>.</p>
-
-<h2 id="backrow">Back row</h2>
-<p>Your back row has 6 free squares; the Commander and two walls take the other 3.</p>
-<ul>
-<li>When you earn a drone, the free back-row squares light up and you tap the one you want. Several waiting drones land in the order you earned them. Auto-place drops them anywhere. Matching is never paused for this.</li>
-<li>Before the board opens, you may tap a back-row drone and tap another free back-row square to shift it.</li>
-<li><strong>Full row:</strong> a stronger drone bumps the weakest one off the row, and the bumped drone flies down instead, at any point in the game. The last claim drone is never bumped, so your guards always have a way to grow their land. Weakest to strongest: claim, guard, strike, hunter, warp, siege drone.</li>
-<li><strong>Full row and nothing weaker to bump:</strong> the new drone hovers over your star board and you pick the tiles it removes.</li>
-</ul>
+<p class="sub">The rulebook, one board, version 1.0. Every rule here is what the game does right now. Nothing is final.</p>
+<nav class="toc"><a href="#board">The board</a><a href="#fog">The fog</a><a href="#start">Start and turns</a><a href="#shapes">Shapes</a><a href="#drones">The drones</a><a href="#moving">Moving and stacks</a><a href="#missiles">Missiles</a><a href="#win">Winning</a><a href="#first">Your first game</a><a href="#ratings">Ratings and handicaps</a></nav>
 
 <h2 id="board">The board</h2>
-<ul>
-<li>9 by 9. Your Master sits back-row center with walls on the 5 squares around it. The bot mirrors you at the top.</li>
-<li><strong>The yard:</strong> each side owns the 5 squares in front of its wall from the start, with 2 guards on patrol there. Starting guards don't count toward opening the board.</li>
-<li>Squares are unowned, yours, the bot's, or <strong>disputed</strong>. Disputed land counts for nobody. A claim drone turns disputed land yours.</li>
-<li>The 11 home squares each side starts with (Commander, walls, yard) count toward 46. Walls a siege drone clears stop counting.</li>
-<li><strong>Land win:</strong> hold 46 of the 81 squares. With 11 at home, that is 35 of the 59 open squares.</li>
-</ul>
+<p>One 11 × 11 board. Every square holds a star of one of five colors, or a rock. Under the stars is a red-and-white checkerboard. The middle row is the seam: stars are born there and drift toward each back row. Clear stars on your side and the ones nearer the seam slide down to fill in, with new stars born at the seam.</p>
+<p>Your Commander sits in the middle of your back row inside a wall of five squares, and the five squares in front of the wall are your yard. You own those from the start. Rocks can't be swapped, matched, or entered. Each side starts with rocks in its own half; the number comes from the ratings.</p>
 
-<h2 id="turns">Turns and clocks</h2>
-<ul>
-<li>The board <strong>opens</strong> when both sides have placed 3 earned drones. Whoever got there first moves first.</li>
-<li>Once open, it's strict turns: <strong>one action per turn</strong>. Move a drone, claim, fire, warp, fly down, take a guard's jump offer, or pass.</li>
-<li>A side with no drones on the board has its turn skipped. If neither side has any, turns wait until a drone lands.</li>
-<li><strong>Chess clock</strong>, default 20 minutes each. It runs only on your turn, and only while both sides have a drone on the board. At zero you lose.</li>
-<li><strong>Per-move timer</strong>, default 60 seconds. When it runs out your turn passes. This is not a loss.</li>
-<li><strong>Nudge</strong>, default 30 seconds. If it's your move and you've spent that long on the stars, the star board darkens until you act on the board.</li>
-</ul>
+<h2 id="fog">The fog</h2>
+<p>Everything starts dark except your own land, one square around each of your drones (shields see nothing), and squares a scout has claimed, which stay lit all game. You can't swap, move through, or shoot at a square you can't see. The bot lives under the same fog.</p>
 
-<h2 id="walking">Walking</h2>
-<p>Select a claim, guard or warp drone and tap a square more than one step away. That square becomes its destination, marked with a dashed ring. On each of your turns, if you do nothing for 4 seconds, the drone takes one step toward it and the turn passes. Act sooner and the walk waits a turn. "Step now" skips the wait; "Cancel walk" clears it. Steps avoid squares next to enemy guards. A guard walks only on your land, so it stops when the land runs out and you get a normal turn. Arriving ends the walk; claiming is still your call.</p>
+<h2 id="start">Start and turns</h2>
+<p>You begin with your Commander, walls and yard, two shields at the ends of the yard, one scout on your back row, and one missile. You move first.</p>
+<p>Against the bot the game is <strong>relaxed</strong> unless you turn Timers on in Settings: no move timer, no clock. With Timers on it is a 20-minute chess clock and 60 seconds a move.</p>
+<p>A turn: missiles first, if you want. Then one action: swap two stars side by side to make a line, move one drone, claim with a scout, warp, fire a siege drone, or ram. A swap that makes no line snaps back for free.</p>
 
-<h2 id="guards">Guards</h2>
-<p>A guard is a trap, not a fighter. It can only walk on land you own, so grow the yard with claims and it gets room. Anything the enemy lands on your land next to a guard is removed at once, any type. When an enemy stands exactly two squares off, a red button appears on your move: the guard jumps and takes it, and the guard is lost. Ignore the button and nothing happens.</p>
-
-<h2 id="siege">Taking the Commander</h2>
-<p>Only a siege drone can do it. Give it an order by tapping a square in front of the enemy wall and it walks there a step a turn. Once it is beside the wall it fires on its own: the first shot clears the walls beside it, then it steps onto the cleared square and fires for the side walls, then once more with the Commander beside it. Three shots, and the game ends regardless of land. It cannot be taken on the way; the defender's only answers are to surround it with 4 drones, or to feed it guards, since a guard beside it takes each shot and dies in the siege drone's place.</p>
-
-<h2 id="digging">Flying down</h2>
-<p>Any drone on the board can drop to your star board instead of moving. Once the board is open it costs your move for the turn. Before it opens, drones wait on the back row; only a full back row sends the newest one down to dig, and that dig may take stars only, not rocks. A small preview board shows where every tile lands once the picks are gone, so you can set up a shape on purpose.</p>
+<h2 id="shapes">Shapes</h2>
+<p>Lines count across, down, and on the diagonal, where they need 4 or more. A 3 clears stars and pays nothing. A shape pays only if part of it is on your side of the seam, and the drone appears on that part, in the color of the star that made it. After a match the stars flow, and any lines that form on their own are yours too.</p>
+<p>You can hold 10 drones. At 10, a shape pays what the right column says, or stacks into your own drone if it was made under one.</p>
 <div class="tw"><table>
-<tr><th>Drone</th><th>Removes</th></tr>
-<tr><td>Claim</td><td>1 tile</td></tr>
-<tr><td>Warp</td><td>1 tile</td></tr>
-<tr><td>Guard</td><td>Up to 2 tiles of your choice</td></tr>
-<tr><td>Strike</td><td>Up to 4</td></tr>
-<tr><td>Hunter</td><td>Up to 6</td></tr>
-<tr><td>Siege drone</td><td>Up to 8</td></tr>
+<tr><th>Shape</th><th>You get</th><th>At 10 drones</th></tr>
+<tr><td>4 in a line</td><td>Scout</td><td>nothing</td></tr>
+<tr><td>2 × 2 block</td><td>Shield</td><td>nothing</td></tr>
+<tr><td>5 in a line</td><td>Strike, white</td><td>1 missile</td></tr>
+<tr><td>6 in a line</td><td>Hunter</td><td>1 rock onto the other side's land</td></tr>
+<tr><td>L of two 3-lines</td><td>Bomb</td><td>Bomb, always</td></tr>
+<tr><td>T of two 3-lines</td><td>Strike, red</td><td>1 missile</td></tr>
+<tr><td>Plus of two 3-lines, or an X of 5 diagonals</td><td>Hunter</td><td>nothing</td></tr>
+<tr><td>L of 4 and 3</td><td>Siege</td><td>nothing</td></tr>
+<tr><td>7 in a line, 4 crossing 4, or 5 crossing 3</td><td>Warp</td><td>nothing</td></tr>
+<tr><td>5 crossing 4 or bigger, or a 2 × 3 block</td><td>Warp and siege</td><td>nothing</td></tr>
+<tr><td>3 × 3 block</td><td>Warp, siege and hunter</td><td>nothing</td></tr>
 </table></div>
 
-<h2 id="twophones">Two phones</h2>
-<p>Two people can play from two phones. It needs the downloaded copy of the game on each phone, not the claude.ai link. Open Settings, tap <strong>Play a friend</strong>, type a name. One of you taps <strong>Host a match</strong> and reads out the 4-letter code; the other types it in and taps <strong>Join</strong>. The host's settings apply to both: star kinds, clock, seconds per move, and both rock counts ("Your blockers" for the host, "Bot blockers" for the friend).</p>
+<h2 id="drones">The drones</h2>
+<p>Every drone wears its letter. Yours have a gold rim, the bot's a blue one.</p>
 <ul>
-<li>Each of you keeps your own star board on your own phone. Only the shared board travels: drones landing, moves, claims, the turn, and the clocks.</li>
-<li>Everything else is the normal game. The board opens when you both have 3 drones on it. Strict turns, chess clock, move timer, the 46-square win and the Commander.</li>
-<li>If a phone drops its signal or reloads, open the game again and it goes back into the same match. A match is kept for 12 hours.</li>
-<li><strong>Leave match</strong> hands the other side back to the bot on your phone.</li>
+<li><strong>Scout (C).</strong> Moves 1 square any way. Fires one missile a turn. Claim: the 3 × 3 around it, open land becomes yours, enemy land becomes disputed, disputed becomes yours, and the 3 × 3 is cleared of fog for good. Two claims per scout; the second uses it up.</li>
+<li><strong>Shield (G).</strong> Moves 1 square, only onto squares you own or have cleared. It sees nothing in the fog and takes nothing there. It takes a scout, hunter, warp or shield by moving next to it on your land. Standing still it takes nothing. Standing next to an enemy siege drone it blocks the shot.</li>
+<li><strong>Strike (S).</strong> Red or white, shown on the disc, for a rule still to come. Slides the full diagonal in any direction until it hits something or the board's edge, and takes any enemy drone it stops on, except a siege. It may slide into the dark. Where it stops, the fog lifts one square around it while it stands there. Once made, the slide is made.</li>
+<li><strong>Hunter (H).</strong> Moves 1 square plus up to 4 free steps on any star color, bending as it goes. Fires two missiles a turn: both are aimed first, then both hit at once and the stars drop once. Takes any enemy drone it lands on except a siege.</li>
+<li><strong>Warp (W).</strong> Moves 1 square. Or, as your action, jumps to any cleared square on your side that isn't on or next to an enemy shield. On landing, every unclaimed square in the 3 × 3 becomes yours, enemy land stays enemy, and it takes enemy drones only on squares that are now yours. That uses it up.</li>
+<li><strong>Siege (X).</strong> Moves exactly 1 square a turn and is the one drone that walks into the dark freely. Beside the enemy wall, Fire clears the walls next to it; beside the Commander, Fire takes it and wins. It can't take drones and can't be taken by them. Four enemy drones around it destroy it. A shield beside it blocks the shot; it may ram that shield instead, and both are gone. Two per side at once.</li>
+<li><strong>Bomb (B).</strong> Moves 1 square, or rides its own star color for free. Goes off at the end of your third turn after you get it. The blast runs up, down, left and right from where it sits, along each arm as far as you have cleared the fog, and takes every rock, star and drone in its path, yours included. Commander and walls stand. The other player sees how far it reached.</li>
 </ul>
+
+<h2 id="moving">Moving and stacks</h2>
+<p><strong>Free rides.</strong> Every step onto a star of a drone's own color is free, so it can ride a lane of its color as far as it goes and spend its one paid step before or after. Shields and sieges get no rides. Strikes slide instead.</p>
+<p><strong>Stacks.</strong> Move one of your drones onto another of yours to stack them. The stack keeps the kind you landed on, adds power up to 3, and gains the other drone's star color so it rides more lanes. The game asks before it stacks. Power is armor against missiles: a power 3 stack takes three hits. It's no help in a fight: a strike takes the whole stack in one landing.</p>
+
+<h2 id="missiles">Missiles</h2>
+<p>Every take earns one. Only scouts and hunters fire, before your action, a scout once a turn, a hunter twice. A missile flies 5 squares from the firing drone, any direction, at anything you can see. At a drone it takes one power. At a rock or star it destroys it, the stars flow, and any lines that form are yours. Nothing is sacrificed to fire.</p>
+
+<h2 id="win">Winning</h2>
+<p>Your yard, walls and Commander count as yours. Claims and warps take more. Hold <strong>46 squares</strong> and you win, or take the enemy Commander with a siege drone. With Timers on, running out of clock loses.</p>
+
+<h2 id="first">Your first game</h2>
+<p>The first time you open the game it offers to walk you through: a dark board, no clock, and the game lights the square to tap and waits. Move the scout, claim and watch the fog lift, make a match and watch the drone appear. It's in Settings any time as Guided first game.</p>
+
 <h2 id="ratings">Ratings and handicaps</h2>
-<p>Every player has one rating, kept on their own phone and shown in the Your record panel. You start at <strong>1000</strong>. The bot at skill S is rated <strong>800 + 12 × S</strong>: skill 10 is 920, the beginner setting and the default; 20 is 1040; 50 is 1400; 100 is 2000. A win or loss moves your rating the chess way (Elo): a big move for a surprise, a small one for the expected result. The first 10 games move it faster. A game you abandon by pressing Start while the board is open counts as a loss. Games against the bot count by its skill: at skill 10 your rating moves a tenth as far as it would against a person, at 20 a fifth, at 50 half, at 100 the full amount. Games against a person always count in full.</p>
-<p>With <strong>Handicap: auto from ratings</strong> on (the default), the game is made fair before it starts, from the rating gap:</p>
-<ul>
-<li><strong>Rocks.</strong> One rock per 50 points of gap, split both ways: half go onto the stronger side's star board, half come off the weaker side's. From the base of 13, a 400-point gap makes it 17 rocks against 9. The stronger side never goes above 30, the weaker never below 0. The rating change after the game is worked out from the gap that is left after the rocks, so a well-handicapped game moves both numbers only a little.</li>
-<li><strong>Hints.</strong> The swap hint is a handicap too. A brand-new player (rated 800) sees the best swap on the board at once. At 1100 it appears after 5 seconds idle. From 1400 up it takes 10 seconds and shows only the first swap the scan finds, not the best. In between it slides.</li>
-</ul>
-<p>Online, each phone applies its own hint rule, and the host sets both rock counts the moment the friend joins, from both ratings. Both star boards are locked until then, so nobody gets a head start. Turn the checkbox off to set rocks by hand; the rating change still counts whatever rock difference you chose.</p>
-<h2 id="bot">The bot</h2>
-<p>The bot plays a real star board, shown beside the clocks. Same shapes, same rewards, same rocks. It has no draw table and no hidden income; every drone it gets, it matched for.</p>
-<ul>
-<li><strong>Pace.</strong> With "match mine" on, it swaps as often as you did over the last three minutes, floor 3 a minute. Off, it uses the fixed swaps-per-minute number.</li>
-<li><strong>Skill</strong> is a 0 to 100 hardness dial. Every step buys the bot something:</li>
-</ul>
-<div class="tw"><table>
-<tr><th>Skill</th><th>What the bot gains</th></tr>
-<tr><td class="num">0 to 100</td><td>That share of its swaps are the best available on its board. The rest are random matches.</td></tr>
-<tr><td class="num">under 30</td><td>Newbie band. It swaps slower than you, about two-thirds of your pace at 20. One board move in three is random at 20. Its guards never jump.</td></tr>
-<tr><td class="num">30 up</td><td>Guards jump more readily as skill rises: warps and groups always, hunters from about 50, strike drones and claim drones about to take 3 or more from about 65.</td></tr>
-<tr><td class="num">50 to 80</td><td>Learns your guards' kill zones and stops stepping into them, from never at 50 to always at 80.</td></tr>
-<tr><td class="num">60 to 100</td><td>Sees threats from your strike, hunter and group. Won't park a drone where they can land, and pulls a threatened drone back.</td></tr>
-<tr><td class="num">70 to 100</td><td>Plans its star swaps one move ahead.</td></tr>
-<tr><td class="num">90 to 100</td><td>Swaps faster than you when pace matching is on, up to 1.5 times your rate at 100.</td></tr>
-</table></div>
-<p>Landmarks: <strong>20</strong> new player, <strong>50</strong> regular, <strong>70</strong> hard, <strong>100</strong> unfair.</p>
-
-<h2 id="settings">Settings</h2>
-<div class="tw"><table>
-<tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
-<tr><td>Drone tips</td><td>on</td><td>Tap any drone on the board and a short card says how it works. Turn it off here or on the card.</td></tr>
-<tr><td>Star kinds</td><td class="num">5</td><td>How many star colors. Fewer means more matches and far more big shapes. 6 is the original game.</td></tr>
-<tr><td>Your blockers</td><td class="num">13</td><td>Rocks on your board at the start. The pace of the opening. The gap between the two rock settings is the handicap: give the weaker side fewer.</td></tr>
-<tr><td>Bot blockers</td><td class="num">13</td><td>Rocks on the bot's board at the start.</td></tr>
-<tr><td>Bot skill %</td><td class="num">10</td><td>The hardness dial above. 10 is right for beginners; 20 for someone who knows the drones; 50 for a regular; 70 hard; 100 unfair.</td></tr>
-<tr><td>Star hints</td><td class="num">on</td><td>After 5 seconds without a swap, the best-paying swap on your board gets a green ring. A handicap for new players; switch it off when you no longer want it.</td></tr>
-<tr><td>Bot pace: match mine</td><td class="num">on</td><td>Bot swaps as often as you do.</td></tr>
-<tr><td>Bot swaps / min</td><td class="num">8</td><td>Used only when pace matching is off.</td></tr>
-<tr><td>Secs per move</td><td class="num">60</td><td>Per-move timer. 0 turns it off.</td></tr>
-<tr><td>Nudge after (s)</td><td class="num">30</td><td>Seconds on the stars before the board asks for your move. 0 turns it off.</td></tr>
-<tr><td>Clock (min)</td><td class="num">20</td><td>Chess clock per player. Zero loses.</td></tr>
-</table></div>
-<p>The game saves itself every second and comes back after a reload. Screenshot draws the whole game to a picture; Copy as text copies a plain-text version of the board.</p>
-<p><strong>On a phone</strong> the page becomes three screens you swipe between: Stars, Board, and Info (clocks, land, the bot's board, the log). The tabs at the top do the same. The status line stays put across all three, and the nudge card has a button that takes you to the board.</p>
+<p>You start at 1000 and the number moves the chess way after each game. The bot at skill S is rated 800 + 12 × S: skill 10 is 920, the beginner setting and the default; 50 is 1400; 100 is 2000. A game against the bot moves your rating in proportion to its skill, a tenth at skill 10, half at 50, the full amount at 100. Starting a new game while one is under way counts as a loss.</p>
+<p>With <strong>Handicap: rocks from ratings</strong> on, the rock counts are set from the gap: one rock per 50 points, half added to the stronger side's half, half taken off the weaker side's, from the base in the Your rocks box. The rating change is then worked out from the gap that is left after the rocks.</p>
 </div>
 </body>
 </html>

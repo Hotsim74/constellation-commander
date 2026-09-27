@@ -2,27 +2,1149 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#121820">
-<title>Constellation Commander</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>⭐</text></svg>">
-<style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#121820;color:#e4e9ef;font-family:system-ui,sans-serif;text-align:center;padding:24px}
-.card{max-width:420px}
-h1{font-size:22px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 14px}
-p{font-size:18px;line-height:1.5;margin:0 0 12px;color:#c9d1db}
-.star{font-size:48px;margin-bottom:10px}
-small{color:#8d99a8;font-size:14px}
-</style>
 </head>
 <body>
-<div class="card">
-<div class="star">⭐</div>
-<h1>Constellation Commander</h1>
-<p>A new version is on its way: one board, no more switching screens, and the fog of war.</p>
-<p>Back soon. This page will turn into the game on its own, nothing to reinstall.</p>
-<small>Your rating and record are safe on your phone.</small>
-</div>
-<script>setInterval(async()=>{try{const r=await fetch(location.pathname,{cache:'no-store'});const t=await r.text();if(/const VERSION=/.test(t))location.reload();}catch(_){}},60000);</script>
+<title>Constellation Commander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;--you:#e8a63b;--bot:#4ea8dc;--danger:#e5484d;--ok:#3ec27a;--sq:#1c2530;--sq2:#161d27;
+  --display:'Chakra Petch',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.45;padding:10px 12px 30px}
+h1{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+h1 small{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--mute);margin-left:8px}
+button{font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:8px 12px;border-radius:3px;cursor:pointer}
+button.primary{background:var(--you);color:#1a1200;border-color:var(--you)}
+button.danger{border-color:var(--danger);color:#ffb3b5}
+button:disabled{opacity:.45;cursor:default}
+input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;width:70px;border-radius:3px}
+input[type=text]{background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:6px 8px;border-radius:3px}
+.lbl{font-family:var(--display);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.setup{display:none;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px;margin-bottom:8px}
+.setup.open{display:flex}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{display:flex;align-items:center;gap:6px;padding:5px 0;font-size:13px}
+.status{background:var(--panel);border-left:4px solid var(--mute);padding:8px 12px;border-radius:3px;font-family:var(--display);font-weight:600;letter-spacing:.03em;margin-bottom:8px;min-height:20px}
+.status.you{border-left-color:var(--you)}.status.bot{border-left-color:var(--bot)}.status.warn{border-left-color:var(--danger);background:rgba(229,72,77,.12)}
+.guide{background:rgba(232,166,59,.14);border-left:4px solid var(--you);padding:8px 12px;border-radius:3px;margin-bottom:8px;font-size:15px;line-height:1.45}
+.guide b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;color:var(--you);margin-right:6px}
+.guide[hidden]{display:none}
+main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.boardwrap{flex:1 1 360px;max-width:640px}
+.board{position:relative;display:grid;grid-template-columns:repeat(11,1fr);gap:1px;background:#0a0e14;padding:3px;border-radius:4px;user-select:none;touch-action:manipulation;width:100%;aspect-ratio:1}
+.cell{position:relative;background:var(--sq);aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible}
+.cell.red{background:#2a1d22}.cell.white{background:#232b34}
+.cell.seam{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.cell.own1{background:#3a3120}.cell.own2{background:#1d3446}.cell.own3{background:linear-gradient(135deg,#3a3120 50%,#1d3446 50%)}
+.cell.wall1{background:#4a3d22;box-shadow:inset 0 0 0 2px #7a6236}.cell.wall2{background:#20415a;box-shadow:inset 0 0 0 2px #3a6f92}
+.cell.cmd1,.cell.cmd2{font-family:var(--display);font-weight:800;font-size:22px}
+.cell.cmd1{color:var(--you);box-shadow:inset 0 0 0 2px var(--you)}.cell.cmd2{color:var(--bot);box-shadow:inset 0 0 0 2px var(--bot)}
+.cell.fog{background:#0b0f15}
+.cell.fog .gem,.cell.fog .rock{visibility:hidden}
+.cell.fog::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 3px,transparent 3px 7px)}
+.cell.lit{box-shadow:inset 0 0 0 2px var(--ok)}
+.cell.sel{box-shadow:inset 0 0 0 3px var(--you)}
+.cell.mv::before{content:'';position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(232,166,59,.55);z-index:2}
+.cell.mv.dark::before{background:rgba(232,166,59,.25);border:1px dashed var(--you)}
+.cell.tk{box-shadow:inset 0 0 0 3px var(--danger)}
+.cell.st{box-shadow:inset 0 0 0 3px var(--ok)}
+.cell.aim{box-shadow:inset 0 0 0 2px rgba(229,72,77,.6)}
+.cell.aimed{box-shadow:inset 0 0 0 4px var(--danger)}
+.cell.warpto{box-shadow:inset 0 0 0 3px #b06ce8}
+.cell.hint{animation:hintpulse 1s ease-in-out infinite alternate}
+@keyframes hintpulse{from{box-shadow:inset 0 0 0 2px var(--ok)}to{box-shadow:inset 0 0 0 5px rgba(62,194,122,.5)}}
+.cell.boom{animation:boom .5s ease-out}
+@keyframes boom{0%{background:#fff}100%{}}
+.cell.blast{background:#ff9a3c!important}
+.gem{display:block;width:78%;height:78%;transition:transform .12s,filter .12s;z-index:1}
+.gem.gone{transform:scale(.2);opacity:0}
+.g0{background:radial-gradient(circle at 50% 42%,#fff1f1 0,#ff8a8d 22%,#e5484d 55%,#8f1f23);clip-path:polygon(50% 0,61.8% 33.8%,97.6% 34.5%,69% 56.2%,79.4% 90.5%,50% 70%,20.6% 90.5%,31% 56.2%,2.4% 34.5%,38.2% 33.8%)}
+.g1{background:radial-gradient(circle at 50% 50%,#fff8e6 0,#ffd27a 25%,#f0a52b 55%,#8a5a10);clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.g2{background:radial-gradient(circle at 50% 50%,#efffF4 0,#8ff0b6 25%,#3ec27a 55%,#176b3e);clip-path:polygon(50% 0,62.5% 28.3%,93.3% 25%,75% 50%,93.3% 75%,62.5% 71.7%,50% 100%,37.5% 71.7%,6.7% 75%,25% 50%,6.7% 25%,37.5% 28.3%)}
+.g3{background:radial-gradient(circle at 50% 50%,#f0f7ff 0,#9cc6ff 22%,#3f8ff0 55%,#1b4a8f);clip-path:polygon(50% 0,61.5% 22.3%,85.4% 14.6%,77.7% 38.5%,100% 50%,77.7% 61.5%,85.4% 85.4%,61.5% 77.7%,50% 100%,38.5% 77.7%,14.6% 85.4%,22.3% 61.5%,0 50%,22.3% 38.5%,14.6% 14.6%,38.5% 22.3%)}
+.g4{background:radial-gradient(circle,#ffffff 0,#f3e6ff 10%,#dcb5ff 22%,#b06ce8 42%,rgba(176,108,232,.35) 58%,rgba(176,108,232,0) 72%);border-radius:50%;width:92%;height:92%}
+.rock{display:block;width:80%;height:80%;background:repeating-linear-gradient(45deg,#3a4049 0 4px,#2b3138 4px 8px);border:1px solid #4a525c;border-radius:2px}
+.dr{position:absolute;inset:8%;border-radius:50%;background:#0e131a;border:2px solid;z-index:3;display:flex;align-items:center;justify-content:center;padding:4%;pointer-events:none}
+.dr.s1{border-color:var(--you)}.dr.s2{border-color:var(--bot)}
+.dr svg{width:100%;height:100%;display:block;overflow:hidden}
+.dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(9px,2.2vw,15px);color:#fff;text-shadow:0 0 2px #000,0 0 4px #000,0 0 7px #000;pointer-events:none;z-index:3}
+.dr .pw{position:absolute;right:-6%;bottom:-6%;min-width:38%;height:38%;border-radius:50%;background:#fff;color:#000;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
+.dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
+.dr .badge{position:absolute;left:-4%;bottom:-4%;width:30%;height:30%;border-radius:2px;border:1px solid #000;z-index:4}
+.dr .badge.r{background:#c0392b}.dr .badge.w{background:#eee}
+.dr.sel{box-shadow:0 0 0 3px var(--you)}
+.dr.colors{background:conic-gradient(var(--c1) 0 50%,var(--c2) 50% 100%)}
+.side{flex:1 1 260px;min-width:250px;display:flex;flex-direction:column;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:10px 12px;border-radius:4px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.acthint{font-size:13px;color:var(--mute);margin-top:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font-family:var(--mono);font-size:22px}
+.log{font-family:var(--mono);font-size:12px;color:var(--mute);max-height:180px;overflow:auto;line-height:1.5}
+.log div:first-child{color:var(--text)}
+.legend{font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:4px}
+.legend b{color:var(--text)}
+.tipcard{background:var(--panel2);border-left:3px solid var(--you);padding:8px 28px 8px 10px;margin-top:8px;font-size:13px;line-height:1.45;position:relative}
+.tipcard b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;margin-right:4px}
+.tipcard .x{position:absolute;right:8px;top:4px;cursor:pointer;color:var(--mute);font-size:18px;line-height:1}
+.tipcard[hidden]{display:none}
+#intro{position:fixed;inset:0;z-index:60;background:rgba(6,9,13,.85);display:flex;align-items:center;justify-content:center;padding:16px}
+#intro[hidden]{display:none}
+#intro .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:22px;max-width:460px;width:100%;color:#fff;font-size:18px;line-height:1.5}
+#intro h2{font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px;color:var(--you)}
+#intro ol{margin:0 0 16px;padding-left:24px}#intro li{margin:0 0 10px}
+#intro button{font-size:18px;padding:14px 22px;width:100%}
+#intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
+#newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
+#newver[hidden]{display:none}
+#over{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(6,9,13,.7)}
+#over.show{display:flex}
+#over .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:20px 24px;text-align:center}
+#over h2{font-family:var(--display);font-size:26px;margin:0 0 8px;letter-spacing:.06em;text-transform:uppercase}
+@media (max-width:720px){
+  body{padding:6px 6px 20px;font-size:13px}
+  header{margin-bottom:6px}h1{font-size:16px}
+  .status{font-size:12px;padding:6px 10px;margin-bottom:6px}
+  .guide{font-size:14px;padding:7px 10px}
+  main{gap:8px}
+  .boardwrap{flex:1 1 100%;max-width:100%}
+  .side{flex:1 1 100%;min-width:0}
+  .panel{padding:8px 10px}
+  .dr .lt{font-size:clamp(8px,3.4vw,14px)}
+}
+</style>
+<div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
+<header>
+  <h1>Constellation Commander <small id="ver"></small></h1>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button id="btnSettings">Settings</button>
+    <button id="btnNew" class="primary">New game</button>
+  </div>
+</header>
+<form class="setup" id="setup" onsubmit="return false">
+  <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"></div>
+  <div class="field"><span class="lbl">Timers</span><label><input type="checkbox" id="inTimers"> clock 20 min, 60 s a move</label></div>
+  <div class="field"><span class="lbl">Handicap</span><label><input type="checkbox" id="inAuto" checked> rocks from ratings</label></div>
+  <div class="field"><span class="lbl">Your rocks</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
+  <div class="field"><span class="lbl">Bot rocks</span><input type="number" id="inRock2" min="0" max="20" value="6"></div>
+  <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
+  <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
+  <button type="button" id="btnHow">How to play</button>
+  <button type="button" id="btnTut">Guided first game</button>
+  <button type="button" id="btnCopy">Copy as text</button>
+  <a href="rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
+</form>
+<div class="guide" id="guide" hidden></div>
+<div class="status" id="status">Loading…</div>
+<main>
+  <div class="boardwrap">
+    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button></div></div></div>
+    <div class="legend"><b>C</b> scout · <b>G</b> shield · <b>S</b> strike · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
+    <div class="tipcard" id="dtip" hidden></div>
+    <div class="acthint" id="acthint"></div>
+    <div class="acts" id="acts"></div>
+  </div>
+  <div class="side">
+    <div class="panel two">
+      <div><span class="lbl">You</span><div class="big" id="land1" style="color:var(--you)">11</div><div id="meta1" class="acthint"></div></div>
+      <div><span class="lbl" id="botlbl">Bot</span><div class="big" id="land2" style="color:var(--bot)">11</div><div id="meta2" class="acthint"></div></div>
+    </div>
+    <div class="panel"><span class="lbl">Clocks</span><div class="two"><div class="big" id="ck1" style="color:var(--you)">—</div><div class="big" id="ck2" style="color:var(--bot)">—</div></div></div>
+    <div class="panel"><span class="lbl">Your record</span><div id="record" class="acthint"></div></div>
+    <div class="panel"><span class="lbl">Log</span><div class="log" id="log"></div></div>
+  </div>
+</main>
+<div id="intro" hidden><div class="card">
+  <h2>How this works</h2>
+  <ol>
+    <li><b>One board, in the dark.</b> You see your own land and what your scouts have found.</li>
+    <li><b>Swap two stars</b> to make a line of 4 or more. A drone appears where you made it, on your side.</li>
+    <li><b>Move a drone</b> one square, or ride its own star color for free. Scouts claim land and clear the fog.</li>
+    <li><b>Hold 46 squares</b>, or walk a siege drone to the enemy Commander, and you win.</li>
+  </ol>
+  <button type="button" id="introGo" class="primary">Got it, let's play</button>
+  <button type="button" id="introTut" style="margin-top:8px">Walk me through my first game</button>
+  <small>Both are in Settings any time.</small>
+</div></div>
+<script>
+const WARP_SHIP=`<svg viewBox="0 0 128 128" aria-label="warp drone">
+  <defs>
+    <pattern id="cfSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+  <path d="M 56 10 L 12 90 L 44 82 L 56 106 L 52 80 L 58 50 L 54 30 Z M 72 10 L 116 90 L 84 82 L 72 106 L 76 80 L 70 50 L 74 30 Z" fill="url(#cfSIDE)"/>
+  <path d="M 56 10 L 12 90 L 44 82 L 56 106 L 52 80 L 58 50 L 54 30 Z M 72 10 L 116 90 L 84 82 L 72 106 L 76 80 L 70 50 L 74 30 Z" fill="url(#waxSIDE)"/>
+  <path d="M 56 10 L 12 90 L 32 85 L 56 40 Z M 72 10 L 116 90 L 96 85 L 72 40 Z" fill="#ffffff" opacity="0.12"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="LIGHT" stroke-width="5" opacity="0.4"/>
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="LIGHT" stroke-width="2" opacity="0.8"/>
+    <path d="M54 30l6-5l6 7l8-2 M58 50l4-5l4 9l4-4 M52 80l6 5l10-7l8 2 M56 106l8-8l8 8 M25 63l-10-3l-5 8l-8-4 M18 78l-10-3l4 10l-8 7 M12 90l-7 5l-3-5 M103 63l10-3l5 8l8-4 M110 78l10-3l-4 10l8 7 M116 90l7 5l3-5" stroke="#ffffff" stroke-width="1"/>
+  </g>
+</svg>`;
+function warpSVG(side){return WARP_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ---------- the guard: the user's Gimbal Iris asset. SIDE = id suffix; LIGHT = beam color; EYE1..3 = eye gradient stops.
+const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
+  <defs>
+    <linearGradient id="beamSIDE" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="LIGHT" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="LIGHT" stop-opacity="0.1"/>
+      <stop offset="80%" stop-color="LIGHT" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="eyeGlowSIDE" cx="50%" cy="50%" fx="30%" fy="30%" r="50%">
+      <stop offset="0%" stop-color="EYE1"/>
+      <stop offset="40%" stop-color="EYE2"/>
+      <stop offset="85%" stop-color="EYE3"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="armorMetalSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#333333"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <linearGradient id="steelArmSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bcc6cc"/>
+      <stop offset="50%" stop-color="#8a959e"/>
+      <stop offset="100%" stop-color="#3c444a"/>
+    </linearGradient>
+    <pattern id="hazardSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#ffcc00"/>
+      <rect width="4" height="8" fill="#111111"/>
+    </pattern>
+    <polygon id="bladeSIDE" points="64,34 110,18 110,64" fill="#222" stroke="#111" stroke-width="1.5"/>
+    <clipPath id="shutterClipSIDE"><circle cx="64" cy="64" r="38"/></clipPath>
+  </defs>
+  <g transform="translate(-4, 0) rotate(-55, 34, 64)">
+    <polygon points="16,58 -20,0 52,0" fill="url(#beamSIDE)"/>
+    <path d="M 12 48 L 36 44 L 40 64 L 36 84 L 12 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 16 52 L 32 49 L 34 79 L 16 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
+    <circle cx="34" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
+    <circle cx="34" cy="64" r="3" fill="#111"/>
+    <circle cx="16" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+    <ellipse cx="16" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+  <g>
+    <polygon points="112,58 72,0 152,0" fill="url(#beamSIDE)"/>
+    <path d="M 116 48 L 92 44 L 88 64 L 92 84 L 116 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 112 52 L 96 49 L 94 79 L 112 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
+    <circle cx="94" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
+    <circle cx="94" cy="64" r="3" fill="#111"/>
+    <circle cx="112" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
+    <ellipse cx="112" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
+  </g>
+  <circle cx="64" cy="64" r="40" fill="url(#armorMetalSIDE)" stroke="#050505" stroke-width="3"/>
+  <g clip-path="url(#shutterClipSIDE)">
+    <use href="#bladeSIDE" transform="rotate(0 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(60 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(120 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(180 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(240 64 64)"/>
+    <use href="#bladeSIDE" transform="rotate(300 64 64)"/>
+  </g>
+  <circle cx="64" cy="64" r="26" fill="none" stroke="#444" stroke-width="4"/>
+  <circle cx="64" cy="64" r="24" fill="#050505"/>
+  <circle cx="64" cy="64" r="22" fill="url(#eyeGlowSIDE)"/>
+  <ellipse cx="56" cy="56" rx="3" ry="14" fill="#000000" transform="rotate(-35, 56, 56)"/>
+  <circle cx="64" cy="64" r="22" fill="none" stroke="#000000" stroke-width="4" opacity="0.7"/>
+  <path d="M 46 48 A 18 18 0 0 1 82 48 A 24 24 0 0 0 46 48 Z" fill="#ffffff" opacity="0.35"/>
+  <circle cx="76" cy="76" r="3" fill="#ffffff" opacity="0.2"/>
+</svg>`;
+function guardSVG(side){
+  const you=side===YOU;
+  return GUARD_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffea00':'#4ec9ff')
+    .replace(/EYE1/g,you?'#ffcc00':'#9fe6ff').replace(/EYE2/g,you?'#ff5500':'#1f8fe0').replace(/EYE3/g,you?'#660000':'#002a55');
+}
+// ---------- the claim drone: the user's planted spider. SIDE = id suffix; LIGHT = energy color.
+const CLAIM_SHIP=`<svg viewBox="0 0 128 128" aria-label="claim drone">
+  <defs>
+    <pattern id="cfCSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <radialGradient id="waxCSIDE" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+    </radialGradient>
+    <g id="legCSIDE">
+      <path d="M 60 64 L 68 64 L 66 35 L 62 35 Z" fill="#2a2a2a" stroke="#111" stroke-width="1.5"/>
+      <path d="M 62 60 L 66 60 L 65 38 L 63 38 Z" fill="#3a3a3a"/>
+      <path d="M 61 35 L 67 35 L 65 10 L 63 10 Z" fill="#1a1a1a" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="35" r="5" fill="#444" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="35" r="2" fill="#222"/>
+      <polygon points="61,10 67,10 64,6" fill="#111" stroke="LIGHT" stroke-width="1"/>
+      <circle cx="64" cy="10" r="1.5" fill="LIGHT"/>
+    </g>
+    <g id="legRCSIDE">
+      <path d="M 56 42 L 72 42 L 68 28 L 60 28 Z" fill="#444" stroke="#111" stroke-width="1.5"/>
+      <path d="M 58 39 L 70 39 L 66 31 L 62 31 Z" fill="#666"/>
+      <circle cx="64" cy="28" r="6" fill="#777" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="28" r="3" fill="#333"/>
+      <path d="M 60 28 L 68 28 L 66 12 L 62 12 Z" fill="#555" stroke="#111" stroke-width="1.5"/>
+      <rect x="60" y="8" width="8" height="6" rx="1" fill="#222" stroke="#111" stroke-width="1.5"/>
+      <circle cx="64" cy="8" r="4" fill="#fff"/>
+      <circle cx="64" cy="8" r="8" fill="LIGHT" opacity="0.6"/>
+    </g>
+    <g id="boltsCSIDE">
+      <path d="M 24 24 L 16 14 L 10 18 L 4 4 M 16 14 L 12 8 M 10 18 L 4 20"/>
+      <path d="M 104 104 L 112 114 L 118 110 L 124 124 M 112 114 L 116 120 M 118 110 L 124 108"/>
+    </g>
+  </defs>
+  <g fill="none" stroke-linecap="square">
+    <path d="M 4 20 L 4 4 L 20 4" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
+    <path d="M 4 20 L 4 4 L 20 4" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="4" cy="4" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
+    <path d="M 124 108 L 124 124 L 108 124" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
+    <path d="M 124 108 L 124 124 L 108 124" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="124" cy="124" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
+  </g>
+  <use href="#legCSIDE" transform="rotate(0 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(45 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(90 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(180 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(225 64 64)"/>
+  <use href="#legCSIDE" transform="rotate(270 64 64)"/>
+  <circle cx="64" cy="64" r="32" fill="url(#cfCSIDE)" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="64" r="32" fill="url(#waxCSIDE)"/>
+  <g stroke="#000000" stroke-width="1.5" opacity="0.6">
+    <path d="M 64 32 L 64 96 M 32 64 L 96 64"/>
+    <path d="M 41.3 41.3 L 86.7 86.7 M 41.3 86.7 L 86.7 41.3"/>
+  </g>
+  <circle cx="64" cy="64" r="14" fill="#111" stroke="#222" stroke-width="2"/>
+  <circle cx="64" cy="64" r="10" fill="#000"/>
+  <circle cx="64" cy="64" r="8" fill="LIGHT" opacity="0.8"/>
+  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
+  <g stroke="LIGHT" stroke-width="2" opacity="0.5">
+    <path d="M 64 78 L 64 96 M 64 50 L 64 32"/>
+    <path d="M 78 64 L 96 64 M 50 64 L 32 64"/>
+  </g>
+  <use href="#legRCSIDE" transform="rotate(315 64 64)"/>
+  <use href="#legRCSIDE" transform="rotate(135 64 64)"/>
+  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="5" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="2" opacity="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <use href="#boltsCSIDE" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+function claimSVG(side){return CLAIM_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ---------- the hunter: the user's net-gun turret. SIDE = id suffix; LIGHT = net/coil color; LENS1/LENS2 = eye gradient.
+const HUNTER_SHIP=`<svg viewBox="0 0 128 128" aria-label="hunter drone">
+  <defs>
+    <pattern id="cfHSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <radialGradient id="waxHSIDE" cx="40%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
+    </radialGradient>
+    <linearGradient id="metalHSIDE" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="50%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <radialGradient id="lensHSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="LENS1"/>
+      <stop offset="60%" stop-color="LENS2"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <g id="netHSIDE" fill="none" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M 34 108 L 44 98 L 54 110 L 64 100 L 74 110 L 84 98 L 94 108" />
+      <path d="M 34 108 L 42 116 L 52 104 L 64 116 L 76 104 L 86 116 L 94 108" />
+      <path d="M 34 108 L 48 106 L 64 108 L 80 106 L 94 108" />
+      <path d="M 44 98 L 52 104 M 54 110 L 64 108 M 64 100 L 76 104 M 74 110 L 86 116" />
+      <path d="M 42 116 L 48 106 M 84 98 L 80 106 M 54 110 L 48 106 M 74 110 L 80 106" />
+    </g>
+    <g id="gunHSIDE">
+      <path d="M -16 10 L 16 10 L 12 45 L -12 45 Z" fill="url(#metalHSIDE)" stroke="#111" stroke-width="2"/>
+      <rect x="-10" y="20" width="20" height="20" fill="#1a1a1a" stroke="#050505" stroke-width="1.5"/>
+      <line x1="-12" y1="35" x2="12" y2="35" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
+      <line x1="-12" y1="39" x2="12" y2="39" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
+      <rect x="-16" y="45" width="32" height="15" rx="3" fill="#222" stroke="#000" stroke-width="2"/>
+      <path d="M -10 45 L -10 60 M 10 45 L 10 60" stroke="#444" stroke-width="1.5"/>
+      <circle cx="0" cy="60" r="10" fill="#000" stroke="#333" stroke-width="2"/>
+      <circle cx="0" cy="60" r="6" fill="LIGHT" opacity="0.5"/>
+      <circle cx="0" cy="60" r="2" fill="#ffffff"/>
+    </g>
+  </defs>
+  <circle cx="64" cy="56" r="44" fill="url(#cfHSIDE)" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="56" r="44" fill="url(#waxHSIDE)"/>
+  <g stroke="#000000" stroke-width="2" opacity="0.6">
+    <path d="M 32 26 L 96 26 M 25 80 L 103 80" />
+    <path d="M 64 12 L 64 26 M 46 80 L 46 96 M 82 80 L 82 96" />
+  </g>
+  <use href="#gunHSIDE" transform="translate(64, 56) rotate(30)"/>
+  <use href="#gunHSIDE" transform="translate(64, 56) rotate(-30)"/>
+  <polygon points="64,30 86,42 86,70 64,82 42,70 42,42" fill="url(#metalHSIDE)" stroke="#050505" stroke-width="2"/>
+  <polygon points="64,36 80,45 80,67 64,76 48,67 48,45" fill="#1a1a1a" stroke="#111" stroke-width="2"/>
+  <circle cx="64" cy="56" r="15" fill="#050505" stroke="#333" stroke-width="2"/>
+  <circle cx="64" cy="56" r="12" fill="url(#lensHSIDE)"/>
+  <path d="M 54 50 A 10 10 0 0 1 74 50 A 12 12 0 0 0 54 50 Z" fill="#ffffff" opacity="0.35"/>
+  <circle cx="68" cy="60" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="53" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="53" cy="45" r="2" fill="#ff0033" opacity="0.8"/>
+  <circle cx="75" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="75" cy="45" r="2" fill="#00ff33" opacity="0.8"/>
+  <circle cx="64" cy="71" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
+  <circle cx="64" cy="71" r="2" fill="#ffcc00" opacity="0.8"/>
+  <use href="#netHSIDE" stroke="LIGHT" stroke-width="6" opacity="0.3"/>
+  <use href="#netHSIDE" stroke="LIGHT" stroke-width="2" opacity="0.9"/>
+  <use href="#netHSIDE" stroke="#ffffff" stroke-width="1" opacity="1.0"/>
+</svg>`;
+function hunterSVG(side){const you=side===YOU;return HUNTER_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/LENS1/g,you?'#ff9a00':'#0066ff').replace(/LENS2/g,you?'#3d2000':'#001144');}
+// ---------- the strike drone: the user's corner-engine missile. SIDE = id suffix; LIGHT = flame/exhaust color; EN1/EN2 = warhead gradient.
+const STRIKE_SHIP=`<svg viewBox="0 0 128 128" aria-label="strike drone">
+  <defs>
+    <pattern id="cfSSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxSSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="cylSSIDE" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.0"/>
+      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.0"/>
+      <stop offset="85%" stop-color="#000000" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="metalSSIDE" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="50%" stop-color="#777777"/>
+      <stop offset="100%" stop-color="#222222"/>
+    </linearGradient>
+    <radialGradient id="energySSIDE" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="EN1"/>
+      <stop offset="70%" stop-color="EN2"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <g id="podSSIDE">
+      <rect x="-4" y="6" width="8" height="10" fill="#222" stroke="#111" stroke-width="2"/>
+      <rect x="-10" y="-14" width="20" height="24" rx="4" fill="url(#metalSSIDE)" stroke="#050505" stroke-width="2"/>
+      <path d="M -10 -4 L 10 -4 M -10 4 L 10 4" stroke="#111" stroke-width="1.5"/>
+      <ellipse cx="0" cy="10" rx="6" ry="3" fill="#000" stroke="#333" stroke-width="1"/>
+      <ellipse cx="0" cy="-14" rx="8" ry="4" fill="LIGHT"/>
+      <path d="M -8 -14 L 8 -14 L 0 -34 Z" fill="LIGHT" opacity="0.6"/>
+      <path d="M -4 -14 L 4 -14 L 0 -26 Z" fill="#ffffff" opacity="0.9"/>
+    </g>
+  </defs>
+  <g>
+    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 40 L 28 16 L 32 16 L 52 44 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 76 40 L 100 16 L 96 16 L 76 44 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 88 L 28 112 L 32 112 L 52 84 Z" fill="#ffffff" opacity="0.15"/>
+    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
+    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 76 88 L 100 112 L 96 112 L 76 84 Z" fill="#ffffff" opacity="0.15"/>
+  </g>
+  <use href="#podSSIDE" transform="translate(22, 22) rotate(-45)"/>
+  <use href="#podSSIDE" transform="translate(106, 22) rotate(45)"/>
+  <use href="#podSSIDE" transform="translate(22, 106) rotate(-135)"/>
+  <use href="#podSSIDE" transform="translate(106, 106) rotate(135)"/>
+  <path d="M 52 96 L 76 96 L 72 104 L 56 104 Z" fill="#222" stroke="#111" stroke-width="1.5"/>
+  <path d="M 56 104 L 72 104 L 64 126 Z" fill="LIGHT" opacity="0.5"/>
+  <path d="M 58 104 L 70 104 L 64 118 Z" fill="#ffffff" opacity="0.9"/>
+  <g>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cfSSIDE)" stroke="#050505" stroke-width="2"/>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cylSSIDE)"/>
+    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#waxSSIDE)"/>
+    <path d="M 52 50 L 76 50 M 52 70 L 76 70 M 52 86 L 76 86" stroke="#000000" stroke-width="1.5" opacity="0.7"/>
+    <path d="M 64 36 L 64 96" stroke="#000000" stroke-width="1.5" opacity="0.4"/>
+  </g>
+  <path d="M 52 36 L 76 36 L 64 10 Z" fill="#111" stroke="#050505" stroke-width="2"/>
+  <path d="M 55 34 L 73 34 L 64 14 Z" fill="url(#energySSIDE)"/>
+  <path d="M 59 32 L 69 32 L 64 20 Z" fill="#ffffff" opacity="0.8"/>
+  <path d="M 55 34 L 64 14 L 60 34 Z" fill="#ffffff" opacity="0.4"/>
+</svg>`;
+function strikeSVG(side){const you=side===YOU;return STRIKE_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/EN1/g,you?'#ffb84a':'#00e5ff').replace(/EN2/g,you?'#a35a00':'#0077aa');}
+// ---------- the siege drone: the user's jet-powered ram, pushed toward the other ships. SIDE = id suffix; LIGHT = energy color.
+const SIEGE_SHIP=`<svg viewBox="0 0 128 128" aria-label="siege drone">
+  <defs>
+    <pattern id="cfXSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#0f0f0f"/>
+      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
+      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
+      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
+    </pattern>
+    <linearGradient id="waxXSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="steelXSIDE" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d7dee6"/>
+      <stop offset="45%" stop-color="#8a959e"/>
+      <stop offset="100%" stop-color="#2e353c"/>
+    </linearGradient>
+    <linearGradient id="darkXSIDE" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a5560"/>
+      <stop offset="100%" stop-color="#151a20"/>
+    </linearGradient>
+    <linearGradient id="flameXSIDE" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="LIGHT"/>
+      <stop offset="100%" stop-color="LIGHT" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="headXSIDE" cx="70%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="LIGHT"/>
+      <stop offset="100%" stop-color="#1a1e24"/>
+    </radialGradient>
+    <pattern id="hazXSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="#e8b400"/>
+      <rect width="4" height="8" fill="#111"/>
+    </pattern>
+  </defs>
+
+  <!-- thruster flames, three layers each -->
+  <g>
+    <polygon points="18,54 -14,64 18,74" fill="url(#flameXSIDE)" opacity="0.55"/>
+    <polygon points="18,58 -2,64 18,70" fill="#ffffff" opacity="0.85"/>
+    <polygon points="22,27 -4,33 22,39" fill="url(#flameXSIDE)" opacity="0.6"/>
+    <polygon points="22,30 8,33 22,36" fill="#ffffff" opacity="0.8"/>
+    <polygon points="22,89 -4,95 22,101" fill="url(#flameXSIDE)" opacity="0.6"/>
+    <polygon points="22,92 8,95 22,98" fill="#ffffff" opacity="0.8"/>
+  </g>
+
+  <!-- shock rings ahead of the head -->
+  <g fill="none" stroke="LIGHT" stroke-linecap="round">
+    <path d="M 122 44 A 26 26 0 0 1 122 84" stroke-width="2" opacity="0.35"/>
+    <path d="M 124 50 A 18 18 0 0 1 124 78" stroke-width="2.5" opacity="0.6"/>
+  </g>
+
+  <!-- rail channel -->
+  <rect x="24" y="49" width="74" height="30" rx="3" fill="#07090c" stroke="#1c232c" stroke-width="1.5"/>
+  <path d="M 28 52 L 94 52 M 28 76 L 94 76" stroke="#1c232c" stroke-width="1"/>
+
+  <!-- the ram rod, charged -->
+  <rect x="14" y="57" width="106" height="14" rx="2" fill="url(#steelXSIDE)" stroke="#111" stroke-width="1.5"/>
+  <path d="M 34 57 v14 M 54 57 v14 M 74 57 v14 M 94 57 v14" stroke="#2e353c" stroke-width="1.5"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="4" opacity="0.35" stroke-linejoin="round"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="1.6" opacity="0.95" stroke-linejoin="round"/>
+  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="#ffffff" stroke-width="0.7" stroke-linejoin="round"/>
+
+  <!-- rod jet nozzle -->
+  <rect x="10" y="51" width="12" height="26" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="12" y="55" width="8" height="18" rx="1" fill="#0a0d11"/>
+  <rect x="13" y="58" width="6" height="12" fill="LIGHT" opacity="0.5"/>
+
+  <!-- tungsten impact head -->
+  <polygon points="118,50 127,55 127,73 118,78" fill="#2a3037" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <polygon points="119,52 126,56 126,72 119,76" fill="url(#headXSIDE)" opacity="0.9"/>
+  <rect x="126" y="56" width="2" height="16" fill="#ffffff"/>
+
+  <!-- engines -->
+  <rect x="20" y="22" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="20" y="86" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <path d="M 26 26 h12 M 26 30 h12 M 26 90 h12 M 26 94 h12" stroke="LIGHT" stroke-width="1.2" opacity="0.7"/>
+
+  <!-- carbon hull, waxed -->
+  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#waxXSIDE)"/>
+  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#waxXSIDE)"/>
+  <path d="M 32 20 L 60 25.5 L 60 22 L 32 18 Z" fill="#ffffff" opacity="0.18"/>
+  <path d="M 60 27 v21 M 60 80 v21" stroke="#0a0d11" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- clamps with hazard paint -->
+  <rect x="44" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="47" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
+  <rect x="74" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
+  <rect x="77" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
+
+  <!-- warning lamps -->
+  <circle cx="51" cy="41" r="2.4" fill="#ef4444"/><circle cx="51" cy="87" r="2.4" fill="#ef4444"/>
+  <circle cx="81" cy="41" r="2.4" fill="#eab308"/><circle cx="81" cy="87" r="2.4" fill="#eab308"/>
+  <circle cx="51" cy="41" r="4.5" fill="#ef4444" opacity="0.25"/><circle cx="81" cy="87" r="4.5" fill="#eab308" opacity="0.25"/>
+</svg>`;
+function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ================= Constellation Commander, one board =================
+// Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
+// fog of war, drones born where the shape was made, free rides on their own star color.
+const VERSION='1.0.0';
+const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN=46,HUNTER_STEPS=4,FUSE=3;
+const KNAME=['red','gold','green','blue','violet'];
+const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
+const TNAME={C:'scout',G:'shield',S:'strike',H:'hunter',W:'warp',X:'siege',B:'bomb'};
+const TAKES={C:'',G:'',S:'CGSHWB',H:'CGSHWB',W:'',X:'',B:''}; // by landing. G takes by moving next to; W on arrival; X takes nothing
+const SWEEPS='CHWG'; // what a shield takes by moving next to it on its land
+const RANK={C:1,G:2,B:2,S:3,H:4,W:5,X:6};
+const DIR8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const DIR4=[[-1,0],[1,0],[0,-1],[0,1]];
+const DIAG=[[-1,-1],[-1,1],[1,-1],[1,1]];
+const LINE_DIRS=[[0,1],[1,0],[1,1],[1,-1]];
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const rnd=n=>Math.floor(Math.random()*n);
+const key=(r,c)=>r*N+c, rc=k=>[Math.floor(k/N),k%N];
+const inb=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+const isStar=v=>v>=0&&v<KINDS;
+const other=s=>s===YOU?BOT:YOU;
+const half=(side,r)=>side===YOU?r>SEAM:r<SEAM;
+const backRow=side=>side===YOU?N-1:0;
+const sq=(r,c)=>'abcdefghijk'[c]+(N-r);
+let S=null,busy=false,sel=null,mode=null,pending=null,aimList=[];
+let SNAME={1:'You',2:'Bot'};
+const who=side=>SNAME[side];
+const poss=side=>side===YOU?'Your':SNAME[BOT]+"'s";
+
+// ---------- state ----------
+function pickSafe(g,r,c){let k,t=0;do{k=rnd(KINDS);t++;}while(t<30&&((c>=2&&g[r][c-1]===k&&g[r][c-2]===k)||(r>=2&&g[r-1][c]===k&&g[r-2][c]===k)));return k;}
+function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push(pickSafe(g,r,c));}return g;}
+function newGame(opts={}){
+  const skill=Math.max(0,Math.min(100,+$('inSkill').value||0));
+  S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},
+     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:''};
+  for(const side of [YOU,BOT]){
+    const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
+    for(const [r,c] of [[b,5],[b,4],[b,6],[f,4],[f,5],[f,6]]){S.wall[key(r,c)]=side;S.own[key(r,c)]=side;S.grid[r][c]=-1;}
+    for(let c=3;c<=7;c++)S.own[key(y,c)]=side;
+    S.drones.push(mk(side,y,3,'G',rnd(KINDS)),mk(side,y,7,'G',rnd(KINDS)),mk(side,b,3,'C',rnd(KINDS)));
+  }
+  // rocks: from the ratings, or the boxes
+  let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
+  if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill),+$('inRock1').value||6);}
+  S.rocks={1:r1,2:r2};dropRocks(YOU,r1);dropRocks(BOT,r2);
+  if(S.tut){S.skill=0;S.timers=false;}
+  sel=null;mode=null;pending=null;aimList=[];
+  note(`New game. Rocks ${r1} to ${r2}, bot at skill ${S.skill}${S.timers?', clocks on':', relaxed'}.`);
+  note('You move first: swap two stars, or tap your scout.');
+  save();renderAll();
+}
+function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
+function save(){try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}}
+function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&o.ver===VERSION)return o;}}catch(_){}return null;}
+function note(t){S.log.unshift(t);if(S.log.length>60)S.log.pop();}
+const droneAt=(r,c)=>S.drones.find(d=>d.r===r&&d.c===c);
+const dronesOf=side=>S.drones.filter(d=>d.side===side);
+const isWall=(r,c)=>S.wall[key(r,c)]!=null;
+const isCmd=(r,c)=>(S.cmd[1][0]===r&&S.cmd[1][1]===c)||(S.cmd[2][0]===r&&S.cmd[2][1]===c);
+const solid=(r,c)=>isWall(r,c)||S.grid[r][c]===ROCK; // cannot be entered
+function landOf(side){let n=0;for(let k=0;k<N*N;k++)if(S.own[k]===side)n++;return n;}
+function dropRocks(side,n){let placed=0;for(let t=0;t<400&&placed<n;t++){const r=side===YOU?SEAM+1+rnd(N-SEAM-1):rnd(SEAM),c=rnd(N);if(!isStar(S.grid[r][c])||droneAt(r,c)||S.own[key(r,c)])continue;S.grid[r][c]=ROCK;placed++;}}
+
+// ---------- fog ----------
+function vis(side,r,c){
+  if(S.own[key(r,c)]===side)return true;
+  if(S.seen[side].includes(key(r,c)))return true;
+  for(const d of S.drones)if(d.side===side&&d.kind!=='G'&&Math.abs(d.r-r)<=1&&Math.abs(d.c-c)<=1)return true;
+  return false;
+}
+const cleared=(side,r,c)=>S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
+function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(!inb(a,b))continue;const k=key(a,b);if(!S.seen[side].includes(k))S.seen[side].push(k);}}
+
+// ---------- shapes ----------
+function detectShapes(g,anchor){
+  const cells=new Set(),spawns=[];
+  const get=(r,c)=>inb(r,c)?g[r][c]:null;
+  const box=new Set();
+  for(let r=0;r<N-1;r++)for(let c=0;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
+    if(g[r][c+1]===v&&g[r+1][c]===v&&g[r+1][c+1]===v){box.add(key(r,c));box.add(key(r,c+1));box.add(key(r+1,c));box.add(key(r+1,c+1));}}
+  const runs=[];
+  for(let di=0;di<LINE_DIRS.length;di++){const [dr,dc]=LINE_DIRS[di];
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++){const v=g[r][c];if(!isStar(v))continue;if(get(r-dr,c-dc)===v)continue;
+      let len=1;while(get(r+len*dr,c+len*dc)===v)len++;
+      if(len===3&&di>=2)continue;
+      if(len>=3){const run=[];for(let i=0;i<len;i++)run.push(key(r+i*dr,c+i*dc));
+        if(len===3&&run.some(k=>box.has(k)))continue;
+        for(const k of run)cells.add(k);
+        runs.push({di,len,run,color:v,used:false});}}
+  }
+  for(let r=1;r<N-1;r++)for(let c=1;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
+    if(g[r-1][c-1]===v&&g[r-1][c+1]===v&&g[r+1][c-1]===v&&g[r+1][c+1]===v){
+      const cc=[[0,0],[-1,-1],[-1,1],[1,-1],[1,1]].map(([dr,dc])=>key(r+dr,c+dc));for(const k of cc)cells.add(k);
+      spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:'an X of 5'});}}
+  for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
+    if(a.used||b.used||a.di===b.di)continue;
+    const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
+    a.used=b.used=true;
+    const cell=rc(shared),sum=a.len+b.len,cc=[...a.run,...b.run],label=`a ${a.len} crossing a ${b.len}`;
+    if(sum>=9)spawns.push({letters:['W','X'],cell,cells:cc,color:a.color,label});
+    else if(sum===8)spawns.push({letters:['W'],cell,cells:cc,color:a.color,label});
+    else if(sum===7)spawns.push({letters:['X'],cell,cells:cc,color:a.color,label:'an L of 4 and 3'});
+    else{const am=a.run[1]===shared,bm=b.run[1]===shared;
+      if(am&&bm)spawns.push({letters:['H'],cell,cells:cc,color:a.color,label:'a plus'});
+      else if(am||bm)spawns.push({letters:['S'],sq:0,cap:'missile',cell,cells:cc,color:a.color,label:'a T of two 3-lines'});
+      else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:'an L of two 3-lines'});}}
+  for(const x of runs){if(x.used||x.len===3)continue;
+    const inRun=anchor&&x.run.includes(key(anchor[0],anchor[1]));
+    const k=inRun?key(anchor[0],anchor[1]):x.run[Math.floor(x.len/2)];
+    const sp={cell:rc(k),cells:x.run,color:x.color,label:`${x.len} in a line`};
+    if(x.len===4)sp.letters=['C'];else if(x.len===5){sp.letters=['S'];sp.sq=1;sp.cap='missile';}else if(x.len===6){sp.letters=['H'];sp.cap='rock';}else sp.letters=['W'];
+    spawns.push(sp);}
+  const seen=new Set();
+  for(const k0 of box){if(seen.has(k0))continue;const comp=new Set([k0]);const q=[k0];seen.add(k0);
+    while(q.length){const k=q.pop();const [r,c]=rc(k);
+      for(const [dr,dc] of DIR4){const nr=r+dr,nc=c+dc;if(!inb(nr,nc))continue;const kk=key(nr,nc);if(box.has(kk)&&!seen.has(kk)){seen.add(kk);comp.add(kk);q.push(kk);}}}
+    const has=(r,c,h,w)=>{for(let i=0;i<h;i++)for(let j=0;j<w;j++)if(!comp.has(key(r+i,c+j)))return false;return true;};
+    let grade='G';
+    outer:for(const k of comp){const [r,c]=rc(k);
+      if(r+2<N&&c+2<N&&has(r,c,3,3)){grade='WXH';break outer;}
+      if((r+1<N&&c+2<N&&has(r,c,2,3))||(r+2<N&&c+1<N&&has(r,c,3,2)))grade='WX';}
+    const kmin=Math.min(...comp);const cell=rc(kmin);
+    spawns.push({letters:grade.split(''),cell,cells:[...comp],color:g[cell[0]][cell[1]],label:grade==='G'?'a 2×2 block':grade==='WX'?'a 2×3 block':'a 3×3 block'});
+    for(const k of comp)cells.add(k);}
+  return {cells,spawns};
+}
+function placeCell(side,sp){
+  if(half(side,sp.cell[0]))return sp.cell;
+  const k=sp.cells.find(k=>half(side,rc(k)[0]));return k==null?null:rc(k);
+}
+function shapeValue(sh,side){let v=sh.cells.size;for(const sp of sh.spawns){if(side!=null&&!placeCell(side,sp))continue;for(const l of sp.letters)v+=8*(RANK[l]||1);}return v;}
+function gravity(g){
+  // three bands: rows 0..4 pack toward row 0, rows 6..10 pack toward row 10, the seam row refills in place. New stars are born nearest the seam.
+  const born=new Set();
+  for(let c=0;c<N;c++){
+    let st=[];for(let r=0;r<SEAM;r++)if(g[r][c]>=0)st.push(g[r][c]);
+    for(let r=0;r<SEAM;r++){if(r<st.length)g[r][c]=st[r];else{g[r][c]=rnd(KINDS);born.add(key(r,c));}}
+    st=[];for(let r=N-1;r>SEAM;r--)if(g[r][c]>=0)st.push(g[r][c]);
+    for(let i=0;i<N-1-SEAM;i++){const r=N-1-i;if(i<st.length)g[r][c]=st[i];else{g[r][c]=rnd(KINDS);born.add(key(r,c));}}
+    if(g[SEAM][c]<0&&!isWall(SEAM,c)){g[SEAM][c]=rnd(KINDS);born.add(key(SEAM,c));}
+  }
+  for(const k in S.wall){const [r,c]=rc(+k);g[r][c]=-1;} // walls hold no star
+  return born;
+}
+function spawnFrom(side,sp){
+  const at=placeCell(side,sp);
+  if(!at){note(`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`);return;}
+  for(const letter of sp.letters){
+    let [r,c]=at;let o=droneAt(r,c);
+    const full=dronesOf(side).length>=MAXD&&!(o&&o.side===side);
+    if(full&&sp.cap!=='always'){
+      if(sp.cap==='missile'){S.missiles[side]++;note(`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
+      else if(sp.cap==='rock'){rockOnto(other(side));note(`${who(side)} made ${sp.label} at ${MAXD} drones: a rock lands on ${poss(other(side)).toLowerCase()} land.`);}
+      else note(`${who(side)} made ${sp.label} but already has ${MAXD} drones.`);
+      continue;}
+    if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(`${who(side)} made ${sp.label} but there was no room.`);continue;}[r,c]=alt;o=null;}
+    if(isWall(r,c)||isCmd(r,c)){note(`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
+    const d=mk(side,r,c,letter,sp.color,sp.sq);
+    if(o){mergeInto(o,d);note(`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`);}
+    else{S.drones.push(d);note(`${who(side)} made ${sp.label}: a ${TNAME[letter]}${letter==='S'?(d.sq?' (white)':' (red)'):''}, ${KNAME[sp.color]}.`);}
+  }
+}
+function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
+function mergeInto(o,d){o.power=Math.min(MAXP,o.power+d.power);for(const k of d.colors)if(!o.colors.includes(k))o.colors.push(k);if(o.kind==='C'&&d.kind==='C')o.claims=Math.min(2,(o.claims||0)+(d.claims||0));}
+async function resolve(side,anchor){
+  let chain=0;
+  while(true){
+    const sh=detectShapes(S.grid,anchor);if(!sh.cells.size)break;
+    chain++;
+    for(const sp of sh.spawns)spawnFrom(side,sp);
+    renderBoard(sh.cells);await sleep(260);
+    for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=-1;}
+    const born=gravity(S.grid);renderBoard(null,born);await sleep(330);
+    anchor=null;if(chain>12)break;
+  }
+}
+function validSwaps(side){
+  const out=[],g=S.grid;
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)for(const [dr,dc] of [[0,1],[1,0]]){
+    const r2=r+dr,c2=c+dc;if(r2>=N||c2>=N)continue;if(!isStar(g[r][c])||!isStar(g[r2][c2])||g[r][c]===g[r2][c2])continue;
+    if(side!=null&&!(vis(side,r,c)&&vis(side,r2,c2)))continue;
+    [g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];const sh=detectShapes(g,[r2,c2]);[g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];
+    if(sh.cells.size)out.push({a:[r,c],b:[r2,c2],sh});}
+  return out;
+}
+function reshuffle(){for(let t=0;t<200;t++){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(isStar(S.grid[r][c]))S.grid[r][c]=pickSafe(S.grid,r,c);if(!detectShapes(S.grid).cells.size&&validSwaps().length)break;}note('No swap left anywhere: the stars were reshuffled.');}
+
+// ---------- reach ----------
+function targets(d){
+  const T=new Map();
+  if(d.kind==='S'){ // slides the full diagonal, into the dark too; stops at the first thing it meets
+    for(const [dr,dc] of DIAG){let r=d.r+dr,c=d.c+dc;while(inb(r,c)){if(solid(r,c))break;const o=droneAt(r,c);
+      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)&&vis(d.side,r,c))T.set(key(r,c),'take');break;}
+      T.set(key(r,c),vis(d.side,r,c)?'move':'dark');r+=dr;c+=dc;}}
+    return T;}
+  if(d.kind==='X'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c)||droneAt(r,c))continue;T.set(key(r,c),vis(d.side,r,c)?'move':'dark');}return T;}
+  if(d.kind==='G'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c)||!cleared(d.side,r,c))continue;const o=droneAt(r,c);if(!o)T.set(key(r,c),'move');else if(o.side===d.side&&o.power+d.power<=MAXP&&o.kind!=='X')T.set(key(r,c),'merge');}return T;}
+  const consider=(r,c)=>{if(solid(r,c)||!vis(d.side,r,c))return false;const o=droneAt(r,c);
+    if(!o){T.set(key(r,c),'move');return true;}
+    if(o.side===d.side){if(o.power+d.power<=MAXP&&o.kind!=='X')T.set(key(r,c),'merge');return false;}
+    if(TAKES[d.kind].includes(o.kind))T.set(key(r,c),'take');return false;};
+  const any=d.kind==='H';const maxPaid=1;
+  const seen=new Set([key(d.r,d.c)*20]);const q=[[d.r,d.c,0,0]];
+  while(q.length){const [r0,c0,used,steps]=q.shift();
+    for(const [dr,dc] of DIR8){const r=r0+dr,c=c0+dc;if(!inb(r,c))continue;
+      let free=any?steps<HUNTER_STEPS:d.colors.includes(S.grid[r][c]);
+      if(!free&&used>=maxPaid)continue;
+      const nu=free?used:used+1,ns=(free&&any)?steps+1:steps;
+      const sk=key(r,c)*20+nu*10+ns;if(seen.has(sk))continue;seen.add(sk);
+      if(r===d.r&&c===d.c)continue;
+      if(consider(r,c))q.push([r,c,nu,ns]);}}
+  return T;
+}
+function warpCells(d){const out=[];const e=other(d.side);for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!half(d.side,r)||solid(r,c)||droneAt(r,c)||!vis(d.side,r,c))continue;
+  if([[0,0],...DIR8].some(([dr,dc])=>{const o=droneAt(r+dr,c+dc);return o&&o.side===e&&o.kind==='G';}))continue;out.push([r,c]);}return out;}
+const claimCells=(r,c)=>{const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(inb(a,b)&&!isWall(a,b)&&!isCmd(a,b))out.push([a,b]);}return out;};
+function claimGain(d){let g=0;for(const [a,b] of claimCells(d.r,d.c))if(S.own[key(a,b)]!==d.side)g++;return g;}
+function fireTargets(d){const e=other(d.side);const walls=[],guards=[];let cmd=false;
+  for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c))continue;if(S.cmd[e][0]===r&&S.cmd[e][1]===c)cmd=true;else if(S.wall[key(r,c)]===e)walls.push([r,c]);
+    const o=droneAt(r,c);if(o&&o.side===e&&o.kind==='G')guards.push(o);}
+  return {walls,guards,cmd};}
+const canFire=d=>d.kind==='X'&&(()=>{const t=fireTargets(d);return !t.guards.length&&(t.walls.length>0||t.cmd);})();
+const shieldedBy=d=>{const t=fireTargets(d);return t.guards.length&&(t.walls.length||t.cmd)?t.guards[0]:null;};
+const shotsOf=d=>d.kind==='H'?2:d.kind==='C'?1:0;
+const shotsLeft=d=>shotsOf(d)-(d.shots||0);
+const inRange=(d,r,c)=>Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=RANGE;
+
+// ---------- actions ----------
+function takeDrone(taker,victim,how){S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);note(`${who(taker)} took ${poss(victim.side).toLowerCase()} ${TNAME[victim.kind]}${victim.power>1?' (power '+victim.power+')':''} at ${sq(victim.r,victim.c)}${how?' '+how:''}: a missile earned.`);}
+function landed(d){
+  if(!S.drones.includes(d))return;
+  if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===d.side)takeDrone(d.side,e,'by moving beside it');}}
+}
+function applyMove(d,r,c){
+  if(d.kind==='S'){ // a slide: it stops at the first thing it meets, seen or not
+    const dr=Math.sign(r-d.r),dc=Math.sign(c-d.c);let rr=d.r+dr,cc=d.c+dc,stop=null;
+    while(inb(rr,cc)){if(solid(rr,cc))break;const o=droneAt(rr,cc);
+      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)){stop=[rr,cc];}break;}
+      stop=[rr,cc];if(rr===r&&cc===c)break;rr+=dr;cc+=dc;}
+    if(!stop)return;[r,c]=stop;}
+  const o=droneAt(r,c);
+  if(o&&o.side===d.side){mergeInto(o,d);S.drones=S.drones.filter(x=>x!==d);note(`${who(d.side)} stacked a ${TNAME[d.kind]} into the ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);return;}
+  if(o){takeDrone(d.side,o);}
+  const from=sq(d.r,d.c);d.r=r;d.c=c;note(`${who(d.side)} moved ${TNAME[d.kind]} ${from} to ${sq(r,c)}.`);landed(d);
+}
+function applyClaim(d){
+  let took=0;for(const [a,b] of claimCells(d.r,d.c)){const k=key(a,b);if(S.own[k]===d.side)continue;if(S.own[k]===0||S.own[k]===3)S.own[k]=d.side;else S.own[k]=3;took++;}
+  reveal(d.side,d.r,d.c);d.claims=(d.claims||1)-1;
+  note(`${who(d.side)} claimed at ${sq(d.r,d.c)}: ${took} square${took===1?'':'s'}${d.claims?', one claim left':', the scout is used up'}.`);
+  if(d.claims<=0)S.drones=S.drones.filter(x=>x!==d);
+}
+function applyWarp(d,r,c){
+  d.r=r;d.c=c;let took=0,land=0;
+  for(const [a,b] of claimCells(r,c)){const k=key(a,b);if(S.own[k]===0){S.own[k]=d.side;land++;}}
+  reveal(d.side,r,c);
+  for(const [a,b] of claimCells(r,c)){const o=droneAt(a,b);if(o&&o.side!==d.side&&o.kind!=='X'&&S.own[key(a,b)]===d.side){takeDrone(d.side,o,'on arrival');took++;}}
+  S.drones=S.drones.filter(x=>x!==d);
+  note(`${who(d.side)} warped to ${sq(r,c)}: ${land} square${land===1?'':'s'} taken${took?`, ${took} drone${took>1?'s':''} removed`:''}. The warp drone is used up.`);
+}
+function applyFire(d){
+  const t=fireTargets(d);
+  if(t.walls.length){for(const [r,c] of t.walls){delete S.wall[key(r,c)];S.own[key(r,c)]=0;S.grid[r][c]=rnd(KINDS);}note(`${who(d.side)} fired from ${sq(d.r,d.c)}: ${t.walls.length} wall${t.walls.length>1?'s':''} cleared.`);return false;}
+  if(t.cmd){note(`${who(d.side)} took the Commander.`);gameOver(d.side,`${who(d.side)} took the Commander.`);return true;}
+  return false;
+}
+function applyRam(d){const g=shieldedBy(d);if(!g)return;S.drones=S.drones.filter(x=>x!==g&&x!==d);note(`${poss(d.side)} siege drone rammed the shield at ${sq(g.r,g.c)}. Both are gone.`);}
+async function fireShots(side,list){
+  // every shot is aimed first; then they all land at once and the stars drop once
+  let dropped=false;
+  for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
+    if(o&&o.side!==side){o.power--;if(o.power<=0){S.drones=S.drones.filter(x=>x!==o);note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}.`);}else note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}
+    else if(S.grid[r][c]>=0){note(`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?'a rock':'a '+KNAME[S.grid[r][c]]+' star'} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
+  renderBoard();await sleep(350);
+  if(dropped){const born=gravity(S.grid);renderBoard(null,born);await sleep(330);await resolve(side,null);}
+}
+async function tickBombs(side){
+  for(const b of dronesOf(side).filter(d=>d.kind==='B')){b.fuse--;
+    if(b.fuse>0){note(`${poss(side)} bomb at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`);continue;}
+    const hit=[[b.r,b.c]];for(const [dr,dc] of DIR4){let r=b.r+dr,c=b.c+dc;while(inb(r,c)&&vis(side,r,c)&&!isWall(r,c)&&!isCmd(r,c)){hit.push([r,c]);r+=dr;c+=dc;}}
+    S.drones=S.drones.filter(x=>x!==b);let gone=0;
+    for(const [r,c] of hit){const o=droneAt(r,c);if(o){S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0)S.grid[r][c]=-1;cellEl(r,c).classList.add('blast');}
+    note(`${poss(side)} bomb went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`);
+    renderBoard();await sleep(500);for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
+    const born=gravity(S.grid);renderBoard(null,born);await sleep(330);await resolve(side,null);}
+}
+function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){S.drones=S.drones.filter(x=>x!==d);note(`${poss(d.side)} siege drone at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
+function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=WIN){gameOver(s,`${who(s)} hold${s===YOU?'':'s'} ${WIN} squares.`);return true;}return false;}
+function gameOver(w,reason){if(S.over)return;S.over={w,reason};note(`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`);rateGame(w);}
+async function afterAction(){
+  if(S.over){save();renderAll();return;}
+  sweepSiege();if(checkLand()){save();renderAll();return;}
+  await tickBombs(S.turn);if(S.over){save();renderAll();return;}
+  sweepSiege();if(checkLand()){save();renderAll();return;}
+  S.turn=other(S.turn);S.turnNo++;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
+  S.moveLeft=S.timers?60000:0;
+  if(!validSwaps().length)reshuffle();
+  save();renderAll();
+  if(S.turn===BOT){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
+}
+// ---------- the bot ----------
+async function botSafely(){
+  try{await botTurn(BOT);}
+  catch(e){note('Bot error: '+(e&&e.message||e)+'. Turn skipped.');console.error(e);S.turn=YOU;for(const d of S.drones)d.shots=0;save();renderAll();}
+}
+async function botTurn(me){
+  if(S.over)return;
+  const him=other(me),smart=rnd(100)<S.skill;
+  // missiles first: at enemy drones (weak ones, hunters, sieges), or at rocks in its own half when it is short of room
+  if(smart&&S.missiles[me]>0){
+    for(let guard=0;guard<4;guard++){let best=null;
+      for(const sh of dronesOf(me).filter(d=>shotsLeft(d)>0)){
+        for(let r=Math.max(0,sh.r-RANGE);r<=Math.min(N-1,sh.r+RANGE);r++)for(let c=Math.max(0,sh.c-RANGE);c<=Math.min(N-1,sh.c+RANGE);c++){
+          if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
+          if(o&&o.side===him)v=(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0);
+          else if(!o&&S.grid[r][c]===ROCK&&half(me,r))v=4;
+          else continue;
+          if(!best||v>best.v)best={r,c,v,sh};}}
+      if(best&&best.v>=6&&S.missiles[me]>0){S.missiles[me]--;best.sh.shots=(best.sh.shots||0)+1;await fireShots(me,[best]);await sleep(200);}else break;}
+  }
+  if(S.over)return;
+  const opts=[];
+  for(const sw of validSwaps(me))opts.push({type:'swap',sw,v:shapeValue(sw.sh,me)});
+  const ec=S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
+  for(const d of dronesOf(me)){
+    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:5+3*g+(half(me,d.r)?0:3)});}
+    if(d.kind==='X'){if(canFire(d))opts.push({type:'fire',d,v:200});else if(shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});}
+    if(d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){if(S.own[key(a,b)]===0)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&(S.own[key(a,b)]===me||S.own[key(a,b)]===0))prey+=5*o.power;}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});}
+    for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
+      if(kind==='take')v+=12*droneAt(r,c).power;if(kind==='merge')v+=(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c));
+      if(d.kind==='X')v+=6*(dist(d.r,d.c)-dist(r,c));
+      if(d.kind==='C')v+=2*(half(me,r)?0:1)+(claimGain({r,c,side:me})>claimGain(d)?3:0);
+      if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===me)v+=12*e.power;}}
+      if(d.kind==='S'||d.kind==='H')v+=1.5*(dist(d.r,d.c)-dist(r,c))*0.5;
+      if(kind==='dark')v-=1;
+      if(d.kind==='B')v+=1;
+      opts.push({type:'move',d,r,c,v});}
+  }
+  if(!opts.length){note(`${who(me)} had nothing to do.`);await afterAction();return;}
+  let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else pick=opts[rnd(opts.length)];
+  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
+  else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
+  else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
+  else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await sleep(400);}
+  else if(pick.type==='warp'){applyWarp(pick.d,pick.r,pick.c);renderBoard();await sleep(400);}
+  else{applyMove(pick.d,pick.r,pick.c);renderBoard();await sleep(400);}
+  await afterAction();
+}
+
+// ---------- human actions ----------
+async function humanSwap(a,b){
+  const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
+  const sh=detectShapes(g,b);
+  if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus('No line there. Try another swap.');sel=null;renderBoard();return;}
+  busy=true;sel=null;renderBoard();
+  await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
+  tutAdvance('swap');busy=false;await afterAction();
+}
+async function humanMove(d,r,c){busy=true;sel=null;applyMove(d,r,c);renderBoard();await sleep(300);tutAdvance('move');busy=false;await afterAction();}
+async function humanClaim(d){busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
+async function humanWarp(d,r,c){busy=true;sel=null;mode=null;applyWarp(d,r,c);renderBoard();await sleep(300);busy=false;await afterAction();}
+async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
+async function humanRam(d){busy=true;sel=null;applyRam(d);renderBoard();await sleep(300);busy=false;await afterAction();}
+async function humanShots(d,list){busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?'Fired. This drone can fire again, or take your turn.':'Fired. Now take your turn: swap, move, claim or warp.');}
+
+// ---------- input ----------
+function onCell(r,c){
+  if(busy||!S||S.over||S.turn!==YOU)return;
+  const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
+  if(mode==='confirm'){mode=null;pending=null;}
+  if(mode==='aim'&&sd){
+    if(!vis(YOU,r,c)||!inRange(sd,r,c)){setStatus('Out of range or in the fog. A missile flies 5 squares at something you can see.');return;}
+    if(!(d&&d.side===BOT)&&S.grid[r][c]<0){setStatus('Nothing there to hit.');return;}
+    if(d&&d.side===YOU){setStatus('That is your own drone.');return;}
+    const i=aimList.findIndex(t=>t.r===r&&t.c===c);if(i>=0)aimList.splice(i,1);else if(aimList.length<Math.min(shotsLeft(sd),S.missiles[YOU]))aimList.push({r,c});
+    const want=Math.min(shotsLeft(sd),S.missiles[YOU]);
+    if(aimList.length>=want){humanShots(sd,aimList.slice());return;}
+    setStatus(`${aimList.length} of ${want} aimed. Tap another target, or Fire now.`);renderBoard();renderActions();return;}
+  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus('Warp to a cleared square on your side, not next to an enemy shield.');return;}
+  if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus('That square is in the fog. Bring a drone next to it, or claim with a scout.');return;}
+  if(sd){const T=targets(sd);
+    if(T.has(k)){const t=T.get(k);
+      if(t==='merge'){const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? The ${TNAME[sd.kind]} is gone; you get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}.`);renderBoard();renderActions();return;}
+      humanMove(sd,r,c);return;}}
+  if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];showTip(d);setStatus(describe(d)+'. Tap a marked square to move, red to take, green to stack.');renderBoard();renderActions();return;}
+  if(d){sel=null;showTip(d);setStatus(`That is ${poss(BOT).toLowerCase()} ${TNAME[d.kind]}.`);renderBoard();renderActions();return;}
+  if(S.grid[r][c]===ROCK){sel=null;setStatus('A rock. A missile clears it.');renderBoard();renderActions();return;}
+  if(isWall(r,c)||isCmd(r,c)){sel=null;renderBoard();renderActions();return;}
+  if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
+  sel={star:[r,c]};setStatus('Now tap a star next to it to swap.');renderBoard();renderActions();
+}
+function describe(d){const rides=d.kind==='S'?'slides the diagonals':d.kind==='H'?'rides any color, 4 free steps':d.kind==='G'||d.kind==='X'?'no free rides':'rides '+d.colors.map(k=>KNAME[k]).join(' and ');
+  return `${poss(d.side)} ${TNAME[d.kind]}${d.kind==='S'?(d.sq?' (white)':' (red)'):''}${d.power>1?', power '+d.power:''}${d.kind==='C'?', '+d.claims+' claim'+(d.claims===1?'':'s'):''}${d.kind==='B'?', '+d.fuse+' turn'+(d.fuse===1?'':'s')+' to go':''}, ${rides}`;}
+
+// ---------- render ----------
+const cells=[];
+const cellEl=(r,c)=>cells[key(r,c)];
+function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
+function droneHTML(d){const art=d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
+  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${d.kind}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${d.kind==='S'?`<span class="badge ${d.sq?'w':'r'}"></span>`:''}</div>`;}
+function renderBoard(gone,born,mark){
+  if(!S)return;
+  const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
+  const T=sd&&!mode?targets(sd):null;
+  const warpT=sd&&mode==='warp'?new Set(warpCells(sd).map(([r,c])=>key(r,c))):null;
+  const tutL=tutLit();
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const k=key(r,c),el=cells[k],v=S.grid[r][c],gem=el.firstChild,dd=el.lastChild;
+    const seen=vis(YOU,r,c);
+    let cls='cell'+((r+c)%2?' white':' red');if(r===SEAM)cls+=' seam';
+    if(seen){if(S.own[k])cls+=' own'+S.own[k];if(isWall(r,c))cls+=' wall'+S.wall[k];if(isCmd(r,c))cls+=(S.cmd[1][0]===r&&S.cmd[1][1]===c)?' cmd1':' cmd2';}
+    if(!seen)cls+=' fog';
+    if(sel&&sel.star&&sel.star[0]===r&&sel.star[1]===c)cls+=' sel';
+    if(mark&&mark.some(([a,b])=>a===r&&b===c))cls+=' sel';
+    if(T&&T.has(k)){const t=T.get(k);cls+=t==='take'?' tk':t==='merge'?' st':t==='dark'?' mv dark':' mv';}
+    if(warpT&&warpT.has(k))cls+=' warpto';
+    if(mode==='aim'&&sd&&seen&&inRange(sd,r,c)&&!(sd.r===r&&sd.c===c)){const o=droneAt(r,c);if((o&&o.side===BOT)||(!o&&v>=0))cls+=aimList.some(t=>t.r===r&&t.c===c)?' aimed':' aim';}
+    if(tutL&&tutL.has(k))cls+=' lit hint';
+    el.className=cls;
+    gem.className=v===ROCK?'rock':isStar(v)?'gem g'+v:'gem';if(!isStar(v)&&v!==ROCK)gem.className='gem';
+    if(gone&&gone.has(k))gem.classList.add('gone');
+    if(isCmd(r,c)&&seen){dd.textContent='★';dd.className='dd';dd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2';dd.dataset.did='';continue;}
+    const d=droneAt(r,c);const show=d&&(d.side===YOU||seen);
+    const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors[0]}:${d.claims||0}:${sel&&sel.id===d.id?1:0}`:'';
+    if(dd.dataset.did!==sig){dd.dataset.did=sig;dd.style.cssText='';dd.className='dd';dd.innerHTML=show?droneHTML(d):'';if(show&&sel&&sel.id===d.id)dd.firstChild.classList.add('sel');}
+  }
+}
+function renderSide(){
+  $('land1').textContent=landOf(YOU)+' / '+WIN;$('land2').textContent=landOf(BOT)+' / '+WIN;
+  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`;}
+  $('botlbl').textContent=SNAME[BOT]+' · skill '+S.skill;
+  $('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
+  $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
+}
+const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
+function renderActions(){
+  const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy;
+  const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
+  if(mine&&sd){
+    if(shotsLeft(sd)>0&&S.missiles[YOU]>0&&mode!=='aim')acts.push(`<button data-a="aim">Fire missile${shotsOf(sd)===2?'s':''} (${S.missiles[YOU]} banked)</button>`);
+    if(mode==='aim'&&aimList.length)acts.push('<button data-a="firenow" class="primary">Fire now</button>');
+    if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>Claim the 3 × 3 here (${claimGain(sd)} to take)</button>`);
+    if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp">Warp</button>');
+    if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push(`<button data-a="ram" class="danger">Ram the shield at ${sq(g.r,g.c)} (both lost)</button>`);else acts.push(`<button data-a="fire" ${canFire(sd)?'':'disabled'}>Fire at the wall</button>`);}
+    if(mode==='confirm'&&pending)acts.push('<button data-a="ok" class="primary">Yes, stack them</button>');
+    acts.push('<button data-a="cancel">Cancel</button>');
+  }else if(mine&&sel&&sel.star)acts.push('<button data-a="cancel">Cancel</button>');
+  if(mine&&!sd&&!sel){hint.push(S.missiles[YOU]>0&&dronesOf(YOU).some(d=>shotsLeft(d)>0)?'Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.':'Swap two stars side by side, or tap one of your drones.');}
+  $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
+}
+$('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
+  if(a==='cancel'){sel=null;mode=null;pending=null;aimList=[];renderAll();return;}
+  if(!sd)return;
+  if(a==='aim'){mode='aim';aimList=[];setStatus(shotsOf(sd)===2?'Aim two targets within 5 squares, then they fire together.':'Tap a target within 5 squares: an enemy drone, a rock, or a star.');renderBoard();renderActions();}
+  else if(a==='firenow'){if(aimList.length)humanShots(sd,aimList.slice());}
+  else if(a==='claim'){if(claimGain(sd))humanClaim(sd);}
+  else if(a==='warp'){mode='warp';setStatus('Tap a cleared square on your side to warp there. Not on or next to an enemy shield.');renderBoard();renderActions();}
+  else if(a==='fire'){if(canFire(sd))humanFireSiege(sd);}
+  else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
+  else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
+});
+function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
+function renderAll(){if(!S)return;renderBoard();renderSide();renderActions();renderRecord();renderGuide();
+  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?'You win':SNAME[BOT]+' wins';$('overText').textContent=S.over.reason;setStatus('Game over. '+S.over.reason);}
+  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode)setStatus('Your move.');}else setStatus(SNAME[BOT]+' is thinking…');}}
+
+// ---------- guided first game ----------
+function tutLit(){if(!S||!S.tut||S.turn!==YOU||S.over)return null;const st=S.tutStep;const sc=dronesOf(YOU).find(d=>d.kind==='C');const lit=new Set();
+  if(st===0&&sc)lit.add(key(sc.r,sc.c));
+  else if(st===1&&sc){if(sel&&sel.id===sc.id)for(const [k,t] of targets(sc))if(t==='move'&&!half(YOU,rc(k)[0])||t==='move')lit.add(k);else lit.add(key(sc.r,sc.c));}
+  else if(st===2&&sc)lit.add(key(sc.r,sc.c));
+  else if(st===3){const best=validSwaps(YOU).sort((a,b)=>shapeValue(b.sh,YOU)-shapeValue(a.sh,YOU))[0];if(best){lit.add(key(...best.a));lit.add(key(...best.b));}}
+  return lit.size?lit:null;}
+const TUT=[
+  'This is your scout, the C on your back row. Tap it.',
+  'The lit squares are where it can go. Tap one toward the dark. Each move is one turn.',
+  'Tap the scout again, then tap Claim. The 3 × 3 around it becomes your land and the fog there lifts for good.',
+  'Now the stars. The two lit stars make a line of 4 when swapped. Tap one, then the other. A drone appears where you made it.',
+  'Your drones are born where the shape was made, on your side, in the color of the star. Tap a drone to see how it moves. Scouts and hunters can fire missiles: you have 1. From here it is your game. Tap Settings, Guided first game, to see this again.'
+];
+function renderGuide(){const g=$('guide');if(!S||!S.tut||S.over){g.hidden=true;return;}g.hidden=false;g.innerHTML='<b>Step '+(Math.min(S.tutStep,TUT.length-1)+1)+'</b>'+TUT[Math.min(S.tutStep,TUT.length-1)];}
+function tutAdvance(what){if(!S||!S.tut)return;const st=S.tutStep;
+  if(st<=1&&what==='move')S.tutStep=2;else if(st===2&&what==='claim')S.tutStep=3;else if(st===3&&what==='swap')S.tutStep=4;else if(st===4&&(what==='move'||what==='swap'||what==='fire')){S.tutStep=5;S.tut=false;try{localStorage.setItem('cc1_tut','1');}catch(_){}}
+}
+function tutOnSelect(){if(S&&S.tut&&S.tutStep===0)S.tutStep=1;}
+
+// ---------- tips ----------
+const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
+G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege it blocks the shot.',
+S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege. A slide into the fog is a commitment.',
+H:'Moves 1 square plus up to 4 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.',
+W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
+X:'Moves exactly 1 square, into the dark if it likes. Next to the enemy wall, Fire clears the walls beside it; next to the Commander it wins. Cannot take or be taken by drones. Four enemies around it destroy it. A shield blocks its shot: ram it and both are gone.',
+B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every rock, star and drone in its path, yours too.'};
+let tip=null;
+function showTip(d){if(!$('inTips').checked){$('dtip').hidden=true;return;}tip=d;const el=$('dtip');el.hidden=false;el.innerHTML=`<span class="x">×</span><b style="color:${d.side===YOU?'var(--you)':'var(--bot)'}">${poss(d.side)} ${TNAME[d.kind]}</b> ${TIPS[d.kind]}`;}
+$('dtip').addEventListener('click',e=>{if(e.target.classList.contains('x'))$('dtip').hidden=true;});
+
+// ---------- ratings ----------
+const PROF_KEY='cc_prof',ROCK_PTS=50,BASE_R=1000;
+let prof=(()=>{let p=null;try{p=JSON.parse(localStorage.getItem(PROF_KEY)||'null');}catch(_){}return (p&&typeof p.r==='number')?p:{n:'',r:BASE_R,g:0,w:0,l:0,h:[]};})();
+function saveProf(){try{localStorage.setItem(PROF_KEY,JSON.stringify(prof));}catch(_){}}
+const botRating=s=>800+12*s;
+const kFactor=g=>g<10?40:24;
+function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
+function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.floor(Math.abs(rA-rB)/ROCK_PTS);let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
+function rateGame(w){if(!S||S.rated||S.tut)return;S.rated=true;
+  const oppR=botRating(S.skill),weight=Math.max(0.1,S.skill/100),score=w===YOU?1:0,E=expected(prof.r,oppR,S.rocks[1],S.rocks[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
+  prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:'Bot '+S.skill,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
+  note(`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). Bot ${S.skill} was rated ${oppR}; rocks ${S.rocks[1]} to ${S.rocks[2]}.`);}
+function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
+  $('record').innerHTML=`${prof.n?prof.n+' · ':''}Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won${prof.g?' · '+last:''}<br>Bot at skill ${S?S.skill:$('inSkill').value} is rated ${botRating(S?S.skill:+$('inSkill').value)}; a game against it moves you at ${Math.max(10,S?S.skill:+$('inSkill').value)}% of a game against a person.`;}
+
+// ---------- clocks ----------
+setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const t=S.turn;S.clock[t]-=250;if(S.clock[t]<=0){S.clock[t]=0;gameOver(other(t),`${who(t)} ran out of time.`);save();renderAll();return;}
+  if(t===YOU&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note('You ran out of move time. Turn passes.');sel=null;mode=null;afterAction();return;}}
+  $('ck1').textContent=fmt(S.clock[1]);$('ck2').textContent=fmt(S.clock[2]);},250);
+setInterval(()=>{if(S)save();},3000);
+
+// ---------- version ----------
+$('ver').textContent='v'+VERSION;let newverSeen=false;
+async function checkVersion(){if(newverSeen||!/^https?:/.test(location.protocol))return;try{const t=+localStorage.getItem('cc_upd')||0;if(Date.now()-t<10*60000)return;}catch(_){}
+  try{const r=await fetch(location.pathname,{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);const num=v=>v.split('.').map(Number);
+    if(m&&m[1]!==VERSION){const a=num(m[1]),b=num(VERSION);const newer=a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&a[2]>b[2])));if(newer){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=`You have v${VERSION}. v${m[1]} is out.`;}}}catch(_){}}
+$('btnReload').addEventListener('click',async()=>{save();try{localStorage.setItem('cc_upd',String(Date.now()));}catch(_){}$('btnReload').textContent='Reloading…';try{await fetch(location.pathname,{cache:'reload'});}catch(_){}location.replace(location.pathname+'?fresh='+Date.now());});
+$('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
+try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname);}catch(_){}
+setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
+
+// ---------- copy as text ----------
+function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;c++){const d=droneAt(r,c);const k=key(r,c);s+=isCmd(r,c)?'M':isWall(r,c)?'#':d?(d.side===YOU?d.kind:d.kind.toLowerCase()):S.grid[r][c]===ROCK?'%':!vis(YOU,r,c)?'?':S.own[k]===YOU?'y':S.own[k]===BOT?'b':S.own[k]===3?'=':'RGEBV'[S.grid[r][c]]||'.';}rows.push(s);}
+  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${WIN} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · rocks ${S.rocks[1]}/${S.rocks[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'}\n\nBOARD (UPPER = yours, lower = bot, M commander, # wall, % rock, ? fog, y/b/= land, letters R G E B V = star colors on open squares)\n${rows.join('\n')}\n\nLOG\n${S.log.slice(0,30).join('\n')}`;}
+$('btnCopy').addEventListener('click',async()=>{const t=gameText();try{await navigator.clipboard.writeText(t);note('Game copied as text.');}catch(_){prompt('Copy this:',t);}renderSide();});
+
+// ---------- boot ----------
+$('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
+$('btnNew').addEventListener('click',()=>{if(busy)return;if(S&&!S.over&&S.turnNo>2&&!confirm('Start a new game? This one counts as a loss.'))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,'The game was abandoned.');}newGame();});
+$('btnAgain').addEventListener('click',()=>newGame());
+$('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
+$('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
+$('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame();});
+$('introTut').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}newGame({tut:true});});
+$('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
+$('inSkill').addEventListener('change',renderRecord);
+$('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
+if(prof.n)$('inName').value=prof.n;
+buildBoard();
+(function boot(){
+  const saved=load();
+  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();if(S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}}
+  let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
+  if(!seenIntro){$('intro').hidden=false;if(!S){/* the intro's buttons start the game */}}
+  else if(!S)newGame();
+})();
+document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
+</script>
 </body>
 </html>
