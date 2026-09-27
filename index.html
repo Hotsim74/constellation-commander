@@ -594,7 +594,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.0.2';
+const VERSION='1.0.3';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN=46,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1020,7 +1020,7 @@ function renderBoard(gone,born,mark){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+WIN;$('land2').textContent=landOf(BOT)+' / '+WIN;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`;}
+  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} · sees ${sees} squares`;}
   $('botlbl').textContent=SNAME[BOT]+' · skill '+S.skill;
   $('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
