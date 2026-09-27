@@ -135,6 +135,7 @@ main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
   <div class="field"><span class="lbl">Handicap</span><label><input type="checkbox" id="inAuto" checked> rocks from ratings</label></div>
   <div class="field"><span class="lbl">Your rocks</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Bot rocks</span><input type="number" id="inRock2" min="0" max="20" value="6"></div>
+  <div class="field"><span class="lbl">Fog</span><label><input type="checkbox" id="inFullFog"> everything dark, even your own half</label></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <button type="button" id="btnHow">How to play</button>
@@ -594,7 +595,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.0.3';
+const VERSION='1.0.4';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN=46,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -627,7 +628,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){
   const skill=Math.max(0,Math.min(100,+$('inSkill').value||0));
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},
-     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:''};
+     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:'',fullFog:!!opts.tut||$('inFullFog').checked};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const [r,c] of [[b,5],[b,4],[b,6],[f,4],[f,5],[f,6]]){S.wall[key(r,c)]=side;S.own[key(r,c)]=side;S.grid[r][c]=-1;}
@@ -658,12 +659,13 @@ function dropRocks(side,n){let placed=0;for(let t=0;t<400&&placed<n;t++){const r
 
 // ---------- fog ----------
 function vis(side,r,c){
+  if(!S.fullFog&&half(side,r))return true; // normal game: your own half is lit, the dark starts at the seam
   if(S.own[key(r,c)]===side)return true;
   if(S.seen[side].includes(key(r,c)))return true;
   for(const d of S.drones)if(d.side===side&&d.kind!=='G'&&Math.abs(d.r-r)<=1&&Math.abs(d.c-c)<=1)return true;
   return false;
 }
-const cleared=(side,r,c)=>S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
+const cleared=(side,r,c)=>(!S.fullFog&&half(side,r))||S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
 function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(!inb(a,b))continue;const k=key(a,b);if(!S.seen[side].includes(k))S.seen[side].push(k);}}
 
 // ---------- shapes ----------
