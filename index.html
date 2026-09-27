@@ -74,7 +74,8 @@ main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
 .dr{position:absolute;inset:8%;border-radius:50%;background:#0e131a;border:2px solid;z-index:3;display:flex;align-items:center;justify-content:center;padding:4%;pointer-events:none}
 .dr.s1{border-color:var(--you)}.dr.s2{border-color:var(--bot)}
 .dr svg{width:100%;height:100%;display:block;overflow:hidden}
-.dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(9px,2.2vw,15px);color:#fff;text-shadow:0 0 2px #000,0 0 4px #000,0 0 7px #000;pointer-events:none;z-index:3}
+.dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(12px,3vw,20px);text-shadow:0 0 2px #000,0 0 4px #000,0 0 8px #000,0 1px 1px #000;pointer-events:none;z-index:3}
+.dr.s1 .lt{color:#ff5a5a}.dr.s2 .lt{color:#fff}
 .dr .pw{position:absolute;right:-6%;bottom:-6%;min-width:38%;height:38%;border-radius:50%;background:#fff;color:#000;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .badge{position:absolute;left:-4%;bottom:-4%;width:30%;height:30%;border-radius:2px;border:1px solid #000;z-index:4}
@@ -117,7 +118,7 @@ main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
   .boardwrap{flex:1 1 100%;max-width:100%}
   .side{flex:1 1 100%;min-width:0}
   .panel{padding:8px 10px}
-  .dr .lt{font-size:clamp(8px,3.4vw,14px)}
+  .dr .lt{font-size:clamp(11px,4.6vw,18px)}
 }
 </style>
 <div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
@@ -593,7 +594,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.0.0';
+const VERSION='1.0.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN=46,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
