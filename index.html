@@ -594,7 +594,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.0.1';
+const VERSION='1.0.2';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN=46,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -729,10 +729,10 @@ function gravity(g){
   const born=new Set();
   for(let c=0;c<N;c++){
     let st=[];for(let r=0;r<SEAM;r++)if(g[r][c]>=0)st.push(g[r][c]);
-    for(let r=0;r<SEAM;r++){if(r<st.length)g[r][c]=st[r];else{g[r][c]=rnd(KINDS);born.add(key(r,c));}}
+    for(let r=0;r<SEAM;r++){if(r<st.length)g[r][c]=st[r];else{g[r][c]=pickSafe(g,r,c);born.add(key(r,c));}}
     st=[];for(let r=N-1;r>SEAM;r--)if(g[r][c]>=0)st.push(g[r][c]);
-    for(let i=0;i<N-1-SEAM;i++){const r=N-1-i;if(i<st.length)g[r][c]=st[i];else{g[r][c]=rnd(KINDS);born.add(key(r,c));}}
-    if(g[SEAM][c]<0&&!isWall(SEAM,c)){g[SEAM][c]=rnd(KINDS);born.add(key(SEAM,c));}
+    for(let i=0;i<N-1-SEAM;i++){const r=N-1-i;if(i<st.length)g[r][c]=st[i];else{g[r][c]=pickSafe(g,r,c);born.add(key(r,c));}}
+    if(g[SEAM][c]<0&&!isWall(SEAM,c)){g[SEAM][c]=pickSafe(g,SEAM,c);born.add(key(SEAM,c));}
   }
   for(const k in S.wall){const [r,c]=rc(+k);g[r][c]=-1;} // walls hold no star
   return born;
@@ -932,7 +932,7 @@ async function botTurn(me){
   }
   if(!opts.length){note(`${who(me)} had nothing to do.`);await afterAction();return;}
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else pick=opts[rnd(opts.length)];
-  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
+  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
   else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await sleep(400);}
@@ -946,7 +946,7 @@ async function humanSwap(a,b){
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
   const sh=detectShapes(g,b);
   if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus('No line there. Try another swap.');sel=null;renderBoard();return;}
-  busy=true;sel=null;renderBoard();
+  busy=true;sel=null;note(`You swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard();
   await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
   tutAdvance('swap');busy=false;await afterAction();
 }
