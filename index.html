@@ -69,6 +69,14 @@ main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
 @keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,200,120,.95);opacity:1}100%{box-shadow:0 0 18px 26px rgba(255,120,40,0);opacity:0}}
 .ghost{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none}
 .ghost .dr{position:relative;inset:auto;width:100%;height:100%}
+.ghost.dying{animation:dying .5s ease-in forwards}
+@keyframes dying{0%{filter:brightness(1)}35%{filter:brightness(4) saturate(0);transform:translate(-50%,-50%) scale(1.18)}100%{filter:brightness(2);opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(25deg)}}
+.shard{position:absolute;width:8px;height:4px;border-radius:1px;transform:translate(0,0);opacity:1;z-index:10;pointer-events:none;transition:transform .6s cubic-bezier(.15,.7,.3,1),opacity .6s ease-in;box-shadow:0 0 4px rgba(255,255,255,.6)}
+.shard.spark{width:5px;height:2px;transition-duration:.4s}
+.ring{position:absolute;width:10px;height:10px;border:3px solid #fff;border-radius:50%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:ringout .55s ease-out forwards}
+@keyframes ringout{0%{width:10px;height:10px;opacity:1}100%{width:90px;height:90px;opacity:0;border-width:1px}}
+.dd.hit .dr{animation:hitshake .4s ease-out}
+@keyframes hitshake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px);filter:brightness(2.5)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,0)}80%{transform:translate(2px,1px)}}
 .gem{display:block;width:78%;height:78%;transition:transform .12s,filter .12s;z-index:1}
 .gem.gone{transform:scale(.2);opacity:0}
 .g0{background:radial-gradient(circle at 50% 42%,#fff1f1 0,#ff8a8d 22%,#e5484d 55%,#8f1f23);clip-path:polygon(50% 0,61.8% 33.8%,97.6% 34.5%,69% 56.2%,79.4% 90.5%,50% 70%,20.6% 90.5%,31% 56.2%,2.4% 34.5%,38.2% 33.8%)}
@@ -602,7 +610,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.2.1';
+const VERSION='1.3.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -831,7 +839,7 @@ const shotsLeft=d=>shotsOf(d)-(d.shots||0);
 const inRange=(d,r,c)=>Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=RANGE;
 
 // ---------- actions ----------
-function takeDrone(taker,victim,how){S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);note(`${who(taker)} took ${poss(victim.side).toLowerCase()} ${TNAME[victim.kind]}${victim.power>1?' (power '+victim.power+')':''} at ${sq(victim.r,victim.c)}${how?' '+how:''}: a missile earned.`);}
+function takeDrone(taker,victim,how){queueShatter(victim);S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);note(`${who(taker)} took ${poss(victim.side).toLowerCase()} ${TNAME[victim.kind]}${victim.power>1?' (power '+victim.power+')':''} at ${sq(victim.r,victim.c)}${how?' '+how:''}: a missile earned.`);}
 function landed(d){
   if(!S.drones.includes(d))return;
   if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===d.side)takeDrone(d.side,e,'by moving beside it');}}
@@ -868,15 +876,15 @@ function applyFire(d){
   if(t.cmd){note(`${who(d.side)} took the Commander.`);gameOver(d.side,`${who(d.side)} took the Commander.`);return true;}
   return false;
 }
-function applyRam(d){const g=shieldedBy(d);if(!g)return;S.drones=S.drones.filter(x=>x!==g&&x!==d);note(`${poss(d.side)} siege drone rammed the shield at ${sq(g.r,g.c)}. Both are gone.`);}
+function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);note(`${poss(d.side)} siege drone rammed the shield at ${sq(g.r,g.c)}. Both are gone.`);}
 async function fireShots(side,list,shooter){
   // every shot is aimed first; then they all fly and land at once and the stars drop once
   if(shooter)await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));
   let dropped=false;
   for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
-    if(o&&o.side!==side){o.power--;if(o.power<=0){S.drones=S.drones.filter(x=>x!==o);note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}.`);}else note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}
+    if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}.`);}else{queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}}
     else if(S.grid[r][c]>=0){note(`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?'a rock':'a '+KNAME[S.grid[r][c]]+' star'} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
-  renderBoard();await sleep(350);
+  renderBoard();await playFX();
   if(dropped){const {born,fall}=gravity(S.grid);renderBoard(null,born,null,fall);await sleep(420);await resolve(side,null);}
 }
 async function tickBombs(side){
@@ -884,17 +892,17 @@ async function tickBombs(side){
     if(b.fuse>0){note(`${poss(side)} bomb at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`);continue;}
     const hit=[[b.r,b.c]];for(const [dr,dc] of DIR4){let r=b.r+dr,c=b.c+dc;while(inb(r,c)&&vis(side,r,c)&&!isWall(r,c)&&!isCmd(r,c)){hit.push([r,c]);r+=dr;c+=dc;}}
     S.drones=S.drones.filter(x=>x!==b);let gone=0;
-    for(const [r,c] of hit){const o=droneAt(r,c);if(o){S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0)S.grid[r][c]=-1;cellEl(r,c).classList.add('blast');}
+    for(const [r,c] of hit){const o=droneAt(r,c);if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0)S.grid[r][c]=-1;cellEl(r,c).classList.add('blast');}
     note(`${poss(side)} bomb went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`);
-    renderBoard();await sleep(500);for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
+    renderBoard();await playFX();for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
     const {born,fall}=gravity(S.grid);renderBoard(null,born,null,fall);await sleep(420);await resolve(side,null);}
 }
-function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){S.drones=S.drones.filter(x=>x!==d);note(`${poss(d.side)} siege drone at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
+function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note(`${poss(d.side)} siege drone at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
 function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
 function gameOver(w,reason){if(S.over)return;S.over={w,reason};note(`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`);rateGame(w);}
 async function afterAction(){
   if(S.over){save();renderAll();return;}
-  sweepSiege();if(checkLand()){save();renderAll();return;}
+  sweepSiege();renderBoard();await playFX();if(checkLand()){save();renderAll();return;}
   await tickBombs(S.turn);if(S.over){save();renderAll();return;}
   sweepSiege();if(checkLand()){save();renderAll();return;}
   S.turn=other(S.turn);S.turnNo++;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
@@ -946,8 +954,8 @@ async function botTurn(me){
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
-  else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await sleep(400);}
-  else if(pick.type==='warp'){const from=[pick.d.r,pick.d.c];const html=droneHTML(pick.d);applyWarp(pick.d,pick.r,pick.c);renderBoard();await flyDrone(from,[pick.r,pick.c],html);await sleep(200);}
+  else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await playFX();}
+  else if(pick.type==='warp'){const from=[pick.d.r,pick.d.c];const html=droneHTML(pick.d);applyWarp(pick.d,pick.r,pick.c);renderBoard();await flyDrone(from,[pick.r,pick.c],html);await playFX();}
   else{const from=[pick.d.r,pick.d.c];applyMove(pick.d,pick.r,pick.c);await movedAnim(pick.d,from);await sleep(200);}
   await afterAction();
 }
@@ -963,9 +971,9 @@ async function humanSwap(a,b){
 }
 async function humanMove(d,r,c){busy=true;sel=null;const from=[d.r,d.c];applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move');busy=false;await afterAction();}
 async function humanClaim(d){busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
-async function humanWarp(d,r,c){busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await sleep(80);busy=false;await afterAction();}
+async function humanWarp(d,r,c){busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
-async function humanRam(d){busy=true;sel=null;applyRam(d);renderBoard();await sleep(300);busy=false;await afterAction();}
+async function humanRam(d){busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanShots(d,list){busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?'Fired. This drone can fire again, or take your turn.':'Fired. Now take your turn: swap, move, claim or warp.');}
 
 // ---------- input ----------
@@ -1173,7 +1181,29 @@ function flyDrone(from,to,html){return new Promise(res=>{if(from[0]===to[0]&&fro
   const dist=Math.hypot(x1-x0,y1-y0);const ms=Math.max(200,Math.min(600,dist*1.2));g.style.transition=`left ${ms}ms cubic-bezier(.3,.6,.3,1),top ${ms}ms cubic-bezier(.3,.6,.3,1)`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';}));
   setTimeout(()=>{g.remove();dest.style.visibility='';res();},ms+20);});}
-async function movedAnim(d,from){renderBoard();await flyDrone(from,[d.r,d.c],droneHTML(d));}
+async function movedAnim(d,from){renderBoard();await flyDrone(from,[d.r,d.c],droneHTML(d));await playFX();}
+
+
+// ---------- destruction: a drone that dies breaks up where it stood; a hit shakes and sparks ----------
+let fx=[];
+function queueShatter(d){fx.push({r:d.r,c:d.c,html:droneHTML(d),col:d.side===YOU?'#ffb84a':'#4ea8dc'});}
+function queueHit(r,c){fx.push({r,c,hit:true});}
+function playFX(){const list=fx;fx=[];if(!list.length)return Promise.resolve();const b=$('board');
+  for(const f of list){
+    const [x,y,w]=cellXY(f.r,f.c);
+    if(f.hit){const dd=cellEl(f.r,f.c).lastChild;dd.classList.remove('hit');void dd.offsetWidth;dd.classList.add('hit');setTimeout(()=>dd.classList.remove('hit'),450);
+      for(let i=0;i<5;i++){const s=document.createElement('div');s.className='shard spark';s.style.left=x+'px';s.style.top=y+'px';s.style.background='#fff';b.appendChild(s);const a=Math.random()*6.283,dist=14+Math.random()*16;
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{s.style.transform=`translate(${Math.cos(a)*dist}px,${Math.sin(a)*dist}px) rotate(${a}rad)`;s.style.opacity='0';}));setTimeout(()=>s.remove(),500);}
+      continue;}
+    const g=document.createElement('div');g.className='ghost dying';g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x+'px';g.style.top=y+'px';g.innerHTML=f.html;b.appendChild(g);
+    const ring=document.createElement('div');ring.className='ring';ring.style.left=x+'px';ring.style.top=y+'px';ring.style.borderColor=f.col;b.appendChild(ring);
+    for(let i=0;i<10;i++){const s=document.createElement('div');s.className='shard';s.style.left=x+'px';s.style.top=y+'px';s.style.background=i%3?f.col:'#fff';s.style.width=(5+Math.random()*7)+'px';s.style.height=(3+Math.random()*3)+'px';b.appendChild(s);
+      const a=(i/10)*6.283+Math.random()*.6,dist=w*0.5+Math.random()*w*0.9;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{s.style.transform=`translate(${Math.cos(a)*dist}px,${Math.sin(a)*dist}px) rotate(${a*3}rad)`;s.style.opacity='0';}));
+      setTimeout(()=>s.remove(),700);}
+    setTimeout(()=>{g.remove();ring.remove();},700);
+  }
+  return sleep(620);}
 </script>
 </body>
 </html>
