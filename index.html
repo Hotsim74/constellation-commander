@@ -610,7 +610,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.4.1';
+const VERSION='1.5.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -741,18 +741,27 @@ function placeCell(side,sp){
   const k=sp.cells.find(k=>half(side,rc(k)[0]));return k==null?null:rc(k);
 }
 function shapeValue(sh,side){let v=sh.cells.size;for(const sp of sh.spawns){if(side!=null&&!placeCell(side,sp))continue;for(const l of sp.letters)v+=8*(RANK[l]||1);}return v;}
-function gravity(g){
-  // three bands: rows 0..4 pack toward row 0, rows 6..10 pack toward row 10, the seam row refills in place. New stars are born at the seam.
-  // Returns the born squares and, for every star that moved, how many rows it travelled (for the falling animation).
+function gravity(g,side){
+  // Stars fall toward whoever is moving: on your turn every column drops toward your back row,
+  // on the bot's turn it rises toward its back row. New stars come in from the far edge. Walls split a
+  // column into separate runs that each pack on their own. Returns the born squares and, for every
+  // star that moved, how many rows it travelled (sign = direction), for the falling animation.
   const born=new Set(),fall=new Map();
+  const down=side!==BOT; // packing toward the bottom (rows grow) for you, toward the top for the bot
   for(let c=0;c<N;c++){
-    let st=[];for(let r=0;r<SEAM;r++)if(g[r][c]>=0)st.push([g[r][c],r]);
-    for(let r=0;r<SEAM;r++){if(r<st.length){g[r][c]=st[r][0];if(st[r][1]!==r)fall.set(key(r,c),r-st[r][1]);}else{g[r][c]=pickSafe(g,r,c);born.add(key(r,c));fall.set(key(r,c),r-SEAM);}}
-    st=[];for(let r=N-1;r>SEAM;r--)if(g[r][c]>=0)st.push([g[r][c],r]);
-    for(let i=0;i<N-1-SEAM;i++){const r=N-1-i;if(i<st.length){g[r][c]=st[i][0];if(st[i][1]!==r)fall.set(key(r,c),r-st[i][1]);}else{g[r][c]=pickSafe(g,r,c);born.add(key(r,c));fall.set(key(r,c),r-SEAM);}}
-    if(g[SEAM][c]<0&&!isWall(SEAM,c)){g[SEAM][c]=pickSafe(g,SEAM,c);born.add(key(SEAM,c));}
+    let r=0;
+    while(r<N){
+      if(isWall(r,c)){g[r][c]=-1;r++;continue;}
+      let e=r;while(e<N&&!isWall(e,c))e++; // run is rows r..e-1
+      const rows=[];for(let i=r;i<e;i++)rows.push(i);
+      const order=down?rows.slice().reverse():rows; // the end the stars pack toward comes first
+      const kept=[];for(const i of order)if(g[i][c]>=0)kept.push([g[i][c],i]);
+      for(let j=0;j<order.length;j++){const i=order[j];
+        if(j<kept.length){g[i][c]=kept[j][0];if(kept[j][1]!==i)fall.set(key(i,c),i-kept[j][1]);}
+        else{g[i][c]=pickSafe(g,i,c);born.add(key(i,c));const far=down?r-1:e;fall.set(key(i,c),i-far);}}
+      r=e;
+    }
   }
-  for(const k in S.wall){const [r,c]=rc(+k);g[r][c]=-1;} // walls hold no star
   return {born,fall};
 }
 function spawnFrom(side,sp){
@@ -783,7 +792,7 @@ async function resolve(side,anchor){
     for(const sp of sh.spawns)spawnFrom(side,sp);
     renderBoard(sh.cells);await sleep(260);
     for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=-1;}
-    const {born,fall}=gravity(S.grid);renderBoard(null,born,null,fall);await sleep(780);
+    const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);
     anchor=null;if(chain>12)break;
   }
 }
@@ -885,7 +894,7 @@ async function fireShots(side,list,shooter){
     if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}.`);}else{queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}}
     else if(S.grid[r][c]>=0){note(`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?'a rock':'a '+KNAME[S.grid[r][c]]+' star'} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
   renderBoard();await playFX();
-  if(dropped){const {born,fall}=gravity(S.grid);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
+  if(dropped){const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
 async function tickBombs(side){
   for(const b of dronesOf(side).filter(d=>d.kind==='B')){b.fuse--;
@@ -895,7 +904,7 @@ async function tickBombs(side){
     for(const [r,c] of hit){const o=droneAt(r,c);if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0)S.grid[r][c]=-1;cellEl(r,c).classList.add('blast');}
     note(`${poss(side)} bomb went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`);
     renderBoard();await playFX();for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
-    const {born,fall}=gravity(S.grid);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
+    const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
 function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note(`${poss(d.side)} siege drone at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
 function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
