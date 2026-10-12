@@ -38,7 +38,17 @@ header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-conte
 .guide[hidden]{display:none}
 main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
 .boardwrap{flex:1 1 360px;max-width:640px}
-.board{position:relative;display:grid;grid-template-columns:repeat(11,1fr);gap:1px;background:#0a0e14;padding:3px;border-radius:4px;user-select:none;touch-action:manipulation;width:100%;aspect-ratio:1}
+.board{position:relative;display:grid;grid-template-columns:repeat(11,1fr);gap:1px;background:#0a0e14;padding:3px;border-radius:4px;user-select:none;touch-action:manipulation;width:100%;max-width:min(100%,calc(100vh - 430px));margin:0 auto;aspect-ratio:1}
+.legend,.tipcard,.acthint,.acts{max-width:min(100%,calc(100vh - 430px));margin-left:auto;margin-right:auto}
+.acts{margin-top:6px}.tipcard{margin-top:8px}.acthint{margin-top:4px}.legend{margin-top:4px}
+details.panel summary{cursor:pointer;list-style:none}details.panel summary::-webkit-details-marker{display:none}
+@media (max-width:1000px){
+  .boardwrap{flex:1 1 100%;max-width:100%}
+  .side{flex:1 1 100%;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .side .panel.two{grid-column:1/-1}
+  .side details.panel{grid-column:1/-1}
+  .big{font-size:18px}
+}
 .cell{position:relative;background:var(--sq);aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible}
 .cell.red{background:#2a1d22}.cell.white{background:#232b34}
 .cell.seam{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
@@ -173,9 +183,9 @@ main{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
       <div><span class="lbl">You</span><div class="big" id="land1" style="color:var(--you)">11</div><div id="meta1" class="acthint"></div></div>
       <div><span class="lbl" id="botlbl">Bot</span><div class="big" id="land2" style="color:var(--bot)">11</div><div id="meta2" class="acthint"></div></div>
     </div>
-    <div class="panel"><span class="lbl">Clocks</span><div class="two"><div class="big" id="ck1" style="color:var(--you)">—</div><div class="big" id="ck2" style="color:var(--bot)">—</div></div></div>
-    <div class="panel"><span class="lbl">Your record</span><div id="record" class="acthint"></div></div>
-    <div class="panel"><span class="lbl">Log</span><div class="log" id="log"></div></div>
+    <div class="panel" id="clocksPanel"><span class="lbl">Clocks</span><div class="two"><div class="big" id="ck1" style="color:var(--you)">—</div><div class="big" id="ck2" style="color:var(--bot)">—</div></div></div>
+    <details class="panel" id="recordPanel" open><summary class="lbl">Your record ▾</summary><div id="record" class="acthint"></div></details>
+    <details class="panel" id="logPanel" open><summary class="lbl">Log ▾</summary><div class="log" id="log"></div></details>
   </div>
 </main>
 <div id="intro" hidden><div class="card">
@@ -644,7 +654,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){
   const skill=Math.max(0,Math.min(100,+$('inSkill').value||0));
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},
-     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fullFog:!!opts.tut||$('inFullFog').checked};
+     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fullFog:$('inFullFog').checked};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const [r,c] of [[b,5],[b,4],[b,6],[f,4],[f,5],[f,6]]){S.wall[key(r,c)]=side;S.own[key(r,c)]=side;S.grid[r][c]=-1;}
@@ -1054,7 +1064,7 @@ function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
   for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} · sees ${sees} squares`;}
   $('botlbl').textContent=SNAME[BOT]+' · skill '+S.skill;
-  $('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
+  $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
 }
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
@@ -1214,6 +1224,7 @@ $('inSkill').addEventListener('change',renderRecord);
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
 buildBoard();
+if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
 (function boot(){
   const saved=load();
   if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();if(S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}}
