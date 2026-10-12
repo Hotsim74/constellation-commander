@@ -611,7 +611,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.5.1';
+const VERSION='1.6.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -753,7 +753,8 @@ function gravity(g,side){
     let r=0;
     while(r<N){
       if(isWall(r,c)){g[r][c]=-1;r++;continue;}
-      let e=r;while(e<N&&!isWall(e,c))e++; // run is rows r..e-1
+      if(g[r][c]===ROCK){r++;continue;} // rocks are terrain: they never move and they split the column like a wall
+      let e=r;while(e<N&&!isWall(e,c)&&g[e][c]!==ROCK)e++; // run is rows r..e-1
       const rows=[];for(let i=r;i<e;i++)rows.push(i);
       const order=down?rows.slice().reverse():rows; // the end the stars pack toward comes first
       const kept=[];for(const i of order)if(g[i][c]>=0)kept.push([g[i][c],i]);
@@ -1104,7 +1105,7 @@ function coach(){
   // 1. move the scout
   if(!tutDone('move')&&sc){
     if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);return L('The marked squares are where it can go. Tap one, toward the dark if you can. Each move is one turn.',t);}
-    return L('Start with your scout, the C on your back row. Tap it.',[[sc.r,sc.c]]);}
+    return L('Welcome. This first game walks you through it, one tap at a time, with no clock. Start with your scout, the C on your back row. Tap it.',[[sc.r,sc.c]]);}
   // 2. claim
   if(!tutDone('claim')&&sc&&claimGain(sc)>0){
     if(sd&&sd.id===sc.id)return L('Now tap Claim, below the board. The 3 × 3 around the scout becomes your land, and the fog there lifts for good.',[[sc.r,sc.c]]);
@@ -1217,7 +1218,7 @@ buildBoard();
   const saved=load();
   if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();if(S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}}
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
-  if(!seenIntro){$('intro').hidden=false;if(!S){/* the intro's buttons start the game */}}
+  if(!seenIntro){try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame({tut:true});} // first open: straight into the coached game
   else if(!S)newGame();
 })();
 document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
