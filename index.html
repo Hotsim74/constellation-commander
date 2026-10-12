@@ -79,6 +79,15 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,200,120,.95);opacity:1}100%{box-shadow:0 0 18px 26px rgba(255,120,40,0);opacity:0}}
 .ghost{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none}
 .ghost .dr{position:relative;inset:auto;width:100%;height:100%}
+.callout{position:absolute;transform:translate(-50%,-100%);z-index:12;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+.callout .bub{background:var(--you);color:#1a1200;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;padding:5px 9px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.55)}
+.callout .arw{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:13px solid var(--you);animation:bob .7s ease-in-out infinite alternate}
+.callout.below{transform:translate(-50%,0);flex-direction:column-reverse}
+.callout.below .arw{border-top:0;border-bottom:13px solid var(--you)}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(6px)}}
+.acts button.callbtn{box-shadow:0 0 0 3px var(--you);animation:btnpulse .8s ease-in-out infinite alternate}
+@keyframes btnpulse{from{box-shadow:0 0 0 2px var(--you)}to{box-shadow:0 0 0 6px rgba(232,166,59,.35)}}
+@media (max-width:720px){.callout .bub{font-size:11px;padding:4px 7px}}
 .ghost.dying{animation:dying .5s ease-in forwards}
 @keyframes dying{0%{filter:brightness(1)}35%{filter:brightness(4) saturate(0);transform:translate(-50%,-50%) scale(1.18)}100%{filter:brightness(2);opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(25deg)}}
 .shard{position:absolute;width:8px;height:4px;border-radius:1px;transform:translate(0,0);opacity:1;z-index:10;pointer-events:none;transition:transform .6s cubic-bezier(.15,.7,.3,1),opacity .6s ease-in;box-shadow:0 0 4px rgba(255,255,255,.6)}
@@ -1092,6 +1101,7 @@ function renderActions(){
   }else if(mine&&sel&&sel.star)acts.push('<button data-a="cancel">Cancel</button>');
   if(mine&&!sd&&!sel){hint.push(S.missiles[YOU]>0&&dronesOf(YOU).some(d=>shotsLeft(d)>0)?'Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.':'Swap two stars side by side, or tap one of your drones.');}
   $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
+  if(S&&S.tut){const c=coach();if(c&&c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}} // the buttons were just rebuilt: put the coach's pulse back
 }
 $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(a==='cancel'){sel=null;mode=null;pending=null;aimList=[];renderAll();return;}
@@ -1111,65 +1121,79 @@ function renderAll(){if(!S)return;renderBoard();renderSide();renderActions();ren
 
 // ---------- the coach: a whole first game, one suggestion at a time ----------
 // In a guided game the coach looks at the board on every one of your turns, picks the one thing worth
-// doing next, lights the square(s) for it, and says why in a line. Lessons come once each, in the
-// order they first make sense; between lessons it keeps pointing at a good move, all the way to the end.
+// doing next, lights the square(s), puts an arrow with a few words on them, and says why in a line.
+// Lessons come once each, in the order they first make sense; between lessons it keeps pointing at a
+// good move, all the way to the end.
 function tutDone(k){return !!(S&&S.tutDone&&S.tutDone.includes(k));}
 function tutMark(k){if(!S||!S.tut)return;if(!S.tutDone)S.tutDone=[];if(!S.tutDone.includes(k))S.tutDone.push(k);}
 function bestSwap(){return validSwaps(YOU).sort((a,b)=>shapeValue(b.sh,YOU)-shapeValue(a.sh,YOU))[0]||null;}
 function coach(){
   if(!S||!S.tut||S.over)return null;
-  if(S.turn!==YOU)return {text:'The bot is taking its turn. It plays by the same rules, and in this game it plays slowly.',lit:null};
+  if(S.turn!==YOU)return {text:'The bot is taking its turn. It plays by the same rules, and in this game it plays slowly.',lit:null,calls:[]};
   const mine=dronesOf(YOU),sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,lit=new Set();
   const sc=mine.filter(d=>d.kind==='C'&&d.claims>0).sort((a,b)=>b.id-a.id)[0];
-  const L=(text,cells)=>{for(const c of cells||[])lit.add(typeof c==='number'?c:key(c[0],c[1]));return {text,lit:lit.size?lit:null};};
+  const L=(text,cells,calls,btn)=>{for(const c of cells||[])lit.add(typeof c==='number'?c:key(c[0],c[1]));
+    calls=(calls||[]).map(k=>({...k,at:Array.isArray(k.at)?k.at:rc(k.at)}));
+    if(calls.length===2&&calls[0].at[1]===calls[1].at[1]&&calls[0].below==null&&calls[1].below==null){const lo=calls[0].at[0]>calls[1].at[0]?0:1;calls[lo].below=true;} // a vertical pair: the lower arrow points up from below so the two bubbles never cover each other
+    return {text,lit:lit.size?lit:null,calls,btn:btn||null};};
+  const yard=[SEAM+3,5]; // the middle of your yard, for the land arrow
+  const note=tutDone('claim')&&!tutDone('claimnote')?'That scout has one claim left. A scout claims twice, then it is used up. ':'';
   // 0. the fixed opening: the first move is the swap the board was built for
-  if(S.tutSwap&&!tutDone('swap')){const [a,b]=S.tutSwap;if(S.grid[a[0]][a[1]]>=0&&S.grid[b[0]][b[1]]>=0)return L('Welcome. This first game walks you through it, one tap at a time, with no clock. Start top right. Tap the gold star at '+sq(a[0],a[1])+', then the blue above it at '+sq(b[0],b[1])+'. Swapped, that makes four blues in a row, and your first drone, a scout, is born right there.',[a,b]);}
-  // 1. move the scout
+  if(S.tutSwap&&!tutDone('swap')){const [a,b]=S.tutSwap;if(S.grid[a[0]][a[1]]>=0&&S.grid[b[0]][b[1]]>=0)
+    return L('Welcome. This first game walks you through it, one tap at a time, with no clock. Follow the arrows: tap the gold star, then the blue one above it. Swapped, that makes four blues in a row, and your first drone, a scout, is born right there.',[a,b],[{at:a,label:'1. tap this gold',below:true},{at:b,label:'2. then this blue'}]);}
+  // 1. land, then move the scout
   if(!tutDone('move')&&sc){
-    if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);return L('The marked squares are where it can go. Tap one, toward the dark if you can. Each move is one turn.',t);}
-    return L((S.tutSwap?'Your new scout is the C at '+sq(sc.r,sc.c)+'. Scouts claim land and clear the fog. Tap it.':'Welcome. This first game walks you through it, one tap at a time, with no clock. Start with your scout, the C on your back row. Tap it.'),[[sc.r,sc.c]]);}
+    if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);
+      const best=t.map(k=>rc(k)).sort((p,q)=>claimGain({r:q[0],c:q[1],side:YOU})-claimGain({r:p[0],c:p[1],side:YOU})||Math.abs(p[0]-SEAM)-Math.abs(q[0]-SEAM))[0];
+      return L('The marked squares are where it can go, one square a turn. Move it toward the dark: that is where the land is.',t,best?[{at:best,label:'move it here'}]:[]);}
+    return L(`The gold squares are your land: ${landOf(YOU)} of the ${S.win} you need to win. Claims take more. Now tap your scout, the C at ${sq(sc.r,sc.c)}.`,[[sc.r,sc.c]],[{at:yard,label:'your land: '+landOf(YOU)+' squares',below:true},{at:[sc.r,sc.c],label:'tap your scout'}]);}
   // 2. claim
   if(!tutDone('claim')&&sc&&claimGain(sc)>0){
-    if(sd&&sd.id===sc.id)return L('Now tap Claim, below the board. The 3 × 3 around the scout becomes your land, and the fog there lifts for good.',[[sc.r,sc.c]]);
-    return L('Tap the scout again. This time it will claim the land around it.',[[sc.r,sc.c]]);}
+    if(sd&&sd.id===sc.id)return L('Now tap Claim, the button under the board. The 3 × 3 around the scout becomes your land, and the fog there lifts for good.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap Claim below'}],'claim');
+    return L('Tap the scout again. This time it will claim the land around it.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap it again'}]);}
   // 3. a swap that pays
   const bs=bestSwap();
   const pays=!!(bs&&bs.sh.spawns.some(sp=>placeCell(YOU,sp)));
-  if(!tutDone('swap')){if(pays)return L(`Now the stars. The two marked stars make ${bs.sh.spawns[0].label} when swapped. Tap one, then the other. A drone appears where you made it.`,[bs.a,bs.b]);
-    if(bs)return L('No swap pays yet, but the marked pair clears three stars and the board shifts. Tap one, then the other.',[bs.a,bs.b]);
-    return L('No swap in sight. Move a drone instead; the stars will shift.',[]);}
+  if(!tutDone('swap')){if(pays)return L(note+`Now the stars. The two marked stars make ${bs.sh.spawns[0].label} when swapped. Tap one, then the other. A drone appears where you made it.`,[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
+    if(bs)return L(note+'No swap pays yet, but the marked pair clears three stars and the board shifts. Tap one, then the other.',[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
+    return L(note+'No swap in sight. Move a drone instead; the stars will shift.',[]);}
   // 4. meet the new drone
   const newest=mine.filter(d=>d.kind!=='G'&&d.kind!=='C').sort((a,b)=>b.id-a.id)[0];
   if(!tutDone('drone')&&newest){
-    if(sd&&sd.id===newest.id)return L(`That is a ${TNAME[newest.kind]}. ${TIPS[newest.kind].split('.')[0]}. The marked squares are its moves; red means it takes what is there. Tap one.`,[...targets(newest).keys()]);
-    return L(`A new drone: the ${newest.kind} at ${sq(newest.r,newest.c)}, born in the color of the star that made it. Tap it to see how it moves.`,[[newest.r,newest.c]]);}
+    if(sd&&sd.id===newest.id)return L(note+`That is a ${TNAME[newest.kind]}. ${TIPS[newest.kind].split('.')[0]}. The marked squares are its moves; red means it takes what is there. Tap one.`,[...targets(newest).keys()]);
+    return L(note+`A new drone: the ${newest.kind} at ${sq(newest.r,newest.c)}, born in the color of the star that made it. Tap it to see how it moves.`,[[newest.r,newest.c]],[{at:[newest.r,newest.c],label:'tap your new '+TNAME[newest.kind]}]);}
   // 5. fire a missile at a rock
   if(!tutDone('fire')&&S.missiles[YOU]>0){
     for(const sh of mine.filter(d=>shotsLeft(d)>0)){const rocks=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK&&vis(YOU,r,c)&&inRange(sh,r,c))rocks.push([r,c]);
-      if(rocks.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L('Tap the marked rock. The missile clears it and the stars drop in.',rocks);
-        if(sd&&sd.id===sh.id)return L('Tap Fire missile, below the board. Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]]);
-        return L(`You have a missile. Scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}: there is a rock in its range.`,[[sh.r,sh.c]]);}}}
+      if(rocks.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L('Tap the marked rock. The missile clears it and the stars drop in.',rocks,[{at:rocks[0],label:'shoot this rock'}]);
+        if(sd&&sd.id===sh.id)return L(note+'Tap Fire missile, the button under the board. Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]],[],'aim');
+        return L(note+`You have a missile. Scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}: there is a rock in its range.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'}]);}}}
   // 6. take something
   for(const d of mine){for(const [k,t] of targets(d))if(t==='take'){const v=droneAt(...rc(k));
-    if(!tutDone('take'))return sd&&sd.id===d.id?L(`Tap the red square: your ${TNAME[d.kind]} takes the ${TNAME[v.kind]}. Every take earns a missile.`,[k]):L(`Your ${TNAME[d.kind]} at ${sq(d.r,d.c)} can take the bot's ${TNAME[v.kind]} at ${sq(...rc(k))}. Tap it.`,[[d.r,d.c]]);
-    return sd&&sd.id===d.id?L('Red square: a take. Go on.',[k]):L(`A take is open: your ${TNAME[d.kind]} at ${sq(d.r,d.c)} onto ${sq(...rc(k))}.`,[[d.r,d.c]]);}}
+    if(!tutDone('take'))return sd&&sd.id===d.id?L(`Tap the red square: your ${TNAME[d.kind]} takes the ${TNAME[v.kind]}. Every take earns a missile.`,[k],[{at:rc(k),label:'take it'}]):L(note+`Your ${TNAME[d.kind]} at ${sq(d.r,d.c)} can take the bot's ${TNAME[v.kind]} at ${sq(...rc(k))}. Tap it.`,[[d.r,d.c]],[{at:[d.r,d.c],label:'tap this one'}]);
+    return sd&&sd.id===d.id?L('Red square: a take. Go on.',[k],[{at:rc(k),label:'take it'}]):L(note+`A take is open: your ${TNAME[d.kind]} at ${sq(d.r,d.c)} onto ${sq(...rc(k))}.`,[[d.r,d.c]],[{at:[d.r,d.c],label:'tap this one'}]);}}
   // 7. stack two drones
   if(!tutDone('stack')&&mine.length>=5){for(const a of mine)for(const b of mine){if(a===b||a.kind==='X'||b.kind==='X'||a.kind==='C'||b.kind==='G')continue;if(targets(a).get(key(b.r,b.c))==='merge'){
-    return sd&&sd.id===a.id?L(`Green square: move onto your own ${TNAME[b.kind]} to stack. The stack keeps the ${TNAME[b.kind]}'s kind, and each power takes one more missile to bring down.`,[[b.r,b.c]]):L(`Two of your drones can stack: the ${TNAME[a.kind]} at ${sq(a.r,a.c)} onto the ${TNAME[b.kind]} at ${sq(b.r,b.c)}. Tap the ${TNAME[a.kind]}.`,[[a.r,a.c]]);}}}
+    return sd&&sd.id===a.id?L(`Green square: move onto your own ${TNAME[b.kind]} to stack. The stack keeps the ${TNAME[b.kind]}'s kind, and each power takes one more missile to bring down.`,[[b.r,b.c]],[{at:[b.r,b.c],label:'stack here'}]):L(note+`Two of your drones can stack: the ${TNAME[a.kind]} at ${sq(a.r,a.c)} onto the ${TNAME[b.kind]} at ${sq(b.r,b.c)}. Tap the ${TNAME[a.kind]}.`,[[a.r,a.c]],[{at:[a.r,a.c],label:'tap this one'}]);}}}
   // 8. the siege
   const x=mine.find(d=>d.kind==='X');
-  if(x){if(canFire(x))return sd&&sd.id===x.id?L('Tap Fire at the wall. One shot clears the walls beside it; beside the Commander, the next shot wins.',[[x.r,x.c]]):L(`Your siege drone at ${sq(x.r,x.c)} is at the enemy wall. Tap it, then Fire.`,[[x.r,x.c]]);
-    if(!tutDone('siege'))return sd&&sd.id===x.id?L('Walk it one square a turn toward the enemy Commander, the star at the top. It can walk into the dark, and no drone can take it.',[...targets(x).keys()]):L(`You have a siege drone at ${sq(x.r,x.c)}. It is the other way to win: walk it to the enemy wall. Tap it.`,[[x.r,x.c]]);}
+  if(x){if(canFire(x))return sd&&sd.id===x.id?L('Tap Fire at the wall. One shot clears the walls beside it; beside the Commander, the next shot wins.',[[x.r,x.c]],[],'fire'):L(`Your siege drone at ${sq(x.r,x.c)} is at the enemy wall. Tap it, then Fire.`,[[x.r,x.c]],[{at:[x.r,x.c],label:'tap, then Fire'}]);
+    if(!tutDone('siege'))return sd&&sd.id===x.id?L('Walk it one square a turn toward the enemy Commander, the star at the top. It can walk into the dark, and no drone can take it.',[...targets(x).keys()]):L(note+`You have a siege drone at ${sq(x.r,x.c)}. It is the other way to win: walk it to the enemy wall. Tap it.`,[[x.r,x.c]],[{at:[x.r,x.c],label:'your siege drone'}]);}
   // 9. keep claiming, keep swapping
-  if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L(`Tap Claim: ${claimGain(sc)} squares.`,[[sc.r,sc.c]]):L(`Your scout at ${sq(sc.r,sc.c)} can claim ${claimGain(sc)} squares. Land wins: you hold ${landOf(YOU)} of ${S.win}.`,[[sc.r,sc.c]]);
-  if(bs)return L(`${pays?'A good swap: the two marked stars make '+bs.sh.spawns[0].label:'The marked pair clears three stars, nothing more, but it shifts the board'}. You hold ${landOf(YOU)} of ${S.win} squares; claims and warps take more.`,[bs.a,bs.b]);
+  if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L(`Tap Claim: ${claimGain(sc)} squares.`,[[sc.r,sc.c]],[],'claim'):L(note+`Your scout at ${sq(sc.r,sc.c)} can claim ${claimGain(sc)} squares. Land wins: you hold ${landOf(YOU)} of ${S.win}.`,[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap, then Claim'}]);
+  if(bs)return L(note+`${pays?'A good swap: the two marked stars make '+bs.sh.spawns[0].label:'The marked pair clears three stars, nothing more, but it shifts the board'}. You hold ${landOf(YOU)} of ${S.win} squares; claims and warps take more.`,[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
   const anyC=mine.find(d=>d.kind==='C');
-  if(anyC)return L(`No paying swap in sight. Walk your scout at ${sq(anyC.r,anyC.c)} into the dark and claim there.`,[[anyC.r,anyC.c]]);
-  return L('Nothing pays right now. Move a drone forward; the stars will shift.',[]);
+  if(anyC)return L(note+`No paying swap in sight. Walk your scout at ${sq(anyC.r,anyC.c)} into the dark and claim there.`,[[anyC.r,anyC.c]],[{at:[anyC.r,anyC.c],label:'tap your scout'}]);
+  return L(note+'Nothing pays right now. Move a drone forward; the stars will shift.',[]);
 }
 function tutLit(){const c=coach();return c&&c.lit?c.lit:null;}
-function renderGuide(){const g=$('guide');const c=coach();if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>Coach</b>'+(S.over.w===YOU?'That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.':'That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.');return;}g.hidden=true;return;}g.hidden=false;g.innerHTML='<b>Coach</b>'+c.text;}
+function renderCallouts(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
+  if(!c)return;
+  for(const k of c.calls||[]){const [r,cc]=k.at;const [x,y,w]=cellXY(r,cc);const el=document.createElement('div');const below=k.below||r<=1;el.className='callout'+(below?' below':'');el.innerHTML=`<span class="bub">${k.label}</span><span class="arw"></span>`;el.style.left=x+'px';el.style.top=(below?y+w/2:y-w/2)+'px';b.appendChild(el);}
+  if(c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}}
+function renderGuide(){const g=$('guide');const c=coach();renderCallouts(c);if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>Coach</b>'+(S.over.w===YOU?'That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.':'That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.');return;}g.hidden=true;return;}g.hidden=false;g.innerHTML='<b>Coach</b>'+c.text;}
 function tutAdvance(what,d,extra){if(!S||!S.tut)return;
+  if(tutDone('claim')&&what!=='claim')tutMark('claimnote');
   if(what==='move'){tutMark('move');if(d&&d.kind!=='C')tutMark('drone');if(extra==='take')tutMark('take');if(extra==='merge')tutMark('stack');if(d&&d.kind==='X')tutMark('siege');}
   else tutMark(what);}
 function tutOnSelect(){}
