@@ -922,7 +922,7 @@ async function fireShots(side,list,shooter){
   if(shooter)await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));
   let dropped=false;
   for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
-    if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}.`);}else{queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}}
+    if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);S.missiles[side]++;note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: a missile earned.`);}else{queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}}
     else if(S.grid[r][c]>=0){note(`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?'a rock':'a '+KNAME[S.grid[r][c]]+' star'} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
   renderBoard();await playFX();
   if(dropped){const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
@@ -958,6 +958,12 @@ async function botSafely(){
 }
 async function botTurn(me){
   if(S.over)return;
+  // the coached game: until the player has fired, the bot walks its scout into the player's view so there is something to shoot
+  if(S.tut&&!tutDone('fire')){const bsc=dronesOf(BOT).find(d=>d.kind==='C');const shooters=dronesOf(YOU).filter(d=>d.kind==='C'||d.kind==='H');
+    if(bsc&&shooters.length){const inView=vis(YOU,bsc.r,bsc.c)&&shooters.some(p=>inRange(p,bsc.r,bsc.c));
+      if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
+        if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
+      else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
   const him=other(me),smart=rnd(100)<S.skill;
   // missiles first: at enemy drones (weak ones, hunters, sieges), or at rocks in its own half when it is short of room
   if(smart&&S.missiles[me]>0){
@@ -1162,9 +1168,14 @@ function coach(){
   if(!tutDone('drone')&&newest){
     if(sd&&sd.id===newest.id)return L(note+`That is a ${TNAME[newest.kind]}. ${TIPS[newest.kind].split('.')[0]}. The marked squares are its moves; red means it takes what is there. Tap one.`,[...targets(newest).keys()]);
     return L(note+`A new drone: the ${newest.kind} at ${sq(newest.r,newest.c)}, born in the color of the star that made it. Tap it to see how it moves.`,[[newest.r,newest.c]],[{at:[newest.r,newest.c],label:'tap your new '+TNAME[newest.kind]}]);}
-  // 5. fire a missile at a rock
+  // 5. fire a missile: at the bot's scout when it has walked into view, else at a rock
   if(!tutDone('fire')&&S.missiles[YOU]>0){
-    for(const sh of mine.filter(d=>shotsLeft(d)>0)){const rocks=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK&&vis(YOU,r,c)&&inRange(sh,r,c))rocks.push([r,c]);
+    for(const sh of mine.filter(d=>shotsLeft(d)>0)){const foe=dronesOf(BOT).find(e=>vis(YOU,e.r,e.c)&&inRange(sh,e.r,e.c));
+      if(foe){if(mode==='aim'&&sd&&sd.id===sh.id)return L(`Tap the bot's ${TNAME[foe.kind]}. A missile takes one power off a drone; this one has ${foe.power}, so it is destroyed.`,[[foe.r,foe.c]],[{at:[foe.r,foe.c],label:'shoot it'}]);
+        if(sd&&sd.id===sh.id)return L(note+'Tap Fire missile, the button under the board. Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]],[],'aim');
+        return L(note+`The bot's ${TNAME[foe.kind]} has walked into your view at ${sq(foe.r,foe.c)}. You have a missile, and scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}. Every enemy drone you destroy earns you a missile, so a good shot pays for itself.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'},{at:[foe.r,foe.c],label:"the bot's "+TNAME[foe.kind],below:true}]);}}
+    const walking=dronesOf(BOT).some(e=>e.kind==='C')&&!dronesOf(BOT).some(e=>vis(YOU,e.r,e.c)); // the bot's scout is still on its way: save the missile lesson for it
+    if(!walking)for(const sh of mine.filter(d=>shotsLeft(d)>0)){const rocks=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK&&vis(YOU,r,c)&&inRange(sh,r,c))rocks.push([r,c]);
       if(rocks.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L('Tap the marked rock. The missile clears it and the stars drop in.',rocks,[{at:rocks[0],label:'shoot this rock'}]);
         if(sd&&sd.id===sh.id)return L(note+'Tap Fire missile, the button under the board. Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]],[],'aim');
         return L(note+`You have a missile. Scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}: there is a rock in its range.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'}]);}}}
