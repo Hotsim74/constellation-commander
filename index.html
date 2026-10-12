@@ -664,12 +664,22 @@ function newGame(opts={}){
   // rocks: from the ratings, or the boxes
   let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
   if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill),+$('inRock1').value||6);}
-  S.rocks={1:r1,2:r2};dropRocks(YOU,r1);dropRocks(BOT,r2);
-  if(S.tut){S.skill=0;S.timers=false;S.tutDone=[];}
+  S.rocks={1:r1,2:r2};if(!opts.tut)dropRocks(YOU,r1);dropRocks(BOT,r2);
+  if(S.tut){S.skill=0;S.timers=false;S.tutDone=[];layOpening();}
   sel=null;mode=null;pending=null;aimList=[];
   note(`New game. Rocks ${r1} to ${r2}, bot at skill ${S.skill}${S.timers?', clocks on':', relaxed'}.`);
   note('You move first: swap two stars, or tap your scout.');
   save();renderAll();
+}
+// ---------- the coached game's fixed opening: the user's own first board, rows 6..10 as photographed.
+// 0 red, 1 gold, 2 green, 3 blue, 4 violet, R rock, . wall or Commander. The first move is i4 (gold) with i5 (blue) above it: four blues in a row.
+const TUT_ROWS=['123R1R1R34R','1R10244313 3'.replace(/ /g,''),'0R0433140 21'.replace(/ /g,''),'3R12...3432','2341...4031'];
+const TUT_SWAP=[[7,8],[6,8]];
+function layOpening(){
+  for(let i=0;i<5;i++){const r=SEAM+1+i,row=TUT_ROWS[i];for(let c=0;c<N;c++){const ch=row[c];if(ch==='.'||isWall(r,c)||isCmd(r,c))continue;S.grid[r][c]=ch==='R'?ROCK:+ch;}}
+  // the bot's half and the seam are random: re-pick anything that lines up with the fixed rows
+  for(let t=0;t<40;t++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);if(r<=SEAM)S.grid[r][c]=rnd(KINDS);}}
+  S.rocks={1:TUT_ROWS.join('').split('R').length-1,2:S.rocks[2]};S.tutSwap=TUT_SWAP;
 }
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}}
@@ -1110,12 +1120,14 @@ function coach(){
   if(!S||!S.tut||S.over)return null;
   if(S.turn!==YOU)return {text:'The bot is taking its turn. It plays by the same rules, and in this game it plays slowly.',lit:null};
   const mine=dronesOf(YOU),sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,lit=new Set();
-  const sc=mine.find(d=>d.kind==='C'&&d.claims>0);
+  const sc=mine.filter(d=>d.kind==='C'&&d.claims>0).sort((a,b)=>b.id-a.id)[0];
   const L=(text,cells)=>{for(const c of cells||[])lit.add(typeof c==='number'?c:key(c[0],c[1]));return {text,lit:lit.size?lit:null};};
+  // 0. the fixed opening: the first move is the swap the board was built for
+  if(S.tutSwap&&!tutDone('swap')){const [a,b]=S.tutSwap;if(S.grid[a[0]][a[1]]>=0&&S.grid[b[0]][b[1]]>=0)return L('Welcome. This first game walks you through it, one tap at a time, with no clock. Start top right. Tap the gold star at '+sq(a[0],a[1])+', then the blue above it at '+sq(b[0],b[1])+'. Swapped, that makes four blues in a row, and your first drone, a scout, is born right there.',[a,b]);}
   // 1. move the scout
   if(!tutDone('move')&&sc){
     if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);return L('The marked squares are where it can go. Tap one, toward the dark if you can. Each move is one turn.',t);}
-    return L('Welcome. This first game walks you through it, one tap at a time, with no clock. Start with your scout, the C on your back row. Tap it.',[[sc.r,sc.c]]);}
+    return L((S.tutSwap?'Your new scout is the C at '+sq(sc.r,sc.c)+'. Scouts claim land and clear the fog. Tap it.':'Welcome. This first game walks you through it, one tap at a time, with no clock. Start with your scout, the C on your back row. Tap it.'),[[sc.r,sc.c]]);}
   // 2. claim
   if(!tutDone('claim')&&sc&&claimGain(sc)>0){
     if(sd&&sd.id===sc.id)return L('Now tap Claim, below the board. The 3 × 3 around the scout becomes your land, and the fog there lifts for good.',[[sc.r,sc.c]]);
