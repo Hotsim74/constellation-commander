@@ -54,7 +54,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .cell{position:relative;background:var(--sq);aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible}
 .cell.red{background:#2a1d22}.cell.white{background:#232b34}
 .cell.seam{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.cell.own1{background:#3a3120}.cell.own2{background:#1d3446}.cell.own3{background:linear-gradient(135deg,#3a3120 50%,#1d3446 50%)}
+.cell.own1{background:#5a4720;box-shadow:inset 0 0 0 2px rgba(232,166,59,.6)}.cell.own2{background:#1b4668;box-shadow:inset 0 0 0 2px rgba(78,168,220,.6)}.cell.own3{background:linear-gradient(135deg,#5a4720 50%,#1b4668 50%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
 .cell.wall1{background:#4a3d22;box-shadow:inset 0 0 0 2px #7a6236}.cell.wall2{background:#20415a;box-shadow:inset 0 0 0 2px #3a6f92}
 .cell.cmd1,.cell.cmd2{font-family:var(--display);font-weight:800;font-size:22px}
 .cell.cmd1{color:var(--you);box-shadow:inset 0 0 0 2px var(--you)}.cell.cmd2{color:var(--bot);box-shadow:inset 0 0 0 2px var(--bot)}
@@ -171,7 +171,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Your rocks</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Bot rocks</span><input type="number" id="inRock2" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Squares to win</span><input type="number" id="inWin" min="60" max="100" value="69"></div>
-  <div class="field"><span class="lbl">Fog</span><label><input type="checkbox" id="inFullFog"> everything dark, even your own half</label></div>
+  <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <button type="button" id="btnHow">How to play</button>
@@ -202,7 +202,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <div id="intro" hidden><div class="card">
   <h2>How this works</h2>
   <ol>
-    <li><b>One board, in the dark.</b> You see your own land and what your scouts have found.</li>
+    <li><b>One board.</b> Your Commander and land at the bottom, the bot's at the top, stars everywhere between.</li>
     <li><b>Swap two stars</b> to make a line of 4 or more. A drone appears where you made it, on your side.</li>
     <li><b>Move a drone</b> one square, or ride its own star color for free. Scouts claim land and clear the fog.</li>
     <li><b>Hold 69 squares</b>, or walk a siege drone to the enemy Commander, and you win.</li>
@@ -632,7 +632,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.10.2';
+const VERSION='1.11.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -665,7 +665,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){
   const skill=Math.max(0,Math.min(100,+$('inSkill').value||0));
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},
-     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fullFog:$('inFullFog').checked};
+     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,rocks:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const [r,c] of [[b,5],[b,4],[b,6],[f,4],[f,5],[f,6]]){S.wall[key(r,c)]=side;S.own[key(r,c)]=side;S.grid[r][c]=-1;}
@@ -706,13 +706,14 @@ function dropRocks(side,n){let placed=0;for(let t=0;t<400&&placed<n;t++){const r
 
 // ---------- fog ----------
 function vis(side,r,c){
-  if(!S.fullFog&&half(side,r))return true; // normal game: your own half is lit, the dark starts at the seam
+  if(!S.fog)return true; // fog off (the default since v1.11): the whole board shows
+  if(S.fog===1&&half(side,r))return true; // fog from the seam: your own half is lit
   if(S.own[key(r,c)]===side)return true;
   if(S.seen[side].includes(key(r,c)))return true;
   for(const d of S.drones)if(d.side===side&&d.kind!=='G'&&Math.abs(d.r-r)<=1&&Math.abs(d.c-c)<=1)return true;
   return false;
 }
-const cleared=(side,r,c)=>(!S.fullFog&&half(side,r))||S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
+const cleared=(side,r,c)=>!S.fog||(S.fog===1&&half(side,r))||S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
 function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(!inb(a,b))continue;const k=key(a,b);if(!S.seen[side].includes(k))S.seen[side].push(k);}}
 
 // ---------- shapes ----------
@@ -1089,7 +1090,7 @@ function renderBoard(gone,born,mark,fall){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} · sees ${sees} squares`;}
+  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`+(S.fog?` · sees ${sees} squares`:'');}
   $('botlbl').textContent=SNAME[BOT]+' · skill '+S.skill;
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
@@ -1153,11 +1154,11 @@ function coach(){
   if(!tutDone('move')&&sc){
     if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);
       const best=t.map(k=>rc(k)).sort((p,q)=>claimGain({r:q[0],c:q[1],side:YOU})-claimGain({r:p[0],c:p[1],side:YOU})||Math.abs(p[0]-SEAM)-Math.abs(q[0]-SEAM))[0];
-      return L('The marked squares are where it can go, one square a turn. Move it toward the dark: that is where the land is.',t,best?[{at:best,label:'move it here'}]:[]);}
+      return L('The marked squares are where it can go, one square a turn. Move it toward the middle: that is where the land is.',t,best?[{at:best,label:'move it here'}]:[]);}
     return L(`The gold squares are your land: ${landOf(YOU)} of the ${S.win} you need to win. Claims take more. Now tap your scout, the C at ${sq(sc.r,sc.c)}.`,[[sc.r,sc.c]],[{at:yard,label:'your land: '+landOf(YOU)+' squares',below:true},{at:[sc.r,sc.c],label:'tap your scout'}]);}
   // 2. claim
   if(!tutDone('claim')&&sc&&claimGain(sc)>0){
-    if(sd&&sd.id===sc.id)return L('Now tap Claim, the button under the board. The 3 × 3 around the scout becomes your land, and the fog there lifts for good.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap Claim below'}],'claim');
+    if(sd&&sd.id===sc.id)return L('Now tap Claim, the button under the board. The 3 × 3 around the scout becomes your land'+(S.fog?', and the fog there lifts for good.':'. Land is how you win.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap Claim below'}],'claim');
     return L('Tap the scout again. This time it will claim the land around it.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap it again'}]);}
   // 3. a swap that pays
   const bs=bestSwap();
@@ -1175,7 +1176,7 @@ function coach(){
     for(const sh of mine.filter(d=>shotsLeft(d)>0)){const foe=dronesOf(BOT).find(e=>vis(YOU,e.r,e.c)&&inRange(sh,e.r,e.c));
       if(foe){if(mode==='aim'&&sd&&sd.id===sh.id)return L(`Tap the bot's ${TNAME[foe.kind]}. A missile takes one power off a drone; this one has ${foe.power}, so it is destroyed.`,[[foe.r,foe.c]],[{at:[foe.r,foe.c],label:'shoot it'}]);
         if(sd&&sd.id===sh.id)return L(note+'Tap Fire missile, the button under the board. Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]],[],'aim');
-        return L(note+`The bot's ${TNAME[foe.kind]} has walked into your view at ${sq(foe.r,foe.c)}. You have a missile, and scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}. Every enemy drone you destroy earns you a missile, so a good shot pays for itself.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'},{at:[foe.r,foe.c],label:"the bot's "+TNAME[foe.kind],below:true}]);}}
+        return L(note+`The bot's ${TNAME[foe.kind]} has walked up to you at ${sq(foe.r,foe.c)}. You have a missile, and scouts and hunters fire them. Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}. Every enemy drone you destroy earns you a missile, so a good shot pays for itself.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'},{at:[foe.r,foe.c],label:"the bot's "+TNAME[foe.kind],below:true}]);}}
     const walking=dronesOf(BOT).some(e=>e.kind==='C')&&!dronesOf(BOT).some(e=>vis(YOU,e.r,e.c)); // the bot's scout is still on its way: save the missile lesson for it
     if(!walking)for(const sh of mine.filter(d=>shotsLeft(d)>0)){const rocks=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK&&vis(YOU,r,c)&&inRange(sh,r,c))rocks.push([r,c]);
       if(rocks.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L('Tap the marked rock. The missile clears it and the stars drop in.',rocks,[{at:rocks[0],label:'shoot this rock'}]);
