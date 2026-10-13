@@ -35,7 +35,8 @@ a{color:var(--you)}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, one board, version 1.11. Every rule here is what the game does right now. Nothing is final.</p>
+<p class="sub">The rulebook, one board, version 1.13. Every rule here is what the game does right now. Nothing is final.</p>
+<p><strong>The game in four lines.</strong> You are trying to claim more of the sky than the bot. Line up stars: anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece you move around to claim space and fight. Only scouts claim stars for you; 69 squares wins, or a siege drone at the bot's Commander.</p>
 <nav class="toc"><a href="#board">The board</a><a href="#fog">The fog</a><a href="#start">Start and turns</a><a href="#shapes">Shapes</a><a href="#drones">The drones</a><a href="#moving">Moving and stacks</a><a href="#missiles">Missiles</a><a href="#win">Winning</a><a href="#first">Your first game</a><a href="#ratings">Ratings and handicaps</a></nav>
 
 <h2 id="board">The board</h2>
@@ -57,10 +58,10 @@ a{color:var(--you)}
 <tr><th>Shape</th><th>You get</th><th>At 10 drones</th></tr>
 <tr><td>4 in a line</td><td>Scout</td><td>nothing</td></tr>
 <tr><td>2 × 2 block</td><td>Shield</td><td>nothing</td></tr>
-<tr><td>5 in a line</td><td>Strike, white</td><td>1 missile</td></tr>
+<tr><td>5 in a line</td><td>Raider, white</td><td>1 missile</td></tr>
 <tr><td>6 in a line</td><td>Hunter</td><td>1 rock onto the other side's land</td></tr>
 <tr><td>L of two 3-lines</td><td>Bomb</td><td>Bomb, always</td></tr>
-<tr><td>T of two 3-lines</td><td>Strike, red</td><td>1 missile</td></tr>
+<tr><td>T of two 3-lines</td><td>Raider, red</td><td>1 missile</td></tr>
 <tr><td>Plus of two 3-lines, or an X of 5 diagonals</td><td>Hunter</td><td>nothing</td></tr>
 <tr><td>L of 4 and 3</td><td>Siege</td><td>nothing</td></tr>
 <tr><td>7 in a line, 4 crossing 4, or 5 crossing 3</td><td>Warp</td><td>nothing</td></tr>
@@ -69,11 +70,11 @@ a{color:var(--you)}
 </table></div>
 
 <h2 id="drones">The drones</h2>
-<p>Every drone wears its letter. Yours have a gold rim, the bot's a blue one.</p>
+<p>Every drone wears its letter: S scout, G shield, R raider, H hunter, W warp, X siege, B bomb. Yours are red letters on a gold rim, the bot's white on blue.</p>
 <ul>
-<li><strong>Scout (C).</strong> Moves 1 square any way. Fires one missile a turn. Claim: the 3 × 3 around it, open land becomes yours, enemy land becomes disputed, disputed becomes yours, and the 3 × 3 is cleared of fog for good. Two claims per scout; the second uses it up.</li>
+<li><strong>Scout (S).</strong> Moves 1 square any way. Fires one missile a turn. Claim: the 3 × 3 around it, open land becomes yours, enemy land becomes disputed, disputed becomes yours, and the 3 × 3 is cleared of fog for good. Two claims per scout; the second uses it up.</li>
 <li><strong>Shield (G).</strong> Moves 1 square, only onto squares you own or have cleared. It sees nothing in the fog and takes nothing there. It takes a scout, hunter, warp or shield by moving next to it on your land. Standing still it takes nothing. Standing next to an enemy siege drone it blocks the shot.</li>
-<li><strong>Strike (S).</strong> Red or white, shown on the disc, for a rule still to come. Slides the full diagonal in any direction until it hits something or the board's edge, and takes any enemy drone it stops on, except a siege. It may slide into the dark. Where it stops, the fog lifts one square around it while it stands there. Once made, the slide is made.</li>
+<li><strong>Raider (R), the old strike.</strong> Red or white, shown on the disc, for a rule still to come. Slides the full diagonal in any direction until it hits something or the board's edge, and takes any enemy drone it stops on, except a siege. It may slide into the dark. Where it stops, the fog lifts one square around it while it stands there. Once made, the slide is made.</li>
 <li><strong>Hunter (H).</strong> Moves 1 square plus up to 4 free steps on any star color, bending as it goes. Fires two missiles a turn: both are aimed first, then both hit at once and the stars drop once. Takes any enemy drone it lands on except a siege.</li>
 <li><strong>Warp (W).</strong> Moves 1 square. Or, as your action, jumps to any cleared square on your side that isn't on or next to an enemy shield. On landing, every unclaimed square in the 3 × 3 becomes yours, enemy land stays enemy, and it takes enemy drones only on squares that are now yours. That uses it up.</li>
 <li><strong>Siege (X).</strong> Moves exactly 1 square a turn and is the one drone that walks into the dark freely. Beside the enemy wall, Fire clears the walls next to it; beside the Commander, Fire takes it and wins. It can't take drones and can't be taken by them. Four enemy drones around it destroy it. A shield beside it blocks the shot; it may ram that shield instead, and both are gone. Two per side at once.</li>
@@ -82,7 +83,7 @@ a{color:var(--you)}
 
 <h2 id="moving">Moving and stacks</h2>
 <p><strong>Free rides.</strong> Every step onto a star of a drone's own color is free, so it can ride a lane of its color as far as it goes and spend its one paid step before or after. Shields and sieges get no rides. Strikes slide instead.</p>
-<p><strong>Stacks.</strong> Move one of your drones onto another of yours to stack them. The stack keeps the kind you landed on, adds power up to 3, and gains the other drone's star color so it rides more lanes. The game asks before it stacks. Power is armor against missiles: a power 3 stack takes three hits. It's no help in a fight: a strike takes the whole stack in one landing.</p>
+<p><strong>Stacks.</strong> Move one of your drones onto another of yours to stack them. The stack keeps the kind you landed on, adds power up to 3, and gains the other drone's star color so it rides more lanes. The game asks before it stacks. Power is armor against missiles: a power 3 stack takes three hits. It's no help in a fight: a raider takes the whole stack in one landing.</p>
 
 <h2 id="missiles">Missiles</h2>
 <p>Every take earns one, a drone destroyed by a missile included, so a good shot pays for itself. Only scouts and hunters fire, before your action, a scout once a turn, a hunter twice. A missile flies 5 squares from the firing drone, any direction, at anything you can see. At a drone it takes one power. At a rock or star it destroys it, the stars flow, and any lines that form are yours. Nothing is sacrificed to fire.</p>
