@@ -35,13 +35,15 @@ a{color:var(--you)}
 </style>
 <div class="wrap">
 <h1>Constellation Commander</h1>
-<p class="sub">The rulebook, one board, version 1.13. Every rule here is what the game does right now. Nothing is final.</p>
+<p class="sub">The rulebook, one board, version 1.14. Every rule here is what the game does right now. Nothing is final.</p>
 <p><strong>The game in four lines.</strong> You are trying to claim more of the sky than the bot. Line up stars: anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece you move around to claim space and fight. Only scouts claim stars for you; 69 squares wins, or a siege drone at the bot's Commander.</p>
 <nav class="toc"><a href="#board">The board</a><a href="#fog">The fog</a><a href="#start">Start and turns</a><a href="#shapes">Shapes</a><a href="#drones">The drones</a><a href="#moving">Moving and stacks</a><a href="#missiles">Missiles</a><a href="#win">Winning</a><a href="#first">Your first game</a><a href="#ratings">Ratings and handicaps</a></nav>
 
 <h2 id="board">The board</h2>
-<p>One 11 × 11 board. Every square holds a star of one of five colors, or a rock. Under the stars is a red-and-white checkerboard. The middle row is the seam, the line between your half and the bot's. <strong>Stars fall toward whoever is moving.</strong> On your turn every column drops toward your back row and new stars come in from the top edge; on the bot's turn everything rises toward its back row and new stars come in from the bottom. Walls and rocks split a column, so nothing falls through either; dig a rock out with a missile and the column opens.</p>
-<p>Your Commander sits in the middle of your back row inside a wall of five squares, and the five squares in front of the wall are your yard. You own those from the start. Rocks can't be swapped, matched, or entered, and they never move. Each side starts with rocks in its own half; the number comes from the ratings.</p>
+<p>One 11 × 11 board. Every square holds a star of one of five colors, or an asteroid. Under the stars is a red-and-white checkerboard. The middle row is the seam, the line between your half and the bot's. <strong>Stars fall toward whoever is moving.</strong> On your turn every column drops toward your back row and new stars come in from the top edge; on the bot's turn everything rises toward its back row and new stars come in from the bottom. Walls and asteroids split a column, so nothing falls through either; clear an asteroid with a missile and the column opens.</p>
+<p>Your Commander sits in the middle of your back row inside a wall of five squares, and the five squares in front of the wall are your yard. You own those from the start. Each side starts with asteroids in its own half; the number comes from the ratings.</p>
+<h2 id="asteroids">Asteroids</h2>
+<p>Asteroids can't be swapped, matched, or entered, and they split a column so nothing falls through them. A missile clears one. They drift: clear <strong>8 or more stars on your side in one turn</strong>, cascades counted, and every asteroid on the board moves one square toward you, the way the stars are falling. An asteroid that runs into a lone drone destroys it and takes its square. Into a stack, it knocks one power off and jumps over to the next square; a drone on that square is destroyed. Two squares is the most an asteroid ever moves in a turn. A wall, the Commander, the edge of the board or another asteroid stops it.</p>
 
 <h2 id="fog">The fog</h2>
 <p>Off by default: the whole board shows. Settings has <strong>Fog of war</strong> with two ways to play in the dark. <em>From the seam</em>: you see your own half, and beyond it only one square around each of your drones (shields see nothing) and squares a scout has claimed, which stay lit all game. <em>Everything dark</em>: even your own half starts dark. In the dark you can't swap, move through, or shoot at a square you can't see, shields may only stand on squares you own or have cleared, and the bot lives under the same fog.</p>
@@ -59,7 +61,7 @@ a{color:var(--you)}
 <tr><td>4 in a line</td><td>Scout</td><td>nothing</td></tr>
 <tr><td>2 × 2 block</td><td>Shield</td><td>nothing</td></tr>
 <tr><td>5 in a line</td><td>Raider, white</td><td>1 missile</td></tr>
-<tr><td>6 in a line</td><td>Hunter</td><td>1 rock onto the other side's land</td></tr>
+<tr><td>6 in a line</td><td>Hunter</td><td>1 asteroid onto the other side's land</td></tr>
 <tr><td>L of two 3-lines</td><td>Bomb</td><td>Bomb, always</td></tr>
 <tr><td>T of two 3-lines</td><td>Raider, red</td><td>1 missile</td></tr>
 <tr><td>Plus of two 3-lines, or an X of 5 diagonals</td><td>Hunter</td><td>nothing</td></tr>
@@ -78,7 +80,7 @@ a{color:var(--you)}
 <li><strong>Hunter (H).</strong> Moves 1 square plus up to 4 free steps on any star color, bending as it goes. Fires two missiles a turn: both are aimed first, then both hit at once and the stars drop once. Takes any enemy drone it lands on except a siege.</li>
 <li><strong>Warp (W).</strong> Moves 1 square. Or, as your action, jumps to any cleared square on your side that isn't on or next to an enemy shield. On landing, every unclaimed square in the 3 × 3 becomes yours, enemy land stays enemy, and it takes enemy drones only on squares that are now yours. That uses it up.</li>
 <li><strong>Siege (X).</strong> Moves exactly 1 square a turn and is the one drone that walks into the dark freely. Beside the enemy wall, Fire clears the walls next to it; beside the Commander, Fire takes it and wins. It can't take drones and can't be taken by them. Four enemy drones around it destroy it. A shield beside it blocks the shot; it may ram that shield instead, and both are gone. Two per side at once.</li>
-<li><strong>Bomb (B).</strong> Moves 1 square, or rides its own star color for free. Goes off at the end of your third turn after you get it. The blast runs up, down, left and right from where it sits, along each arm as far as you have cleared the fog, and takes every rock, star and drone in its path, yours included. Commander and walls stand. The other player sees how far it reached.</li>
+<li><strong>Bomb (B).</strong> Moves 1 square, or rides its own star color for free. Goes off at the end of your third turn after you get it. The blast runs up, down, left and right from where it sits, along each arm as far as you have cleared the fog, and takes every asteroid, star and drone in its path, yours included. Commander and walls stand. The other player sees how far it reached.</li>
 </ul>
 
 <h2 id="moving">Moving and stacks</h2>
@@ -86,7 +88,7 @@ a{color:var(--you)}
 <p><strong>Stacks.</strong> Move one of your drones onto another of yours to stack them. The stack keeps the kind you landed on, adds power up to 3, and gains the other drone's star color so it rides more lanes. The game asks before it stacks. Power is armor against missiles: a power 3 stack takes three hits. It's no help in a fight: a raider takes the whole stack in one landing.</p>
 
 <h2 id="missiles">Missiles</h2>
-<p>Every take earns one, a drone destroyed by a missile included, so a good shot pays for itself. Only scouts and hunters fire, before your action, a scout once a turn, a hunter twice. A missile flies 5 squares from the firing drone, any direction, at anything you can see. At a drone it takes one power. At a rock or star it destroys it, the stars flow, and any lines that form are yours. Nothing is sacrificed to fire.</p>
+<p>Every take earns one, a drone destroyed by a missile included, so a good shot pays for itself. Only scouts and hunters fire, before your action, a scout once a turn, a hunter twice. A missile flies 5 squares from the firing drone, any direction, at anything you can see. At a drone it takes one power. At an asteroid or star it destroys it, the stars flow, and any lines that form are yours. Nothing is sacrificed to fire.</p>
 
 <h2 id="win">Winning</h2>
 <p>Your yard, walls and Commander count as yours. Claims and warps take more. Hold <strong>69 squares</strong> of the 121 (a setting, 60 to 100; 46 of 81 was the old board's number, the same share) and you win, or take the enemy Commander with a siege drone. With Timers on, running out of clock loses.</p>
@@ -96,7 +98,7 @@ a{color:var(--you)}
 
 <h2 id="ratings">Ratings and handicaps</h2>
 <p>You start at 1000 and the number moves the chess way after each game. The bot at skill S is rated 800 + 12 × S: skill 10 is 920, the beginner setting and the default; 50 is 1400; 100 is 2000. A game against the bot moves your rating in proportion to its skill, a tenth at skill 10, half at 50, the full amount at 100. Starting a new game while one is under way counts as a loss.</p>
-<p>With <strong>Handicap: rocks from ratings</strong> on, the rock counts are set from the gap: one rock per 50 points, half added to the stronger side's half, half taken off the weaker side's, from the base in the Your rocks box. The rating change is then worked out from the gap that is left after the rocks.</p>
+<p>With <strong>Handicap: asteroids from ratings</strong> on, the asteroid counts are set from the gap: one asteroid per 50 points, half added to the stronger side's half, half taken off the weaker side's, from the base in the Your asteroids box. The rating change is then worked out from the gap that is left after the rocks.</p>
 </div>
 </body>
 </html>
