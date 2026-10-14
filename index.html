@@ -841,6 +841,7 @@ const FR={
 "Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.": "Touchez un éclaireur ou un chasseur pour tirer un missile d'abord, ou échangez deux étoiles, ou touchez un drone pour le déplacer.",
 "Swap two stars side by side, or tap one of your drones.": "Échangez deux étoiles voisines, ou touchez un de vos drones.",
 "Tap a cleared square on your side to warp there. Not on or next to an enemy shield.": "Touchez une case dégagée de votre côté pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
+"Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
 "Game over.": "Partie terminée.",
@@ -975,7 +976,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.17.1';
+const VERSION='1.18.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1475,6 +1476,7 @@ function renderBoard(gone,born,mark,fall){
     if(warpT&&warpT.has(k))cls+=' warpto';
     if(mode==='aim'&&sd&&seen&&inRange(sd,r,c)&&!(sd.r===r&&sd.c===c)){const o=droneAt(r,c);if((o&&o.side===BOT)||(!o&&v>=0))cls+=aimList.some(t=>t.r===r&&t.c===c)?' aimed':' aim';}
     if(tutL&&tutL.has(k))cls+=' lit hint';
+    if(hintShow&&hintShow.some(([a,b])=>a===r&&b===c))cls+=' lit hint';
     el.className=cls;
     gem.className=v===ROCK?'asteroid v'+((r*7+c)%4):isStar(v)?'gem g'+v:'gem';if(!isStar(v)&&v!==ROCK)gem.className='gem';
     if(gone&&gone.has(k))gem.classList.add('gone');
@@ -1522,7 +1524,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
-function renderAll(){if(!S)return;renderBoard();renderSide();renderActions();renderRecord();renderGuide();
+function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();
   const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?t('You win'):t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
   else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode)setStatus(t('Your move.'));}else setStatus(t('The bot is thinking…'));}}
 
@@ -1639,6 +1641,13 @@ function rateGame(w){if(!S||S.rated||S.tut)return;S.rated=true;
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). Bot ${S.skill} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
 function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
   const sk=S?S.skill:+$('inSkill').value;$('record').innerHTML=(prof.n?prof.n+' · ':'')+t`Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won`+(prof.g?' · '+last:'')+'<br>'+t`Bot at skill ${sk} is rated ${botRating(sk)}; a game against it moves you at ${Math.max(10,sk)}% of a game against a person.`;}
+
+// ---------- the timed hint: at bot skill 50 and under, sit 30 seconds on your turn and the best swap lights up (user, 2026-10-14)
+const HINT_MS=30000,HINT_SKILL=50;
+let hintAt=0,hintTurn=-1,hintShow=null;
+function armHint(){if(!S)return;const tn=S.turn===YOU?S.turnNo:-1;if(tn!==hintTurn){hintTurn=tn;hintAt=Date.now();hintShow=null;}}
+setInterval(()=>{if(!S||S.over||S.tut||busy||S.turn!==YOU||hintShow||S.skill>HINT_SKILL)return;if(Date.now()-hintAt<HINT_MS)return;
+  const bs=bestSwap();if(!bs){hintAt=Date.now();return;}hintShow=[bs.a,bs.b];renderBoard();if(!sel&&!mode)setStatus(t('Stuck? The two green stars make a line.'));},1000);
 
 // ---------- clocks ----------
 setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
