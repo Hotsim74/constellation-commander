@@ -158,6 +158,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #cover .art .ship{position:absolute;transform:translate(-50%,-50%)}
 #cover .art .ship .dr{position:absolute;inset:0}
 #cover h2{font-family:var(--display);font-size:26px;letter-spacing:.08em;text-transform:uppercase;margin:16px 20px 6px;color:var(--you);line-height:1.1}
+#cover h2 .by{display:block;font-size:14px;letter-spacing:.16em;color:var(--text);margin-bottom:5px}
 #cover .say{margin:0 20px 16px;font-family:var(--mono);font-size:15px;line-height:1.45;color:#f1e4c8;border-left:3px solid var(--you);padding-left:10px}
 #cover .langs{display:flex;gap:8px;margin:0 20px 10px}
 #cover .langs button{flex:1}
@@ -228,7 +229,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 </main>
 <div id="cover" hidden><div class="card">
   <div class="art" id="coverArt"></div>
-  <h2>Constellation Commander</h2>
+  <h2><span class="by">Aaron Schuemann</span>Constellation Commander</h2>
   <p class="say" id="coverSay"></p>
   <div class="langs"><button type="button" data-lang="en">English</button><button type="button" data-lang="fr">Français</button></div>
   <button type="button" id="coverGo" class="primary go">Play</button>
@@ -841,6 +842,8 @@ const FR={
 "Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.": "Touchez un éclaireur ou un chasseur pour tirer un missile d'abord, ou échangez deux étoiles, ou touchez un drone pour le déplacer.",
 "Swap two stars side by side, or tap one of your drones.": "Échangez deux étoiles voisines, ou touchez un de vos drones.",
 "Tap a cleared square on your side to warp there. Not on or next to an enemy shield.": "Touchez une case dégagée de votre côté pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
+"That star is on the bot's land. You can only swap stars on open land or your own.": "Cette étoile est sur le terrain du bot. Vous ne pouvez échanger que des étoiles en terrain libre ou sur le vôtre.",
+"{0} made {1} on {2}: stars cleared, nothing paid.": "{0} {v:avez fait|a fait} {1} sur {2} : étoiles effacées, rien gagné.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -976,7 +979,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.18.0';
+const VERSION='1.19.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1152,6 +1155,7 @@ function gravity(g,side){
 function spawnFrom(side,sp){
   const at=placeCell(side,sp);
   if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`);return;}
+  if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`);return;} // v1.19: a line entirely on their land pays nothing
   for(const letter of sp.letters){
     let [r,c]=at;let o=droneAt(r,c);
     const full=dronesOf(side).length>=MAXD&&!(o&&o.side===side);
@@ -1186,6 +1190,7 @@ function validSwaps(side){
   for(let r=0;r<N;r++)for(let c=0;c<N;c++)for(const [dr,dc] of [[0,1],[1,0]]){
     const r2=r+dr,c2=c+dc;if(r2>=N||c2>=N)continue;if(!isStar(g[r][c])||!isStar(g[r2][c2])||g[r][c]===g[r2][c2])continue;
     if(side!=null&&!(vis(side,r,c)&&vis(side,r2,c2)))continue;
+    if(side!=null&&(S.own[key(r,c)]===other(side)||S.own[key(r2,c2)]===other(side)))continue; // v1.19: no swapping on the other side's land
     [g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];const sh=detectShapes(g,[r2,c2]);[g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];
     if(sh.cells.size)out.push({a:[r,c],b:[r2,c2],sh});}
   return out;
@@ -1446,6 +1451,7 @@ function onCell(r,c){
   if(d){sel=null;showTip(d);setStatus(t`That is ${own(BOT,d.kind)}.`);renderBoard();renderActions();return;}
   if(S.grid[r][c]===ROCK){sel=null;setStatus(t('An asteroid. A missile clears it.'));renderBoard();renderActions();return;}
   if(isWall(r,c)||isCmd(r,c)){sel=null;renderBoard();renderActions();return;}
+  if(S.own[k]===BOT){sel=null;setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));renderBoard();renderActions();return;}
   if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
   sel={star:[r,c]};setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
