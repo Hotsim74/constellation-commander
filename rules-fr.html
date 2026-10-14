@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121820">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>⭐</text></svg>">
+</head>
+<body>
+<title>Constellation Commander, les règles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;--you:#e8a63b;--bot:#4ea8dc;
+  --display:'Chakra Petch',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding:24px 20px 60px}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;line-height:1}
+.sub{color:var(--mute);margin:0 0 22px}
+h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--you);margin:34px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+p{margin:8px 0;max-width:70ch}
+ul{margin:6px 0;padding-left:20px;max-width:70ch}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:15px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--panel2)}
+.tw{overflow-x:auto}
+.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:0 0 6px}
+.toc a{color:var(--mute);text-decoration:none;border-bottom:1px dotted var(--line)}
+a{color:var(--you)}
+@media (max-width:600px){body{padding:16px 12px 40px;font-size:15px}h1{font-size:24px}}
+</style>
+<div class="wrap">
+<h1>Constellation Commander</h1>
+<p class="sub">Les règles, un seul plateau, version 1.17. Chaque règle ici est ce que le jeu fait en ce moment. Rien n'est définitif. <a href="rules.html">English</a></p>
+<p><strong>Le jeu en quatre lignes.</strong> Vous essayez de revendiquer plus de ciel que le bot. Alignez des étoiles : tout ce qui dépasse 3 d'affilée vous donne un drone. Un drone est comme un pion de dames ou une pièce d'échecs que vous déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous ; 69 cases gagnent, ou un drone de siège posté à côté du drone de commandement du bot.</p>
+<nav class="toc"><a href="#board">Le plateau</a><a href="#fog">Le brouillard</a><a href="#start">Début et tours</a><a href="#shapes">Les formes</a><a href="#drones">Les drones</a><a href="#moving">Déplacements et piles</a><a href="#missiles">Les missiles</a><a href="#win">Gagner</a><a href="#first">Votre première partie</a><a href="#ratings">Classement et handicaps</a></nav>
+
+<h2 id="board">Le plateau</h2>
+<p>Un plateau de 11 × 11. Chaque case porte une étoile d'une des cinq couleurs, ou un astéroïde. Sous les étoiles, un damier rouge et blanc. La rangée du milieu est la couture, la ligne entre votre moitié et celle du bot. <strong>Les étoiles tombent vers celui qui joue.</strong> À votre tour, chaque colonne descend vers votre rangée du fond et de nouvelles étoiles arrivent par le bord du haut ; au tour du bot, tout remonte vers sa rangée du fond et les nouvelles étoiles arrivent par le bas. Un astéroïde coupe une colonne en deux, rien ne passe à travers ; dégagez-le avec un missile et la colonne s'ouvre.</p>
+<p>Il n'y a pas de murs. Vous commencez avec onze cases à vous sur votre rangée du fond : les cinq devant votre drone de commandement et les six autour de lui. Chaque camp commence avec des astéroïdes dans sa moitié ; leur nombre vient du classement.</p>
+<h2 id="asteroids">Les astéroïdes</h2>
+<p>Un astéroïde ne s'échange pas, ne s'aligne pas, ne se traverse pas, et il coupe une colonne : rien ne tombe à travers. Un missile le dégage. Ils dérivent : effacez <strong>8 étoiles ou plus de votre côté en un seul tour</strong>, cascades comprises, et chaque astéroïde du plateau avance d'une case vers vous, dans le sens où tombent les étoiles. Un astéroïde qui arrive sur un drone seul le détruit et prend sa case. Sur une pile, il enlève une puissance et saute par-dessus jusqu'à la case suivante ; un drone sur cette case est détruit. Un astéroïde ne bouge jamais de plus de deux cases par tour. Le bord du plateau ou un autre astéroïde l'arrête.</p>
+
+<h2 id="fog">Le brouillard</h2>
+<p>Éteint par défaut : tout le plateau est visible. Les Réglages ont un <strong>Brouillard de guerre</strong> avec deux façons de jouer dans le noir. <em>Depuis la couture</em> : vous voyez votre moitié, et au-delà seulement une case autour de chacun de vos drones (les boucliers ne voient rien) et les cases qu'un éclaireur a revendiquées, qui restent éclairées toute la partie. <em>Tout dans le noir</em> : même votre moitié commence dans le noir. Dans le noir vous ne pouvez ni échanger, ni traverser, ni tirer sur une case que vous ne voyez pas, les boucliers ne peuvent se tenir que sur des cases à vous ou dégagées, et le bot vit sous le même brouillard.</p>
+
+<h2 id="start">Début et tours</h2>
+<p>Vous commencez avec votre drone de commandement au milieu de votre rangée du fond, un bouclier devant lui, deux éclaireurs à côté de lui sur la rangée du fond, vos onze cases, et un missile. Vous jouez en premier.</p>
+<p>Contre le bot, la partie est <strong>sans chrono</strong> à moins d'activer Chrono dans les Réglages : pas de temps par coup, pas de pendule. Avec Chrono, c'est une pendule d'échecs de 20 minutes et 60 secondes par coup.</p>
+<p>Un tour : les missiles d'abord, si vous voulez. Puis une seule action : échanger deux étoiles voisines pour faire une ligne, déplacer un drone, revendiquer avec un éclaireur, sauter, ou percuter. Un échange qui ne fait aucune ligne revient en place gratuitement.</p>
+
+<h2 id="shapes">Les formes</h2>
+<p>Les lignes comptent en travers, de haut en bas, et en diagonale, où il en faut 4 ou plus. Un 3 efface les étoiles et ne rapporte rien. Une forme ne rapporte que si une partie est de votre côté de la couture, et le drone apparaît sur cette partie, de la couleur de l'étoile qui l'a faite. Après un alignement les étoiles s'écoulent, et les lignes qui se forment toutes seules sont à vous aussi.</p>
+<p>Vous pouvez avoir 10 drones. À 10, une forme rapporte ce que dit la colonne de droite, ou s'empile dans votre propre drone si elle a été faite sous lui.</p>
+<div class="tw"><table>
+<tr><th>Forme</th><th>Vous obtenez</th><th>À 10 drones</th></tr>
+<tr><td>4 en ligne</td><td>Éclaireur</td><td>rien</td></tr>
+<tr><td>Bloc 2 × 2</td><td>Bouclier</td><td>rien</td></tr>
+<tr><td>5 en ligne</td><td>Pillard, blanc</td><td>1 missile</td></tr>
+<tr><td>6 en ligne</td><td>Chasseur</td><td>1 astéroïde sur le terrain de l'autre</td></tr>
+<tr><td>L de deux lignes de 3</td><td>Bombe</td><td>Bombe, toujours</td></tr>
+<tr><td>T de deux lignes de 3</td><td>Pillard, rouge</td><td>1 missile</td></tr>
+<tr><td>Croix de deux lignes de 3, ou X de 5 en diagonale</td><td>Chasseur</td><td>rien</td></tr>
+<tr><td>L de 4 et 3</td><td>Siège</td><td>rien</td></tr>
+<tr><td>7 en ligne, 4 croisant 4, ou 5 croisant 3</td><td>Saut</td><td>rien</td></tr>
+<tr><td>5 croisant 4 ou plus, ou bloc 2 × 3</td><td>Saut et siège</td><td>rien</td></tr>
+<tr><td>Bloc 3 × 3</td><td>Saut, siège et chasseur</td><td>rien</td></tr>
+</table></div>
+<p>Un T, un L ou une croix de lignes de 3 qui touche aussi un bloc 2 × 2 compte comme le T, le L ou la croix, pas comme le bloc, dès qu'il dépasse le bloc de deux étoiles. Un bloc avec une seule étoile qui dépasse reste un bloc.</p>
+
+<h2 id="drones">Les drones</h2>
+<p>Chaque drone porte sa lettre : M commandement, S éclaireur, G bouclier, R pillard, H chasseur, W saut, X siège, B bombe. Les vôtres ont des lettres rouges sur un bord doré, ceux du bot des lettres blanches sur bleu.</p>
+<ul>
+<li><strong>Éclaireur (S).</strong> Se déplace d'1 case dans tous les sens. Tire un missile par tour. Revendiquer : le 3 × 3 autour de lui, le terrain libre devient à vous, le terrain ennemi devient disputé, le disputé devient à vous, et le 3 × 3 est dégagé du brouillard pour de bon. Deux revendications par éclaireur ; la seconde le consomme.</li>
+<li><strong>Bouclier (G).</strong> Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Il ne voit rien dans le brouillard et n'y prend rien. Il prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. Immobile, il ne prend rien. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège.</li>
+<li><strong>Pillard (R).</strong> Rouge ou blanc, indiqué sur le disque, pour une règle à venir. Glisse sur toute la diagonale dans n'importe quelle direction jusqu'à toucher quelque chose ou le bord du plateau, et prend tout drone ennemi sur lequel il s'arrête, sauf un drone de siège. Il peut glisser dans le noir. Là où il s'arrête, le brouillard se lève d'une case autour de lui tant qu'il y reste. Une fois lancée, la glissade est faite.</li>
+<li><strong>Chasseur (H).</strong> Se déplace d'1 case plus jusqu'à 4 pas gratuits sur n'importe quelle couleur d'étoile, en tournant s'il veut. Tire deux missiles par tour : les deux sont visés d'abord, puis touchent ensemble et les étoiles ne tombent qu'une fois. Prend tout drone ennemi sur lequel il atterrit sauf un drone de siège.</li>
+<li><strong>Saut (W).</strong> Se déplace d'1 case. Ou, comme action, saute vers n'importe quelle case dégagée de votre côté qui n'est ni sur ni à côté d'un bouclier ennemi. À l'arrivée, chaque case libre du 3 × 3 devient à vous, le terrain ennemi reste ennemi, et il ne prend les drones ennemis que sur les cases désormais à vous. Ça le consomme.</li>
+<li><strong>Drone de commandement (M).</strong> Votre commandant, comme pièce. Se déplace d'1 case, et suit les couleurs d'étoile des drones empilés dedans. Il peut en porter deux de plus (puissance 3). Rien ne le prend en atterrissant ni par missile ; les missiles et les bombes ne font que retirer des drones de sa pile. Seul un drone de siège l'achève : un siège posté à côté de lui, sans bouclier à côté du siège ni du drone de commandement, gagne la partie sur-le-champ. Un astéroïde qui dérive sur lui saute par-dessus (ou lui enlève un drone de sa pile) ; un astéroïde qui saute un autre drone et retombe sur lui le détruit, et l'autre camp gagne. Gardez-le à la maison, ou gardez un bouclier à côté.</li>
+<li><strong>Siège (X).</strong> Se déplace d'exactement 1 case par tour et c'est le seul drone qui entre librement dans le noir. Il ne peut ni prendre des drones ni être pris par eux. Amenez-le à côté du drone de commandement ennemi sans bouclier ennemi à côté de l'un ou de l'autre et vous gagnez. Quatre drones ennemis autour de lui le détruisent. Si un bouclier est en travers, il peut le percuter, et les deux disparaissent. Deux par camp à la fois.</li>
+<li><strong>Bombe (B).</strong> Se déplace d'1 case, ou suit gratuitement sa propre couleur d'étoile. Explose à la fin de votre troisième tour après l'avoir obtenue. Le souffle part en haut, en bas, à gauche et à droite depuis sa case, le long de chaque bras aussi loin que vous avez dissipé le brouillard, et emporte chaque astéroïde, étoile et drone sur son chemin, les vôtres compris. Le drone de commandement tient, même si le souffle dépouille sa pile. L'autre joueur voit jusqu'où il a porté.</li>
+</ul>
+
+<h2 id="moving">Déplacements et piles</h2>
+<p><strong>Pas gratuits.</strong> Chaque pas sur une étoile de la propre couleur d'un drone est gratuit, donc il peut suivre un couloir de sa couleur aussi loin qu'il va et dépenser son unique pas payant avant ou après. Les boucliers et les sièges n'ont pas de pas gratuits. Les pillards glissent à la place.</p>
+<p><strong>Piles.</strong> Déplacez un de vos drones sur un autre des vôtres pour les empiler. La pile garde le type de celui sur lequel vous atterrissez, ajoute la puissance jusqu'à 3, et gagne la couleur d'étoile de l'autre drone pour suivre plus de couloirs. Le jeu demande avant d'empiler. La puissance est un blindage contre les missiles : une pile de puissance 3 encaisse trois coups. Elle n'aide pas au combat : un pillard prend toute la pile d'un seul atterrissage.</p>
+
+<h2 id="missiles">Les missiles</h2>
+<p>Chaque prise en rapporte un, un drone détruit par un missile compris, donc un bon tir se paie tout seul. Seuls les éclaireurs et les chasseurs tirent, avant votre action, un éclaireur une fois par tour, un chasseur deux fois. Un missile vole 3 cases depuis le drone qui tire, dans toutes les directions (5 cases quand le brouillard de guerre est activé), sur tout ce que vous voyez. Sur un drone, il enlève une puissance. Sur un astéroïde ou une étoile, il le détruit, les étoiles s'écoulent, et les lignes qui se forment sont à vous. Rien n'est sacrifié pour tirer.</p>
+
+<h2 id="win">Gagner</h2>
+<p>Vos cases de départ comptent comme à vous. Les revendications et les sauts en prennent d'autres. Tenez <strong>69 cases</strong> sur les 121 (un réglage, de 60 à 100) et vous gagnez, ou postez un drone de siège à côté du drone de commandement ennemi sans bouclier à côté, ou laissez un astéroïde retomber dessus. Avec Chrono, manquer de temps fait perdre.</p>
+
+<h2 id="first">Votre première partie</h2>
+<p>La première fois que vous ouvrez le jeu, il propose de vous guider : pas de pendule, et le jeu éclaire la case à toucher et attend. Déplacez l'éclaireur, revendiquez, faites un alignement et regardez le drone apparaître. C'est dans les Réglages à tout moment, sous Première partie guidée.</p>
+
+<h2 id="ratings">Classement et handicaps</h2>
+<p>Vous commencez à 1000 et le nombre bouge à la manière des échecs après chaque partie. Le bot au niveau S est classé 800 + 12 × S : le niveau 10 fait 920, le réglage débutant et celui par défaut ; 50 fait 1400 ; 100 fait 2000. Une partie contre le bot fait bouger votre classement en proportion de son niveau, un dixième au niveau 10, la moitié à 50, le plein à 100. Commencer une nouvelle partie pendant qu'une est en cours compte comme une défaite.</p>
+<p>Avec <strong>Handicap : astéroïdes selon le classement</strong> activé, le nombre d'astéroïdes vient de l'écart : un astéroïde par 50 points, la moitié ajoutée dans la moitié du plus fort, la moitié retirée de celle du plus faible, à partir de la base dans la case Vos astéroïdes. Le changement de classement est ensuite calculé sur l'écart qui reste après les astéroïdes.</p>
+</div>
+</body>
+</html>

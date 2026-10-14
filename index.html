@@ -9,6 +9,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>⭐</text></svg>">
 </head>
 <body>
+<meta charset="utf-8">
 <title>Constellation Commander</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -149,6 +150,20 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #intro ol{margin:0 0 16px;padding-left:24px}#intro li{margin:0 0 10px}
 #intro button{font-size:18px;padding:14px 22px;width:100%}
 #intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
+#cover{position:fixed;inset:0;z-index:65;background:rgba(6,9,13,.92);display:flex;align-items:center;justify-content:center;padding:16px}
+#cover[hidden]{display:none}
+#cover .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:0 0 18px;max-width:480px;width:100%;color:#fff;overflow:hidden}
+#cover .art{position:relative;height:210px;background:#070a10}
+#cover .art svg{position:absolute;inset:0;width:100%;height:100%}
+#cover .art .ship{position:absolute;transform:translate(-50%,-50%)}
+#cover .art .ship .dr{position:absolute;inset:0}
+#cover h2{font-family:var(--display);font-size:26px;letter-spacing:.08em;text-transform:uppercase;margin:16px 20px 6px;color:var(--you);line-height:1.1}
+#cover .say{margin:0 20px 16px;font-family:var(--mono);font-size:15px;line-height:1.45;color:#f1e4c8;border-left:3px solid var(--you);padding-left:10px}
+#cover .langs{display:flex;gap:8px;margin:0 20px 10px}
+#cover .langs button{flex:1}
+#cover .langs button.on{background:var(--you);color:#1a1200;border-color:var(--you)}
+#cover .go{margin:0 20px;width:calc(100% - 40px);font-size:18px;padding:14px 22px}
+@media (max-width:720px){#cover .art{height:170px}#cover h2{font-size:22px}}
 #newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
 #newver[hidden]{display:none}
 #over{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(6,9,13,.7)}
@@ -185,6 +200,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
+  <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option></select></div>
   <button type="button" id="btnHow">How to play</button>
   <button type="button" id="btnTut">Guided first game</button>
   <button type="button" id="btnCopy">Copy as text</button>
@@ -195,7 +211,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <main>
   <div class="boardwrap">
     <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button></div></div></div>
-    <div class="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
+    <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
     <div class="acts" id="acts"></div>
@@ -210,6 +226,13 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
     <details class="panel" id="logPanel" open><summary class="lbl">Log ▾</summary><div class="log" id="log"></div></details>
   </div>
 </main>
+<div id="cover" hidden><div class="card">
+  <div class="art" id="coverArt"></div>
+  <h2>Constellation Commander</h2>
+  <p class="say" id="coverSay"></p>
+  <div class="langs"><button type="button" data-lang="en">English</button><button type="button" data-lang="fr">Français</button></div>
+  <button type="button" id="coverGo" class="primary go">Play</button>
+</div></div>
 <div id="intro" hidden><div class="card">
   <h2>How this works</h2>
   <ol>
@@ -640,14 +663,323 @@ const SIEGE_SHIP=`<svg viewBox="0 0 128 128" aria-label="siege drone">
   <circle cx="51" cy="41" r="4.5" fill="#ef4444" opacity="0.25"/><circle cx="81" cy="87" r="4.5" fill="#eab308" opacity="0.25"/>
 </svg>`;
 function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+// ---------- language: English or French (v1.17). Every line the player reads goes through t(): the
+// English text is the key, the French lives in one/fr.json (inlined by the build as FR). Tagged
+// templates keep their slots: t`${who(side)} moved ${x}` looks up "{0} moved {1}". In French the verb
+// may depend on the subject: {v:avez|a} picks the first form when a slot holds "Vous". Drone names
+// carry their own article in French (l'éclaireur, la bombe), so the English "the" is simply dropped
+// from the French pattern. own(side,kind) gives "your scout" / "the bot's scout" in either language.
+let LANG='en';try{LANG=localStorage.getItem('cc_lang')||'';}catch(_){}
+if(!LANG){try{LANG=/^fr/i.test(navigator.language||'')?'fr':'en';}catch(_){LANG='en';}}
+if(LANG!=='fr')LANG='en';
+const NOUN_FR={C:['éclaireur','m'],G:['bouclier','m'],S:['pillard','m'],H:['chasseur','m'],W:['drone de saut','m'],X:['drone de siège','m'],B:['bombe','f'],M:['drone de commandement','m']};
+const frDef=k=>{const [n,g]=NOUN_FR[k];return (/^[aeiouéèh]/i.test(n)?"l'":g==='f'?'la ':'le ')+n;};
+const frInd=k=>{const [n,g]=NOUN_FR[k];return (g==='f'?'une ':'un ')+n;};
+const TNAME_FR={};for(const k in NOUN_FR)TNAME_FR[k]=frDef(k);
+const KNAME_FR=['rouge','dorée','verte','bleue','violette']; // the colors of a star (feminine, étoile)
+function own(side,k){return LANG==='fr'?(side===YOU?'votre '+NOUN_FR[k][0]:frDef(k)+' du bot'):(side===YOU?'your ':"the bot's ")+TNAME[k];}
+function aname(k){return LANG==='fr'?frInd(k):'a '+TNAME[k];}
+function landName(side){return LANG==='fr'?(side===YOU?'votre terrain':'le terrain du bot'):(side===YOU?'your land':"the bot's land");}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const MISSING=new Set(); // English lines with no French yet (for the build check)
+function t(s,...v){let pat;
+  if(Array.isArray(s)){pat='';for(let i=0;i<s.length;i++)pat+=s[i]+(i<s.length-1?'{'+i+'}':'');}
+  else pat=String(s);
+  let out=pat;
+  if(LANG==='fr'){const f=FR[pat];if(f!=null)out=f;else MISSING.add(pat);}
+  out=out.replace(/\{v:([^|}]*)\|([^}]*)\}/g,(m,a,b)=>v.includes('Vous')?a:b);
+  out=out.replace(/\{(\d+)\}/g,(m,i)=>v[+i]==null?'':String(v[+i]));
+  if(LANG==='fr')out=out.replace(/\b([dD])e le /g,'$1u ').replace(/\b([dD])e les /g,'$1es ').replace(/\b([àÀ]) le /g,(m,a)=>a==='à'?'au ':'Au ').replace(/\b([àÀ]) les /g,(m,a)=>a==='à'?'aux ':'Aux ');
+  return out;}
+function translateDOM(root){if(LANG==='en')return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const list=[];while(w.nextNode())list.push(w.currentNode);
+  for(const n of list){const p=n.parentNode;if(!p||p.nodeName==='STYLE'||p.nodeName==='SCRIPT')continue;const s=n.nodeValue;const k=s.trim();if(!k)continue;
+    const f=FR[k];if(f!=null)n.nodeValue=s.replace(k,f);else if(/[a-zA-Z]{3}/.test(k))MISSING.add(k);}}
+const SAYINGS=[
+'The sky is big. Claim your piece before the bot does.',
+'Four in a row is a drone. Three in a row is a wish.',
+'Keep the Command drone home. It is not a scout.',
+'Asteroids do not care whose side they are on.',
+'Lose a drone, earn a missile. Lose the M, go make coffee.',
+'The bot has no feelings. Take its land.',
+'A shield beside the M beats three raiders out looking for trouble.',
+'Stars fall toward whoever is moving. So does trouble.',
+'Every drone was a lucky swap once.',
+'Nobody ever won by staring at the board. Swap something.'];
+const FR={
+"New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nouvelle partie. Astéroïdes {0} contre {1}, bot au niveau {2}{3}.",
+"a {0} crossing a {1}": "un {0} croisant un {1}",
+"{0} in a line": "{0} en ligne",
+"{0} made {1} on the other side: stars cleared, nothing paid.": "{0} {v:avez fait|a fait} {1} de l'autre côté : étoiles effacées, rien gagné.",
+"{0} made {1} at {2} drones: 1 missile instead.": "{0} {v:avez fait|a fait} {1} avec déjà {2} drones : 1 missile à la place.",
+"{0} made {1} at {2} drones: an asteroid lands on {3}.": "{0} {v:avez fait|a fait} {1} avec déjà {2} drones : un astéroïde tombe sur {3}.",
+"{0} made {1} but already has {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones.",
+"{0} made {1} but there was no room.": "{0} {v:avez fait|a fait} {1}, mais il n'y avait pas de place.",
+"{0} made {1} on the wall: nothing paid.": "{0} {v:avez fait|a fait} {1} sur le mur : rien gagné.",
+"{0} made {1} under a drone: stacked to power {2}.": "{0} {v:avez fait|a fait} {1} sous un drone : empilé, puissance {2}.",
+"{0} made {1}: {2}{3}, {4}.": "{0} {v:avez fait|a fait} {1} : {2}{3}, étoile {4}.",
+"{0} took {1}{2} at {3}{4}: a missile earned.": "{0} {v:avez pris|a pris} {1}{2} en {3}{4} : un missile gagné.",
+"{0} stacked {1} into the {2} at {3}: power {4}.": "{0} {v:avez empilé|a empilé} {1} dans {2} en {3} : puissance {4}.",
+"{0} moved {1} {2} to {3}.": "{0} {v:avez déplacé|a déplacé} {1} de {2} à {3}.",
+"{0} claimed at {1}: {2} square{3}{4}.": "{0} {v:avez revendiqué|a revendiqué} en {1} : {2} case{3}{4}.",
+"{0} warped to {1}: {2} square{3} taken{4}. The warp drone is used up.": "{0} {v:avez sauté|a sauté} en {1} : {2} case{3} prise{3}{4}. Le drone de saut est consommé.",
+"{0} rammed the shield at {1}. Both are gone.": "{0} a percuté le bouclier en {1}. Les deux sont perdus.",
+"{0}: a missile hit {1} at {2}; it holds. Only a siege drone can take it.": "{0} : un missile a touché {1} en {2} ; il tient. Seul un drone de siège peut le prendre.",
+"{0}: a missile destroyed {1} at {2}: a missile earned.": "{0} : un missile a détruit {1} en {2} : un missile gagné.",
+"{0}: a missile hit {1} at {2}: power {3}.": "{0} : un missile a touché {1} en {2} : puissance {3}.",
+"{0}: a missile cleared {1} at {2}.": "{0} : un missile a dégagé {1} en {2}.",
+"{0} at {1}: {2} turn{3} to go.": "{0} en {1} : encore {2} tour{3}.",
+"The blast stripped the stack off {0}.": "L'explosion a dépouillé la pile de {0}.",
+"{0} went off at {1}: {2} squares, {3} drone{4}.": "{0} a explosé en {1} : {2} cases, {3} drone{4}.",
+"An asteroid rolled over {0} at {1}: destroyed.": "Un astéroïde a écrasé {0} en {1} : détruit.",
+"An asteroid jumped {0} at {1}: power {2}.": "Un astéroïde a sauté par-dessus {0} en {1} : puissance {2}.",
+"An asteroid jumped over {0} at {1}.": "Un astéroïde a sauté par-dessus {0} en {1}.",
+"The asteroid landed on {0} at {1}.": "L'astéroïde est retombé sur {0} en {1}.",
+"An asteroid landed on {0}.": "Un astéroïde est retombé sur {0}.",
+"It landed on {0} at {1}: destroyed.": "Il est retombé sur {0} en {1} : détruit.",
+"{0} cleared {1} stars this turn: the asteroids drift {2} a square.": "{0} {v:avez effacé|a effacé} {1} étoiles ce tour-ci : les astéroïdes dérivent d'une case vers le {2}.",
+"{0} at {1} was surrounded by {2} drones and destroyed.": "{0} en {1} a été encerclé par {2} drones et détruit.",
+"{0} took the Command drone.": "{0} {v:avez pris|a pris} le drone de commandement.",
+"{0} hold{1} {2} squares.": "{0} {v:tenez|tient} {2} cases.",
+"Game over. {0} win{1}. {2}": "Partie terminée. {0} {v:gagnez|gagne}. {2}",
+", clocks on": ", pendules en marche",
+", relaxed": ", sans chrono",
+"You move first: swap two stars, or tap your scout.": "Vous jouez en premier : échangez deux étoiles, ou touchez votre éclaireur.",
+"an X of 5": "un X de 5",
+"an L of 4 and 3": "un L de 4 et 3",
+"a plus": "une croix",
+"a T of two 3-lines": "un T de deux lignes de 3",
+"an L of two 3-lines": "un L de deux lignes de 3",
+"a 2×2 block": "un bloc 2×2",
+"a 2×3 block": "un bloc 2×3",
+"a 3×3 block": "un bloc 3×3",
+" (white)": " (blanc)",
+" (red)": " (rouge)",
+"No swap left anywhere: the stars were reshuffled.": "Plus aucun échange possible : les étoiles ont été remélangées.",
+" (power {0})": " (puissance {0})",
+"by moving beside it": "en passant à côté",
+", one claim left": ", une revendication restante",
+", the scout is used up": ", l'éclaireur est consommé",
+"on arrival": "à l'arrivée",
+", {0} drone{1} removed": ", {0} drone{1} retiré{1}",
+"an asteroid": "un astéroïde",
+"a {0} star": "une étoile {0}",
+"down": "bas",
+"up": "haut",
+" at {0}": " en {0}",
+"Bot error: {0}. Turn skipped.": "Erreur du bot : {0}. Tour sauté.",
+"{0} had nothing to do.": "{0} {v:n'aviez|n'avait} rien à faire.",
+"{0} swapped {1} and {2}.": "{0} {v:avez échangé|a échangé} {1} et {2}.",
+"Out of range or in the fog. A missile flies {0} squares at something you can see.": "Hors de portée ou dans le brouillard. Un missile vole {0} cases vers quelque chose que vous voyez.",
+"{0} of {1} aimed. Tap another target, or Fire now.": "{0} sur {1} visé. Touchez une autre cible, ou Tirer maintenant.",
+"Stack the {0} into the {1}? The {2} is gone; you get a power {3} {4}.": "Empiler {0} dans {1} ? Le premier disparaît ; vous obtenez {4} de puissance {3}.",
+"That is {0}.": "C'est {0}.",
+"{0} of {1} drones · {2} missile{3}": "{0} drones sur {1} · {2} missile{3}",
+" · sees {0} squares": " · voit {0} cases",
+"{0} · skill {1}": "{0} · niveau {1}",
+"Fire missile{0} ({1} banked)": "Tirer ({1} en réserve)",
+"Claim the 3 × 3 here ({0} to take)": "Revendiquer le 3 × 3 ici ({0} à prendre)",
+"Ram the shield at {0} (both lost)": "Percuter le bouclier en {0} (les deux perdus)",
+"Aim two targets within {0} squares, then they fire together.": "Visez deux cibles à {0} cases ou moins, puis elles tirent ensemble.",
+"Tap a target within {0} squares: an enemy drone, an asteroid, or a star.": "Touchez une cible à {0} cases ou moins : un drone ennemi, un astéroïde ou une étoile.",
+"Tap the gold star at {0}, then the blue star right above it.": "Touchez l'étoile dorée en {0}, puis l'étoile bleue juste au-dessus.",
+"Tap your new scout, the S at {0}.": "Touchez votre nouvel éclaireur, le S en {0}.",
+"The gold squares are your land: {0} so far. You win at {1}. Scouts are the drones that claim land.": "Les cases dorées sont votre terrain : {0} pour l'instant. Vous gagnez à {1}. Les éclaireurs sont les drones qui revendiquent du terrain.",
+"your land: {0} squares": "votre terrain : {0} cases",
+"The 9 squares around the scout become yours: {0} becomes {1}. Claiming is a turn, like a move.": "Les 9 cases autour de l'éclaireur deviennent à vous : {0} devient {1}. Revendiquer prend un tour, comme un déplacement.",
+"They make {0}, and that pays a drone. More drones, more land.": "Elles forment {0}, et ça rapporte un drone. Plus de drones, plus de terrain.",
+"That is {0}. {1}. Red squares mean it takes the enemy drone there.": "C'est {0}. {1}. Les cases rouges veulent dire qu'il prend le drone ennemi qui s'y trouve.",
+"Tap your new {0}, the {1} at {2}.": "Touchez votre nouveau drone, {0}, le {1} en {2}.",
+"tap your new {0}": "touchez {0}, le nouveau",
+"Tap {0}.": "Touchez {0}.",
+"A missile takes one power off a drone. This one has {0}, so it is destroyed, and destroying an enemy drone earns you a missile back.": "Un missile enlève une puissance à un drone. Celui-ci en a {0}, donc il est détruit, et détruire un drone ennemi vous rend un missile.",
+"Tap your {0} at {1}.": "Touchez votre drone, {0}, en {1}.",
+"{0} has walked up to {1} to claim land near you. You have a missile, and scouts and hunters fire them. Shoot it before it claims.": "{0} s'est avancé jusqu'en {1} pour revendiquer du terrain près de vous. Vous avez un missile, et les éclaireurs et les chasseurs les tirent. Abattez-le avant qu'il revendique.",
+"Your {0} lands on {1} and takes it. Every take earns a missile.": "Votre drone, {0}, atterrit sur {1} et le prend. Chaque prise rapporte un missile.",
+"It can take {0} at {1}. Fewer enemy drones, less enemy land.": "Il peut prendre {0} en {1}. Moins de drones ennemis, moins de terrain ennemi.",
+"A take is open: your {0} at {1}.": "Une prise est possible : votre drone, {0}, en {1}.",
+"It can land on the bot's drone at {0}.": "Il peut atterrir sur le drone du bot en {0}.",
+"That stacks the two. The stack keeps the kind of {0} and each power takes one more missile to bring down.": "Ça empile les deux. La pile garde le type de {0} et chaque point de puissance demande un missile de plus pour tomber.",
+"Two of your drones can stack: this one onto {0} at {1}. A stack is armor against missiles.": "Deux de vos drones peuvent s'empiler : celui-ci sur {0} en {1}. Une pile est un blindage contre les missiles.",
+"Tap your siege drone at {0}.": "Touchez votre drone de siège en {0}.",
+"It is the other way to win: walk it next to the bot's Command drone, the M{0}.": "C'est l'autre façon de gagner : amenez-le à côté du drone de commandement du bot, le M{0}.",
+"{0} more squares.": "{0} cases de plus.",
+"Tap your scout at {0}.": "Touchez votre éclaireur en {0}.",
+"It can claim {0} squares. You hold {1} of {2}.": "Il peut revendiquer {0} cases. Vous tenez {1} sur {2}.",
+"They make {0}, which pays a drone.": "Elles forment {0}, ce qui rapporte un drone.",
+" You hold {0} of {1}.": " Vous tenez {0} sur {1}.",
+"Tap your scout at {0} and walk it toward open land.": "Touchez votre éclaireur en {0} et avancez-le vers du terrain libre.",
+"You are trying to claim more of the sky than the bot: {0} squares wins, or a siege drone standing next to the bot's Command drone. You own {1}, the bot owns {2}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.": "Vous essayez de revendiquer plus de ciel que le bot : {0} cases gagnent, ou un drone de siège posté à côté du drone de commandement du bot. Vous possédez {1}, le bot possède {2}. Alignez des étoiles : tout ce qui dépasse 3 d'affilée vous donne un drone. Un drone est comme un pion de dames ou une pièce d'échecs : vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous. Gardez votre propre drone de commandement, le M, en sécurité.",
+"Rating {0} → {1} ({2}{3}). Bot {4} was rated {5}; asteroids {6} to {7}.": "Classement {0} → {1} ({2}{3}). Le bot {4} était classé {5} ; astéroïdes {6} contre {7}.",
+"Rating <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} game{2}, {3} won": "Classement <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} partie{2}, {3} gagnée{2}",
+"Bot at skill {0} is rated {1}; a game against it moves you at {2}% of a game against a person.": "Le bot au niveau {0} est classé {1} ; une partie contre lui vous fait bouger à {2} % d'une partie contre une personne.",
+"{0} ran out of time.": "{0} {v:n'avez|n'a} plus de temps.",
+"You have v{0}. v{1} is out.": "Vous avez la v{0}. La v{1} est sortie.",
+"No line there. Try another swap.": "Pas de ligne là. Essayez un autre échange.",
+"Fired. This drone can fire again, or take your turn.": "Tiré. Ce drone peut tirer encore, ou jouez votre tour.",
+"Fired. Now take your turn: swap, move, claim or warp.": "Tiré. Maintenant jouez votre tour : échanger, déplacer, revendiquer ou sauter.",
+"Nothing there to hit.": "Rien à toucher là.",
+"That is your own drone.": "C'est votre propre drone.",
+"Warp to a cleared square on your side, not next to an enemy shield.": "Sautez vers une case dégagée de votre côté, pas à côté d'un bouclier ennemi.",
+"That square is in the fog. Bring a drone next to it, or claim with a scout.": "Cette case est dans le brouillard. Amenez un drone à côté, ou revendiquez avec un éclaireur.",
+". Tap a marked square to move, red to take, green to stack.": ". Touchez une case marquée pour déplacer, rouge pour prendre, verte pour empiler.",
+"An asteroid. A missile clears it.": "Un astéroïde. Un missile le dégage.",
+"Now tap a star next to it to swap.": "Touchez maintenant une étoile voisine pour échanger.",
+"slides the diagonals": "glisse en diagonale",
+"rides any color, 4 free steps": "suit toutes les couleurs, 4 pas gratuits",
+"no free rides": "pas de pas gratuits",
+"rides {0}": "suit les étoiles de couleur {0}",
+" and ": " et ",
+"power {0}": "puissance {0}",
+"{0} claim{1}": "{0} revendication{1}",
+"{0} turn{1} to go": "encore {0} tour{1}",
+"relaxed": "sans chrono",
+"Fire now": "Tirer maintenant",
+"Warp": "Sauter",
+"Yes, stack them": "Oui, empiler",
+"Cancel": "Annuler",
+"Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.": "Touchez un éclaireur ou un chasseur pour tirer un missile d'abord, ou échangez deux étoiles, ou touchez un drone pour le déplacer.",
+"Swap two stars side by side, or tap one of your drones.": "Échangez deux étoiles voisines, ou touchez un de vos drones.",
+"Tap a cleared square on your side to warp there. Not on or next to an enemy shield.": "Touchez une case dégagée de votre côté pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
+"You win": "Vous gagnez",
+"The bot wins": "Le bot gagne",
+"Game over.": "Partie terminée.",
+"Your move.": "À vous de jouer.",
+"The bot is thinking…": "Le bot réfléchit…",
+"The bot is taking its turn.": "Le bot joue son tour.",
+"It plays by the same rules. In this first game it only moves its drones; it will not touch the stars.": "Il joue avec les mêmes règles. Dans cette première partie il ne fait que déplacer ses drones ; il ne touchera pas aux étoiles.",
+"That scout has one claim left; a scout claims twice, then it is used up. ": "Cet éclaireur a une revendication restante ; un éclaireur revendique deux fois, puis il est consommé. ",
+"Swapping them lines up four blue stars. Four in a line makes you a drone. Drones are how you take land, and land is how you win.": "Les échanger aligne quatre étoiles bleues. Quatre en ligne vous donne un drone. Les drones servent à prendre du terrain, et le terrain fait gagner.",
+"1. tap this gold": "1. touchez cette dorée",
+"2. then this blue": "2. puis cette bleue",
+"Tap the square with the arrow to move the scout there.": "Touchez la case avec la flèche pour y déplacer l'éclaireur.",
+"A scout claims the 9 squares around itself. Out in the open those squares are empty, so it gets all 9. One move is one turn.": "Un éclaireur revendique les 9 cases autour de lui. En terrain libre ces cases sont vides, donc il prend les 9. Un déplacement, c'est un tour.",
+"move it here": "déplacez-le ici",
+"tap your scout": "touchez votre éclaireur",
+"Tap the Claim button under the board.": "Touchez le bouton Revendiquer sous le plateau.",
+"tap Claim below": "touchez Revendiquer en bas",
+"Tap the scout again.": "Touchez l'éclaireur encore.",
+"This time it will claim the land around it instead of moving.": "Cette fois il revendiquera le terrain autour de lui au lieu de se déplacer.",
+"tap it again": "touchez-le encore",
+"Tap the two stars with the arrows, one after the other.": "Touchez les deux étoiles avec les flèches, l'une après l'autre.",
+"1. tap": "1. touchez",
+"2. tap": "2. touchez",
+"Tap the two stars with the arrows.": "Touchez les deux étoiles avec les flèches.",
+"Three in a line pays nothing, but it clears them and new stars fall in, which can set up a four.": "Trois en ligne ne rapporte rien, mais ça les efface et de nouvelles étoiles tombent, ce qui peut préparer un quatre.",
+"No swap is open. Move a drone instead.": "Aucun échange possible. Déplacez plutôt un drone.",
+"The stars shift as the game goes on; a line will come.": "Les étoiles bougent au fil de la partie ; une ligne viendra.",
+"Tap one of the marked squares.": "Touchez une des cases marquées.",
+"Each kind of drone moves and fights its own way. Tapping one shows where it can go and tells you what it does.": "Chaque type de drone se déplace et combat à sa façon. En toucher un montre où il peut aller et dit ce qu'il fait.",
+"shoot it": "tirez dessus",
+"Tap the Fire missile button under the board.": "Touchez le bouton Tirer sous le plateau.",
+"Missiles come before your move, so firing does not cost your turn.": "Les missiles viennent avant votre coup, donc tirer ne coûte pas votre tour.",
+"tap, then Fire": "touchez, puis Tirer",
+"Tap the asteroid with the arrow.": "Touchez l'astéroïde avec la flèche.",
+"The missile clears it and the stars drop into the gap.": "Le missile le dégage et les étoiles tombent dans le trou.",
+"shoot this asteroid": "tirez sur cet astéroïde",
+"Missiles come before your move, so this does not cost your turn.": "Les missiles viennent avant votre coup, donc ça ne coûte pas votre tour.",
+"You have a missile. Scouts and hunters fire them. An asteroid is in range: asteroids block the stars from lining up, and a missile clears one.": "Vous avez un missile. Les éclaireurs et les chasseurs les tirent. Un astéroïde est à portée : les astéroïdes empêchent les étoiles de s'aligner, et un missile en dégage un.",
+"Tap the red square.": "Touchez la case rouge.",
+"take it": "prenez-le",
+"tap this one": "touchez celui-ci",
+"A take.": "Une prise.",
+"Tap the green square.": "Touchez la case verte.",
+"stack here": "empilez ici",
+"Tap a marked square toward the top.": "Touchez une case marquée vers le haut.",
+"It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no shield beside either of them, you win.": "Il avance d'une case par tour et aucun drone ne peut le prendre. Dès qu'il se tient à côté du drone de commandement du bot sans bouclier à côté de l'un ou de l'autre, vous gagnez.",
+"your siege drone": "votre drone de siège",
+"the bot's Command drone": "le drone de commandement du bot",
+"Tap Claim.": "Touchez Revendiquer.",
+"tap, then Claim": "touchez, puis Revendiquer",
+"Three in a line, nothing paid, but the board shifts.": "Trois en ligne, rien gagné, mais le plateau bouge.",
+"No paying swap is in sight; claiming is the other way to gain.": "Aucun échange payant en vue ; revendiquer est l'autre façon de gagner du terrain.",
+"Move a drone forward.": "Avancez un drone.",
+"Nothing pays right now; the stars will shift.": "Rien ne rapporte pour l'instant ; les étoiles vont bouger.",
+"Coach": "Coach",
+"That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.": "C'était une partie entière, et vous l'avez gagnée. À partir d'ici le bot devient plus fort quand vous montez son niveau dans les Réglages. La première partie guidée y est aussi, à tout moment.",
+"That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.": "C'était une partie entière. En perdre une, c'est comme ça que tout le monde apprend le plateau. Rejouez, et le coach est dans les Réglages à tout moment.",
+"Do": "À faire",
+"Why": "Pourquoi",
+"Just now": "À l'instant",
+"The game": "Le jeu",
+"You ran out of move time. Turn passes.": "Temps de coup écoulé. Le tour passe.",
+"Reloading…": "Rechargement…",
+"Game copied as text.": "Partie copiée en texte.",
+"Copy this:": "Copiez ceci :",
+"Start a new game? This one counts as a loss.": "Commencer une nouvelle partie ? Celle-ci compte comme une défaite.",
+"The game was abandoned.": "La partie a été abandonnée.",
+"Moves 1 square any way, and rides its own star color for free. Fires one missile a turn. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se déplace d'1 case dans tous les sens, et suit gratuitement sa propre couleur d'étoile. Tire un missile par tour. Revendiquer prend le 3 × 3 autour de lui et y dissipe le brouillard pour de bon. Deux revendications, puis il est consommé.",
+"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège.",
+"Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege. A slide into the fog is a commitment.": "Glisse sur toute la diagonale jusqu'à toucher quelque chose, dans le noir aussi, et prend ce sur quoi il s'arrête sauf un drone de siège. Une glissade dans le brouillard est un engagement.",
+"Moves 1 square plus up to 4 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.": "Se déplace d'1 case plus jusqu'à 4 pas gratuits sur n'importe quelle couleur d'étoile. Tire deux missiles par tour : visez les deux, ils touchent ensemble. Prend ce sur quoi il atterrit sauf un drone de siège.",
+"Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case dégagée de votre côté qui n'est pas à côté d'un bouclier ennemi : les cases libres autour deviennent à vous et les drones ennemis sur vos cases sont retirés. Consommé par le saut.",
+"Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Cannot take or be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.": "Se déplace d'exactement 1 case, dans le noir s'il veut. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie. Ne peut ni prendre ni être pris par des drones. Quatre ennemis autour le détruisent. Un bouclier en travers : percutez-le et les deux disparaissent.",
+"Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se déplace d'1 case ou suit sa couleur. Explose à la fin de votre troisième tour : le souffle part en haut, en bas, à gauche et à droite aussi loin que vous avez dissipé le brouillard et emporte chaque astéroïde, étoile et drone sur son chemin, les vôtres aussi.",
+"Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no shield near, or an asteroid landing on it, ends the game.": "Se déplace d'1 case et suit les couleurs d'étoile des drones empilés dedans, jusqu'à deux. Rien ne le prend en atterrissant ni par missile ; un missile ou une bombe ne fait que dépouiller sa pile. Un drone de siège posté à côté sans bouclier à proximité, ou un astéroïde qui retombe dessus, termine la partie.",
+"The sky is big. Claim your piece before the bot does.": "Le ciel est grand. Prenez votre part avant le bot.",
+"Four in a row is a drone. Three in a row is a wish.": "Quatre d'affilée, c'est un drone. Trois d'affilée, c'est un vœu.",
+"Keep the Command drone home. It is not a scout.": "Gardez le drone de commandement à la maison. Ce n'est pas un éclaireur.",
+"Asteroids do not care whose side they are on.": "Les astéroïdes se fichent de savoir de quel côté ils sont.",
+"Lose a drone, earn a missile. Lose the M, go make coffee.": "Perdez un drone, gagnez un missile. Perdez le M, allez faire du café.",
+"The bot has no feelings. Take its land.": "Le bot n'a pas de sentiments. Prenez son terrain.",
+"A shield beside the M beats three raiders out looking for trouble.": "Un bouclier à côté du M vaut mieux que trois pillards partis chercher des ennuis.",
+"Stars fall toward whoever is moving. So does trouble.": "Les étoiles tombent vers celui qui joue. Les ennuis aussi.",
+"Every drone was a lucky swap once.": "Chaque drone a d'abord été un échange chanceux.",
+"Nobody ever won by staring at the board. Swap something.": "Personne n'a jamais gagné en fixant le plateau. Échangez quelque chose.",
+"A newer version of the game is out.": "Une nouvelle version du jeu est sortie.",
+"Reload now": "Recharger",
+"Settings": "Réglages",
+"New game": "Nouvelle partie",
+"Bot skill %": "Niveau du bot %",
+"Timers": "Chrono",
+"clock 20 min, 60 s a move": "pendule 20 min, 60 s par coup",
+"Handicap": "Handicap",
+"asteroids from ratings": "astéroïdes selon le classement",
+"Your asteroids": "Vos astéroïdes",
+"Bot asteroids": "Astéroïdes du bot",
+"Squares to win": "Cases pour gagner",
+"Fog of war": "Brouillard de guerre",
+"off, the whole board shows": "non, tout le plateau est visible",
+"from the seam: your half lit, scouts clear the rest": "depuis la couture : votre moitié éclairée, les éclaireurs dégagent le reste",
+"everything dark, even your own half": "tout dans le noir, même votre moitié",
+"Drone tips": "Fiches des drones",
+"tap a drone to read": "touchez un drone pour lire",
+"Your name": "Votre nom",
+"Language": "Langue",
+"How to play": "Comment jouer",
+"Guided first game": "Première partie guidée",
+"Copy as text": "Copier en texte",
+"Rules": "Règles",
+"Loading…": "Chargement…",
+"You": "Vous",
+"Bot": "Bot",
+"Clocks": "Pendules",
+"Your record ▾": "Votre bilan ▾",
+"Log ▾": "Journal ▾",
+"Play": "Jouer",
+"How this works": "Comment ça marche",
+"You are trying to claim more of the sky than the bot.": "Vous essayez de revendiquer plus de ciel que le bot.",
+"Your land is gold, the bot's is blue. 69 squares wins.": "Votre terrain est doré, celui du bot est bleu. 69 cases gagnent.",
+"Line up stars.": "Alignez des étoiles.",
+"Anything over 3 in a row gets you a drone, born where you made it.": "Tout ce qui dépasse 3 d'affilée vous donne un drone, né là où vous l'avez fait.",
+"A drone is like a checkers or chess piece.": "Un drone est comme un pion de dames ou une pièce d'échecs.",
+"You move it around to claim space and fight. Only scouts claim stars for you.": "Vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous.",
+"Or win outright": "Ou gagnez d'un coup",
+"by walking a siege drone up next to the bot's Command drone, the M, with no shield beside it. Keep yours safe.": "en amenant un drone de siège à côté du drone de commandement du bot, le M, sans bouclier à côté. Gardez le vôtre en sécurité.",
+"Got it, let's play": "Compris, on joue",
+"Walk me through my first game": "Guidez-moi pour ma première partie",
+"Read the full rulebook": "Lire les règles complètes",
+"All three are in Settings any time.": "Les trois sont dans les Réglages à tout moment."
+}
+;
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.16.0';
+const VERSION='1.17.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
-const KNAME=['red','gold','green','blue','violet'];
+const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
-const TNAME={C:'scout',G:'shield',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone'};
+const TNAME=LANG==='fr'?TNAME_FR:{C:'scout',G:'shield',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone'};
 const LETTER={C:'S',G:'G',S:'R',H:'H',W:'W',X:'X',B:'B',M:'M'}; // the letter on the disc: S for scout (the user's call), so the old strike is the raider, R
 const TAKES={C:'',G:'',S:'CGSHWB',H:'CGSHWB',W:'',X:'',B:'',M:''}; // nothing takes the command drone by landing; only a siege beside it ends the game // by landing. G takes by moving next to; W on arrival; X takes nothing
 const SWEEPS='CHWG'; // what a shield takes by moving next to it on its land
@@ -667,7 +999,7 @@ const half=(side,r)=>side===YOU?r>SEAM:r<SEAM;
 const backRow=side=>side===YOU?N-1:0;
 const sq=(r,c)=>'abcdefghijk'[c]+(N-r);
 let S=null,busy=false,sel=null,mode=null,pending=null,aimList=[];
-let SNAME={1:'You',2:'Bot'};
+let SNAME=LANG==='fr'?{1:'Vous',2:'Le bot'}:{1:'You',2:'Bot'};
 const who=side=>SNAME[side];
 const poss=side=>side===YOU?'Your':SNAME[BOT]+"'s";
 
@@ -690,8 +1022,8 @@ function newGame(opts={}){
   S.asteroids={1:r1,2:r2};if(!opts.tut)dropRocks(YOU,r1);dropRocks(BOT,r2);
   if(S.tut){S.skill=0;S.timers=false;S.tutDone=[];layOpening();}
   sel=null;mode=null;pending=null;aimList=[];
-  note(`New game. Asteroids ${r1} to ${r2}, bot at skill ${S.skill}${S.timers?', clocks on':', relaxed'}.`);
-  note('You move first: swap two stars, or tap your scout.');
+  note(t`New game. Asteroids ${r1} to ${r2}, bot at skill ${S.skill}${S.timers?t(', clocks on'):t(', relaxed')}.`);
+  note(t('You move first: swap two stars, or tap your scout.'));
   save();renderAll();
 }
 // ---------- the coached game's fixed opening: the user's own first board, rows 6..10 as photographed.
@@ -749,7 +1081,7 @@ function detectShapes(g,anchor){
   for(let r=1;r<N-1;r++)for(let c=1;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
     if(g[r-1][c-1]===v&&g[r-1][c+1]===v&&g[r+1][c-1]===v&&g[r+1][c+1]===v){
       const cc=[[0,0],[-1,-1],[-1,1],[1,-1],[1,1]].map(([dr,dc])=>key(r+dr,c+dc));for(const k of cc)cells.add(k);
-      spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:'an X of 5'});}}
+      spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('an X of 5')});}}
   for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
     if(a.used||b.used||a.di===b.di)continue;
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
@@ -759,18 +1091,18 @@ function detectShapes(g,anchor){
       box.clear();for(const grp of boxes){if(grp.some(k=>un.includes(k)))continue;for(const k of grp)box.add(k);}
       for(const k of un)cells.add(k);}
     a.used=b.used=true;
-    const cell=rc(shared),sum=a.len+b.len,cc=[...a.run,...b.run],label=`a ${a.len} crossing a ${b.len}`;
+    const cell=rc(shared),sum=a.len+b.len,cc=[...a.run,...b.run],label=t`a ${a.len} crossing a ${b.len}`;
     if(sum>=9)spawns.push({letters:['W','X'],cell,cells:cc,color:a.color,label});
     else if(sum===8)spawns.push({letters:['W'],cell,cells:cc,color:a.color,label});
-    else if(sum===7)spawns.push({letters:['X'],cell,cells:cc,color:a.color,label:'an L of 4 and 3'});
+    else if(sum===7)spawns.push({letters:['X'],cell,cells:cc,color:a.color,label:t('an L of 4 and 3')});
     else{const am=a.run[1]===shared,bm=b.run[1]===shared;
-      if(am&&bm)spawns.push({letters:['H'],cell,cells:cc,color:a.color,label:'a plus'});
-      else if(am||bm)spawns.push({letters:['S'],sq:0,cap:'missile',cell,cells:cc,color:a.color,label:'a T of two 3-lines'});
-      else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:'an L of two 3-lines'});}}
+      if(am&&bm)spawns.push({letters:['H'],cell,cells:cc,color:a.color,label:t('a plus')});
+      else if(am||bm)spawns.push({letters:['S'],sq:0,cap:'missile',cell,cells:cc,color:a.color,label:t('a T of two 3-lines')});
+      else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:t('an L of two 3-lines')});}}
   for(const x of runs){if(x.used||x.len===3)continue;
     const inRun=anchor&&x.run.includes(key(anchor[0],anchor[1]));
     const k=inRun?key(anchor[0],anchor[1]):x.run[Math.floor(x.len/2)];
-    const sp={cell:rc(k),cells:x.run,color:x.color,label:`${x.len} in a line`};
+    const sp={cell:rc(k),cells:x.run,color:x.color,label:t`${x.len} in a line`};
     if(x.len===4)sp.letters=['C'];else if(x.len===5){sp.letters=['S'];sp.sq=1;sp.cap='missile';}else if(x.len===6){sp.letters=['H'];sp.cap='asteroid';}else sp.letters=['W'];
     spawns.push(sp);}
   const seen=new Set();
@@ -783,7 +1115,7 @@ function detectShapes(g,anchor){
       if(r+2<N&&c+2<N&&has(r,c,3,3)){grade='WXH';break outer;}
       if((r+1<N&&c+2<N&&has(r,c,2,3))||(r+2<N&&c+1<N&&has(r,c,3,2)))grade='WX';}
     const kmin=Math.min(...comp);const cell=rc(kmin);
-    spawns.push({letters:grade.split(''),cell,cells:[...comp],color:g[cell[0]][cell[1]],label:grade==='G'?'a 2×2 block':grade==='WX'?'a 2×3 block':'a 3×3 block'});
+    spawns.push({letters:grade.split(''),cell,cells:[...comp],color:g[cell[0]][cell[1]],label:grade==='G'?t('a 2×2 block'):grade==='WX'?t('a 2×3 block'):t('a 3×3 block')});
     for(const k of comp)cells.add(k);}
   return {cells,spawns};
 }
@@ -818,20 +1150,20 @@ function gravity(g,side){
 }
 function spawnFrom(side,sp){
   const at=placeCell(side,sp);
-  if(!at){note(`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`);return;}
+  if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`);return;}
   for(const letter of sp.letters){
     let [r,c]=at;let o=droneAt(r,c);
     const full=dronesOf(side).length>=MAXD&&!(o&&o.side===side);
     if(full&&sp.cap!=='always'){
-      if(sp.cap==='missile'){S.missiles[side]++;note(`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
-      else if(sp.cap==='asteroid'){rockOnto(other(side));note(`${who(side)} made ${sp.label} at ${MAXD} drones: a asteroid lands on ${poss(other(side)).toLowerCase()} land.`);}
-      else note(`${who(side)} made ${sp.label} but already has ${MAXD} drones.`);
+      if(sp.cap==='missile'){S.missiles[side]++;note(t`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
+      else if(sp.cap==='asteroid'){rockOnto(other(side));note(t`${who(side)} made ${sp.label} at ${MAXD} drones: an asteroid lands on ${landName(other(side))}.`);}
+      else note(t`${who(side)} made ${sp.label} but already has ${MAXD} drones.`);
       continue;}
-    if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(`${who(side)} made ${sp.label} but there was no room.`);continue;}[r,c]=alt;o=null;}
-    if(isWall(r,c)||isCmd(r,c)){note(`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
+    if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(t`${who(side)} made ${sp.label} but there was no room.`);continue;}[r,c]=alt;o=null;}
+    if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
     const d=mk(side,r,c,letter,sp.color,sp.sq);
-    if(o){mergeInto(o,d);note(`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`);}
-    else{S.drones.push(d);note(`${who(side)} made ${sp.label}: a ${TNAME[letter]}${letter==='S'?(d.sq?' (white)':' (red)'):''}, ${KNAME[sp.color]}.`);}
+    if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`);}
+    else{S.drones.push(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`);}
   }
 }
 function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
@@ -857,7 +1189,7 @@ function validSwaps(side){
     if(sh.cells.size)out.push({a:[r,c],b:[r2,c2],sh});}
   return out;
 }
-function reshuffle(){for(let t=0;t<200;t++){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(isStar(S.grid[r][c]))S.grid[r][c]=pickSafe(S.grid,r,c);if(!detectShapes(S.grid).cells.size&&validSwaps().length)break;}note('No swap left anywhere: the stars were reshuffled.');}
+function reshuffle(){for(let t=0;t<200;t++){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(isStar(S.grid[r][c]))S.grid[r][c]=pickSafe(S.grid,r,c);if(!detectShapes(S.grid).cells.size&&validSwaps().length)break;}note(t('No swap left anywhere: the stars were reshuffled.'));}
 
 // ---------- reach ----------
 function targets(d){
@@ -902,10 +1234,10 @@ const range=()=>S.fog?RANGE:3; // with no fog a missile flies 3 squares; in the 
 const inRange=(d,r,c)=>Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=range();
 
 // ---------- actions ----------
-function takeDrone(taker,victim,how){queueShatter(victim);S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);note(`${who(taker)} took ${poss(victim.side).toLowerCase()} ${TNAME[victim.kind]}${victim.power>1?' (power '+victim.power+')':''} at ${sq(victim.r,victim.c)}${how?' '+how:''}: a missile earned.`);}
+function takeDrone(taker,victim,how){queueShatter(victim);S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);note(t`${who(taker)} took ${own(victim.side,victim.kind)}${victim.power>1?t(' (power {0})',victim.power):''} at ${sq(victim.r,victim.c)}${how?' '+how:''}: a missile earned.`);}
 function landed(d){
   if(!S.drones.includes(d))return;
-  if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===d.side)takeDrone(d.side,e,'by moving beside it');}}
+  if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===d.side)takeDrone(d.side,e,t('by moving beside it'));}}
 }
 function applyMove(d,r,c){
   if(d.kind==='S'){ // a slide: it stops at the first thing it meets, seen or not
@@ -916,23 +1248,23 @@ function applyMove(d,r,c){
     if(!stop)return;[r,c]=stop;}
   const o=droneAt(r,c);
   if(o&&o.side===d.side&&d.kind==='M'){o.kind='M';delete o.claims;delete o.fuse;delete o.sq;} // the command drone absorbs what it lands on and stays the command drone
-  if(o&&o.side===d.side){mergeInto(o,d);S.drones=S.drones.filter(x=>x!==d);note(`${who(d.side)} stacked a ${TNAME[d.kind]} into the ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);return;}
+  if(o&&o.side===d.side){mergeInto(o,d);S.drones=S.drones.filter(x=>x!==d);note(t`${who(d.side)} stacked ${aname(d.kind)} into the ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);return;}
   if(o){takeDrone(d.side,o);}
-  const from=sq(d.r,d.c);d.r=r;d.c=c;note(`${who(d.side)} moved ${TNAME[d.kind]} ${from} to ${sq(r,c)}.`);landed(d);
+  const from=sq(d.r,d.c);d.r=r;d.c=c;note(t`${who(d.side)} moved ${TNAME[d.kind]} ${from} to ${sq(r,c)}.`);landed(d);
 }
 function applyClaim(d){
   let took=0;for(const [a,b] of claimCells(d.r,d.c)){const k=key(a,b);if(S.own[k]===d.side)continue;if(S.own[k]===0||S.own[k]===3)S.own[k]=d.side;else S.own[k]=3;took++;}
   reveal(d.side,d.r,d.c);d.claims=(d.claims||1)-1;
-  note(`${who(d.side)} claimed at ${sq(d.r,d.c)}: ${took} square${took===1?'':'s'}${d.claims?', one claim left':', the scout is used up'}.`);
+  note(t`${who(d.side)} claimed at ${sq(d.r,d.c)}: ${took} square${took===1?'':'s'}${d.claims?t(', one claim left'):t(', the scout is used up')}.`);
   if(d.claims<=0)S.drones=S.drones.filter(x=>x!==d);
 }
 function applyWarp(d,r,c){
   d.r=r;d.c=c;let took=0,land=0;
   for(const [a,b] of claimCells(r,c)){const k=key(a,b);if(S.own[k]===0){S.own[k]=d.side;land++;}}
   reveal(d.side,r,c);
-  for(const [a,b] of claimCells(r,c)){const o=droneAt(a,b);if(o&&o.side!==d.side&&o.kind!=='X'&&S.own[key(a,b)]===d.side){takeDrone(d.side,o,'on arrival');took++;}}
+  for(const [a,b] of claimCells(r,c)){const o=droneAt(a,b);if(o&&o.side!==d.side&&o.kind!=='X'&&S.own[key(a,b)]===d.side){takeDrone(d.side,o,t('on arrival'));took++;}}
   S.drones=S.drones.filter(x=>x!==d);
-  note(`${who(d.side)} warped to ${sq(r,c)}: ${land} square${land===1?'':'s'} taken${took?`, ${took} drone${took>1?'s':''} removed`:''}. The warp drone is used up.`);
+  note(t`${who(d.side)} warped to ${sq(r,c)}: ${land} square${land===1?'':'s'} taken${took?t(', {0} drone{1} removed',took,took>1?'s':''):''}. The warp drone is used up.`);
 }
 function applyFire(d){
   const t=fireTargets(d);
@@ -940,25 +1272,25 @@ function applyFire(d){
   if(t.cmd){note(`${who(d.side)} took the Commander.`);gameOver(d.side,`${who(d.side)} took the Commander.`);return true;}
   return false;
 }
-function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);note(`${poss(d.side)} siege drone rammed the shield at ${sq(g.r,g.c)}. Both are gone.`);}
+function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);note(t`${cap(own(d.side,'X'))} rammed the shield at ${sq(g.r,g.c)}. Both are gone.`);}
 async function fireShots(side,list,shooter){
   // every shot is aimed first; then they all fly and land at once and the stars drop once
   if(shooter)await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));
   let dropped=false;
   for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
-    if(o&&o.side!==side&&o.kind==='M'&&o.power<=1){queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} command drone at ${sq(r,c)}; it holds. Only a siege drone can take it.`);}
-    else if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);S.missiles[side]++;note(`${who(side)}: a missile destroyed ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: a missile earned.`);}else{queueHit(r,c);note(`${who(side)}: a missile hit ${poss(o.side).toLowerCase()} ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`);}}
-    else if(S.grid[r][c]>=0){if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;note(`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?'a asteroid':'a '+KNAME[S.grid[r][c]]+' star'} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
+    if(o&&o.side!==side&&o.kind==='M'&&o.power<=1){queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,'M')} at ${sq(r,c)}; it holds. Only a siege drone can take it.`);}
+    else if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);S.missiles[side]++;note(t`${who(side)}: a missile destroyed ${own(o.side,o.kind)} at ${sq(r,c)}: a missile earned.`);}else{queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,o.kind)} at ${sq(r,c)}: power ${o.power}.`);}}
+    else if(S.grid[r][c]>=0){if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;note(t`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?t('an asteroid'):t('a {0} star',KNAME[S.grid[r][c]])} at ${sq(r,c)}.`);S.grid[r][c]=-1;dropped=true;}}
   renderBoard();await playFX();
   if(dropped){const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
 async function tickBombs(side){
   for(const b of dronesOf(side).filter(d=>d.kind==='B')){b.fuse--;
-    if(b.fuse>0){note(`${poss(side)} bomb at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`);continue;}
+    if(b.fuse>0){note(t`${cap(own(side,'B'))} at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`);continue;}
     const hit=[[b.r,b.c]];for(const [dr,dc] of DIR4){let r=b.r+dr,c=b.c+dc;while(inb(r,c)&&vis(side,r,c)&&!isWall(r,c)&&!isCmd(r,c)){hit.push([r,c]);r+=dr;c+=dc;}}
     S.drones=S.drones.filter(x=>x!==b);let gone=0;
-    for(const [r,c] of hit){const o=droneAt(r,c);if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);note(`The blast stripped the stack off ${poss(o.side).toLowerCase()} command drone.`);}}else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0){S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}cellEl(r,c).classList.add('blast');}
-    note(`${poss(side)} bomb went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`);
+    for(const [r,c] of hit){const o=droneAt(r,c);if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);note(t`The blast stripped the stack off ${own(o.side,'M')}.`);}}else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);gone++;}if(S.grid[r][c]>=0){S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}cellEl(r,c).classList.add('blast');}
+    note(t`${cap(own(side,'B'))} went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`);
     renderBoard();await playFX();for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
     const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
@@ -979,17 +1311,17 @@ async function asteroidDrift(side){
     const d=droneAt(r1,c);
     const land=(rr)=>{S.grid[r][c]=pickSafe(S.grid,r,c);S.grid[rr][c]=ROCK;trail.push([r,c,rr,c]);moved++;};
     if(!d){land(r1);continue;}
-    if(d.power<=1&&d.kind!=='M'){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note('An asteroid rolled over '+poss(d.side).toLowerCase()+' '+TNAME[d.kind]+' at '+sq(r1,c)+': destroyed.');land(r1);continue;}
+    if(d.power<=1&&d.kind!=='M'){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note(t`An asteroid rolled over ${own(d.side,d.kind)} at ${sq(r1,c)}: destroyed.`);land(r1);continue;}
     const r2=r1+dr;if(!inb(r2,c)||isWall(r2,c)||S.grid[r2][c]===ROCK)continue; // nowhere to jump to: it stays
-    if(d.power>1){d.power--;if(d.colors.length>d.power)d.colors=d.colors.slice(0,d.power);queueHit(r1,c);note('An asteroid jumped '+poss(d.side).toLowerCase()+' '+TNAME[d.kind]+' at '+sq(r1,c)+': power '+d.power+'.');}
-    else note('An asteroid jumped over '+poss(d.side).toLowerCase()+' command drone at '+sq(r1,c)+'.');
+    if(d.power>1){d.power--;if(d.colors.length>d.power)d.colors=d.colors.slice(0,d.power);queueHit(r1,c);note(t`An asteroid jumped ${own(d.side,d.kind)} at ${sq(r1,c)}: power ${d.power}.`);}
+    else note(t`An asteroid jumped over ${own(d.side,'M')} at ${sq(r1,c)}.`);
     const d2=droneAt(r2,c);
-    if(d2&&d2.kind==='M'){queueShatter(d2);S.drones=S.drones.filter(x=>x!==d2);land(r2);note('The asteroid landed on '+poss(d2.side).toLowerCase()+' command drone at '+sq(r2,c)+'.');gameOver(other(d2.side),'An asteroid landed on '+poss(d2.side).toLowerCase()+' Command drone.');break;}
-    if(d2){queueShatter(d2);S.drones=S.drones.filter(x=>x!==d2);note('It landed on '+poss(d2.side).toLowerCase()+' '+TNAME[d2.kind]+' at '+sq(r2,c)+': destroyed.');}
+    if(d2&&d2.kind==='M'){queueShatter(d2);S.drones=S.drones.filter(x=>x!==d2);land(r2);note(t`The asteroid landed on ${own(d2.side,'M')} at ${sq(r2,c)}.`);gameOver(other(d2.side),t`An asteroid landed on ${own(d2.side,'M')}.`);break;}
+    if(d2){queueShatter(d2);S.drones=S.drones.filter(x=>x!==d2);note(t`It landed on ${own(d2.side,d2.kind)} at ${sq(r2,c)}: destroyed.`);}
     land(r2);
   }
   if(!moved)return;
-  note(who(side)+' cleared '+S.cleared[side]+' stars this turn: the asteroids drift '+(side===YOU?'down':'up')+' a square.');
+  note(t`${who(side)} cleared ${S.cleared[side]} stars this turn: the asteroids drift ${side===YOU?t('down'):t('up')} a square.`);
   renderBoard();await asteroidAnim(trail);await playFX();
   if(S.over)return;
   const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(500);await resolve(side,null);
@@ -1000,12 +1332,12 @@ function asteroidAnim(trail){return Promise.all(trail.map(([r0,c0,r1,c1])=>new P
   const ms=260*Math.max(1,Math.abs(r1-r0));g.style.transition=`left ${ms}ms ease-in,top ${ms}ms ease-in`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';}));
   setTimeout(()=>{g.remove();dest.style.visibility='';res();},ms+30);})));}
-function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note(`${poss(d.side)} siege drone at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
+function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);note(t`${cap(own(d.side,'X'))} at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`);}}}
 function checkSiegeWin(){ // a siege drone beside the enemy command drone, with no enemy shield beside either, ends the game
-  for(const x of S.drones){if(x.kind!=='X')continue;const t=fireTargets(x);if(t.cmd&&!t.guards.length){gameOver(x.side,who(x.side)+' took the Command drone.');return true;}}
+  for(const x of S.drones){if(x.kind!=='X')continue;const ft=fireTargets(x);if(ft.cmd&&!ft.guards.length){gameOver(x.side,t`${who(x.side)} took the Command drone.`);return true;}}
   return false;}
-function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
-function gameOver(w,reason){if(S.over)return;S.over={w,reason};note(`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`);rateGame(w);}
+function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
+function gameOver(w,reason){if(S.over)return;S.over={w,reason};note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`);rateGame(w);}
 async function afterAction(){
   if(S.over){save();renderAll();return;}
   if((S.cleared[S.turn]||0)>=8&&!S.drifted){S.drifted=true;await asteroidDrift(S.turn);if(S.over){save();renderAll();return;}}
@@ -1021,7 +1353,7 @@ async function afterAction(){
 // ---------- the bot ----------
 async function botSafely(){
   try{await botTurn(BOT);}
-  catch(e){note('Bot error: '+(e&&e.message||e)+'. Turn skipped.');console.error(e);S.turn=YOU;for(const d of S.drones)d.shots=0;save();renderAll();}
+  catch(e){note(t`Bot error: ${e&&e.message||e}. Turn skipped.`);console.error(e);S.turn=YOU;for(const d of S.drones)d.shots=0;save();renderAll();}
 }
 async function botTurn(me){
   if(S.over)return;
@@ -1063,9 +1395,9 @@ async function botTurn(me){
       if(d.kind==='B')v+=1;
       opts.push({type:'move',d,r,c,v});}
   }
-  if(!opts.length){note(`${who(me)} had nothing to do.`);await afterAction();return;}
+  if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else pick=opts[rnd(opts.length)];
-  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
+  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
   else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await playFX();}
@@ -1078,8 +1410,8 @@ async function botTurn(me){
 async function humanSwap(a,b){
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
   const sh=detectShapes(g,b);
-  if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus('No line there. Try another swap.');sel=null;renderBoard();return;}
-  busy=true;sel=null;note(`You swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard();
+  if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sel=null;renderBoard();return;}
+  busy=true;sel=null;note(t`${who(YOU)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard();
   await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
   tutAdvance('swap');busy=false;await afterAction();
 }
@@ -1088,7 +1420,7 @@ async function humanClaim(d){busy=true;sel=null;applyClaim(d);renderBoard();awai
 async function humanWarp(d,r,c){busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanRam(d){busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
-async function humanShots(d,list){busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?'Fired. This drone can fire again, or take your turn.':'Fired. Now take your turn: swap, move, claim or warp.');}
+async function humanShots(d,list){busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?t('Fired. This drone can fire again, or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
 
 // ---------- input ----------
 function onCell(r,c){
@@ -1096,28 +1428,28 @@ function onCell(r,c){
   const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
   if(mode==='confirm'){mode=null;pending=null;}
   if(mode==='aim'&&sd){
-    if(!vis(YOU,r,c)||!inRange(sd,r,c)){setStatus('Out of range or in the fog. A missile flies '+range()+' squares at something you can see.');return;}
-    if(!(d&&d.side===BOT)&&S.grid[r][c]<0){setStatus('Nothing there to hit.');return;}
-    if(d&&d.side===YOU){setStatus('That is your own drone.');return;}
+    if(!vis(YOU,r,c)||!inRange(sd,r,c)){setStatus(t`Out of range or in the fog. A missile flies ${range()} squares at something you can see.`);return;}
+    if(!(d&&d.side===BOT)&&S.grid[r][c]<0){setStatus(t('Nothing there to hit.'));return;}
+    if(d&&d.side===YOU){setStatus(t('That is your own drone.'));return;}
     const i=aimList.findIndex(t=>t.r===r&&t.c===c);if(i>=0)aimList.splice(i,1);else if(aimList.length<Math.min(shotsLeft(sd),S.missiles[YOU]))aimList.push({r,c});
     const want=Math.min(shotsLeft(sd),S.missiles[YOU]);
     if(aimList.length>=want){humanShots(sd,aimList.slice());return;}
-    setStatus(`${aimList.length} of ${want} aimed. Tap another target, or Fire now.`);renderBoard();renderActions();return;}
-  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus('Warp to a cleared square on your side, not next to an enemy shield.');return;}
-  if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus('That square is in the fog. Bring a drone next to it, or claim with a scout.');return;}
+    setStatus(t`${aimList.length} of ${want} aimed. Tap another target, or Fire now.`);renderBoard();renderActions();return;}
+  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to a cleared square on your side, not next to an enemy shield.'));return;}
+  if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus(t('That square is in the fog. Bring a drone next to it, or claim with a scout.'));return;}
   if(sd){const T=targets(sd);
-    if(T.has(k)){const t=T.get(k);
-      if(t==='merge'){const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? The ${TNAME[sd.kind]} is gone; you get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}.`);renderBoard();renderActions();return;}
+    if(T.has(k)){const tt=T.get(k);
+      if(tt==='merge'){const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(t`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? The ${TNAME[sd.kind]} is gone; you get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}.`);renderBoard();renderActions();return;}
       humanMove(sd,r,c);return;}}
-  if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];showTip(d);setStatus(describe(d)+'. Tap a marked square to move, red to take, green to stack.');renderBoard();renderActions();return;}
-  if(d){sel=null;showTip(d);setStatus(`That is ${poss(BOT).toLowerCase()} ${TNAME[d.kind]}.`);renderBoard();renderActions();return;}
-  if(S.grid[r][c]===ROCK){sel=null;setStatus('A asteroid. A missile clears it.');renderBoard();renderActions();return;}
+  if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];showTip(d);setStatus(describe(d)+t('. Tap a marked square to move, red to take, green to stack.'));renderBoard();renderActions();return;}
+  if(d){sel=null;showTip(d);setStatus(t`That is ${own(BOT,d.kind)}.`);renderBoard();renderActions();return;}
+  if(S.grid[r][c]===ROCK){sel=null;setStatus(t('An asteroid. A missile clears it.'));renderBoard();renderActions();return;}
   if(isWall(r,c)||isCmd(r,c)){sel=null;renderBoard();renderActions();return;}
   if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
-  sel={star:[r,c]};setStatus('Now tap a star next to it to swap.');renderBoard();renderActions();
+  sel={star:[r,c]};setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
-function describe(d){const rides=d.kind==='S'?'slides the diagonals':d.kind==='H'?'rides any color, 4 free steps':d.kind==='G'||d.kind==='X'?'no free rides':'rides '+d.colors.map(k=>KNAME[k]).join(' and ');
-  return `${poss(d.side)} ${TNAME[d.kind]}${d.kind==='S'?(d.sq?' (white)':' (red)'):''}${d.power>1?', power '+d.power:''}${d.kind==='C'?', '+d.claims+' claim'+(d.claims===1?'':'s'):''}${d.kind==='B'?', '+d.fuse+' turn'+(d.fuse===1?'':'s')+' to go':''}, ${rides}`;}
+function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 4 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
+  const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.kind==='B')parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
 
 // ---------- render ----------
 const cells=[];
@@ -1156,9 +1488,9 @@ function renderBoard(gone,born,mark,fall){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`+(S.fog?` · sees ${sees} squares`:'');}
-  $('botlbl').textContent=SNAME[BOT]+' · skill '+S.skill;
-  $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):'relaxed';$('ck2').textContent=S.timers?fmt(S.clock[2]):'relaxed';
+  for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`+(S.fog?t` · sees ${sees} squares`:'');}
+  $('botlbl').textContent=t`${SNAME[BOT]} · skill ${S.skill}`;
+  $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
 }
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
@@ -1166,33 +1498,33 @@ function renderActions(){
   const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy;
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(mine&&sd){
-    if(shotsLeft(sd)>0&&S.missiles[YOU]>0&&mode!=='aim')acts.push(`<button data-a="aim">Fire missile${shotsOf(sd)===2?'s':''} (${S.missiles[YOU]} banked)</button>`);
-    if(mode==='aim'&&aimList.length)acts.push('<button data-a="firenow" class="primary">Fire now</button>');
-    if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>Claim the 3 × 3 here (${claimGain(sd)} to take)</button>`);
-    if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp">Warp</button>');
-    if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push(`<button data-a="ram" class="danger">Ram the shield at ${sq(g.r,g.c)} (both lost)</button>`);else acts.push(`<button data-a="fire" ${canFire(sd)?'':'disabled'}>Fire at the wall</button>`);}
-    if(mode==='confirm'&&pending)acts.push('<button data-a="ok" class="primary">Yes, stack them</button>');
-    acts.push('<button data-a="cancel">Cancel</button>');
-  }else if(mine&&sel&&sel.star)acts.push('<button data-a="cancel">Cancel</button>');
-  if(mine&&!sd&&!sel){hint.push(S.missiles[YOU]>0&&dronesOf(YOU).some(d=>shotsLeft(d)>0)?'Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.':'Swap two stars side by side, or tap one of your drones.');}
+    if(shotsLeft(sd)>0&&S.missiles[YOU]>0&&mode!=='aim')acts.push('<button data-a="aim">'+t`Fire missile${shotsOf(sd)===2?'s':''} (${S.missiles[YOU]} banked)`+'</button>');
+    if(mode==='aim'&&aimList.length)acts.push('<button data-a="firenow" class="primary">'+t('Fire now')+'</button>');
+    if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>`+t`Claim the 3 × 3 here (${claimGain(sd)} to take)`+'</button>');
+    if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp">'+t('Warp')+'</button>');
+    if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push('<button data-a="ram" class="danger">'+t`Ram the shield at ${sq(g.r,g.c)} (both lost)`+'</button>');}
+    if(mode==='confirm'&&pending)acts.push('<button data-a="ok" class="primary">'+t('Yes, stack them')+'</button>');
+    acts.push('<button data-a="cancel">'+t('Cancel')+'</button>');
+  }else if(mine&&sel&&sel.star)acts.push('<button data-a="cancel">'+t('Cancel')+'</button>');
+  if(mine&&!sd&&!sel){hint.push(S.missiles[YOU]>0&&dronesOf(YOU).some(d=>shotsLeft(d)>0)?t('Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.'):t('Swap two stars side by side, or tap one of your drones.'));}
   $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
   if(S&&S.tut){const c=coach();if(c&&c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}} // the buttons were just rebuilt: put the coach's pulse back
 }
 $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(a==='cancel'){sel=null;mode=null;pending=null;aimList=[];renderAll();return;}
   if(!sd)return;
-  if(a==='aim'){mode='aim';aimList=[];setStatus(shotsOf(sd)===2?'Aim two targets within '+range()+' squares, then they fire together.':'Tap a target within '+range()+' squares: an enemy drone, a asteroid, or a star.');renderBoard();renderActions();}
+  if(a==='aim'){mode='aim';aimList=[];setStatus(shotsOf(sd)===2?t`Aim two targets within ${range()} squares, then they fire together.`:t`Tap a target within ${range()} squares: an enemy drone, an asteroid, or a star.`);renderBoard();renderActions();}
   else if(a==='firenow'){if(aimList.length)humanShots(sd,aimList.slice());}
   else if(a==='claim'){if(claimGain(sd))humanClaim(sd);}
-  else if(a==='warp'){mode='warp';setStatus('Tap a cleared square on your side to warp there. Not on or next to an enemy shield.');renderBoard();renderActions();}
+  else if(a==='warp'){mode='warp';setStatus(t('Tap a cleared square on your side to warp there. Not on or next to an enemy shield.'));renderBoard();renderActions();}
   else if(a==='fire'){if(canFire(sd))humanFireSiege(sd);}
   else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
   else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;renderBoard();renderSide();renderActions();renderRecord();renderGuide();
-  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?'You win':SNAME[BOT]+' wins';$('overText').textContent=S.over.reason;setStatus('Game over. '+S.over.reason);}
-  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode)setStatus('Your move.');}else setStatus(SNAME[BOT]+' is thinking…');}}
+  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?t('You win'):t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
+  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode)setStatus(t('Your move.'));}else setStatus(t('The bot is thinking…'));}}
 
 // ---------- the coach: a whole first game, one suggestion at a time ----------
 // Every step is two parts: DO this, and WHY. The goal of the game stays pinned under the coach's words
@@ -1203,7 +1535,7 @@ function tutMark(k){if(!S||!S.tut)return;if(!S.tutDone)S.tutDone=[];if(!S.tutDon
 function bestSwap(){return validSwaps(YOU).sort((a,b)=>shapeValue(b.sh,YOU)-shapeValue(a.sh,YOU))[0]||null;}
 function coach(){
   if(!S||!S.tut||S.over)return null;
-  if(S.turn!==YOU)return {text:'The bot is taking its turn.',why:'It plays by the same rules. In this first game it only moves its drones; it will not touch the stars.',lit:null,calls:[]};
+  if(S.turn!==YOU)return {text:t('The bot is taking its turn.'),why:t('It plays by the same rules. In this first game it only moves its drones; it will not touch the stars.'),lit:null,calls:[]};
   const mine=dronesOf(YOU),sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,lit=new Set();
   const sc=mine.filter(d=>d.kind==='C'&&d.claims>0).sort((a,b)=>b.id-a.id)[0];
   const L=(text,why,cells,calls,btn)=>{for(const c of cells||[])lit.add(typeof c==='number'?c:key(c[0],c[1]));
@@ -1211,59 +1543,59 @@ function coach(){
     if(calls.length===2&&calls[0].at[1]===calls[1].at[1]&&calls[0].below==null&&calls[1].below==null){const lo=calls[0].at[0]>calls[1].at[0]?0:1;calls[lo].below=true;}
     return {text,why,lit:lit.size?lit:null,calls,btn:btn||null};};
   const yard=[SEAM+3,5];
-  const note=tutDone('claim')&&!tutDone('claimnote')?'That scout has one claim left; a scout claims twice, then it is used up. ':'';
+  const note=tutDone('claim')&&!tutDone('claimnote')?t('That scout has one claim left; a scout claims twice, then it is used up. '):'';
   // 0. the fixed opening
   if(S.tutSwap&&!tutDone('swap')){const [a,b]=S.tutSwap;if(S.grid[a[0]][a[1]]>=0&&S.grid[b[0]][b[1]]>=0)
-    return L('Tap the gold star at '+sq(a[0],a[1])+', then the blue star right above it.','Swapping them lines up four blue stars. Four in a line makes you a drone. Drones are how you take land, and land is how you win.',[a,b],[{at:a,label:'1. tap this gold',below:true},{at:b,label:'2. then this blue'}]);}
+    return L(t`Tap the gold star at ${sq(a[0],a[1])}, then the blue star right above it.`,t('Swapping them lines up four blue stars. Four in a line makes you a drone. Drones are how you take land, and land is how you win.'),[a,b],[{at:a,label:t('1. tap this gold'),below:true},{at:b,label:t('2. then this blue')}]);}
   // 1. land, then move the scout
   if(!tutDone('move')&&sc){
-    if(sd&&sd.id===sc.id){const t=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);
-      const best=t.map(k=>rc(k)).sort((p,q)=>claimGain({r:q[0],c:q[1],side:YOU})-claimGain({r:p[0],c:p[1],side:YOU})||Math.abs(p[0]-SEAM)-Math.abs(q[0]-SEAM))[0];
-      return L('Tap the square with the arrow to move the scout there.','A scout claims the 9 squares around itself. Out in the open those squares are empty, so it gets all 9. One move is one turn.',t,best?[{at:best,label:'move it here'}]:[]);}
-    return L('Tap your new scout, the S at '+sq(sc.r,sc.c)+'.','The gold squares are your land: '+landOf(YOU)+' so far. You win at '+S.win+'. Scouts are the drones that claim land.',[[sc.r,sc.c]],[{at:yard,label:'your land: '+landOf(YOU)+' squares',below:true},{at:[sc.r,sc.c],label:'tap your scout'}]);}
+    if(sd&&sd.id===sc.id){const tg=[...targets(sc).entries()].filter(([k,v])=>v==='move'||v==='dark').map(([k])=>k);
+      const best=tg.map(k=>rc(k)).sort((p,q)=>claimGain({r:q[0],c:q[1],side:YOU})-claimGain({r:p[0],c:p[1],side:YOU})||Math.abs(p[0]-SEAM)-Math.abs(q[0]-SEAM))[0];
+      return L(t('Tap the square with the arrow to move the scout there.'),t('A scout claims the 9 squares around itself. Out in the open those squares are empty, so it gets all 9. One move is one turn.'),tg,best?[{at:best,label:t('move it here')}]:[]);}
+    return L(t`Tap your new scout, the S at ${sq(sc.r,sc.c)}.`,t`The gold squares are your land: ${landOf(YOU)} so far. You win at ${S.win}. Scouts are the drones that claim land.`,[[sc.r,sc.c]],[{at:yard,label:t`your land: ${landOf(YOU)} squares`,below:true},{at:[sc.r,sc.c],label:t('tap your scout')}]);}
   // 2. claim
   if(!tutDone('claim')&&sc&&claimGain(sc)>0){
-    if(sd&&sd.id===sc.id)return L('Tap the Claim button under the board.','The 9 squares around the scout become yours: '+landOf(YOU)+' becomes '+(landOf(YOU)+claimGain(sc))+'. Claiming is a turn, like a move.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap Claim below'}],'claim');
-    return L('Tap the scout again.','This time it will claim the land around it instead of moving.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap it again'}]);}
+    if(sd&&sd.id===sc.id)return L(t('Tap the Claim button under the board.'),t`The 9 squares around the scout become yours: ${landOf(YOU)} becomes ${landOf(YOU)+claimGain(sc)}. Claiming is a turn, like a move.`,[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap Claim below')}],'claim');
+    return L(t('Tap the scout again.'),t('This time it will claim the land around it instead of moving.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap it again')}]);}
   // 3. a swap that pays
   const bs=bestSwap();
   const pays=!!(bs&&bs.sh.spawns.some(sp=>placeCell(YOU,sp)));
-  if(!tutDone('swap')){if(pays)return L(note+'Tap the two stars with the arrows, one after the other.','They make '+bs.sh.spawns[0].label+', and that pays a drone. More drones, more land.',[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
-    if(bs)return L(note+'Tap the two stars with the arrows.','Three in a line pays nothing, but it clears them and new stars fall in, which can set up a four.',[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
-    return L(note+'No swap is open. Move a drone instead.','The stars shift as the game goes on; a line will come.',[]);}
+  if(!tutDone('swap')){if(pays)return L(note+t('Tap the two stars with the arrows, one after the other.'),t`They make ${bs.sh.spawns[0].label}, and that pays a drone. More drones, more land.`,[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
+    if(bs)return L(note+t('Tap the two stars with the arrows.'),t('Three in a line pays nothing, but it clears them and new stars fall in, which can set up a four.'),[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
+    return L(note+t('No swap is open. Move a drone instead.'),t('The stars shift as the game goes on; a line will come.'),[]);}
   // 4. meet the new drone
-  const newest=mine.filter(d=>d.kind!=='G'&&d.kind!=='C').sort((a,b)=>b.id-a.id)[0];
+  const newest=mine.filter(d=>d.kind!=='G'&&d.kind!=='C'&&d.kind!=='M').sort((a,b)=>b.id-a.id)[0];
   if(!tutDone('drone')&&newest){
-    if(sd&&sd.id===newest.id)return L(note+'Tap one of the marked squares.','That is a '+TNAME[newest.kind]+'. '+TIPS[newest.kind].split('.')[0]+'. Red squares mean it takes the enemy drone there.',[...targets(newest).keys()]);
-    return L(note+'Tap your new '+TNAME[newest.kind]+', the '+LETTER[newest.kind]+' at '+sq(newest.r,newest.c)+'.','Each kind of drone moves and fights its own way. Tapping one shows where it can go and tells you what it does.',[[newest.r,newest.c]],[{at:[newest.r,newest.c],label:'tap your new '+TNAME[newest.kind]}]);}
-  // 5. fire a missile: at the bot's scout once it has walked up, else at a asteroid
+    if(sd&&sd.id===newest.id)return L(note+t('Tap one of the marked squares.'),t`That is ${aname(newest.kind)}. ${t(TIPS[newest.kind]).split('.')[0]}. Red squares mean it takes the enemy drone there.`,[...targets(newest).keys()]);
+    return L(note+t`Tap your new ${TNAME[newest.kind]}, the ${LETTER[newest.kind]} at ${sq(newest.r,newest.c)}.`,t('Each kind of drone moves and fights its own way. Tapping one shows where it can go and tells you what it does.'),[[newest.r,newest.c]],[{at:[newest.r,newest.c],label:t`tap your new ${TNAME[newest.kind]}`}]);}
+  // 5. fire a missile: at the bot's scout once it has walked up, else at an asteroid
   if(!tutDone('fire')&&S.missiles[YOU]>0){
     for(const sh of mine.filter(d=>shotsLeft(d)>0)){const foe=dronesOf(BOT).find(e=>vis(YOU,e.r,e.c)&&inRange(sh,e.r,e.c));
-      if(foe){if(mode==='aim'&&sd&&sd.id===sh.id)return L("Tap the bot's "+TNAME[foe.kind]+'.','A missile takes one power off a drone. This one has '+foe.power+', so it is destroyed, and destroying an enemy drone earns you a missile back.',[[foe.r,foe.c]],[{at:[foe.r,foe.c],label:'shoot it'}]);
-        if(sd&&sd.id===sh.id)return L(note+'Tap the Fire missile button under the board.','Missiles come before your move, so firing does not cost your turn.',[[sh.r,sh.c]],[],'aim');
-        return L(note+'Tap your '+TNAME[sh.kind]+' at '+sq(sh.r,sh.c)+'.',"The bot's "+TNAME[foe.kind]+' has walked up to '+sq(foe.r,foe.c)+' to claim land near you. You have a missile, and scouts and hunters fire them. Shoot it before it claims.',[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'},{at:[foe.r,foe.c],label:"the bot's "+TNAME[foe.kind],below:true}]);}}
+      if(foe){if(mode==='aim'&&sd&&sd.id===sh.id)return L(t`Tap ${own(BOT,foe.kind)}.`,t`A missile takes one power off a drone. This one has ${foe.power}, so it is destroyed, and destroying an enemy drone earns you a missile back.`,[[foe.r,foe.c]],[{at:[foe.r,foe.c],label:t('shoot it')}]);
+        if(sd&&sd.id===sh.id)return L(note+t('Tap the Fire missile button under the board.'),t('Missiles come before your move, so firing does not cost your turn.'),[[sh.r,sh.c]],[],'aim');
+        return L(note+t`Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}.`,t`${cap(own(BOT,foe.kind))} has walked up to ${sq(foe.r,foe.c)} to claim land near you. You have a missile, and scouts and hunters fire them. Shoot it before it claims.`,[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:t('tap, then Fire')},{at:[foe.r,foe.c],label:own(BOT,foe.kind),below:true}]);}}
     const walking=dronesOf(BOT).some(e=>e.kind==='C')&&!dronesOf(BOT).some(e=>vis(YOU,e.r,e.c));
     if(!walking)for(const sh of mine.filter(d=>shotsLeft(d)>0)){const asteroids=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK&&vis(YOU,r,c)&&inRange(sh,r,c))asteroids.push([r,c]);
-      if(asteroids.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L('Tap the asteroid with the arrow.','The missile clears it and the stars drop into the gap.',asteroids,[{at:asteroids[0],label:'shoot this asteroid'}]);
-        if(sd&&sd.id===sh.id)return L(note+'Tap the Fire missile button under the board.','Missiles come before your move, so this does not cost your turn.',[[sh.r,sh.c]],[],'aim');
-        return L(note+'Tap your '+TNAME[sh.kind]+' at '+sq(sh.r,sh.c)+'.','You have a missile. Scouts and hunters fire them. A asteroid is in range: asteroids block the stars from lining up, and a missile clears one.',[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:'tap, then Fire'}]);}}}
+      if(asteroids.length){if(mode==='aim'&&sd&&sd.id===sh.id)return L(t('Tap the asteroid with the arrow.'),t('The missile clears it and the stars drop into the gap.'),asteroids,[{at:asteroids[0],label:t('shoot this asteroid')}]);
+        if(sd&&sd.id===sh.id)return L(note+t('Tap the Fire missile button under the board.'),t('Missiles come before your move, so this does not cost your turn.'),[[sh.r,sh.c]],[],'aim');
+        return L(note+t`Tap your ${TNAME[sh.kind]} at ${sq(sh.r,sh.c)}.`,t('You have a missile. Scouts and hunters fire them. An asteroid is in range: asteroids block the stars from lining up, and a missile clears one.'),[[sh.r,sh.c]],[{at:[sh.r,sh.c],label:t('tap, then Fire')}]);}}}
   // 6. take something
-  for(const d of mine){for(const [k,t] of targets(d))if(t==='take'){const v=droneAt(...rc(k));
-    if(!tutDone('take'))return sd&&sd.id===d.id?L('Tap the red square.','Your '+TNAME[d.kind]+' lands on the bot\'s '+TNAME[v.kind]+' and takes it. Every take earns a missile.',[k],[{at:rc(k),label:'take it'}]):L(note+'Tap your '+TNAME[d.kind]+' at '+sq(d.r,d.c)+'.','It can take the bot\'s '+TNAME[v.kind]+' at '+sq(...rc(k))+'. Fewer enemy drones, less enemy land.',[[d.r,d.c]],[{at:[d.r,d.c],label:'tap this one'}]);
-    return sd&&sd.id===d.id?L('Tap the red square.','A take.',[k],[{at:rc(k),label:'take it'}]):L(note+'A take is open: your '+TNAME[d.kind]+' at '+sq(d.r,d.c)+'.','It can land on the bot\'s drone at '+sq(...rc(k))+'.',[[d.r,d.c]],[{at:[d.r,d.c],label:'tap this one'}]);}}
+  for(const d of mine){for(const [k,tk] of targets(d))if(tk==='take'){const v=droneAt(...rc(k));
+    if(!tutDone('take'))return sd&&sd.id===d.id?L(t('Tap the red square.'),t`Your ${TNAME[d.kind]} lands on ${own(BOT,v.kind)} and takes it. Every take earns a missile.`,[k],[{at:rc(k),label:t('take it')}]):L(note+t`Tap your ${TNAME[d.kind]} at ${sq(d.r,d.c)}.`,t`It can take ${own(BOT,v.kind)} at ${sq(...rc(k))}. Fewer enemy drones, less enemy land.`,[[d.r,d.c]],[{at:[d.r,d.c],label:t('tap this one')}]);
+    return sd&&sd.id===d.id?L(t('Tap the red square.'),t('A take.'),[k],[{at:rc(k),label:t('take it')}]):L(note+t`A take is open: your ${TNAME[d.kind]} at ${sq(d.r,d.c)}.`,t`It can land on the bot's drone at ${sq(...rc(k))}.`,[[d.r,d.c]],[{at:[d.r,d.c],label:t('tap this one')}]);}}
   // 7. stack two drones
-  if(!tutDone('stack')&&mine.length>=5){for(const a of mine)for(const b of mine){if(a===b||a.kind==='X'||b.kind==='X'||a.kind==='C'||b.kind==='G')continue;if(targets(a).get(key(b.r,b.c))==='merge'){
-    return sd&&sd.id===a.id?L('Tap the green square.','That stacks the two. The stack keeps the '+TNAME[b.kind]+'\'s kind and each power takes one more missile to bring down.',[[b.r,b.c]],[{at:[b.r,b.c],label:'stack here'}]):L(note+'Tap your '+TNAME[a.kind]+' at '+sq(a.r,a.c)+'.','Two of your drones can stack: this one onto the '+TNAME[b.kind]+' at '+sq(b.r,b.c)+'. A stack is armor against missiles.',[[a.r,a.c]],[{at:[a.r,a.c],label:'tap this one'}]);}}}
+  if(!tutDone('stack')&&mine.length>=5){for(const a of mine)for(const b of mine){if(a===b||a.kind==='X'||b.kind==='X'||a.kind==='C'||b.kind==='G'||a.kind==='M')continue;if(targets(a).get(key(b.r,b.c))==='merge'){
+    return sd&&sd.id===a.id?L(t('Tap the green square.'),t`That stacks the two. The stack keeps the kind of ${TNAME[b.kind]} and each power takes one more missile to bring down.`,[[b.r,b.c]],[{at:[b.r,b.c],label:t('stack here')}]):L(note+t`Tap your ${TNAME[a.kind]} at ${sq(a.r,a.c)}.`,t`Two of your drones can stack: this one onto ${TNAME[b.kind]} at ${sq(b.r,b.c)}. A stack is armor against missiles.`,[[a.r,a.c]],[{at:[a.r,a.c],label:t('tap this one')}]);}}}
   // 8. the siege
   const x=mine.find(d=>d.kind==='X');
   if(x){const em=cmdOf(BOT);
-    if(!tutDone('siege'))return sd&&sd.id===x.id?L('Tap a marked square toward the top.','It walks one square a turn and no drone can take it. The moment it stands next to the bot\'s Command drone with no shield beside either of them, you win.',[...targets(x).keys()]):L(note+'Tap your siege drone at '+sq(x.r,x.c)+'.','It is the other way to win: walk it next to the bot\'s Command drone, the M'+(em?' at '+sq(em.r,em.c):'')+'.',[[x.r,x.c]],em?[{at:[x.r,x.c],label:'your siege drone'},{at:[em.r,em.c],label:"the bot's Command drone",below:true}]:[{at:[x.r,x.c],label:'your siege drone'}]);}
+    if(!tutDone('siege'))return sd&&sd.id===x.id?L(t('Tap a marked square toward the top.'),t("It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no shield beside either of them, you win."),[...targets(x).keys()]):L(note+t`Tap your siege drone at ${sq(x.r,x.c)}.`,t`It is the other way to win: walk it next to the bot's Command drone, the M${em?t` at ${sq(em.r,em.c)}`:''}.`,[[x.r,x.c]],em?[{at:[x.r,x.c],label:t('your siege drone')},{at:[em.r,em.c],label:t("the bot's Command drone"),below:true}]:[{at:[x.r,x.c],label:t('your siege drone')}]);}
   // 9. keep claiming, keep swapping
-  if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L('Tap Claim.',claimGain(sc)+' more squares.',[[sc.r,sc.c]],[],'claim'):L(note+'Tap your scout at '+sq(sc.r,sc.c)+'.','It can claim '+claimGain(sc)+' squares. You hold '+landOf(YOU)+' of '+S.win+'.',[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:'tap, then Claim'}]);
-  if(bs)return L(note+'Tap the two stars with the arrows.',(pays?'They make '+bs.sh.spawns[0].label+', which pays a drone.':'Three in a line, nothing paid, but the board shifts.')+' You hold '+landOf(YOU)+' of '+S.win+'.',[bs.a,bs.b],[{at:bs.a,label:'1. tap'},{at:bs.b,label:'2. tap'}]);
+  if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L(t('Tap Claim.'),t`${claimGain(sc)} more squares.`,[[sc.r,sc.c]],[],'claim'):L(note+t`Tap your scout at ${sq(sc.r,sc.c)}.`,t`It can claim ${claimGain(sc)} squares. You hold ${landOf(YOU)} of ${S.win}.`,[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap, then Claim')}]);
+  if(bs)return L(note+t('Tap the two stars with the arrows.'),(pays?t`They make ${bs.sh.spawns[0].label}, which pays a drone.`:t('Three in a line, nothing paid, but the board shifts.'))+t` You hold ${landOf(YOU)} of ${S.win}.`,[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
   const anyC=mine.find(d=>d.kind==='C');
-  if(anyC)return L(note+'Tap your scout at '+sq(anyC.r,anyC.c)+' and walk it toward open land.','No paying swap is in sight; claiming is the other way to gain.',[[anyC.r,anyC.c]],[{at:[anyC.r,anyC.c],label:'tap your scout'}]);
-  return L(note+'Move a drone forward.','Nothing pays right now; the stars will shift.',[]);
+  if(anyC)return L(note+t`Tap your scout at ${sq(anyC.r,anyC.c)} and walk it toward open land.`,t('No paying swap is in sight; claiming is the other way to gain.'),[[anyC.r,anyC.c]],[{at:[anyC.r,anyC.c],label:t('tap your scout')}]);
+  return L(note+t('Move a drone forward.'),t('Nothing pays right now; the stars will shift.'),[]);
 }
 function tutLit(){const c=coach();return c&&c.lit?c.lit:null;}
 function renderCallouts(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
@@ -1271,9 +1603,9 @@ function renderCallouts(c){const b=$('board');for(const el of [...b.querySelecto
   for(const k of c.calls||[]){const [r,cc]=k.at;const [x,y,w]=cellXY(r,cc);const el=document.createElement('div');const below=k.below||r<=1;el.className='callout'+(below?' below':'');el.innerHTML=`<span class="bub">${k.label}</span><span class="arw"></span>`;el.style.left=x+'px';el.style.top=(below?y+w/2:y-w/2)+'px';b.appendChild(el);}
   if(c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}}
 function renderGuide(){const g=$('guide');const c=coach();renderCallouts(c);
-  if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>Coach</b>'+(S.over.w===YOU?'That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.':'That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.');return;}g.hidden=true;return;}
-  const last=S.log.find(l=>/^You/.test(l)&&!/nothing paid/.test(l))||S.log.find(l=>/^You/.test(l));
-  g.hidden=false;g.innerHTML='<div class="do"><b>Do</b>'+c.text+'</div><div class="why"><b>Why</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>Just now</b>'+last+'</div>':'')+'<div class="goal"><b>The game</b>You are trying to claim more of the sky than the bot: '+S.win+' squares wins, or a siege drone standing next to the bot\'s Command drone. You own '+landOf(YOU)+', the bot owns '+landOf(BOT)+'. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.</div>';}
+  if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>'+t('Coach')+'</b>'+(S.over.w===YOU?t('That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.'):t('That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.'));return;}g.hidden=true;return;}
+  const me=SNAME[YOU];const last=S.log.find(l=>l.startsWith(me)&&!/nothing paid|rien gagné/.test(l))||S.log.find(l=>l.startsWith(me));
+  g.hidden=false;g.innerHTML='<div class="do"><b>'+t('Do')+'</b>'+c.text+'</div><div class="why"><b>'+t('Why')+'</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>'+t('Just now')+'</b>'+last+'</div>':'')+'<div class="goal"><b>'+t('The game')+'</b>'+t`You are trying to claim more of the sky than the bot: ${S.win} squares wins, or a siege drone standing next to the bot's Command drone. You own ${landOf(YOU)}, the bot owns ${landOf(BOT)}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.`+'</div>';}
 function tutAdvance(what,d,extra){if(!S||!S.tut)return;
   if(tutDone('claim')&&what!=='claim')tutMark('claimnote');
   if(what==='move'){tutMark('move');if(d&&d.kind!=='C')tutMark('drone');if(extra==='take')tutMark('take');if(extra==='merge')tutMark('stack');if(d&&d.kind==='X')tutMark('siege');}
@@ -1282,14 +1614,15 @@ function tutOnSelect(){}
 
 // ---------- tips ----------
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
-G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege it blocks the shot.',
+G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege. A slide into the fog is a commitment.',
 H:'Moves 1 square plus up to 4 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.',
 W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
-X:'Moves exactly 1 square, into the dark if it likes. Next to the enemy wall, Fire clears the walls beside it; next to the Commander it wins. Cannot take or be taken by drones. Four enemies around it destroy it. A shield blocks its shot: ram it and both are gone.',
-B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.'};
+X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Cannot take or be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.',
+B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
+M:'Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no shield near, or an asteroid landing on it, ends the game.'};
 let tip=null;
-function showTip(d){if(!$('inTips').checked){$('dtip').hidden=true;return;}tip=d;const el=$('dtip');el.hidden=false;el.innerHTML=`<span class="x">×</span><b style="color:${d.side===YOU?'var(--you)':'var(--bot)'}">${poss(d.side)} ${TNAME[d.kind]}</b> ${TIPS[d.kind]}`;}
+function showTip(d){if(!$('inTips').checked){$('dtip').hidden=true;return;}tip=d;const el=$('dtip');el.hidden=false;el.innerHTML=`<span class="x">×</span><b style="color:${d.side===YOU?'var(--you)':'var(--bot)'}">${cap(own(d.side,d.kind))}</b> ${t(TIPS[d.kind])}`;}
 $('dtip').addEventListener('click',e=>{if(e.target.classList.contains('x'))$('dtip').hidden=true;});
 
 // ---------- ratings ----------
@@ -1303,22 +1636,22 @@ function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const ex
 function rateGame(w){if(!S||S.rated||S.tut)return;S.rated=true;
   const oppR=botRating(S.skill),weight=Math.max(0.1,S.skill/100),score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:'Bot '+S.skill,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
-  note(`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). Bot ${S.skill} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
+  note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). Bot ${S.skill} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
 function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
-  $('record').innerHTML=`${prof.n?prof.n+' · ':''}Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won${prof.g?' · '+last:''}<br>Bot at skill ${S?S.skill:$('inSkill').value} is rated ${botRating(S?S.skill:+$('inSkill').value)}; a game against it moves you at ${Math.max(10,S?S.skill:+$('inSkill').value)}% of a game against a person.`;}
+  const sk=S?S.skill:+$('inSkill').value;$('record').innerHTML=(prof.n?prof.n+' · ':'')+t`Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won`+(prof.g?' · '+last:'')+'<br>'+t`Bot at skill ${sk} is rated ${botRating(sk)}; a game against it moves you at ${Math.max(10,sk)}% of a game against a person.`;}
 
 // ---------- clocks ----------
-setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const t=S.turn;S.clock[t]-=250;if(S.clock[t]<=0){S.clock[t]=0;gameOver(other(t),`${who(t)} ran out of time.`);save();renderAll();return;}
-  if(t===YOU&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note('You ran out of move time. Turn passes.');sel=null;mode=null;afterAction();return;}}
+setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
+  if(tn===YOU&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note(t('You ran out of move time. Turn passes.'));sel=null;mode=null;afterAction();return;}}
   $('ck1').textContent=fmt(S.clock[1]);$('ck2').textContent=fmt(S.clock[2]);},250);
 setInterval(()=>{if(S)save();},3000);
 
 // ---------- version ----------
 $('ver').textContent='v'+VERSION;let newverSeen=false;
 async function checkVersion(){if(newverSeen||!/^https?:/.test(location.protocol))return;try{const t=+localStorage.getItem('cc_upd')||0;if(Date.now()-t<10*60000)return;}catch(_){}
-  try{const r=await fetch(location.pathname,{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(t);const num=v=>v.split('.').map(Number);
-    if(m&&m[1]!==VERSION){const a=num(m[1]),b=num(VERSION);const newer=a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&a[2]>b[2])));if(newer){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=`You have v${VERSION}. v${m[1]} is out.`;}}}catch(_){}}
-$('btnReload').addEventListener('click',async()=>{save();try{localStorage.setItem('cc_upd',String(Date.now()));}catch(_){}$('btnReload').textContent='Reloading…';try{await fetch(location.pathname,{cache:'reload'});}catch(_){}location.replace(location.pathname+'?fresh='+Date.now());});
+  try{const r=await fetch(location.pathname,{cache:'no-store'});if(!r.ok)return;const txt=await r.text();const m=/const VERSION='([0-9.]+)'/.exec(txt);const num=v=>v.split('.').map(Number);
+    if(m&&m[1]!==VERSION){const a=num(m[1]),b=num(VERSION);const newer=a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&a[2]>b[2])));if(newer){newverSeen=true;$('newver').hidden=false;$('newverText').textContent=t`You have v${VERSION}. v${m[1]} is out.`;}}}catch(_){}}
+$('btnReload').addEventListener('click',async()=>{save();try{localStorage.setItem('cc_upd',String(Date.now()));}catch(_){}$('btnReload').textContent=t('Reloading…');try{await fetch(location.pathname,{cache:'reload'});}catch(_){}location.replace(location.pathname+'?fresh='+Date.now());});
 $('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
 try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname);}catch(_){}
 setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
@@ -1326,11 +1659,11 @@ setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion
 // ---------- copy as text ----------
 function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;c++){const d=droneAt(r,c);const k=key(r,c);s+=isCmd(r,c)?'M':isWall(r,c)?'#':d?(d.side===YOU?LETTER[d.kind]:LETTER[d.kind].toLowerCase()):S.grid[r][c]===ROCK?'%':!vis(YOU,r,c)?'?':S.own[k]===YOU?'y':S.own[k]===BOT?'b':S.own[k]===3?'=':'RGEBV'[S.grid[r][c]]||'.';}rows.push(s);}
   return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'}\n\nBOARD (UPPER = yours, lower = bot, M commander, # wall, % asteroid, ? fog, y/b/= land, letters R G E B V = star colors on open squares)\n${rows.join('\n')}\n\nLOG\n${S.log.slice(0,30).join('\n')}`;}
-$('btnCopy').addEventListener('click',async()=>{const t=gameText();try{await navigator.clipboard.writeText(t);note('Game copied as text.');}catch(_){prompt('Copy this:',t);}renderSide();});
+$('btnCopy').addEventListener('click',async()=>{const txt=gameText();try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();});
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
-$('btnNew').addEventListener('click',()=>{if(busy)return;if(S&&!S.over&&S.turnNo>2&&!confirm('Start a new game? This one counts as a loss.'))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,'The game was abandoned.');}newGame();});
+$('btnNew').addEventListener('click',()=>{if(busy)return;if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
 $('btnAgain').addEventListener('click',()=>newGame());
 $('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
 $('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
@@ -1341,6 +1674,15 @@ $('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice
 $('inSkill').addEventListener('change',renderRecord);
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
+translateDOM(document.body);
+$('legend').innerHTML=['M','C','G','S','H','W','X','B'].map(k=>'<b>'+LETTER[k]+'</b> '+(LANG==='fr'?NOUN_FR[k][0]:TNAME[k])).join(' · ');
+if(LANG==='fr')for(const a of document.querySelectorAll('a[href$="rules.html"]'))a.href=a.href.replace('rules.html','rules-fr.html');
+$('inLang').value=LANG;
+function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
+$('inLang').addEventListener('change',()=>setLang($('inLang').value));
+for(const b of document.querySelectorAll('#cover [data-lang]')){b.classList.toggle('on',b.dataset.lang===LANG);b.addEventListener('click',()=>setLang(b.dataset.lang));}
+$('coverGo').addEventListener('click',()=>{$('cover').hidden=true;});
+showCover();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
 (function boot(){
@@ -1351,6 +1693,17 @@ if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').remo
   else if(!S)newGame();
 })();
 document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
+
+// ---------- the cover: a sky, the ships, a saying ----------
+function showCover(){const cv=$('cover');$('coverSay').textContent=t(SAYINGS[rnd(SAYINGS.length)]);
+  const art=$('coverArt');let stars='';for(let i=0;i<110;i++){const x=Math.random()*640,y=Math.random()*300,r=Math.random()<.85?.6+Math.random()*.9:1.4+Math.random()*1.2;stars+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#fff" opacity="${(.3+Math.random()*.7).toFixed(2)}"/>`;}
+  const pts=[[80,210],[150,120],[250,160],[330,70],[430,130],[520,90],[590,180]];let lines='';for(let i=1;i<pts.length;i++)lines+=`<line x1="${pts[i-1][0]}" y1="${pts[i-1][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" stroke="#e8a63b" stroke-opacity=".35" stroke-width="1.2"/>`;
+  const glyph=['50,0 61.8,33.8 97.6,34.5 69,56.2 79.4,90.5 50,70 20.6,90.5 31,56.2 2.4,34.5 38.2,33.8','50,0 60,40 100,50 60,60 50,100 40,60 0,50 40,40','50,0 62.5,28.3 93.3,25 75,50 93.3,75 62.5,71.7 50,100 37.5,71.7 6.7,75 25,50 6.7,25 37.5,28.3','50,0 61.5,22.3 85.4,14.6 77.7,38.5 100,50 77.7,61.5 85.4,85.4 61.5,77.7 50,100 38.5,77.7 14.6,85.4 22.3,61.5 0,50 22.3,38.5 14.6,14.6 38.5,22.3'];
+  let big='';pts.forEach(([x,y],i)=>{const k=i%5;const s=14+(i%3)*4;if(k===4)big+=`<circle cx="${x}" cy="${y}" r="${s/2}" fill="${KCOL[4]}" opacity=".9"/>`;else big+=`<polygon points="${glyph[k]}" fill="${KCOL[k]}" transform="translate(${x-s/2} ${y-s/2}) scale(${s/100})"/>`;});
+  art.innerHTML=`<svg viewBox="0 0 640 300" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="cvbg" cx="50%" cy="115%" r="90%"><stop offset="0" stop-color="#23385c"/><stop offset=".55" stop-color="#0d1420"/><stop offset="1" stop-color="#05070b"/></radialGradient></defs><rect width="640" height="300" fill="url(#cvbg)"/>${stars}${lines}${big}<ellipse cx="320" cy="330" rx="420" ry="70" fill="#1b2a44" opacity=".8"/></svg>`;
+  const ship=(side,kind,x,y,sz)=>{const d={id:0,r:0,c:0,side,kind,colors:[side===YOU?1:3],power:1};const w=document.createElement('div');w.className='ship';w.style.cssText=`left:${x}%;top:${y}%;width:${sz}px;height:${sz}px`;w.innerHTML=droneHTML(d);art.appendChild(w);};
+  ship(YOU,'M',44,54,74);ship(YOU,'C',28,64,48);ship(YOU,'X',60,66,48);ship(BOT,'G',78,28,44);ship(BOT,'S',14,24,40);
+  cv.hidden=false;}
 
 // ---------- motion: missiles fly, drones glide ----------
 function cellXY(r,c){const el=cellEl(r,c);return [el.offsetLeft+el.offsetWidth/2,el.offsetTop+el.offsetHeight/2,el.offsetWidth];}
