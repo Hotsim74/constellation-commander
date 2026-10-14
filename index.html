@@ -643,7 +643,7 @@ function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.15.0';
+const VERSION='1.15.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -733,18 +733,18 @@ function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){con
 function detectShapes(g,anchor){
   const cells=new Set(),spawns=[];
   const get=(r,c)=>inb(r,c)?g[r][c]:null;
-  const box=new Set();
+  const box=new Set(),boxes=[];
   for(let r=0;r<N-1;r++)for(let c=0;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
-    if(g[r][c+1]===v&&g[r+1][c]===v&&g[r+1][c+1]===v){box.add(key(r,c));box.add(key(r,c+1));box.add(key(r+1,c));box.add(key(r+1,c+1));}}
+    if(g[r][c+1]===v&&g[r+1][c]===v&&g[r+1][c+1]===v){const grp=[key(r,c),key(r,c+1),key(r+1,c),key(r+1,c+1)];boxes.push(grp);for(const k of grp)box.add(k);}}
   const runs=[];
   for(let di=0;di<LINE_DIRS.length;di++){const [dr,dc]=LINE_DIRS[di];
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){const v=g[r][c];if(!isStar(v))continue;if(get(r-dr,c-dc)===v)continue;
       let len=1;while(get(r+len*dr,c+len*dc)===v)len++;
       if(len===3&&di>=2)continue;
       if(len>=3){const run=[];for(let i=0;i<len;i++)run.push(key(r+i*dr,c+i*dc));
-        if(len===3&&run.some(k=>box.has(k)))continue;
-        for(const k of run)cells.add(k);
-        runs.push({di,len,run,color:v,used:false});}}
+        const boxed=len===3&&run.some(k=>box.has(k)); // a lone 3-line on a 2×2 block is just the block; but see the crossing rule below
+        if(!boxed)for(const k of run)cells.add(k);
+        runs.push({di,len,run,color:v,used:false,boxed});}}
   }
   for(let r=1;r<N-1;r++)for(let c=1;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
     if(g[r-1][c-1]===v&&g[r-1][c+1]===v&&g[r+1][c-1]===v&&g[r+1][c+1]===v){
@@ -753,6 +753,11 @@ function detectShapes(g,anchor){
   for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
     if(a.used||b.used||a.di===b.di)continue;
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
+    if(a.boxed||b.boxed){ // a T, L or plus of 3s that also touches a 2×2 block: the crossing wins when it reaches 2 cells past the block (so a 2×3 or 3×3 block stays a block)
+      if(a.len!==3||b.len!==3)continue;
+      const un=[...new Set([...a.run,...b.run])];if(un.filter(k=>!box.has(k)).length<2)continue;
+      box.clear();for(const grp of boxes){if(grp.some(k=>un.includes(k)))continue;for(const k of grp)box.add(k);}
+      for(const k of un)cells.add(k);}
     a.used=b.used=true;
     const cell=rc(shared),sum=a.len+b.len,cc=[...a.run,...b.run],label=`a ${a.len} crossing a ${b.len}`;
     if(sum>=9)spawns.push({letters:['W','X'],cell,cells:cc,color:a.color,label});
