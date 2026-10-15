@@ -170,6 +170,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #newver[hidden]{display:none}
 #over{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(6,9,13,.7)}
 #over.show{display:flex}
+#netwait{position:absolute;inset:0;z-index:21;display:none;align-items:center;justify-content:center;background:rgba(6,9,13,.75)}
+#netwait.show{display:flex}
+#netwait .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:20px 24px;text-align:center;max-width:320px;font-size:15px;line-height:1.5}
+#netwait h2{font-family:var(--display);font-size:20px;margin:0 0 8px;letter-spacing:.06em;text-transform:uppercase}
+.netrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
 #over .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:20px 24px;text-align:center}
 #over h2{font-family:var(--display);font-size:26px;margin:0 0 8px;letter-spacing:.06em;text-transform:uppercase}
 @media (max-width:720px){
@@ -208,16 +213,23 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option></select></div>
+  <button type="button" id="btnNet" class="primary">Play a friend</button>
   <button type="button" id="btnHow">How to play</button>
   <button type="button" id="btnTut">Guided first game</button>
   <button type="button" id="btnCopy">Copy as text</button>
   <a href="https://hotsim74.github.io/constellation-commander/rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
 </form>
+<div class="panel" id="netbox" hidden style="margin-bottom:8px">
+  <span class="lbl">Play a friend</span>
+  <div class="acthint" id="netstat" style="max-width:80ch"></div>
+  <div class="netrow"><button type="button" id="btnHost" class="primary">Start a match</button><input type="text" id="inCode" maxlength="4" placeholder="CODE" style="width:92px;text-transform:uppercase;letter-spacing:.2em"><button type="button" id="btnJoin">Join with code</button><button type="button" id="btnLeave" class="danger" hidden>Leave the match</button></div>
+  <div id="lobbyWrap"><span class="lbl" style="display:block;margin-top:10px">Open matches</span><div class="netrow" id="lobby"></div></div>
+</div>
 <div class="guide" id="guide" hidden></div>
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button></div></div></div>
+    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -684,9 +696,10 @@ const frDef=k=>{const [n,g]=NOUN_FR[k];return (/^[aeiouéèh]/i.test(n)?"l'":g==
 const frInd=k=>{const [n,g]=NOUN_FR[k];return (g==='f'?'une ':'un ')+n;};
 const TNAME_FR={};for(const k in NOUN_FR)TNAME_FR[k]=frDef(k);
 const KNAME_FR=['rouge','dorée','verte','bleue','violette']; // the colors of a star (feminine, étoile)
-function own(side,k){return LANG==='fr'?(side===YOU?'votre '+NOUN_FR[k][0]:frDef(k)+' du bot'):(side===YOU?'your ':"the bot's ")+TNAME[k];}
+const deName=n=>(/^[aeiouyàâäéèêëïîôöùûüh]/i.test(n)?"d'":'de ')+n;
+function own(side,k){if(online&&net){const n=SNAME[side];return LANG==='fr'?frDef(k)+' '+deName(n):n+"'s "+TNAME[k];}return LANG==='fr'?(side===YOU?'votre '+NOUN_FR[k][0]:frDef(k)+' du bot'):(side===YOU?'your ':"the bot's ")+TNAME[k];}
 function aname(k){return LANG==='fr'?frInd(k):'a '+TNAME[k];}
-function landName(side){return LANG==='fr'?(side===YOU?'votre terrain':'le terrain du bot'):(side===YOU?'your land':"the bot's land");}
+function landName(side){if(online&&net){const n=SNAME[side];return LANG==='fr'?'le terrain '+deName(n):n+"'s land";}return LANG==='fr'?(side===YOU?'votre terrain':'le terrain du bot'):(side===YOU?'your land':"the bot's land");}
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const MISSING=new Set(); // English lines with no French yet (for the build check)
 function t(s,...v){let pat;
@@ -817,7 +830,54 @@ const FR={
 " You hold {0} of {1}.": " Vous tenez {0} sur {1}.",
 "Tap your scout at {0} and walk it toward open land.": "Touchez votre éclaireur en {0} et avancez-le vers du terrain libre.",
 "You are trying to claim more of the sky than the bot: {0} squares wins, or a siege drone standing next to the bot's Command drone. You own {1}, the bot owns {2}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.": "Vous essayez de revendiquer plus de ciel que le bot : {0} cases gagnent, ou un drone de siège posté à côté du drone de commandement du bot. Vous possédez {1}, le bot possède {2}. Alignez des étoiles : tout ce qui dépasse 3 d'affilée vous donne un drone. Un drone est comme un pion de dames ou une pièce d'échecs : vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous. Gardez votre propre drone de commandement, le M, en sécurité.",
-"Rating {0} → {1} ({2}{3}). Bot {4} was rated {5}; asteroids {6} to {7}.": "Classement {0} → {1} ({2}{3}). Le bot {4} était classé {5} ; astéroïdes {6} contre {7}.",
+"Rating {0} → {1} ({2}{3}). {4} was rated {5}; asteroids {6} to {7}.": "Classement {0} → {1} ({2}{3}). {4} était classé {5} ; astéroïdes {6} contre {7}.",
+"{0} is rated {1}. A game against a person moves your rating at full weight.": "{0} est classé {1}. Une partie contre une personne fait bouger votre classement à plein poids.",
+"Leave the match? An unfinished match counts as a loss.": "Quitter la partie ? Une partie inachevée compte comme une défaite.",
+"Player": "Joueur",
+"Friend": "Ami",
+"Host": "Hôte",
+"write failed": "écriture échouée",
+"no connection": "pas de connexion",
+"reconnecting": "reconnexion",
+"Setting up the match…": "Préparation de la partie…",
+"Could not reach the match server.": "Impossible de joindre le serveur de parties.",
+"lobby not published; share the code": "salon indisponible ; partagez le code",
+"Match {0}: {1} ({2}) against {3} ({4}). Asteroids {5} to {6}.": "Partie {0} : {1} ({2}) contre {3} ({4}). Astéroïdes {5} contre {6}.",
+"{0} moves first.": "{0} {v:jouez|joue} en premier.",
+"{0} left the match.": "{0} {v:avez quitté|a quitté} la partie.",
+"Type the 4-letter code from the host.": "Tapez le code à 4 lettres de l'hôte.",
+"Looking for the match…": "Recherche de la partie…",
+"No match called {0}. Check the code with the host.": "Aucune partie nommée {0}. Vérifiez le code avec l'hôte.",
+"Match {0} already has two players.": "La partie {0} a déjà deux joueurs.",
+"Versions differ: the host has v{0}, you have v{1}. Both reload, then try again.": "Les versions diffèrent : l'hôte a la v{0}, vous la v{1}. Rechargez tous les deux, puis réessayez.",
+"Match {0} is already over.": "La partie {0} est déjà terminée.",
+"Sending…": "Envoi…",
+"No answer from the host yet. Try again.": "Pas encore de réponse de l'hôte. Réessayez.",
+"Left the match.": "Partie quittée.",
+"The lobby is not available. Join with a code.": "Le salon n'est pas disponible. Rejoignez avec un code.",
+"Nobody is waiting right now. Start a match and they will find you here.": "Personne n'attend pour l'instant. Lancez une partie et on vous trouvera ici.",
+"just now": "à l'instant",
+"{0} min ago": "il y a {0} min",
+"One phone starts a match and reads out the 4-letter code, or the other finds it under Open matches. The one who starts runs the game; both see the same board.": "Un téléphone lance une partie et lit le code à 4 lettres, ou l'autre la trouve sous Parties ouvertes. Celui qui lance fait tourner le jeu ; les deux voient le même plateau.",
+"{0} connected": "{0} connecté",
+"{0} last seen {1} ago": "{0} vu il y a {1}",
+"{0} s": "{0} s",
+"{0} min": "{0} min",
+"waiting for a friend to join": "en attente d'un ami",
+"Match {0} · you host · {1}": "Partie {0} · vous êtes l'hôte · {1}",
+"Match {0} · joined · {1}": "Partie {0} · rejointe · {1}",
+"Waiting for a friend": "En attente d'un ami",
+"Joined {0}'s match": "Partie de {0} rejointe",
+"Code {0}. Read it out, or they can find you under Open matches.": "Code {0}. Lisez-le à voix haute, ou on vous trouvera sous Parties ouvertes.",
+"Waiting for the host to start…": "En attente du lancement par l'hôte…",
+"Waiting for {0}…": "En attente de {0}…",
+"{0} wins": "{0} gagne",
+"Play a friend": "Jouer avec un ami",
+"Start a match": "Lancer une partie",
+"Join with code": "Rejoindre avec un code",
+"Leave the match": "Quitter la partie",
+"Open matches": "Parties ouvertes",
+"Leave": "Quitter",
 "Rating <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} game{2}, {3} won": "Classement <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} partie{2}, {3} gagnée{2}",
 "Bot at skill {0} is rated {1}; a game against it moves you at {2}% of a game against a person.": "Le bot au niveau {0} est classé {1} ; une partie contre lui vous fait bouger à {2} % d'une partie contre une personne.",
 "{0} ran out of time.": "{0} {v:n'avez|n'a} plus de temps.",
@@ -985,7 +1045,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.19.1';
+const VERSION='1.20.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1360,7 +1420,7 @@ async function afterAction(){
   S.moveLeft=S.timers?60000:0;
   if(!validSwaps().length)reshuffle();
   save();renderAll();
-  if(S.turn===BOT){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
+  if(S.turn===BOT&&!online){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
 }
 // ---------- the bot ----------
 async function botSafely(){
@@ -1423,16 +1483,17 @@ async function humanSwap(a,b){
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
   const sh=detectShapes(g,b);
   if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sel=null;renderBoard();return;}
+  if(netGuest()){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];netSend({type:'swap',a,b});return;}
   busy=true;sel=null;note(t`${who(YOU)} swapped ${sq(...a)} and ${sq(...b)}.`);renderBoard();
   await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
   tutAdvance('swap');busy=false;await afterAction();
 }
-async function humanMove(d,r,c){busy=true;sel=null;const from=[d.r,d.c];const o=droneAt(r,c);const extra=o?(o.side===YOU?'merge':'take'):null;applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move',d,extra);busy=false;await afterAction();}
-async function humanClaim(d){busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
-async function humanWarp(d,r,c){busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
+async function humanMove(d,r,c){if(netSend({type:'move',id:d.id,r,c}))return;busy=true;sel=null;const from=[d.r,d.c];const o=droneAt(r,c);const extra=o?(o.side===YOU?'merge':'take'):null;applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move',d,extra);busy=false;await afterAction();}
+async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
+async function humanWarp(d,r,c){if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
-async function humanRam(d){busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
-async function humanShots(d,list){busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?t('Fired. This drone can fire again, or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
+async function humanRam(d){if(netSend({type:'ram',id:d.id}))return;busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
+async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;busy=true;mode=null;const id=d.id;S.missiles[YOU]-=list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&shotsLeft(still)>0&&S.missiles[YOU]>0?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?t('Fired. This drone can fire again, or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
 
 // ---------- input ----------
 function onCell(r,c){
@@ -1503,7 +1564,7 @@ function renderBoard(gone,born,mark,fall){
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
   for(const s of [YOU,BOT]){const n=dronesOf(s).length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'}`+(S.fog?t` · sees ${sees} squares`:'');}
-  $('botlbl').textContent=t`${SNAME[BOT]} · skill ${S.skill}`;
+  $('botlbl').textContent=(online&&net)?`${SNAME[BOT]} · ${net.oppR}`:t`${SNAME[BOT]} · skill ${S.skill}`;
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
 }
@@ -1537,8 +1598,9 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();
-  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?t('You win'):t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
-  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode)setStatus(t('Your move.'));}else setStatus(t('The bot is thinking…'));}}
+  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
+  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus(t('Your move.'));}else setStatus((online&&net)?t`Waiting for ${SNAME[BOT]}…`:t('The bot is thinking…'));}
+  netPush();}
 
 // ---------- the coach: a whole first game, one suggestion at a time ----------
 // Every step is two parts: DO this, and WHY. The goal of the game stays pinned under the coach's words
@@ -1647,23 +1709,23 @@ const botRating=s=>800+12*s;
 const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.floor(Math.abs(rA-rB)/ROCK_PTS);let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
-function rateGame(w){if(!S||S.rated||S.tut)return;S.rated=true;
-  const oppR=botRating(S.skill),weight=Math.max(0.1,S.skill/100),score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
-  prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:'Bot '+S.skill,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
-  note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). Bot ${S.skill} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
+function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}
+  const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
+  prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
+  note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
 function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
-  const sk=S?S.skill:+$('inSkill').value;$('record').innerHTML=(prof.n?prof.n+' · ':'')+t`Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won`+(prof.g?' · '+last:'')+'<br>'+t`Bot at skill ${sk} is rated ${botRating(sk)}; a game against it moves you at ${Math.max(10,sk)}% of a game against a person.`;}
+  const sk=S?S.skill:+$('inSkill').value;$('record').innerHTML=(prof.n?prof.n+' · ':'')+t`Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won`+(prof.g?' · '+last:'')+'<br>'+((online&&net)?t`${SNAME[BOT]} is rated ${net.oppR||BASE_R}. A game against a person moves your rating at full weight.`:t`Bot at skill ${sk} is rated ${botRating(sk)}; a game against it moves you at ${Math.max(10,sk)}% of a game against a person.`);}
 
 // ---------- the timed hint: at bot skill 50 and under, sit 30 seconds on your turn and the best swap lights up (user, 2026-10-14)
 const HINT_MS=30000,HINT_SKILL=50;
 let hintAt=0,hintTurn=-1,hintShow=null;
 function armHint(){if(!S)return;const tn=S.turn===YOU?S.turnNo:-1;if(tn!==hintTurn){hintTurn=tn;hintAt=Date.now();hintShow=null;}}
-setInterval(()=>{if(!S||S.over||S.tut||busy||S.turn!==YOU||hintShow||S.skill>HINT_SKILL)return;if(Date.now()-hintAt<HINT_MS)return;
+setInterval(()=>{if(!S||S.over||S.tut||busy||online||S.turn!==YOU||hintShow||S.skill>HINT_SKILL)return;if(Date.now()-hintAt<HINT_MS)return;
   const bs=bestSwap();if(!bs){hintAt=Date.now();return;}hintShow=[bs.a,bs.b];renderBoard();if(!sel&&!mode)setStatus(t('Stuck? The two green stars make a line.'));},1000);
 
 // ---------- clocks ----------
-setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
-  if(tn===YOU&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note(t('You ran out of move time. Turn passes.'));sel=null;mode=null;afterAction();return;}}
+setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;if(netGuest())return;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
+  if((tn===YOU||netHostOn())&&!netGuest()&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note(t('You ran out of move time. Turn passes.'));sel=null;mode=null;afterAction();return;}}
   $('ck1').textContent=fmt(S.clock[1]);$('ck2').textContent=fmt(S.clock[2]);},250);
 setInterval(()=>{if(S)save();},3000);
 
@@ -1684,8 +1746,8 @@ $('btnCopy').addEventListener('click',async()=>{const txt=gameText();try{await n
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
-$('btnNew').addEventListener('click',()=>{if(busy)return;if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
-$('btnAgain').addEventListener('click',()=>newGame());
+$('btnNew').addEventListener('click',()=>{if(busy)return;if(online&&net){if(confirm(t('Leave the match? An unfinished match counts as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
+$('btnAgain').addEventListener('click',()=>{if(online&&net)netLeave();else newGame();});
 $('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
 $('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
 $('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame();});
@@ -1706,10 +1768,13 @@ $('coverGo').addEventListener('click',()=>{$('cover').hidden=true;});
 showCover();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
-(function boot(){
+(async function boot(){
   const saved=load();
-  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();if(S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}}
+  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();}
+  const resumed=await netResume();
+  if(!resumed&&S&&S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
+  if(resumed){if(S)renderAll();return;}
   if(!seenIntro){try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame({tut:true});} // first open: straight into the coached game
   else if(!S)newGame();
 })();
@@ -1765,6 +1830,166 @@ function playFX(){const list=fx;fx=[];if(!list.length)return Promise.resolve();c
 
 // ---------- the command drone's emblem: a four-point star in the side's color over a dark disc
 function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="command drone"><circle cx="64" cy="64" r="56" fill="#0b1016" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="44" fill="none" stroke="${col}" stroke-width="1.5" opacity=".45"/><polygon points="64,14 76,52 114,64 76,76 64,114 52,76 14,64 52,52" fill="${col}" opacity=".9"/><polygon points="64,34 70,58 94,64 70,70 64,94 58,70 34,64 58,58" fill="#fff" opacity=".85"/><circle cx="64" cy="64" r="7" fill="${col}"/></svg>`;}
+// ---------- two phones (v1.20). One match document in the Firebase Realtime Database, reached with
+// plain fetch for writes and an event stream for reads. The HOST phone runs the game. The guest
+// phone sends what it wants to do (an action) and shows the board the host sends back after every
+// move. Everything on the wire is in the host's frame: host = side 1 at the bottom. The guest flips
+// rows and sides on the way in and on the way out, so each player sees their own side at the bottom.
+// A lobby node lists matches waiting for a second player.
+const NET_BASE='https://constellation-commander-default-rtdb.firebaseio.com';
+const NET_KEY='cc1_net',NET_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ',LOBBY_MAX_AGE=30*60000,NET_WAIT_MS=12000;
+let online=false,net=null;
+const SNAME0=Object.assign({},SNAME);
+const netUrl=code=>`${NET_BASE}/matches/${code}.json`;
+const lobbyUrl=code=>`${NET_BASE}/lobby${code?'/'+code:''}.json`;
+const netGuest=()=>!!(online&&net&&net.role==='guest');
+const netHostOn=()=>!!(online&&net&&net.role==='host');
+const mrow=r=>N-1-r,mkey=k=>mrow(Math.floor(k/N))*N+k%N,mside=x=>x===1?2:x===2?1:x;
+const flipText=s=>typeof s==='string'?s.replace(/\b([a-k])(\d{1,2})\b/g,(m,l,n)=>l+(12-+n)):s;
+function flipState(s){ // host frame <-> guest frame; its own inverse
+  const o=JSON.parse(JSON.stringify(s));
+  o.grid=s.grid.slice().reverse().map(r=>r.slice());
+  o.own=new Array(N*N).fill(0);for(let k=0;k<N*N;k++)o.own[mkey(k)]=mside(s.own[k]);
+  o.wall={};for(const k in (s.wall||{}))o.wall[mkey(+k)]=mside(s.wall[k]);
+  o.cmd={1:[mrow(s.cmd[2][0]),s.cmd[2][1]],2:[mrow(s.cmd[1][0]),s.cmd[1][1]]};
+  o.drones=s.drones.map(d=>Object.assign({},d,{r:mrow(d.r),side:mside(d.side)}));
+  o.turn=mside(s.turn);
+  const sw=x=>x?{1:x[2],2:x[1]}:x;o.missiles=sw(s.missiles);o.cleared=sw(s.cleared);o.clock=sw(s.clock);o.asteroids=sw(s.asteroids);
+  o.seen={1:(s.seen&&s.seen[2]||[]).map(mkey),2:(s.seen&&s.seen[1]||[]).map(mkey)};
+  if(s.over)o.over={w:mside(s.over.w),reason:flipText(s.over.reason)};
+  o.log=(s.log||[]).filter(l=>!/^(Rating|Classement) /.test(l)).map(flipText);o.tut=false;delete o.tutSwap;delete o.tutDone; // the host's own rating line stays on the host
+  return o;}
+const myUid=()=>{let u=null;try{u=localStorage.getItem('cc_uid');}catch(_){}if(!u){u=Math.random().toString(36).slice(2,10);try{localStorage.setItem('cc_uid',u);}catch(_){}}return u;};
+const myName=()=>($('inName').value.trim()||prof.n||t('Player')).slice(0,12);
+function netWrite(p,url){const n=net;if(!n)return Promise.resolve();n.q=n.q.then(()=>fetch(url||netUrl(n.code),{method:'PATCH',body:JSON.stringify(p)})).then(r=>{n.err=r.ok?null:t('write failed');}).catch(()=>{n.err=t('no connection');});return n.q;}
+function netStatus(s){$('netstat').textContent=s;}
+function netStart(role,code,name){net={code,role,name,uid:myUid(),seq:0,acked:0,q:Promise.resolve(),lastState:'',live:false,opp:null,oppR:BASE_R,oppSeen:0,err:null,es:null,rated:false,started:false,pending:null};online=true;}
+function netRemember(){try{localStorage.setItem(NET_KEY,JSON.stringify({code:net.code,role:net.role,uid:net.uid,name:net.name}));}catch(_){}}
+function netForget(){try{localStorage.removeItem(NET_KEY);}catch(_){}}
+
+// ----- host: start a match, wait in the lobby, run the game
+async function netHost(){
+  if(online)return;const name=myName();prof.n=name;saveProf();netStatus(t('Setting up the match…'));
+  const code=Array.from({length:4},()=>NET_ALPHA[rnd(NET_ALPHA.length)]).join('');
+  netStart('host',code,name);
+  const doc={t:Date.now(),v:VERSION,host:{n:name,u:net.uid,r:prof.r},seq:0,acked:0};
+  try{const r=await fetch(netUrl(code),{method:'PUT',body:JSON.stringify(doc)});if(!r.ok)throw 0;}
+  catch(e){online=false;net=null;netStatus(t('Could not reach the match server.'));return;}
+  try{const r=await fetch(lobbyUrl(code),{method:'PUT',body:JSON.stringify({n:name,r:prof.r,u:net.uid,t:Date.now(),v:VERSION})});if(!r.ok)net.lobbyErr=true;}catch(_){net.lobbyErr=true;}
+  SNAME[YOU]=name;SNAME[BOT]=t('Friend');net.live=true;netRemember();netListen();renderWait();renderNet();
+}
+function netStartGame(){ // the guest is in: asteroids from both ratings, a fresh board, and the first push
+  net.started=true;const base=+$('inRock1').value||6;let r1=base,r2=+$('inRock2').value||base;if($('inAuto').checked)[r1,r2]=handicapRocks(prof.r,net.oppR,base);
+  const keep={a:$('inAuto').checked,v1:$('inRock1').value,v2:$('inRock2').value};$('inAuto').checked=false;$('inRock1').value=r1;$('inRock2').value=r2;
+  newGame();$('inAuto').checked=keep.a;$('inRock1').value=keep.v1;$('inRock2').value=keep.v2;
+  S.skill=0;SNAME[YOU]=net.name;S.log.length=0;
+  note(t`Match ${net.code}: ${SNAME[YOU]} (${prof.r}) against ${SNAME[BOT]} (${net.oppR}). Asteroids ${r1} to ${r2}.`);note(t`${SNAME[YOU]} moves first.`);
+  save();renderAll();netPush(true);
+}
+function netPush(force){if(!netHostOn()||!S||!net.started)return;const js=JSON.stringify(S);if(!force&&js===net.lastState)return;net.lastState=js;net.seq++;netWrite({state:js,seq:net.seq,acked:net.acked,p_h:{'.sv':'timestamp'}});}
+const byId=id=>S.drones.find(x=>x.id===id);
+async function netApplyAct(a){ // the guest's action, in the host's frame; the guest is side 2 here
+  if(!S||!a)return;const me=BOT;
+  if(a.type==='resign'){if(!S.over){gameOver(YOU,t`${SNAME[BOT]} left the match.`);save();renderAll();}netPush(true);return;}
+  if(S.over||S.turn!==me||busy){netPush(true);return;}
+  busy=true;
+  try{
+    if(a.type==='fire'){const d=byId(a.id);if(!d||d.side!==me)throw 0;const list=(a.list||[]).filter(x=>inb(x.r,x.c)&&vis(me,x.r,x.c)&&inRange(d,x.r,x.c)&&!(droneAt(x.r,x.c)&&droneAt(x.r,x.c).side===me)&&(droneAt(x.r,x.c)||S.grid[x.r][x.c]>=0)).slice(0,Math.min(shotsLeft(d),S.missiles[me]));if(!list.length)throw 0;
+      S.missiles[me]-=list.length;d.shots=(d.shots||0)+list.length;await fireShots(me,list,d);save();renderAll();}
+    else if(a.type==='swap'){const p=a.a,q=a.b,g=S.grid;if(!p||!q||!inb(p[0],p[1])||!inb(q[0],q[1])||Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])!==1||!isStar(g[p[0]][p[1]])||!isStar(g[q[0]][q[1]])||S.own[key(p[0],p[1])]===YOU||S.own[key(q[0],q[1])]===YOU)throw 0;
+      [g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];const sh=detectShapes(g,q);if(!sh.cells.size){[g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];throw 0;}
+      note(t`${who(me)} swapped ${sq(p[0],p[1])} and ${sq(q[0],q[1])}.`);renderBoard();await resolve(me,sh.cells.has(key(q[0],q[1]))?q:p);await afterAction();}
+    else if(a.type==='move'){const d=byId(a.id);if(!d||d.side!==me||!inb(a.r,a.c)||!targets(d).has(key(a.r,a.c)))throw 0;const from=[d.r,d.c];applyMove(d,a.r,a.c);await movedAnim(d,from);await afterAction();}
+    else if(a.type==='claim'){const d=byId(a.id);if(!d||d.side!==me||d.kind!=='C'||!(d.claims>0)||!claimGain(d))throw 0;applyClaim(d);renderBoard();await afterAction();}
+    else if(a.type==='warp'){const d=byId(a.id);if(!d||d.side!==me||d.kind!=='W'||!warpCells(d).some(([r,c])=>r===a.r&&c===a.c))throw 0;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,a.r,a.c);renderBoard();await flyDrone(from,[a.r,a.c],html);await playFX();await afterAction();}
+    else if(a.type==='ram'){const d=byId(a.id);if(!d||d.side!==me||!shieldedBy(d))throw 0;applyRam(d);renderBoard();await playFX();await afterAction();}
+  }catch(e){if(e!==0)console.error(e);}
+  busy=false;save();renderAll();netPush(true);
+}
+
+// ----- guest: join, send actions, take the board the host sends
+async function netJoin(code){
+  if(online)return;code=(code||$('inCode').value||'').trim().toUpperCase();const name=myName();
+  if(!/^[A-Z]{4}$/.test(code)){netStatus(t('Type the 4-letter code from the host.'));return;}
+  netStatus(t('Looking for the match…'));let doc=null;
+  try{const r=await fetch(netUrl(code));if(!r.ok)throw 0;doc=await r.json();}catch(e){netStatus(t('Could not reach the match server.'));return;}
+  if(!doc||!doc.host){netStatus(t`No match called ${code}. Check the code with the host.`);return;}
+  const uid=myUid();if(doc.guest&&doc.guest.u!==uid){netStatus(t`Match ${code} already has two players.`);return;}
+  if(doc.v!==VERSION){netStatus(t`Versions differ: the host has v${doc.v}, you have v${VERSION}. Both reload, then try again.`);return;}
+  if(doc.left){netStatus(t`Match ${code} is already over.`);return;}
+  prof.n=name;saveProf();netStart('guest',code,name);SNAME[YOU]=name;SNAME[BOT]=doc.host.n||t('Host');net.opp=SNAME[BOT];net.oppR=doc.host.r||BASE_R;
+  net.live=true;await netWrite({guest:{n:name,u:uid,r:prof.r},p_g:{'.sv':'timestamp'}});netRemember();
+  if(doc.state){net.seq=doc.seq||0;netTakeState(doc.state);}
+  netListen();renderWait();renderNet();
+}
+function netFlipAct(a){const f=Object.assign({},a);if(a.a)f.a=[mrow(a.a[0]),a.a[1]];if(a.b)f.b=[mrow(a.b[0]),a.b[1]];if(a.r!=null)f.r=mrow(a.r);if(a.list)f.list=a.list.map(x=>({r:mrow(x.r),c:x.c}));return f;}
+function netSend(a){ // true = handled here (the guest), false = not online as a guest, play locally
+  if(!netGuest())return false;if(busy||!S||S.over||S.turn!==YOU)return true;
+  const f=netFlipAct(a);f.seq=Date.now();busy=true;sel=null;mode=null;pending=null;aimList=[];net.pending=Date.now();
+  renderBoard();renderActions();setStatus(t('Sending…'));netWrite({act:f,p_g:{'.sv':'timestamp'}});return true;}
+function netTakeState(js){let s;try{s=JSON.parse(js);}catch(_){return;}
+  S=flipState(s);SNAME[YOU]=net.name;net.started=true;net.pending=null;busy=false;sel=null;mode=null;pending=null;aimList=[];
+  save();renderAll();if(S.over)rateGame(S.over.w);}
+
+// ----- both: the stream, presence, leaving, resuming
+function netListen(){if(!net)return;if(net.es)net.es.close();const es=new EventSource(netUrl(net.code));net.es=es;
+  const onEv=e=>{let m;try{m=JSON.parse(e.data);}catch(_){return;}if(!m||!m.path)return;let o={};
+    if(m.path==='/'){if(m.data==null)return;o=m.data;}else{const segs=m.path.split('/').filter(Boolean);if(segs.length>1){netRefetch();return;}o[segs[0]]=m.data;}
+    netHandle(o);};
+  es.addEventListener('put',onEv);es.addEventListener('patch',onEv);
+  es.onerror=()=>{if(net)net.err=t('reconnecting');};es.onopen=()=>{if(net)net.err=null;};}
+async function netRefetch(){if(!net)return;try{const r=await fetch(netUrl(net.code));if(r.ok)netHandle(await r.json()||{});}catch(_){}}
+function netHandle(o){if(!net||!o)return;
+  if(o.host&&net.role==='guest'){net.opp=o.host.n||t('Host');net.oppR=o.host.r||BASE_R;SNAME[BOT]=net.opp;}
+  if(o.guest&&net.role==='host'&&o.guest.u!==net.uid){const first=!net.opp;net.opp=o.guest.n||t('Friend');net.oppR=o.guest.r||BASE_R;SNAME[BOT]=net.opp;
+    if(first)fetch(lobbyUrl(net.code),{method:'DELETE'}).catch(()=>{});if(!net.started)netStartGame();else netPush(true);}
+  if(o.p_h!=null&&net.role==='guest')net.oppSeen=o.p_h;if(o.p_g!=null&&net.role==='host')net.oppSeen=o.p_g;
+  if(o.act&&net.role==='host'&&o.act.seq>net.acked){net.acked=o.act.seq;netApplyAct(o.act);}
+  if(o.state&&net.role==='guest'&&(o.seq==null||o.seq!==net.seq)){if(o.seq!=null)net.seq=o.seq;netTakeState(o.state);}
+  if(o.left&&o.left!==net.role)netOppLeft();
+  renderWait();renderNet();}
+function netOppLeft(){if(!net)return;
+  if(net.role==='host'){if(net.started&&S&&!S.over){gameOver(YOU,t`${SNAME[BOT]} left the match.`);save();renderAll();netPush(true);}else if(!net.started){net.opp=null;SNAME[BOT]=t('Friend');}}
+  else{if(S&&!S.over){S.over={w:YOU,reason:t`${SNAME[BOT]} left the match.`};note(t`Game over. ${who(YOU)} win${''}. ${S.over.reason}`);rateGame(YOU);save();renderAll();}}
+  net.err=t('{0} left the match.',SNAME[BOT]);}
+async function netLeave(){if(!net)return;const n=net;
+  if(n.role==='host'){fetch(lobbyUrl(n.code),{method:'DELETE'}).catch(()=>{});if(n.started&&S&&!S.over&&S.turnNo>2){gameOver(BOT,t`${SNAME[YOU]} left the match.`);save();renderAll();netPush(true);}await netWrite({left:'host'});}
+  else{if(S&&!S.over&&S.turnNo>2)await netWrite({act:{type:'resign',seq:Date.now()}});await netWrite({left:'guest'});}
+  if(n.es)n.es.close();online=false;net=null;netForget();Object.assign(SNAME,SNAME0);note(t('Left the match.'));renderWait();renderNet();newGame();
+}
+async function netResume(){let info=null;try{info=JSON.parse(localStorage.getItem(NET_KEY)||'null');}catch(_){}if(!info||!info.code)return false;
+  let doc=null;try{const r=await fetch(netUrl(info.code));if(r.ok)doc=await r.json();}catch(_){}
+  if(!doc||!doc.host||doc.v!==VERSION||Date.now()-(doc.t||0)>12*3600e3||doc.left){netForget();return false;}
+  netStart(info.role,info.code,info.name||t('Player'));net.uid=info.uid||net.uid;$('inName').value=net.name;SNAME[YOU]=net.name;
+  if(net.role==='host'){net.acked=doc.acked||0;net.seq=doc.seq||0;net.started=!!doc.state;if(doc.guest){net.opp=doc.guest.n;net.oppR=doc.guest.r||BASE_R;}SNAME[BOT]=net.opp||t('Friend');
+    if(!S&&doc.state){try{S=JSON.parse(doc.state);}catch(_){}}if(S&&S.over)net.rated=true;net.live=true;if(net.started)netPush(true);}
+  else{net.opp=doc.host.n;net.oppR=doc.host.r||BASE_R;SNAME[BOT]=net.opp;net.live=true;if(doc.state){net.seq=doc.seq||0;if(S&&S.over)net.rated=true;netTakeState(doc.state);}}
+  netListen();renderWait();renderNet();return true;}
+setInterval(()=>{if(!online||!net||!net.live)return;netWrite({['p_'+net.role[0]]:{'.sv':'timestamp'}});},5000);
+setInterval(()=>{if(netGuest()&&net.pending&&Date.now()-net.pending>NET_WAIT_MS){net.pending=null;busy=false;renderAll();setStatus(t('No answer from the host yet. Try again.'));}
+  if(online&&net)renderNet();},1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&net&&net.live&&(!net.es||net.es.readyState===2))netListen();});
+
+// ----- the lobby: matches waiting for a second player
+async function lobbyRefresh(){const el=$('lobby');if(online){el.innerHTML='';return;}let d=null;
+  try{const r=await fetch(lobbyUrl());if(!r.ok)throw 0;d=await r.json();}catch(e){el.innerHTML='<span class="acthint">'+t('The lobby is not available. Join with a code.')+'</span>';return;}
+  const uid=myUid(),now=Date.now();
+  const list=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE&&/^[A-Z]{4}$/.test(x.code)).sort((a,b)=>(b.t||0)-(a.t||0));
+  if(!list.length){el.innerHTML='<span class="acthint">'+t('Nobody is waiting right now. Start a match and they will find you here.')+'</span>';return;}
+  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${x.r||BASE_R} · ${age}${old}</button>`;}).join('');}
+function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(online&&net);
+  $('btnHost').hidden=on;$('btnJoin').hidden=on;$('inCode').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inName').disabled=on;
+  if(!on){netStatus(t('One phone starts a match and reads out the 4-letter code, or the other finds it under Open matches. The one who starts runs the game; both see the same board.'));return;}
+  const seen=net.oppSeen?Math.round((Date.now()-net.oppSeen)/1000):null;
+  const who=net.opp?(seen==null?net.opp:seen<20?t('{0} connected',net.opp):t('{0} last seen {1} ago',net.opp,seen<120?t('{0} s',seen):t('{0} min',Math.round(seen/60)))):t('waiting for a friend to join');
+  netStatus((net.role==='host'?t`Match ${net.code} · you host · ${who}`:t`Match ${net.code} · joined · ${who}`)+(net.err?' · '+net.err:'')+(net.lobbyErr&&!net.opp?' · '+t('lobby not published; share the code'):''));}
+function renderWait(){const el=$('netwait');const w=!!(online&&net&&!net.started);el.classList.toggle('show',w);if(!w)return;
+  $('netwaitTitle').textContent=net.role==='host'?t('Waiting for a friend'):t`Joined ${SNAME[BOT]}'s match`;
+  $('netwaitText').innerHTML=net.role==='host'?t('Code {0}. Read it out, or they can find you under Open matches.','<b style="font-family:var(--mono);letter-spacing:.2em">'+net.code+'</b>'):t('Waiting for the host to start…');}
+$('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden;renderNet();lobbyRefresh();});
+$('btnHost').addEventListener('click',netHost);$('btnJoin').addEventListener('click',()=>netJoin());$('btnLeave').addEventListener('click',netLeave);$('btnNetCancel').addEventListener('click',netLeave);
+$('lobby').addEventListener('click',e=>{const b=e.target.closest('button[data-join]');if(b&&!b.disabled)netJoin(b.dataset.join);});
+setInterval(()=>{if(!$('netbox').hidden&&!online)lobbyRefresh();},8000);
 </script>
 </body>
 </html>
