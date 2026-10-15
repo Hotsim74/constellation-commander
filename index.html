@@ -10,6 +10,7 @@
 </head>
 <body>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constellation Commander</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -181,6 +182,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   .side{flex:1 1 100%;min-width:0}
   .panel{padding:8px 10px}
   .dr .lt{font-size:clamp(11px,4.6vw,18px)}
+  /* phones: the action buttons (Claim, Fire, Warp, Ram, Stack, Cancel) sit in a bar pinned to the bottom of the screen, so they never need a scroll (user, 2026-10-15) */
+  .acts{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);justify-content:center;max-width:none;box-shadow:0 -4px 14px rgba(0,0,0,.45)}
+  .acts:empty{display:none}
+  .acts button{font-size:13px;padding:10px 12px}
+  body{padding-bottom:84px}
 }
 </style>
 <div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
@@ -979,7 +985,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.19.0';
+const VERSION='1.19.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
