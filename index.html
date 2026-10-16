@@ -788,6 +788,7 @@ const FR={
 ", relaxed": ", sans chrono",
 "You move first: swap two stars, or tap your scout.": "Vous jouez en premier : échangez deux étoiles, ou touchez votre éclaireur.",
 "an X of 5": "un X de 5",
+"a V of two diagonals": "un V de deux diagonales",
 "an L of 4 and 3": "un L de 4 et 3",
 "a plus": "une croix",
 "a T of two 3-lines": "un T de deux lignes de 3",
@@ -1123,7 +1124,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.22.0';
+const VERSION='1.23.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1164,6 +1165,7 @@ function newGame(opts={}){
     for(let c=3;c<=7;c++)S.own[key(y,c)]=side;
     S.drones.push(mk(side,b,5,'M',rnd(KINDS)),mk(side,y,5,'G',rnd(KINDS)),mk(side,b,3,'C',rnd(KINDS)),mk(side,b,7,'C',rnd(KINDS))); // the user's start: a command drone, one shield in front of it, two scouts
   }
+  for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
   // asteroids: from the ratings, or the boxes
   let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
   if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill),+$('inRock1').value||6);}
@@ -1235,6 +1237,12 @@ function detectShapes(g,anchor){
     if(g[r-1][c-1]===v&&g[r-1][c+1]===v&&g[r+1][c-1]===v&&g[r+1][c+1]===v){
       const cc=[[0,0],[-1,-1],[-1,1],[1,-1],[1,1]].map(([dr,dc])=>key(r+dr,c+dc));for(const k of cc)cells.add(k);
       spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('an X of 5')});}}
+  // the V (v1.23, user): two diagonal arms of 2 meeting at a corner, the bomb's L turned 45 degrees. Pays a hunter.
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){const v=g[r][c];if(!isStar(v)||cells.has(key(r,c)))continue;
+    const arms=DIAG.filter(([dr,dc])=>get(r+dr,c+dc)===v&&get(r+2*dr,c+2*dc)===v&&!cells.has(key(r+dr,c+dc))&&!cells.has(key(r+2*dr,c+2*dc)));
+    let done=false;for(let i=0;i<arms.length&&!done;i++)for(let j=i+1;j<arms.length&&!done;j++){const a=arms[i],b=arms[j];if(a[0]+b[0]===0&&a[1]+b[1]===0)continue; // opposite arms are a straight diagonal, not a V
+      const cc=[key(r,c),key(r+a[0],c+a[1]),key(r+2*a[0],c+2*a[1]),key(r+b[0],c+b[1]),key(r+2*b[0],c+2*b[1])];
+      for(const k of cc)cells.add(k);spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('a V of two diagonals')});done=true;}}
   for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
     if(a.used||b.used||a.di===b.di)continue;
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
