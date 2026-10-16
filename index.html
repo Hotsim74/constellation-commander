@@ -172,6 +172,40 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #cover .langs button.on{background:var(--you);color:#1a1200;border-color:var(--you)}
 #cover .go{margin:0 20px;width:calc(100% - 40px);font-size:18px;padding:14px 22px}
 @media (max-width:720px){#cover .art{height:170px}#cover h2{font-size:22px}}
+.ov{position:fixed;inset:0;z-index:66;background:rgba(6,9,13,.92);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.ov[hidden]{display:none}
+.ov .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:18px;max-width:480px;width:100%;color:#fff;font-size:16px;line-height:1.5}
+.ov h2{font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--you)}
+.ov .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;margin:0 0 12px}
+.sectors{display:flex;flex-direction:column;gap:6px}
+.sector{display:flex;align-items:center;gap:12px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;font-size:15px;padding:10px 12px}
+.sector .sk{font-family:var(--mono);font-size:18px;min-width:40px;color:var(--mute)}
+.sector .nm{flex:1;font-family:var(--display);font-size:15px;letter-spacing:.04em;text-transform:uppercase}
+.sector .nm small{display:block;font-family:var(--body);font-size:12px;letter-spacing:0;text-transform:none;color:var(--mute)}
+.sector .st{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.sector.held{border-color:var(--ok)}.sector.held .st{color:var(--ok)}
+.sector.next{border-color:var(--you);box-shadow:0 0 0 2px rgba(232,166,59,.35)}.sector.next .st,.sector.next .sk{color:var(--you)}
+.sector.locked{opacity:.45}
+.card.brief{padding:0 0 16px;overflow:hidden}
+.brief .sky{position:relative;height:170px}.brief .sky svg{position:absolute;inset:0;width:100%;height:100%}
+.brief .constel{animation:constelIn 1.6s ease-out both}
+@keyframes constelIn{from{opacity:0;transform:scale(.92);transform-origin:50% 50%}to{opacity:1;transform:none}}
+.brief .bhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 0}
+.brief .bhead h2{margin:0;font-size:22px}
+.brief .boss{width:64px;height:64px;position:relative;flex:none}.brief .boss .dr{position:absolute;inset:0;transition:box-shadow .2s}
+.brief .boss.speaking .dr{animation:bosspulse .7s ease-in-out infinite alternate}
+@keyframes bosspulse{from{box-shadow:0 0 0 2px rgba(78,168,220,.4)}to{box-shadow:0 0 0 8px rgba(78,168,220,0)}}
+.brief .tx{margin:12px 18px 0;padding:10px 12px;background:var(--panel2);border-left:3px solid var(--you);border-radius:3px;min-height:60px}
+.brief .tx.boss{border-left-color:var(--bot)}
+.brief .who{font-family:var(--display);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:8px;min-height:14px}
+.brief .speak{display:inline-block;width:40px;height:8px;background:repeating-linear-gradient(90deg,var(--you) 0 3px,transparent 3px 6px);opacity:0}
+.brief .speak.on{opacity:1;animation:speak .35s steps(2) infinite}
+@keyframes speak{from{background-position:0 0}to{background-position:6px 0}}
+.brief .words{font-family:var(--mono);font-size:14px;line-height:1.5;color:#f1e4c8;margin-top:4px;white-space:pre-wrap}
+.brief .tx.boss .words{color:#cfe6f5}
+.overbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.brief .overbtns{padding:0 18px}
+#over .card .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;max-width:320px}
 #newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
 #newver[hidden]{display:none}
 #over{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(6,9,13,.7)}
@@ -218,9 +252,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
+  <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> voices in story mode</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option></select></div>
+  <button type="button" id="btnStory" class="primary">Story mode</button>
   <button type="button" id="btnNet" class="primary">Play a friend</button>
   <button type="button" id="btnHow">How to play</button>
   <button type="button" id="btnTut">Guided first game</button>
@@ -239,7 +275,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button> <button id="btnCopyOver" style="margin-top:12px">Copy as text</button></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -261,6 +297,21 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <p class="say" id="coverSay"></p>
   <div class="langs"><button type="button" data-lang="en">English</button><button type="button" data-lang="fr">Français</button></div>
   <button type="button" id="coverGo" class="primary go">Play</button>
+  <button type="button" id="coverStory" class="go" style="margin-top:8px">Story</button>
+</div></div>
+<div id="story" class="ov" hidden><div class="card">
+  <h2>Story</h2>
+  <p class="disp">Nine sectors. Take them in order. The dispatcher will brief you.</p>
+  <div id="storyList" class="sectors"></div>
+  <p id="storyDone" class="disp" hidden>All nine sectors are held. Replay any of them.</p>
+  <button type="button" id="btnStoryClose" style="margin-top:10px;width:100%">Back</button>
+</div></div>
+<div id="brief" class="ov" hidden><div class="card brief">
+  <div class="sky" id="briefSky"></div>
+  <div class="bhead"><div><div class="lbl">Sector</div><h2 id="briefName"></h2><div class="acthint" id="briefTitle"></div></div><div class="boss" id="briefBoss"></div></div>
+  <div class="tx"><div class="who"><span id="briefWho"></span><i class="speak" id="briefSpeak"></i></div><div class="words" id="briefText"></div></div>
+  <div class="tx boss"><div class="who"><span id="briefWho2"></span></div><div class="words" id="briefBrag"></div></div>
+  <div class="overbtns"><button type="button" id="btnBriefGo" class="primary">Launch</button><button type="button" id="btnBriefBack">Back</button></div>
 </div></div>
 <div id="intro" hidden><div class="card">
   <h2>How this works</h2>
@@ -1003,6 +1054,82 @@ const FR={
 "It goes after wrecks when Salvage is on and walks its bombs toward your drones.": "Il va chercher les épaves quand la Récupération est activée et avance ses bombes vers vos drones.",
 "It keeps a shield beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
 "Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
+"Story": "Histoire",
+"Story mode": "Mode histoire",
+"Sound": "Son",
+"voices in story mode": "voix dans le mode histoire",
+"Copy this game": "Copier cette partie",
+"Next sector": "Secteur suivant",
+"Retry": "Réessayer",
+"Story map": "Carte des secteurs",
+"Nine sectors. Take them in order. The dispatcher will brief you.": "Neuf secteurs. Prenez-les dans l'ordre. Le dispatcheur vous briefera.",
+"All nine sectors are held. Replay any of them.": "Les neuf secteurs sont tenus. Rejouez celui que vous voulez.",
+"Back": "Retour",
+"Sector": "Secteur",
+"Launch": "Lancer",
+"Held": "Tenu",
+"Next": "Suivant",
+"Locked": "Verrouillé",
+"Skill {0}": "Niveau {0}",
+"Dispatch": "Dispatch",
+"Sector held": "Secteur tenu",
+"Sector lost": "Secteur perdu",
+"{0}: {1}": "{0} : {1}",
+"Sector {0}, skill {1}. Take it.": "Secteur {0}, niveau {1}. Prenez-le.",
+"Orion": "Orion",
+"The Hunter": "Le Chasseur",
+"Sector Orion. First one out of the gate. The Hunter shoots at anything that moves and some things that don't. Keep your scouts out of its reach, or don't. Your call.": "Secteur Orion. Le premier de la série. Le Chasseur tire sur tout ce qui bouge et sur certaines choses qui ne bougent pas. Gardez vos éclaireurs hors de sa portée, ou pas. À vous de voir.",
+"I shoot what I can reach, and I reach a lot.": "Je tire sur ce que j'atteins, et j'atteins loin.",
+"Orion is held. Nobody back here expected that. Don't get comfortable.": "Orion est tenu. Personne ici ne s'y attendait. Ne vous installez pas.",
+"Orion holds. The Hunter sends its regards. We've put another Command drone on the pile for you.": "Orion tient. Le Chasseur vous salue. On a mis un autre drone de commandement sur la pile pour vous.",
+"Cassiopeia": "Cassiopée",
+"The Queen": "La Reine",
+"Sector Cassiopeia. The Queen keeps shields, and her shields sweep. Step onto her land next to one and you're not coming back. The last Command drone we sent came back on a pike. We'd like this one back in one piece.": "Secteur Cassiopée. La Reine garde des boucliers, et ses boucliers balaient. Posez un pied sur son terrain à côté de l'un d'eux et vous ne revenez pas. Le dernier drone de commandement qu'on a envoyé est revenu sur une pique. On aimerait celui-ci en un seul morceau.",
+"Walk onto my land. My shields will meet you.": "Entrez sur mon terrain. Mes boucliers vous accueilleront.",
+"Cassiopeia is ours. The Queen's shields are scrap. Good work, and I don't say that.": "Cassiopée est à nous. Les boucliers de la Reine sont de la ferraille. Bon travail, et je ne dis jamais ça.",
+"Cassiopeia holds. The Queen kept the pike. She's starting a collection.": "Cassiopée tient. La Reine a gardé la pique. Elle commence une collection.",
+"Draco": "Dragon",
+"The Dragon": "Le Dragon",
+"Sector Draco. The Dragon stacks its drones three deep and chews through asteroids to make room. Bring missiles. Bring more than that.": "Secteur Dragon. Le Dragon empile ses drones sur trois épaisseurs et mâche les astéroïdes pour se faire de la place. Apportez des missiles. Apportez plus que ça.",
+"My drones stand three deep. Count your missiles.": "Mes drones se tiennent sur trois épaisseurs. Comptez vos missiles.",
+"Draco is ours. Three deep and it still went down. Somebody write that down.": "Dragon est à nous. Trois épaisseurs et il est quand même tombé. Que quelqu'un note ça.",
+"Draco holds. Your drones were armor for its drones, it seems. Try again.": "Dragon tient. Vos drones ont servi de blindage aux siens, on dirait. Réessayez.",
+"Lyra": "Lyre",
+"The Harp": "La Harpe",
+"Sector Lyra. The Harp's hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.": "Secteur Lyre. Les chasseurs de la Harpe tirent deux missiles à la fois, ses sièges marchent sur votre drone de commandement, et elle saute pour du terrain. Joli nom. Sale secteur.",
+"Two missiles, one breath. My hunters play in chords.": "Deux missiles, un souffle. Mes chasseurs jouent des accords.",
+"Lyra is ours. The Harp is out of tune. Keep moving.": "Lyre est à nous. La Harpe est désaccordée. On continue.",
+"Lyra holds. Two missiles, one Command drone, no music. Again.": "Lyre tient. Deux missiles, un drone de commandement, pas de musique. Encore.",
+"Scorpius": "Scorpion",
+"The Scorpion": "Le Scorpion",
+"Sector Scorpius. The Scorpion never leaves a drone where you can take it. You will have to make it come to you. Patience, or whatever you've got instead.": "Secteur Scorpion. Le Scorpion ne laisse jamais un drone là où vous pouvez le prendre. Il faudra le faire venir à vous. De la patience, ou ce que vous avez à la place.",
+"You will never catch one of my drones standing where you can take it.": "Vous ne surprendrez jamais un de mes drones là où vous pouvez le prendre.",
+"Scorpius is ours. You out-waited a scorpion. That's a first.": "Scorpion est à nous. Vous avez été plus patient qu'un scorpion. C'est une première.",
+"Scorpius holds. It never gave you a shot, did it. Think about that before the next one.": "Scorpion tient. Il ne vous a jamais laissé une ouverture, hein. Pensez-y avant la prochaine.",
+"Hydra": "Hydre",
+"The Serpent": "Le Serpent",
+"Sector Hydra. The Serpent plays the cascade: one swap, three lines, and the asteroids come rolling at you. Watch its side of the board, not yours.": "Secteur Hydre. Le Serpent joue la cascade : un échange, trois lignes, et les astéroïdes roulent vers vous. Surveillez son côté du plateau, pas le vôtre.",
+"Cut one line and three more fall. I play for the cascade.": "Coupez une ligne et trois autres tombent. Je joue pour la cascade.",
+"Hydra is ours. All heads accounted for. Command is impressed, which is unsettling.": "Hydre est à nous. Toutes les têtes sont comptées. Le commandement est impressionné, ce qui est inquiétant.",
+"Hydra holds. The asteroids did half the work. The Serpent did the rest.": "Hydre tient. Les astéroïdes ont fait la moitié du travail. Le Serpent a fait le reste.",
+"Cygnus": "Cygne",
+"The Swan": "Le Cygne",
+"Sector Cygnus. The Swan picks the wrecks clean and walks its bombs to where your drones sleep. Nothing you lose stays lost; it just changes hands.": "Secteur Cygne. Le Cygne nettoie les épaves et promène ses bombes jusque là où dorment vos drones. Rien de ce que vous perdez ne reste perdu ; ça change juste de mains.",
+"I pick the wrecks clean, and my bombs know where you sleep.": "Je nettoie les épaves, et mes bombes savent où vous dormez.",
+"Cygnus is ours. The Swan is grounded. Two sectors left. Breathe.": "Cygne est à nous. Le Cygne est cloué au sol. Deux secteurs restants. Respirez.",
+"Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.": "Cygne tient. Vos épaves ont nourri ses missiles. Privez-le du terrain la prochaine fois.",
+"Andromeda": "Andromède",
+"The Chained": "L'Enchaînée",
+"Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a shield beside it. Always. Find the moment there isn't.": "Secteur Andromède. L'Enchaînée ne laisse jamais son drone de commandement seul. Il y a toujours un bouclier à côté. Toujours. Trouvez le moment où il n'y en a pas.",
+"My Command drone has never been alone a day in its life.": "Mon drone de commandement n'a jamais été seul un seul jour de sa vie.",
+"Andromeda is ours. The chain broke. One left, and it's the big one.": "Andromède est à nous. La chaîne a cassé. Il en reste un, et c'est le gros.",
+"Andromeda holds. The shield was there every time. Make it move.": "Andromède tient. Le bouclier était là à chaque fois. Faites-le bouger.",
+"Ursa Major": "Grande Ourse",
+"The Bear": "L'Ourse",
+"Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.": "Secteur Grande Ourse. L'Ourse ne devine pas. Chaque coup est son meilleur. On a envoyé onze drones de commandement. Onze piques. Le vôtre est le douzième.",
+"I do not guess.": "Je ne devine pas.",
+"Ursa Major is ours. All nine sectors. Twelve was the number. Go home, Commander. You've earned a long one.": "Grande Ourse est à nous. Les neuf secteurs. Douze était le bon chiffre. Rentrez chez vous, Commandant. Vous avez mérité une longue permission.",
+"Ursa Major holds. The pike was waiting. There is no shame on it; everyone's is.": "Grande Ourse tient. La pique attendait. Il n'y a pas de honte dessus ; celle de tout le monde y est.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1139,7 +1266,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.26.0';
+const VERSION='1.27.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1184,6 +1311,7 @@ function newGame(opts={}){
   let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
   if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill),+$('inRock1').value||6);}
   S.asteroids={1:r1,2:r2};if(!opts.tut)dropRocks(YOU,r1);dropRocks(BOT,r2);
+  S.story=opts.story||null;if(!S.story&&!(online&&net))Object.assign(SNAME,SNAME0);
   if(S.tut){S.skill=0;S.timers=false;S.tutDone=[];layOpening();}
   sel=null;mode=null;pending=null;aimList=[];
   note(t`New game. Asteroids ${r1} to ${r2}, bot at skill ${S.skill}${S.timers?t(', clocks on'):t(', relaxed')}.`);
@@ -1202,7 +1330,7 @@ function layOpening(){
 }
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}}
-function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&o.ver===VERSION)return o;}}catch(_){}return null;}
+function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w)(S.ev||(S.ev=[])).push(Object.assign({text:t},w));}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 function wreckAt(r,c){if(!S.salvage)return;S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
@@ -1738,7 +1866,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();renderExplain();
-  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
+  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
   else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus(t('Your move.'));}else setStatus((online&&net)?t`Waiting for ${SNAME[BOT]}…`:t('The bot is thinking…'));}
   netPush();}
 
@@ -1982,7 +2110,7 @@ buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
 (async function boot(){
   const saved=load();
-  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;renderAll();}
+  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;try{renderAll();}catch(e){console.error(e);S=null;}}
   const resumed=await netResume();
   if(!resumed&&S&&S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
@@ -2204,6 +2332,121 @@ $('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden
 $('btnHost').addEventListener('click',netHost);$('btnJoin').addEventListener('click',()=>netJoin());$('btnLeave').addEventListener('click',netLeave);$('btnNetCancel').addEventListener('click',netLeave);
 $('lobby').addEventListener('click',e=>{const b=e.target.closest('button[data-join]');if(b&&!b.disabled)netJoin(b.dataset.join);});
 setInterval(()=>{if(!$('netbox').hidden&&!online)lobbyRefresh();},8000);
+// ---------- story mode (v1.27, the user's Punch-Out idea). Nine sectors, each a constellation, skill 20 up
+// to 100 by tens. A dispatcher sends you in with a briefing, the sector's boss brags about the one thing
+// that level does, you play the usual game against the bot at that skill, and the dispatcher has the last
+// word. Progress lives on the phone (cc_story). Every line is a key into fr.json. Audio slots: story/<id>-<kind>.mp3
+// (brief, brag, win, lose), played when the file is there and Sound is on; silence otherwise.
+const SECTORS=[
+ {id:'orion',skill:20,name:'Orion',title:'The Hunter',
+  brief:'Sector Orion. First one out of the gate. The Hunter shoots at anything that moves and some things that don\'t. Keep your scouts out of its reach, or don\'t. Your call.',
+  brag:'I shoot what I can reach, and I reach a lot.',
+  win:'Orion is held. Nobody back here expected that. Don\'t get comfortable.',
+  lose:'Orion holds. The Hunter sends its regards. We\'ve put another Command drone on the pile for you.',
+  pts:[[30,10],[70,10],[42,45],[50,47],[58,49],[25,90],[75,90]],lines:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]},
+ {id:'cassiopeia',skill:30,name:'Cassiopeia',title:'The Queen',
+  brief:'Sector Cassiopeia. The Queen keeps shields, and her shields sweep. Step onto her land next to one and you\'re not coming back. The last Command drone we sent came back on a pike. We\'d like this one back in one piece.',
+  brag:'Walk onto my land. My shields will meet you.',
+  win:'Cassiopeia is ours. The Queen\'s shields are scrap. Good work, and I don\'t say that.',
+  lose:'Cassiopeia holds. The Queen kept the pike. She\'s starting a collection.',
+  pts:[[10,40],[30,70],[50,40],[70,70],[90,40]],lines:[[0,1],[1,2],[2,3],[3,4]]},
+ {id:'draco',skill:40,name:'Draco',title:'The Dragon',
+  brief:'Sector Draco. The Dragon stacks its drones three deep and chews through asteroids to make room. Bring missiles. Bring more than that.',
+  brag:'My drones stand three deep. Count your missiles.',
+  win:'Draco is ours. Three deep and it still went down. Somebody write that down.',
+  lose:'Draco holds. Your drones were armor for its drones, it seems. Try again.',
+  pts:[[10,80],[25,60],[40,70],[55,50],[70,55],[85,35],[75,15],[90,10]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
+ {id:'lyra',skill:50,name:'Lyra',title:'The Harp',
+  brief:'Sector Lyra. The Harp\'s hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.',
+  brag:'Two missiles, one breath. My hunters play in chords.',
+  win:'Lyra is ours. The Harp is out of tune. Keep moving.',
+  lose:'Lyra holds. Two missiles, one Command drone, no music. Again.',
+  pts:[[50,10],[45,35],[60,38],[48,62],[64,66]],lines:[[0,1],[1,2],[1,3],[2,4],[3,4]]},
+ {id:'scorpius',skill:60,name:'Scorpius',title:'The Scorpion',
+  brief:'Sector Scorpius. The Scorpion never leaves a drone where you can take it. You will have to make it come to you. Patience, or whatever you\'ve got instead.',
+  brag:'You will never catch one of my drones standing where you can take it.',
+  win:'Scorpius is ours. You out-waited a scorpion. That\'s a first.',
+  lose:'Scorpius holds. It never gave you a shot, did it. Think about that before the next one.',
+  pts:[[15,15],[25,30],[35,45],[45,60],[60,70],[75,75],[85,65],[80,50]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
+ {id:'hydra',skill:70,name:'Hydra',title:'The Serpent',
+  brief:'Sector Hydra. The Serpent plays the cascade: one swap, three lines, and the asteroids come rolling at you. Watch its side of the board, not yours.',
+  brag:'Cut one line and three more fall. I play for the cascade.',
+  win:'Hydra is ours. All heads accounted for. Command is impressed, which is unsettling.',
+  lose:'Hydra holds. The asteroids did half the work. The Serpent did the rest.',
+  pts:[[5,60],[18,50],[30,58],[45,48],[58,58],[72,50],[85,58],[95,45]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
+ {id:'cygnus',skill:80,name:'Cygnus',title:'The Swan',
+  brief:'Sector Cygnus. The Swan picks the wrecks clean and walks its bombs to where your drones sleep. Nothing you lose stays lost; it just changes hands.',
+  brag:'I pick the wrecks clean, and my bombs know where you sleep.',
+  win:'Cygnus is ours. The Swan is grounded. Two sectors left. Breathe.',
+  lose:'Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.',
+  pts:[[50,10],[50,40],[50,70],[50,90],[20,45],[80,38]],lines:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
+ {id:'andromeda',skill:90,name:'Andromeda',title:'The Chained',
+  brief:'Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a shield beside it. Always. Find the moment there isn\'t.',
+  brag:'My Command drone has never been alone a day in its life.',
+  win:'Andromeda is ours. The chain broke. One left, and it\'s the big one.',
+  lose:'Andromeda holds. The shield was there every time. Make it move.',
+  pts:[[10,70],[30,55],[55,45],[80,30],[95,20],[55,15]],lines:[[0,1],[1,2],[2,3],[3,4],[2,5]]},
+ {id:'ursa',skill:100,name:'Ursa Major',title:'The Bear',
+  brief:'Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.',
+  brag:'I do not guess.',
+  win:'Ursa Major is ours. All nine sectors. Twelve was the number. Go home, Commander. You\'ve earned a long one.',
+  lose:'Ursa Major holds. The pike was waiting. There is no shame on it; everyone\'s is.',
+  pts:[[10,30],[30,35],[48,45],[62,42],[80,45],[78,70],[58,72]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]}];
+const STORY_KEY='cc_story';
+let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
+function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}catch(_){}}
+const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||null;
+const soundOn=()=>{try{return localStorage.getItem('cc_sound')!=='0';}catch(_){return true;}};
+let storyAudio=null;
+function storyPlay(sec,kind){if(storyAudio){try{storyAudio.pause();}catch(_){}storyAudio=null;}if(!soundOn())return;
+  try{const a=new Audio('story/'+sec.id+'-'+kind+'.mp3');a.addEventListener('error',()=>{});storyAudio=a;a.play().catch(()=>{});}catch(_){}}
+// ----- the sector map
+function renderStoryMap(){const el=$('storyList');const next=storyNext();
+  el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
+    return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
+  $('storyDone').hidden=!!next;}
+function openStoryMap(){$('cover').hidden=true;$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
+// ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
+let typeTimer=null,typeDone=null;
+function typeOut(el,text,done){if(typeTimer)clearInterval(typeTimer);el.textContent='';let i=0;const step=Math.max(14,Math.min(38,2600/Math.max(1,text.length)));
+  typeDone=()=>{clearInterval(typeTimer);typeTimer=null;el.textContent=text;typeDone=null;if(done)done();};
+  typeTimer=setInterval(()=>{i++;el.textContent=text.slice(0,i);if(i>=text.length){const d=typeDone;typeDone=null;clearInterval(typeTimer);typeTimer=null;if(d&&done)done();}},step);}
+function skyFor(sec){let stars='';for(let i=0;i<70;i++){stars+=`<circle cx="${(Math.random()*100).toFixed(1)}" cy="${(Math.random()*100).toFixed(1)}" r="${(Math.random()<.85?.25+Math.random()*.4:.7+Math.random()*.5).toFixed(2)}" fill="#fff" opacity="${(.3+Math.random()*.7).toFixed(2)}"/>`;}
+  const lines=sec.lines.map(([a,b])=>`<line x1="${sec.pts[a][0]}" y1="${sec.pts[a][1]}" x2="${sec.pts[b][0]}" y2="${sec.pts[b][1]}" stroke="#e8a63b" stroke-opacity=".55" stroke-width=".6"/>`).join('');
+  const pts=sec.pts.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===0?2.2:1.6}" fill="#ffd27a"/><circle cx="${x}" cy="${y}" r="${i===0?4:3}" fill="#ffd27a" opacity=".18"/>`).join('');
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="#070a10"/>${stars}<g class="constel">${lines}${pts}</g></svg>`;}
+function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false;b.dataset.sec=sec.id;
+  $('briefSky').innerHTML=skyFor(sec);$('briefName').textContent=t(sec.name);$('briefTitle').textContent=t(sec.title)+' · '+t('Skill {0}',sec.skill);
+  $('briefBoss').innerHTML=`<div class="dr s2 talk" style="border-color:${KCOL[3]}">${cmdSVG(BOT)}<b class="lt">M</b></div>`;
+  $('briefBrag').textContent='';$('briefWho').textContent=t('Dispatch');$('briefSpeak').classList.add('on');
+  storyPlay(sec,'brief');
+  typeOut($('briefText'),t(sec.brief),()=>{$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>$('briefBoss').classList.remove('speaking'));});}
+function storyLaunch(){const id=$('brief').dataset.sec;const sec=SECTORS.find(s=>s.id===id);if(!sec)return;if(typeDone)typeDone();
+  $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
+  if(online&&net)netLeave();
+  $('inSkill').value=sec.skill;newGame({story:sec.id});SNAME[BOT]=t(sec.name);S.log.length=0;
+  note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);}
+// ----- the end of a sector: the dispatcher's word, and where to go next
+function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?SECTORS.find(s=>s.id===S.story):null;
+  for(const id of ['btnStoryNext','btnStoryRetry','btnStoryMap'])$(id).hidden=true;$('btnAgain').hidden=inStory;
+  if(!sec)return;
+  const won=S.over.w===YOU;if(won&&!story.won[sec.id]){story.won[sec.id]=Date.now();storySave();}
+  if(won&&!S.storySaid){S.storySaid=true;storyPlay(sec,'win');}else if(!won&&!S.storySaid){S.storySaid=true;storyPlay(sec,'lose');}
+  $('overTitle').textContent=won?t('Sector held'):t('Sector lost');
+  $('overText').innerHTML='<div class="disp">'+t(won?sec.win:sec.lose)+'</div><div class="acthint" style="margin-top:6px">'+S.over.reason+'</div>';
+  const next=storyNext();if(won&&next)$('btnStoryNext').hidden=false;if(!won)$('btnStoryRetry').hidden=false;$('btnStoryMap').hidden=false;}
+function storyAfterRating(){} // (ratings run as for any bot game)
+$('storyList').addEventListener('click',e=>{const b=e.target.closest('button[data-sec]');if(!b||b.disabled)return;openBrief(SECTORS.find(s=>s.id===b.dataset.sec));});
+$('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S)newGame();});
+$('btnBriefBack').addEventListener('click',()=>{if(typeDone)typeDone();if(storyAudio){try{storyAudio.pause();}catch(_){}}$('brief').hidden=true;openStoryMap();});
+$('btnBriefGo').addEventListener('click',storyLaunch);
+$('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefBrag').addEventListener('click',()=>{if(typeDone)typeDone();});
+$('btnStoryNext').addEventListener('click',()=>{const n=storyNext();if(n)openBrief(n);});
+$('btnStoryRetry').addEventListener('click',()=>{const sec=SECTORS.find(s=>s.id===S.story);if(sec)openBrief(sec);});
+$('btnStoryMap').addEventListener('click',openStoryMap);
+$('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
+$('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
+$('inSound').checked=soundOn();
 </script>
 </body>
 </html>
