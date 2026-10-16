@@ -247,8 +247,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   </div>
   <div class="side">
     <div class="panel two">
-      <div><span class="lbl">You</span><div class="big" id="land1" style="color:var(--you)">11</div><div id="meta1" class="acthint"></div></div>
-      <div><span class="lbl" id="botlbl">Bot</span><div class="big" id="land2" style="color:var(--bot)">11</div><div id="meta2" class="acthint"></div></div>
+      <div><span class="lbl">You</span><div class="big" id="land1" style="color:var(--you)">9</div><div id="meta1" class="acthint"></div></div>
+      <div><span class="lbl" id="botlbl">Bot</span><div class="big" id="land2" style="color:var(--bot)">9</div><div id="meta2" class="acthint"></div></div>
     </div>
     <div class="panel" id="clocksPanel"><span class="lbl">Clocks</span><div class="two"><div class="big" id="ck1" style="color:var(--you)">—</div><div class="big" id="ck2" style="color:var(--bot)">—</div></div></div>
     <details class="panel" id="recordPanel" open><summary class="lbl">Your record ▾</summary><div id="record" class="acthint"></div></details>
@@ -1139,7 +1139,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.25.0';
+const VERSION='1.26.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1176,9 +1176,8 @@ function newGame(opts={}){
      over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
-    for(const [r,c] of [[b,5],[b,4],[b,6],[f,4],[f,5],[f,6]])S.own[key(r,c)]=side; // no walls since v1.15: the old wall squares are just your land, with stars on them
-    for(let c=3;c<=7;c++)S.own[key(y,c)]=side;
-    S.drones.push(mk(side,b,5,'M',rnd(KINDS)),mk(side,y,5,'G',rnd(KINDS)),mk(side,b,3,'C',rnd(KINDS)),mk(side,b,7,'C',rnd(KINDS))); // the user's start: a command drone, one shield in front of it, two scouts
+    for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
+    S.drones.push(mk(side,b,5,'M',rnd(KINDS)),mk(side,y,5,'G',rnd(KINDS)),mk(side,b,4,'C',rnd(KINDS)),mk(side,b,6,'C',rnd(KINDS))); // the command drone in the back middle, the scouts beside it, the shield at the front edge: all inside the nine
   }
   for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
   // asteroids: from the ratings, or the boxes

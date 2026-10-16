@@ -41,7 +41,7 @@ a{color:var(--you)}
 
 <h2 id="board">The board</h2>
 <p>One 11 × 11 board. Every square holds a star of one of five colors, or an asteroid. Under the stars is a red-and-white checkerboard. The middle row is the seam, the line between your half and the bot's. <strong>Stars fall toward whoever is moving.</strong> On your turn every column drops toward your back row and new stars come in from the top edge; on the bot's turn everything rises toward its back row and new stars come in from the bottom. Asteroids split a column, so nothing falls through one; clear it with a missile and the column opens.</p>
-<p>There are no walls. You start owning eleven squares at your back row: the five in front of your Command drone and the six around it. Each side starts with asteroids in its own half; the number comes from the ratings.</p>
+<p>There are no walls. You start owning a block of nine squares, three by three, at the middle of your back row, with your Command drone, two scouts and a shield inside it. Each side starts with asteroids in its own half; the number comes from the ratings.</p>
 <h2 id="asteroids">Asteroids</h2>
 <p>Asteroids can't be swapped, matched, or entered, and they split a column so nothing falls through them. A missile clears one. They drift: clear <strong>8 or more stars on your side in one turn</strong>, cascades counted, and every asteroid on the board moves one square toward you, the way the stars are falling. An asteroid that runs into a lone drone destroys it and takes its square. Into a stack, it knocks one power off and jumps over to the next square; a drone on that square is destroyed. Two squares is the most an asteroid ever moves in a turn. A wall, the Commander, the edge of the board or another asteroid stops it.</p>
 
@@ -49,7 +49,7 @@ a{color:var(--you)}
 <p>Off by default: the whole board shows. Settings has <strong>Fog of war</strong> with two ways to play in the dark. <em>From the seam</em>: you see your own half, and beyond it only one square around each of your drones (shields see nothing) and squares a scout has claimed, which stay lit all game. <em>Everything dark</em>: even your own half starts dark. In the dark you can't swap, move through, or shoot at a square you can't see, shields may only stand on squares you own or have cleared, and the bot lives under the same fog.</p>
 
 <h2 id="start">Start and turns</h2>
-<p>You begin with your Command drone in the middle of your back row, one shield in front of it, two scouts beside it on the back row, your eleven squares, and one missile. You move first.</p>
+<p>You begin with a block of nine squares at the middle of your back row: your Command drone in the back middle, a scout on each side of it, a shield at the front edge, and one missile. You move first.</p>
 <p>Against the bot the game is <strong>relaxed</strong> unless you turn Timers on in Settings: no move timer, no clock. With Timers on it is a 20-minute chess clock and 60 seconds a move.</p>
 <p>A turn: missiles first, if you want. Then one action: swap two stars side by side to make a line, move one drone, claim with a scout, warp, fire a siege drone, or ram. A swap that makes no line snaps back for free.</p>
 <p><strong>Your land is yours.</strong> Neither star of a swap may sit on a square the other side owns; you swap on open land or your own. Every square a scout claims is one the other side can no longer play on. A line that forms entirely on their land by itself, after a cascade, clears but pays nothing.</p>
