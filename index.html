@@ -209,7 +209,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   </div>
 </header>
 <form class="setup" id="setup" onsubmit="return false">
-  <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"></div>
+  <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"><span class="acthint" id="skillNote" style="max-width:240px;font-size:12px"></span></div>
   <div class="field"><span class="lbl">Timers</span><label><input type="checkbox" id="inTimers"> clock 20 min, 60 s a move</label></div>
   <div class="field"><span class="lbl">Handicap</span><label><input type="checkbox" id="inAuto" checked> asteroids from ratings</label></div>
   <div class="field"><span class="lbl">Your asteroids</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
@@ -989,6 +989,18 @@ const FR={
 "what happened, and why": "ce qui s'est passé, et pourquoi",
 "Who takes whom.": "Qui prend qui.",
 "Raiders and hunters take what they land on, except a siege. Shields take scouts, hunters, warps and shields by moving next to them on your land. Every take earns a missile; scouts fire one a turn, hunters two at once. Tap any drone, yours or the bot's, to see its reach.": "Les pillards et les chasseurs prennent ce sur quoi ils atterrissent, sauf un siège. Les boucliers prennent éclaireurs, chasseurs, drones de saut et boucliers en se plaçant à côté sur votre terrain. Chaque prise rapporte un missile ; les éclaireurs en tirent un par tour, les chasseurs deux à la fois. Touchez n'importe quel drone, le vôtre ou celui du bot, pour voir sa portée.",
+"Plays its best move {0}% of the time. ": "Joue son meilleur coup {0} % du temps. ",
+"Random. It swaps and moves at random and never fires.": "Au hasard. Il échange et se déplace au hasard et ne tire jamais.",
+"It knows which lines pay a drone and claims land with its scouts.": "Il sait quelles lignes rapportent un drone et revendique du terrain avec ses éclaireurs.",
+"It fires missiles at your drones and takes what it can reach.": "Il tire des missiles sur vos drones et prend ce qu'il peut atteindre.",
+"It keeps its Command drone home and sweeps with its shields on its own land.": "Il garde son drone de commandement à la maison et balaie avec ses boucliers sur son terrain.",
+"It stacks drones for armor and clears asteroids on its side.": "Il empile des drones comme blindage et dégage les astéroïdes de son côté.",
+"Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.": "Ses chasseurs tirent leurs deux missiles, ses sièges marchent vers votre drone de commandement, et il saute pour du terrain.",
+"It will not park a drone where your raiders, hunters or shields can take it next turn.": "Il ne laisse pas un drone là où vos pillards, chasseurs ou boucliers peuvent le prendre au tour suivant.",
+"It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.": "Il choisit aussi ses échanges pour la cascade : plus d'étoiles effacées, et la dérive des astéroïdes quand il peut atteindre huit.",
+"It goes after wrecks when Salvage is on and walks its bombs toward your drones.": "Il va chercher les épaves quand la Récupération est activée et avance ses bombes vers vos drones.",
+"It keeps a shield beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
+"Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1124,7 +1136,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.23.0';
+const VERSION='1.24.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1156,7 +1168,7 @@ const poss=side=>side===YOU?'Your':SNAME[BOT]+"'s";
 function pickSafe(g,r,c){let k,t=0;do{k=rnd(KINDS);t++;}while(t<30&&((c>=2&&g[r][c-1]===k&&g[r][c-2]===k)||(r>=2&&g[r-1][c]===k&&g[r-2][c]===k)));return k;}
 function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push(pickSafe(g,r,c));}return g;}
 function newGame(opts={}){
-  const skill=Math.max(0,Math.min(100,+$('inSkill').value||0));
+  const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:$('inSalvage').checked,wrecks:{},
      over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
@@ -1515,6 +1527,23 @@ async function afterAction(){const actor=S.turn;
   if(S.turn===BOT&&!online){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
 }
 // ---------- the bot ----------
+// The skill ladder (v1.24). Skill is a multiple of 10. Level L = skill/10 decides what the bot's best move
+// knows; at skill S it plays that best move S% of the time and a random legal one otherwise (always at 100).
+const botLevel=()=>Math.max(0,Math.min(10,Math.round((S?S.skill:(+$('inSkill').value||0))/10)));
+const BOT_LADDER=[
+'Random. It swaps and moves at random and never fires.',
+'It knows which lines pay a drone and claims land with its scouts.',
+'It fires missiles at your drones and takes what it can reach.',
+'It keeps its Command drone home and sweeps with its shields on its own land.',
+'It stacks drones for armor and clears asteroids on its side.',
+'Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.',
+'It will not park a drone where your raiders, hunters or shields can take it next turn.',
+'It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.',
+'It goes after wrecks when Salvage is on and walks its bombs toward your drones.',
+'It keeps a shield beside its Command drone at all times.',
+'Every turn is its best move. Nothing is random.'];
+function snapSkill(){const v=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10;$('inSkill').value=v;return v;}
+function renderSkillNote(){const el=$('skillNote');if(!el)return;const L=Math.round((+$('inSkill').value||0)/10);el.textContent=(L>=10?'':t('Plays its best move {0}% of the time. ',L*10))+t(BOT_LADDER[L]);}
 async function botSafely(){
   try{await botTurn(BOT);}
   catch(e){note(t`Bot error: ${e&&e.message||e}. Turn skipped.`);console.error(e);S.turn=YOU;for(const d of S.drones)d.shots=0;save();renderAll();}
@@ -1527,36 +1556,42 @@ async function botTurn(me){
       if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
         if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
       else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
-  const him=other(me),smart=rnd(100)<S.skill;
-  // missiles first: at enemy drones (weak ones, hunters, sieges), or at asteroids in its own half when it is short of room
-  if(smart&&S.missiles[me]>0){
-    for(let guard=0;guard<4;guard++){let best=null;
+  const him=other(me),L=botLevel(),smart=L>=10||rnd(100)<S.skill; // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best
+  // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
+  if(smart&&L>=2&&S.missiles[me]>0){
+    for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
       for(const sh of dronesOf(me).filter(d=>shotsLeft(d)>0)){
         for(let r=Math.max(0,sh.r-range());r<=Math.min(N-1,sh.r+range());r++)for(let c=Math.max(0,sh.c-range());c<=Math.min(N-1,sh.c+range());c++){
           if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
           if(o&&o.side===him)v=(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0);
-          else if(!o&&S.grid[r][c]===ROCK&&half(me,r))v=4;
+          else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
           else continue;
           if(!best||v>best.v)best={r,c,v,sh};}}
       if(best&&best.v>=6&&S.missiles[me]>0){S.missiles[me]--;best.sh.shots=(best.sh.shots||0)+1;await fireShots(me,[best],best.sh);await sleep(200);}else break;}
   }
   if(S.over)return;
   const opts=[];
-  if(!S.tut)for(const sw of validSwaps(me))opts.push({type:'swap',sw,v:shapeValue(sw.sh,me)}); // in the coached game the bot never touches the stars: the board changes only when the player changes it
+  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
+  const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and shields can hit next turn
+  const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   for(const d of dronesOf(me)){
-    if(d.kind==='M'){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger)continue;} // the bot keeps its command drone home unless a siege drone is closing in
-    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:5+3*g+(half(me,d.r)?0:3)});}
-    if(d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
-    if(d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){if(S.own[key(a,b)]===0)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&(S.own[key(a,b)]===me||S.own[key(a,b)]===0))prey+=5*o.power;}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});}
-    for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;if(S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
-      if(kind==='take')v+=12*droneAt(r,c).power;if(kind==='merge')v+=(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c));
-      if(d.kind==='X')v+=6*(dist(d.r,d.c)-dist(r,c));
-      if(d.kind==='C')v+=2*(half(me,r)?0:1)+(claimGain({r,c,side:me})>claimGain(d)?3:0);
-      if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===me)v+=12*e.power;}}
-      if(d.kind==='S'||d.kind==='H')v+=1.5*(dist(d.r,d.c)-dist(r,c))*0.5;
+    if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger)continue;} // from L3 the command drone stays home unless a siege is closing in
+    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?5+3*g+(half(me,d.r)?0:3):1});}
+    if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
+    if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){if(S.own[key(a,b)]===0)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&(S.own[key(a,b)]===me||S.own[key(a,b)]===0))prey+=5*o.power;}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});}
+    for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
+      if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
+      if(kind==='take')v+=L>=2?12*droneAt(r,c).power:0;
+      if(kind==='merge')v+=L>=4?(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c)):-1;
+      if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));
+      if(d.kind==='C'&&L>=1)v+=2*(half(me,r)?0:1)+(claimGain({r,c,side:me})>claimGain(d)?3:0);
+      if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===me)v+=12*e.power;}}
+      if((d.kind==='S'||d.kind==='H')&&L>=5)v+=0.75*(dist(d.r,d.c)-dist(r,c));
       if(kind==='dark')v-=1;
-      if(d.kind==='B')v+=1;
+      if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
+      if(L>=6&&d.kind!=='X'&&threat.has(k))v-=8*d.power; // do not park where it can be taken next turn
+      if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a shield stays beside the command drone
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
@@ -1915,7 +1950,8 @@ $('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStora
 $('introTut').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}newGame({tut:true});});
 setInterval(()=>{if(S&&S.tut&&!busy&&S.turn===YOU&&!S.over)renderGuide();},2000);
 $('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
-$('inSkill').addEventListener('change',renderRecord);
+$('inSkill').addEventListener('change',()=>{snapSkill();renderRecord();renderSkillNote();});
+snapSkill();renderSkillNote();
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
 translateDOM(document.body);
