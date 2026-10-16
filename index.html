@@ -790,6 +790,7 @@ const FR={
 "You move first: swap two stars, or tap your scout.": "Vous jouez en premier : échangez deux étoiles, ou touchez votre éclaireur.",
 "an X of 5": "un X de 5",
 "a V of two diagonals": "un V de deux diagonales",
+"an L of 4": "un L de 4",
 "an L of 4 and 3": "un L de 4 et 3",
 "a plus": "une croix",
 "a T of two 3-lines": "un T de deux lignes de 3",
@@ -1138,7 +1139,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.24.1';
+const VERSION='1.25.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1280,6 +1281,12 @@ function detectShapes(g,anchor){
     const sp={cell:rc(k),cells:x.run,color:x.color,label:t`${x.len} in a line`};
     if(x.len===4)sp.letters=['C'];else if(x.len===5){sp.letters=['S'];sp.sq=1;sp.cap='missile';}else if(x.len===6){sp.letters=['H'];sp.cap='asteroid';}else sp.letters=['W'];
     spawns.push(sp);}
+  // the L of 4 (v1.25, user): a 3-line with one star of its color hooked at a right angle at either end pays a raider (red)
+  for(const x of runs){if(x.used||x.len!==3||x.boxed||x.di>=2)continue;
+    const [dr,dc]=LINE_DIRS[x.di];let hook=null;
+    for(const e of [x.run[0],x.run[2]]){const [r,c]=rc(e);for(const [pr,pc] of (dr?[[0,-1],[0,1]]:[[-1,0],[1,0]])){const a=r+pr,b=c+pc;if(inb(a,b)&&g[a][b]===x.color&&!cells.has(key(a,b))&&!box.has(key(a,b))){hook=key(a,b);break;}}if(hook!=null)break;}
+    if(hook==null)continue;x.used=true;cells.add(hook);
+    spawns.push({letters:['S'],sq:0,cap:'missile',cell:rc(hook),cells:[...x.run,hook],color:x.color,label:t('an L of 4')});}
   const seen=new Set();
   for(const k0 of box){if(seen.has(k0))continue;const comp=new Set([k0]);const q=[k0];seen.add(k0);
     while(q.length){const k=q.pop();const [r,c]=rc(k);
