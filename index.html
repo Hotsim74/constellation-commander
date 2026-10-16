@@ -196,13 +196,13 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .boss.speaking .dr{animation:bosspulse .7s ease-in-out infinite alternate}
 @keyframes bosspulse{from{box-shadow:0 0 0 2px rgba(78,168,220,.4)}to{box-shadow:0 0 0 8px rgba(78,168,220,0)}}
 .brief .tx{margin:12px 18px 0;padding:10px 12px;background:var(--panel2);border-left:3px solid var(--you);border-radius:3px;min-height:60px}
-.brief .tx.boss{border-left-color:var(--bot)}
+.brief .tx.them{border-left-color:var(--bot)}
 .brief .who{font-family:var(--display);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:8px;min-height:14px}
 .brief .speak{display:inline-block;width:40px;height:8px;background:repeating-linear-gradient(90deg,var(--you) 0 3px,transparent 3px 6px);opacity:0}
 .brief .speak.on{opacity:1;animation:speak .35s steps(2) infinite}
 @keyframes speak{from{background-position:0 0}to{background-position:6px 0}}
 .brief .words{font-family:var(--mono);font-size:14px;line-height:1.5;color:#f1e4c8;margin-top:4px;white-space:pre-wrap}
-.brief .tx.boss .words{color:#cfe6f5}
+.brief .tx.them .words{color:#cfe6f5}
 .overbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 .brief .overbtns{padding:0 18px}
 #over .card .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;max-width:320px}
@@ -310,7 +310,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="sky" id="briefSky"></div>
   <div class="bhead"><div><div class="lbl">Sector</div><h2 id="briefName"></h2><div class="acthint" id="briefTitle"></div></div><div class="boss" id="briefBoss"></div></div>
   <div class="tx"><div class="who"><span id="briefWho"></span><i class="speak" id="briefSpeak"></i></div><div class="words" id="briefText"></div></div>
-  <div class="tx boss"><div class="who"><span id="briefWho2"></span></div><div class="words" id="briefBrag"></div></div>
+  <div class="tx them"><div class="who"><span id="briefWho2"></span></div><div class="words" id="briefBrag"></div></div>
   <div class="overbtns"><button type="button" id="btnBriefGo" class="primary">Launch</button><button type="button" id="btnBriefBack">Back</button></div>
 </div></div>
 <div id="intro" hidden><div class="card">
@@ -1266,7 +1266,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.27.0';
+const VERSION='1.27.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
