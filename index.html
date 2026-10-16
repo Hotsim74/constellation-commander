@@ -225,6 +225,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <button type="button" id="btnHow">How to play</button>
   <button type="button" id="btnTut">Guided first game</button>
   <button type="button" id="btnCopy">Copy as text</button>
+  <button type="button" id="btnCopyLast" hidden>Copy last finished game</button>
   <a href="https://hotsim74.github.io/constellation-commander/rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
 </form>
 <div class="panel" id="netbox" hidden style="margin-bottom:8px">
@@ -238,7 +239,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><button id="btnAgain" class="primary" style="margin-top:12px">New game</button> <button id="btnCopyOver" style="margin-top:12px">Copy as text</button></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1110,6 +1111,7 @@ const FR={
 "How to play": "Comment jouer",
 "Guided first game": "Première partie guidée",
 "Copy as text": "Copier en texte",
+"Copy last finished game": "Copier la dernière partie terminée",
 "Rules": "Règles",
 "Loading…": "Chargement…",
 "You": "Vous",
@@ -1136,7 +1138,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.24.0';
+const VERSION='1.24.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1730,7 +1732,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();renderExplain();
-  const ov=$('over');if(S.over){ov.classList.add('show');$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
+  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);}
   else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus(t('Your move.'));}else setStatus((online&&net)?t`Waiting for ${SNAME[BOT]}…`:t('The bot is thinking…'));}
   netPush();}
 
@@ -1938,7 +1940,14 @@ setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion
 // ---------- copy as text ----------
 function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;c++){const d=droneAt(r,c);const k=key(r,c);s+=isCmd(r,c)?'M':isWall(r,c)?'#':d?(d.side===YOU?LETTER[d.kind]:LETTER[d.kind].toLowerCase()):S.grid[r][c]===ROCK?'%':!vis(YOU,r,c)?'?':S.own[k]===YOU?'y':S.own[k]===BOT?'b':S.own[k]===3?'=':'RGEBV'[S.grid[r][c]]||'.';}rows.push(s);}
   return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'}\n\nBOARD (UPPER = yours, lower = bot, M commander, # wall, % asteroid, ? fog, y/b/= land, letters R G E B V = star colors on open squares)\n${rows.join('\n')}\n\nLOG\n${S.log.slice(0,30).join('\n')}`;}
-$('btnCopy').addEventListener('click',async()=>{const txt=gameText();try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();});
+// copy or share: the phone's share sheet when there is one, else the clipboard, else a box to copy from. A finished game is kept so New game never loses it.
+async function copyText(txt){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();}
+function keepLastGame(){if(!S||!S.over)return;try{localStorage.setItem('cc_lastgame',gameText());}catch(_){}$('btnCopyLast').hidden=false;}
+$('btnCopy').addEventListener('click',()=>copyText(gameText()));
+$('btnCopyOver').addEventListener('click',e=>{e.stopPropagation();copyText(gameText());});
+$('btnCopyLast').addEventListener('click',()=>{let s='';try{s=localStorage.getItem('cc_lastgame')||'';}catch(_){}if(s)copyText(s);});
+try{if(localStorage.getItem('cc_lastgame'))$('btnCopyLast').hidden=false;}catch(_){}
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
