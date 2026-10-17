@@ -252,6 +252,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
+  <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> on the start screen</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> voices in story mode</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
@@ -1056,6 +1057,8 @@ const FR={
 "Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
 "Story": "Histoire",
 "Story mode": "Mode histoire",
+"Music": "Musique",
+"on the start screen": "sur l'écran d'accueil",
 "Sound": "Son",
 "voices in story mode": "voix dans le mode histoire",
 "Copy this game": "Copier cette partie",
@@ -1266,7 +1269,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.27.1';
+const VERSION='1.28.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -2447,6 +2450,31 @@ $('btnStoryMap').addEventListener('click',openStoryMap);
 $('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
+// ---------- music (v1.28): the start-screen loop, music/title_loop.mp3 (ACE-Step, made to loop). Web Audio so the
+// loop is seamless and a gain node does the fades (1.5 s in, 1 s out); an <audio> element if decoding fails.
+// Browsers allow sound only after a tap, so it starts on the first pointer or key while the cover (or the story
+// map and briefing opened from it) is up, and fades out when a game starts. Settings → Music (cc_music).
+const MUSIC_URL='music/title_loop.mp3',MUSIC_VOL=0.45;
+let musicCtx=null,musicBuf=null,musicSrc=null,musicGain=null,musicEl=null,musicWant=true,musicLoading=false;
+const musicOn=()=>{try{return localStorage.getItem('cc_music')!=='0';}catch(_){return true;}};
+async function musicStart(){if(!musicWant||!musicOn()||musicSrc||musicEl||musicLoading)return;musicLoading=true;
+  try{musicCtx=musicCtx||new (window.AudioContext||window.webkitAudioContext)();if(musicCtx.state==='suspended')await musicCtx.resume();
+    if(!musicBuf){const r=await fetch(MUSIC_URL);if(!r.ok)throw 0;musicBuf=await musicCtx.decodeAudioData(await r.arrayBuffer());}
+    if(!musicWant||!musicOn()){musicLoading=false;return;}
+    musicGain=musicCtx.createGain();musicGain.gain.setValueAtTime(0.0001,musicCtx.currentTime);musicGain.connect(musicCtx.destination);
+    musicSrc=musicCtx.createBufferSource();musicSrc.buffer=musicBuf;musicSrc.loop=true;musicSrc.connect(musicGain);musicSrc.start();
+    musicGain.gain.exponentialRampToValueAtTime(MUSIC_VOL,musicCtx.currentTime+1.5);}
+  catch(e){try{const el=new Audio(MUSIC_URL);el.loop=true;el.volume=0;await el.play();musicEl=el;const t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1500);if(musicEl===el)el.volume=MUSIC_VOL*k;if(k>=1||musicEl!==el)clearInterval(iv);},50);}catch(_){musicEl=null;}}
+  musicLoading=false;}
+function musicFade(){ // fade out and stop, keep the wish to play (Settings toggles)
+  if(musicSrc&&musicGain&&musicCtx){const g=musicGain,s=musicSrc,now=musicCtx.currentTime;g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),now);g.gain.exponentialRampToValueAtTime(0.0001,now+1);setTimeout(()=>{try{s.stop();}catch(_){}try{s.disconnect();g.disconnect();}catch(_){}},1100);musicSrc=null;musicGain=null;}
+  if(musicEl){const el=musicEl;musicEl=null;const v0=el.volume,t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1000);el.volume=v0*(1-k);if(k>=1){clearInterval(iv);el.pause();}},50);}}
+function musicStop(){musicWant=false;musicFade();} // a game is starting
+for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>{if(musicWant&&musicOn())musicStart();},{passive:true});
+$('coverGo').addEventListener('click',musicStop);
+$('btnBriefGo').addEventListener('click',musicStop);
+$('inMusic').checked=musicOn();
+$('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}if($('inMusic').checked){if(musicWant)musicStart();}else musicFade();});
 </script>
 </body>
 </html>
