@@ -134,6 +134,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .badge{position:absolute;left:-4%;bottom:-4%;width:30%;height:30%;border-radius:2px;border:1px solid #000;z-index:4}
 .dr .badge.r{background:#c0392b}.dr .badge.w{background:#eee}
+.dr .bdg{position:absolute;left:-4%;bottom:-4%;display:flex;gap:1px;z-index:4;width:100%;pointer-events:none}
+.dr .bdg i{width:20%;aspect-ratio:1;border-radius:2px;border:1px solid #000;display:block}
+.dr .bdg i.any{background:conic-gradient(#e5484d 0 20%,#f0a52b 0 40%,#3ec27a 0 60%,#3f8ff0 0 80%,#b06ce8 0)}
+.sqm{position:absolute;right:4%;top:4%;width:15%;height:15%;border-radius:2px;z-index:2;pointer-events:none;border:1px solid rgba(0,0,0,.55);opacity:.9}
+.cell.red .sqm{background:#c0392b}.cell.white .sqm{background:#eee}.cell.fog .sqm{visibility:hidden}
 .dr.sel{box-shadow:0 0 0 3px var(--you)}
 .dr.colors{background:conic-gradient(var(--c1) 0 50%,var(--c2) 50% 100%)}
 .side{flex:1 1 260px;min-width:250px;display:flex;flex-direction:column;gap:10px}
@@ -970,7 +975,7 @@ const FR={
 "An asteroid. A missile clears it.": "Un astéroïde. Un missile le dégage.",
 "Now tap a star next to it to swap.": "Touchez maintenant une étoile voisine pour échanger.",
 "slides the diagonals": "glisse en diagonale",
-"rides any color, 4 free steps": "suit toutes les couleurs, 4 pas gratuits",
+"rides any color, 2 free steps": "suit toutes les couleurs, 2 pas gratuits",
 "no free rides": "pas de pas gratuits",
 "rides {0}": "suit les étoiles de couleur {0}",
 " and ": " et ",
@@ -1011,14 +1016,14 @@ const FR={
 "4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.": "4 en ligne fait un éclaireur. Les éclaireurs revendiquent du terrain : touchez-en un, puis Revendiquer, et le 3 × 3 autour est à vous. Deux revendications chacun.",
 "A 2 × 2 block makes a shield. A shield guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or shield by moving next to it.": "Un bloc 2 × 2 fait un bouclier. Un bouclier garde : à côté de votre drone de commandement ou d'un siège ennemi il bloque le siège, et sur votre terrain il prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté.",
 "A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.": "Un pillard glisse sur toute la diagonale et prend tout drone ennemi sur lequel il s'arrête, sauf un siège.",
-"A hunter moves 1 square plus up to 4 free steps on any star color, and fires two missiles a turn: aim both, they land together.": "Un chasseur se déplace d'1 case plus jusqu'à 4 pas gratuits sur n'importe quelle couleur, et tire deux missiles par tour : visez les deux, ils touchent ensemble.",
+"A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together.": "Un chasseur se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, et tire deux missiles par tour : visez les deux, ils touchent ensemble.",
 "A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.": "Un drone de saut peut sauter vers n'importe quelle case dégagée de votre côté et y revendiquer le 3 × 3 d'un coup. Un seul usage.",
 "A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no shield beside either, it wins the game.": "Un drone de siège avance d'1 case par tour. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie.",
 "A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.": "Une bombe explose à la fin de votre troisième tour et efface une croix aussi loin que vous voyez, drones compris, les vôtres aussi.",
 "Scouts move 1 square any way, or ride their own star color for free.": "Les éclaireurs se déplacent d'1 case dans tous les sens, ou suivent gratuitement leur propre couleur d'étoile.",
 "Shields move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and shields they stop next to on your land.": "Les boucliers se déplacent d'1 case, seulement sur votre terrain ou des cases dégagées. Ils prennent les éclaireurs, chasseurs, drones de saut et boucliers ennemis à côté desquels ils s'arrêtent sur votre terrain.",
 "Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.": "Les pillards glissent sur toute la diagonale jusqu'à ce que quelque chose les arrête, et prennent ce sur quoi ils atterrissent sauf un siège.",
-"Hunters move 1 square plus up to 4 free steps on any color, bending as they go. They fire two missiles a turn.": "Les chasseurs se déplacent d'1 case plus jusqu'à 4 pas gratuits sur n'importe quelle couleur, en tournant s'ils veulent. Ils tirent deux missiles par tour.",
+"Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn.": "Les chasseurs se déplacent d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, en tournant s'ils veulent. Ils tirent deux missiles par tour.",
 "Warp drones walk 1 square, or warp: tap one and choose Warp.": "Les drones de saut marchent d'1 case, ou sautent : touchez-en un et choisissez Sauter.",
 "Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no shield beside, the game is won.": "Les sièges avancent d'exactement 1 case par tour. À côté du drone de commandement ennemi sans bouclier à côté, la partie est gagnée.",
 "Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.": "Les bombes se déplacent d'1 case ou suivent leur couleur. Gardez vos propres drones hors de la croix avant qu'elle explose.",
@@ -1204,7 +1209,7 @@ const FR={
 "Moves 1 square any way, and rides its own star color for free. Fires one missile a turn. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se déplace d'1 case dans tous les sens, et suit gratuitement sa propre couleur d'étoile. Tire un missile par tour. Revendiquer prend le 3 × 3 autour de lui et y dissipe le brouillard pour de bon. Deux revendications, puis il est consommé.",
 "Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège.",
 "Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege. A slide into the fog is a commitment.": "Glisse sur toute la diagonale jusqu'à toucher quelque chose, dans le noir aussi, et prend ce sur quoi il s'arrête sauf un drone de siège. Une glissade dans le brouillard est un engagement.",
-"Moves 1 square plus up to 4 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.": "Se déplace d'1 case plus jusqu'à 4 pas gratuits sur n'importe quelle couleur d'étoile. Tire deux missiles par tour : visez les deux, ils touchent ensemble. Prend ce sur quoi il atterrit sauf un drone de siège.",
+"Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.": "Se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur d'étoile. Tire deux missiles par tour : visez les deux, ils touchent ensemble. Prend ce sur quoi il atterrit sauf un drone de siège.",
 "Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case dégagée de votre côté qui n'est pas à côté d'un bouclier ennemi : les cases libres autour deviennent à vous et les drones ennemis sur vos cases sont retirés. Consommé par le saut.",
 "Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Cannot take or be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.": "Se déplace d'exactement 1 case, dans le noir s'il veut. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie. Ne peut ni prendre ni être pris par des drones. Quatre ennemis autour le détruisent. Un bouclier en travers : percutez-le et les deux disparaissent.",
 "Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se déplace d'1 case ou suit sa couleur. Explose à la fin de votre troisième tour : le souffle part en haut, en bas, à gauche et à droite aussi loin que vous avez dissipé le brouillard et emporte chaque astéroïde, étoile et drone sur son chemin, les vôtres aussi.",
@@ -1269,8 +1274,8 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.28.0';
-const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=4,FUSE=3;
+const VERSION='1.29.0';
+const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
 const TNAME=LANG==='fr'?TNAME_FR:{C:'scout',G:'shield',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone'};
@@ -1474,7 +1479,7 @@ function spawnFrom(side,sp){
       continue;}
     if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(t`${who(side)} made ${sp.label} but there was no room.`);continue;}[r,c]=alt;o=null;}
     if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
-    const d=mk(side,r,c,letter,sp.color,sp.sq);
+    const d=mk(side,r,c,letter,sp.color,letter==='S'?(r+c)%2:sp.sq); // a raider is red or white after the square it is born on: a diagonal slider never leaves that color
     if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});}
     else{S.drones.push(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
   }
@@ -1790,15 +1795,17 @@ function onCell(r,c){
   if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
   sel={star:[r,c]};setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
-function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 4 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
+function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 2 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
   const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.kind==='B')parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
 
 // ---------- render ----------
 const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
-function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
+function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function droneHTML(d){const art=d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${d.kind==='S'?`<span class="badge ${d.sq?'w':'r'}"></span>`:''}</div>`;}
+  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${badges(d)}</div>`;}
+// the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; shields and sieges ride nothing.
+function badges(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
 function renderBoard(gone,born,mark,fall){
   if(!S)return;if(S.tut)renderGuide();
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
@@ -1967,14 +1974,14 @@ swap:'Line up 4 or more stars and a drone is born where the line was. 3 in a lin
 born_C:'4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.',
 born_G:'A 2 × 2 block makes a shield. A shield guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or shield by moving next to it.',
 born_S:'A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.',
-born_H:'A hunter moves 1 square plus up to 4 free steps on any star color, and fires two missiles a turn: aim both, they land together.',
+born_H:'A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together.',
 born_W:'A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.',
 born_X:'A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no shield beside either, it wins the game.',
 born_B:'A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.',
 move_C:'Scouts move 1 square any way, or ride their own star color for free.',
 move_G:'Shields move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and shields they stop next to on your land.',
 move_S:'Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.',
-move_H:'Hunters move 1 square plus up to 4 free steps on any color, bending as they go. They fire two missiles a turn.',
+move_H:'Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn.',
 move_W:'Warp drones walk 1 square, or warp: tap one and choose Warp.',
 move_X:'Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no shield beside, the game is won.',
 move_B:'Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.',
@@ -2027,7 +2034,7 @@ try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}cat
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
 G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege. A slide into the fog is a commitment.',
-H:'Moves 1 square plus up to 4 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.',
+H:'Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Takes what it lands on except a siege.',
 W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
 X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Cannot take or be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
