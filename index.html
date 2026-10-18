@@ -1274,7 +1274,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.30.0';
+const VERSION='1.31.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -2458,31 +2458,38 @@ $('btnStoryMap').addEventListener('click',openStoryMap);
 $('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
-// ---------- music (v1.28): the start-screen loop, music/title_loop.mp3 (ACE-Step, made to loop). Web Audio so the
-// loop is seamless and a gain node does the fades (1.5 s in, 1 s out); an <audio> element if decoding fails.
-// Browsers allow sound only after a tap, so it starts on the first pointer or key while the cover (or the story
-// map and briefing opened from it) is up, and fades out when a game starts. Settings → Music (cc_music).
+// ---------- music (v1.28, tightened v1.31): the start-screen loop, music/title_loop.mp3 (ACE-Step, made to loop).
+// Web Audio so the loop is seamless and a gain node does the fades (1.5 s in, 1 s out); an <audio> element if
+// decoding fails. It tries to start the moment the page opens; where the browser refuses sound before a tap
+// (most phones) it starts on the first tap instead. It plays only while the cover, or the story map and briefing
+// opened from the cover, are up, and a game starting stops it for good: Play, Launch, Back to the game, and a
+// watchdog that fades anything still playing once the cover phase is over. Settings → Music (cc_music).
 const MUSIC_URL='music/title_loop.mp3',MUSIC_VOL=0.45;
 let musicCtx=null,musicBuf=null,musicSrc=null,musicGain=null,musicEl=null,musicWant=true,musicLoading=false;
 const musicOn=()=>{try{return localStorage.getItem('cc_music')!=='0';}catch(_){return true;}};
-async function musicStart(){if(!musicWant||!musicOn()||musicSrc||musicEl||musicLoading)return;musicLoading=true;
-  try{musicCtx=musicCtx||new (window.AudioContext||window.webkitAudioContext)();if(musicCtx.state==='suspended')await musicCtx.resume();
+const coverPhase=()=>musicWant&&(!$('cover').hidden||!$('story').hidden||!$('brief').hidden);
+async function musicStart(){if(!coverPhase()||!musicOn()||musicSrc||musicEl||musicLoading)return;musicLoading=true;
+  try{musicCtx=musicCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(musicCtx.state!=='running'){await Promise.race([musicCtx.resume(),new Promise(r=>setTimeout(r,400))]);if(musicCtx.state!=='running')throw 'blocked';}
     if(!musicBuf){const r=await fetch(MUSIC_URL);if(!r.ok)throw 0;musicBuf=await musicCtx.decodeAudioData(await r.arrayBuffer());}
-    if(!musicWant||!musicOn()){musicLoading=false;return;}
+    if(!coverPhase()||!musicOn()){musicLoading=false;return;}
     musicGain=musicCtx.createGain();musicGain.gain.setValueAtTime(0.0001,musicCtx.currentTime);musicGain.connect(musicCtx.destination);
     musicSrc=musicCtx.createBufferSource();musicSrc.buffer=musicBuf;musicSrc.loop=true;musicSrc.connect(musicGain);musicSrc.start();
     musicGain.gain.exponentialRampToValueAtTime(MUSIC_VOL,musicCtx.currentTime+1.5);}
-  catch(e){try{const el=new Audio(MUSIC_URL);el.loop=true;el.volume=0;await el.play();musicEl=el;const t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1500);if(musicEl===el)el.volume=MUSIC_VOL*k;if(k>=1||musicEl!==el)clearInterval(iv);},50);}catch(_){musicEl=null;}}
+  catch(e){if(e!=='blocked'){try{const el=new Audio(MUSIC_URL);el.loop=true;el.volume=0;await el.play();if(!coverPhase()){el.pause();}else{musicEl=el;const t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1500);if(musicEl===el)el.volume=MUSIC_VOL*k;if(k>=1||musicEl!==el)clearInterval(iv);},50);}}catch(_){musicEl=null;}}}
   musicLoading=false;}
-function musicFade(){ // fade out and stop, keep the wish to play (Settings toggles)
-  if(musicSrc&&musicGain&&musicCtx){const g=musicGain,s=musicSrc,now=musicCtx.currentTime;g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),now);g.gain.exponentialRampToValueAtTime(0.0001,now+1);setTimeout(()=>{try{s.stop();}catch(_){}try{s.disconnect();g.disconnect();}catch(_){}},1100);musicSrc=null;musicGain=null;}
+function musicFade(){ // fade out and stop; the wish to play stays (Settings toggles)
+  if(musicSrc&&musicGain&&musicCtx){const g=musicGain,s=musicSrc,now=musicCtx.currentTime;try{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),now);g.gain.exponentialRampToValueAtTime(0.0001,now+1);}catch(_){}setTimeout(()=>{try{s.stop();}catch(_){}try{s.disconnect();g.disconnect();}catch(_){}},1100);musicSrc=null;musicGain=null;}
   if(musicEl){const el=musicEl;musicEl=null;const v0=el.volume,t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1000);el.volume=v0*(1-k);if(k>=1){clearInterval(iv);el.pause();}},50);}}
-function musicStop(){musicWant=false;musicFade();} // a game is starting
-for(const ev of ['pointerdown','keydown'])document.addEventListener(ev,()=>{if(musicWant&&musicOn())musicStart();},{passive:true});
+function musicStop(){musicWant=false;musicFade();} // a game is starting: off, and it stays off until the page opens again
+for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,()=>{if(coverPhase()&&musicOn())musicStart();},{passive:true});
 $('coverGo').addEventListener('click',musicStop);
 $('btnBriefGo').addEventListener('click',musicStop);
+$('btnStoryClose').addEventListener('click',()=>{if($('cover').hidden)musicStop();});
+setInterval(()=>{if((musicSrc||musicEl)&&!coverPhase())musicFade();},500); // the watchdog: nothing plays over a game
 $('inMusic').checked=musicOn();
-$('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}if($('inMusic').checked){if(musicWant)musicStart();}else musicFade();});
+$('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}if($('inMusic').checked){if(coverPhase())musicStart();}else musicFade();});
+musicStart(); // the second the page opens, where the browser allows it
 </script>
 </body>
 </html>
