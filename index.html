@@ -132,6 +132,9 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.s1 .lt{color:#ff5a5a}.dr.s2 .lt{color:#fff}
 .dr .pw{position:absolute;right:-6%;bottom:-6%;min-width:38%;height:38%;border-radius:50%;background:#fff;color:#000;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
+.dr .ammo{position:absolute;right:-8%;top:-12%;display:flex;gap:1px;z-index:4;pointer-events:none}
+.dr .ammo i{display:block;width:15%;min-width:5px;aspect-ratio:9/18;background:linear-gradient(180deg,#ff9a3c 0 30%,#f6f6f6 30% 100%);clip-path:polygon(50% 0,100% 28%,100% 80%,72% 100%,28% 100%,0 80%,0 28%);filter:drop-shadow(0 0 2px rgba(255,154,60,.9))}
+.dr .ammo{width:60%;justify-content:flex-end}
 .dr .am{position:absolute;right:-6%;top:-6%;min-width:34%;height:34%;border-radius:50%;background:#ff9a3c;color:#000;font-family:var(--mono);font-size:clamp(8px,1.5vw,10px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4;border:1px solid #000}
 .dr .badge{position:absolute;left:-4%;bottom:-4%;width:30%;height:30%;border-radius:2px;border:1px solid #000;z-index:4}
 .dr .badge.r{background:#c0392b}.dr .badge.w{background:#eee}
@@ -1154,6 +1157,7 @@ const FR={
 "A turret fires by itself at the start of its owner's turn, at one enemy drone in the 8 squares beside it, sieges first.": "Une tourelle tire toute seule au début du tour de son propriétaire, sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord.",
 "{0}: a missile hit {1} at {2}; it holds. Only a bomb, an asteroid or a siege drone can end it.": "{0} : un missile a touché {1} en {2} ; elle tient. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
 "Missiles bounce off a turret. A bomb, an asteroid, or a siege drone moving onto it ends it; the turret fires at a siege first, so only a stacked siege lives to reach it.": "Les missiles rebondissent sur une tourelle. Une bombe, un astéroïde ou un drone de siège qui se pose dessus l'achève ; la tourelle tire d'abord sur un siège, donc seul un siège empilé survit pour l'atteindre.",
+"{0} of {1} drones": "{0} drones sur {1}",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1290,7 +1294,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.34.0';
+const VERSION='1.35.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1845,7 +1849,7 @@ const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${shotsOf(d)&&ammoOf(d)?`<span class="am">${ammoOf(d)}</span>`:''}${d.kind==='M'&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
+  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; shields and sieges ride nothing.
 function badges(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
 function renderBoard(gone,born,mark,fall){
@@ -1883,7 +1887,7 @@ function renderBoard(gone,born,mark,fall){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).filter(d=>d.kind!=='T').length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`+(S.fog?t` · sees ${sees} squares`:'');}
+  for(const s of [YOU,BOT]){const n=dronesOf(s).filter(d=>d.kind!=='T').length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:''); // only the owner sees missiles}
   $('botlbl').textContent=(online&&net)?`${SNAME[BOT]} · ${net.oppR}`:t`${SNAME[BOT]} · skill ${S.skill}`;
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
