@@ -1278,7 +1278,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.32.0';
+const VERSION='1.32.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=10,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1727,14 +1727,14 @@ async function botTurn(me){
   }
   if(S.over)return;
   const opts=[];
-  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
+  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&dronesOf(me).length>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
   const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and shields can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   for(const d of dronesOf(me)){
     if(S.tut&&d.kind==='X')continue; // the coached game: the bot's siege stays put, so a beginner is never walked into a surprise loss
     if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger)continue;} // from L3 the command drone stays home unless a siege is closing in
-    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?5+3*g+(half(me,d.r)?0:3):1});}
+    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?8+4*g+(half(me,d.r)?0:3):1});}
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
     if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){if(S.own[key(a,b)]===0)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&(S.own[key(a,b)]===me||S.own[key(a,b)]===0))prey+=5*o.power;}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});}
     for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
@@ -1743,7 +1743,8 @@ async function botTurn(me){
       if(kind==='take')v+=L>=2?12*droneAt(r,c).power:0;
       if(kind==='merge')v+=L>=4?(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c)):-1;
       if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));
-      if(d.kind==='C'&&L>=1)v+=2*(half(me,r)?0:1)+(claimGain({r,c,side:me})>claimGain(d)?3:0);
+      if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
+      if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
       if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===me)v+=12*e.power;}}
       if((d.kind==='S'||d.kind==='H')&&L>=5)v+=0.75*(dist(d.r,d.c)-dist(r,c));
       if(kind==='dark')v-=1;
