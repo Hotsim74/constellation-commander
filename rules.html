@@ -37,7 +37,7 @@ a{color:var(--you)}
 <h1>Constellation Commander</h1>
 <p class="sub">The rulebook, one board, version 1.15. Every rule here is what the game does right now. Nothing is final.</p>
 <p><strong>The game in four lines.</strong> You are trying to claim more of the sky than the bot. Line up stars: anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece you move around to claim space and fight. Only scouts claim stars for you; 69 squares wins, or a siege drone standing next to the bot's Command drone.</p>
-<nav class="toc"><a href="#board">The board</a><a href="#fog">The fog</a><a href="#start">Start and turns</a><a href="#shapes">Shapes</a><a href="#drones">The drones</a><a href="#moving">Moving and stacks</a><a href="#missiles">Missiles</a><a href="#win">Winning</a><a href="#first">Your first game</a><a href="#friend">Playing a friend</a><a href="#skill">The bot's skill</a><a href="#ratings">Ratings and handicaps</a></nav>
+<nav class="toc"><a href="#board">The board</a><a href="#fog">The fog</a><a href="#start">Start and turns</a><a href="#shapes">Shapes</a><a href="#drones">The drones</a><a href="#moving">Moving and stacks</a><a href="#missiles">Missiles</a><a href="#turret">Turrets</a><a href="#win">Winning</a><a href="#first">Your first game</a><a href="#friend">Playing a friend</a><a href="#skill">The bot's skill</a><a href="#ratings">Ratings and handicaps</a></nav>
 
 <h2 id="board">The board</h2>
 <p>One 11 × 11 board. Every square holds a star of one of five colors, or an asteroid. Under the stars is a red-and-white checkerboard. The middle row is the seam, the line between your half and the bot's. <strong>Stars fall toward whoever is moving.</strong> On your turn every column drops toward your back row and new stars come in from the top edge; on the bot's turn everything rises toward its back row and new stars come in from the bottom. Asteroids split a column, so nothing falls through one; clear it with a missile and the column opens.</p>
@@ -56,9 +56,9 @@ a{color:var(--you)}
 
 <h2 id="shapes">Shapes</h2>
 <p>Lines count across, down, and on the diagonal, where they need 4 or more. A 3 clears stars and pays nothing. A shape pays only if part of it is on your side of the seam, and the drone appears on that part, in the color of the star that made it. After a match the stars flow, and any lines that form on their own are yours too.</p>
-<p>You can hold 10 drones. At 10, a shape pays what the right column says, or stacks into your own drone if it was made under one.</p>
+<p>You can hold 9 drones; turrets do not count. At 9, a shape pays what the right column says, or stacks into your own drone if it was made under one.</p>
 <div class="tw"><table>
-<tr><th>Shape</th><th>You get</th><th>At 10 drones</th></tr>
+<tr><th>Shape</th><th>You get</th><th>At 9 drones</th></tr>
 <tr><td>4 in a line</td><td>Scout</td><td>nothing</td></tr>
 <tr><td>2 × 2 block</td><td>Shield</td><td>nothing</td></tr>
 <tr><td>5 in a line</td><td>Raider, white</td><td>1 missile</td></tr>
@@ -95,6 +95,9 @@ a{color:var(--you)}
 <h2 id="missiles">Missiles</h2>
 <p>Missiles are stock on your Command drone. Every take earns one there, a drone destroyed by a missile included. Only scouts and hunters fire, and they have to load first: a scout or hunter standing beside your Command drone takes missiles from it, one for a scout, two for a hunter, when it ends a move there and again at the start of each of your turns while it stays. A drone carries its missiles with it; the orange bubble on its disc is its count, and the Command drone's bubble is the stock. Then, before your action, a scout fires once a turn and a hunter twice. A missile flies 3 squares from the firing drone, any direction (5 squares when the fog of war is on), at anything you can see. At a drone it takes one power. At an asteroid or star it destroys it, the stars flow, and any lines that form are yours. Nothing is sacrificed to fire.</p>
 <p><strong>Salvage</strong> (a Settings option, off by default). With it on, a destroyed drone does not pay its missile at once. It leaves a wreck on its square, glowing, and the missile stays in the wreck until a drone, yours or the other side's, ends its move on that square. Taking a drone by landing on it puts you on the wreck, so those still pay at once; a missile kill, a shield's sweep, a bomb or a surrounded siege leave a wreck somebody has to walk to. Wrecks fade after five rounds. An asteroid that crushes a drone leaves nothing. The stars under a wreck keep swapping and falling as usual. In a two-phone match the host's setting counts.</p>
+
+<h2 id="turret">Turrets</h2>
+<p>When your Command drone holds <strong>10 missiles</strong>, tap it and choose Build a turret, then an empty square you own. The ten missiles become a turret, letter T, with eight barrels. It never moves. At the start of each of your turns it fires once, by itself, at an enemy drone in the 8 squares beside it, a siege first if one is there, otherwise the weakest. Each shot takes one power, and a drone it destroys pays a missile to your stock like any kill. A turret is a drone for every other purpose: raiders take it by landing, shields sweep it, missiles and bombs destroy it, an asteroid rolls over it, but it does not count toward your 9 drones. The bot builds them too, from skill 40.</p>
 
 <h2 id="win">Winning</h2>
 <p>Your starting squares count as yours. Claims and warps take more. Hold <strong>69 squares</strong> of the 121 (a setting, 60 to 100) and you win, or stand a siege drone next to the enemy Command drone with no shield beside, or let an asteroid land on it. With Timers on, running out of clock loses.</p>
