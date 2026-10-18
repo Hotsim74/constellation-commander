@@ -1294,7 +1294,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.35.0';
+const VERSION='1.35.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1320,6 +1320,8 @@ const backRow=side=>side===YOU?N-1:0;
 const sq=(r,c)=>'abcdefghijk'[c]+(N-r);
 let S=null,busy=false,sel=null,mode=null,pending=null,aimList=[];
 let SNAME=LANG==='fr'?{1:'Vous',2:'Le bot'}:{1:'You',2:'Bot'};
+const SNAME0=Object.assign({},SNAME); // the plain names, restored after a match or a story sector
+let online=false,net=null; // two-phone play (net.js); declared here so boot can render before net.js has run
 const who=side=>SNAME[side];
 const poss=side=>side===YOU?'Your':SNAME[BOT]+"'s";
 
@@ -1887,7 +1889,7 @@ function renderBoard(gone,born,mark,fall){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).filter(d=>d.kind!=='T').length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:''); // only the owner sees missiles}
+  for(const s of [YOU,BOT]){const n=dronesOf(s).filter(d=>d.kind!=='T').length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:'');} // only the owner sees missiles
   $('botlbl').textContent=(online&&net)?`${SNAME[BOT]} · ${net.oppR}`:t`${SNAME[BOT]} · skill ${S.skill}`;
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
@@ -2242,8 +2244,7 @@ function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg view
 // A lobby node lists matches waiting for a second player.
 const NET_BASE='https://constellation-commander-default-rtdb.firebaseio.com';
 const NET_KEY='cc1_net',NET_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ',LOBBY_MAX_AGE=30*60000,NET_WAIT_MS=12000;
-let online=false,net=null;
-const SNAME0=Object.assign({},SNAME);
+// online, net and SNAME0 are declared in p2.js (they must exist before the first render at boot)
 const netUrl=code=>`${NET_BASE}/matches/${code}.json`;
 const lobbyUrl=code=>`${NET_BASE}/lobby${code?'/'+code:''}.json`;
 const netGuest=()=>!!(online&&net&&net.role==='guest');
