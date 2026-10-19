@@ -1315,7 +1315,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.37.0';
+const VERSION='1.37.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1735,6 +1735,7 @@ async function afterAction(){const actor=S.turn;
 // ---------- the bot ----------
 // The skill ladder (v1.24). Skill is a multiple of 10. Level L = skill/10 decides what the bot's best move
 // knows; at skill S it plays that best move S% of the time and a random legal one otherwise (always at 100).
+const STORY_SOFT=0.75; // story mode: a boss plays its best move 75% as often as the same skill in free play (the user: everyone who puts time in should be able to beat the story)
 const botLevel=()=>Math.max(0,Math.min(10,Math.round((S?S.skill:(+$('inSkill').value||0))/10)));
 const BOT_LADDER=[
 'Random. It swaps and moves at random and never fires.',
@@ -1762,7 +1763,7 @@ async function botTurn(me){
       if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
         if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
       else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
-  const him=other(me),L=botLevel(),smart=L>=10||rnd(100)<S.skill; // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best
+  const him=other(me),L=botLevel(),chance=S.story?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!S.story&&L>=10)||rnd(100)<chance; // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
   // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
   if(smart&&L>=2&&dronesOf(me).some(canShoot)){
     for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
