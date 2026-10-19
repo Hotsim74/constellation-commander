@@ -276,9 +276,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 </form>
 <div class="panel" id="netbox" hidden style="margin-bottom:8px">
   <span class="lbl">Play a friend</span>
+  <div class="netrow"><span class="acthint">Playing as</span><input type="text" id="inNetName" maxlength="12" placeholder="your name" style="width:150px"></div>
   <div class="acthint" id="netstat" style="max-width:80ch"></div>
-  <div class="netrow"><button type="button" id="btnHost" class="primary">Start a match</button><input type="text" id="inCode" maxlength="4" placeholder="CODE" style="width:92px;text-transform:uppercase;letter-spacing:.2em"><button type="button" id="btnJoin">Join with code</button><button type="button" id="btnLeave" class="danger" hidden>Leave the match</button></div>
-  <div id="lobbyWrap"><span class="lbl" style="display:block;margin-top:10px">Open matches</span><div class="netrow" id="lobby"></div></div>
+  <div class="netrow"><button type="button" id="btnHost" class="primary">I'm ready to play</button><button type="button" id="btnLeave" class="danger" hidden>Leave the match</button></div>
+  <div id="lobbyWrap"><span class="lbl" style="display:block;margin-top:10px">Waiting to play · tap a name</span><div class="netrow" id="lobby"></div></div>
+  <div id="codeWrap" class="netrow" hidden><input type="text" id="inCode" maxlength="4" placeholder="CODE" style="width:92px;text-transform:uppercase;letter-spacing:.2em"><button type="button" id="btnJoin">Join with code</button></div>
 </div>
 <div class="guide" id="guide" hidden></div>
 <div class="guide explain" id="explain" hidden></div>
@@ -1158,6 +1160,23 @@ const FR={
 "{0}: a missile hit {1} at {2}; it holds. Only a bomb, an asteroid or a siege drone can end it.": "{0} : un missile a touché {1} en {2} ; elle tient. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
 "Missiles bounce off a turret. A bomb, an asteroid, or a siege drone moving onto it ends it; the turret fires at a siege first, so only a stacked siege lives to reach it.": "Les missiles rebondissent sur une tourelle. Une bombe, un astéroïde ou un drone de siège qui se pose dessus l'achève ; la tourelle tire d'abord sur un siège, donc seul un siège empilé survit pour l'atteindre.",
 "{0} of {1} drones": "{0} drones sur {1}",
+"Playing as": "Vous jouez comme",
+"I'm ready to play": "Je suis prêt à jouer",
+"Waiting to play · tap a name": "En attente de jouer · touchez un nom",
+"Type your name first.": "Tapez d'abord votre nom.",
+"The lobby is switched off until the database rules are published. Until then, one phone taps I'm ready and reads out the code it gets; the other types it here.": "Le salon est éteint tant que les règles de la base ne sont pas publiées. En attendant, un téléphone touche Je suis prêt et lit le code qu'il reçoit ; l'autre le tape ici.",
+"Nobody is waiting right now. Tap I'm ready to play and your name goes on this list for the next person who opens it.": "Personne n'attend pour l'instant. Touchez Je suis prêt à jouer et votre nom ira sur cette liste pour la prochaine personne qui l'ouvre.",
+"Type your name, then tap the name of the person you want to play. Nobody there? Tap I'm ready to play and wait for someone to tap yours.": "Tapez votre nom, puis touchez le nom de la personne avec qui vous voulez jouer. Personne ? Touchez Je suis prêt à jouer et attendez que quelqu'un touche le vôtre.",
+"Your name is on the list. Waiting for someone to tap it…": "Votre nom est sur la liste. En attente que quelqu'un le touche…",
+"The lobby is switched off, so read out this code instead: {0}.": "Le salon est éteint, alors lisez plutôt ce code : {0}.",
+"Your turn.": "À vous.",
+"{0}'s turn.": "Au tour de {0}.",
+"{0} last seen {1} ago.": "{0} vu il y a {1}.",
+"Connected to {0}.": "Connecté à {0}.",
+"Your name is on the list. When someone taps it, the game starts here.": "Votre nom est sur la liste. Quand quelqu'un le touche, la partie commence ici.",
+"Connected: {0} ({1}) against {2} ({3}). Asteroids {4} to {5}.": "Connecté : {0} ({1}) contre {2} ({3}). Astéroïdes {4} contre {5}.",
+"Connected to {0}. Your turn.": "Connecté à {0}. À vous.",
+"Connected to {0}. {1}'s turn.": "Connecté à {0}. Au tour de {1}.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1294,7 +1313,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.35.1';
+const VERSION='1.36.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1927,7 +1946,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();renderExplain();
   const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
-  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus(t('Your move.'));}else setStatus((online&&net)?t`Waiting for ${SNAME[BOT]}…`:t('The bot is thinking…'));}
+  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus((online&&net&&net.opp)?t`Connected to ${SNAME[BOT]}. Your turn.`:t('Your move.'));}else setStatus((online&&net)?t`Connected to ${SNAME[BOT]}. ${SNAME[BOT]}'s turn.`:t('The bot is thinking…'));}
   netPush();}
 
 // ---------- the coach: a whole first game, one suggestion at a time ----------
@@ -2267,7 +2286,9 @@ function flipState(s){ // host frame <-> guest frame; its own inverse
   const fe=e=>Object.assign({},e,{text:flipText(e.text),at:(e.at||[]).map(([r,c])=>[mrow(r),c])});if(s.last)o.last=Object.assign({},s.last,{side:mside(s.last.side),ev:(s.last.ev||[]).map(fe)});o.ev=(s.ev||[]).map(fe); // the host's own rating line stays on the host
   return o;}
 const myUid=()=>{let u=null;try{u=localStorage.getItem('cc_uid');}catch(_){}if(!u){u=Math.random().toString(36).slice(2,10);try{localStorage.setItem('cc_uid',u);}catch(_){}}return u;};
-const myName=()=>($('inName').value.trim()||prof.n||t('Player')).slice(0,12);
+let lobbyOff=false; // true when the lobby node cannot be read (database rules not published): the code is the fallback
+const myName=()=>(($('inNetName').value||'').trim()||$('inName').value.trim()||prof.n||'').slice(0,12);
+const needName=()=>{if(myName())return false;netStatus(t('Type your name first.'));try{$('inNetName').focus();}catch(_){}return true;};
 function netWrite(p,url){const n=net;if(!n)return Promise.resolve();n.q=n.q.then(()=>fetch(url||netUrl(n.code),{method:'PATCH',body:JSON.stringify(p)})).then(r=>{n.err=r.ok?null:t('write failed');}).catch(()=>{n.err=t('no connection');});return n.q;}
 function netStatus(s){$('netstat').textContent=s;}
 function netStart(role,code,name){net={code,role,name,uid:myUid(),seq:0,acked:0,q:Promise.resolve(),lastState:'',live:false,opp:null,oppR:BASE_R,oppSeen:0,err:null,es:null,rated:false,started:false,pending:null};online=true;}
@@ -2276,7 +2297,7 @@ function netForget(){try{localStorage.removeItem(NET_KEY);}catch(_){}}
 
 // ----- host: start a match, wait in the lobby, run the game
 async function netHost(){
-  if(online)return;const name=myName();prof.n=name;saveProf();netStatus(t('Setting up the match…'));
+  if(online)return;if(needName())return;const name=myName();prof.n=name;saveProf();$('inName').value=name;netStatus(t('Setting up the match…'));
   const code=Array.from({length:4},()=>NET_ALPHA[rnd(NET_ALPHA.length)]).join('');
   netStart('host',code,name);
   const doc={t:Date.now(),v:VERSION,host:{n:name,u:net.uid,r:prof.r},seq:0,acked:0};
@@ -2290,7 +2311,7 @@ function netStartGame(){ // the guest is in: asteroids from both ratings, a fres
   const keep={a:$('inAuto').checked,v1:$('inRock1').value,v2:$('inRock2').value};$('inAuto').checked=false;$('inRock1').value=r1;$('inRock2').value=r2;
   newGame();$('inAuto').checked=keep.a;$('inRock1').value=keep.v1;$('inRock2').value=keep.v2;
   S.skill=0;SNAME[YOU]=net.name;S.log.length=0;
-  note(t`Match ${net.code}: ${SNAME[YOU]} (${prof.r}) against ${SNAME[BOT]} (${net.oppR}). Asteroids ${r1} to ${r2}.`);note(t`${SNAME[YOU]} moves first.`);
+  note(t`Connected: ${SNAME[YOU]} (${prof.r}) against ${SNAME[BOT]} (${net.oppR}). Asteroids ${r1} to ${r2}.`);note(t`${SNAME[YOU]} moves first.`);
   save();renderAll();netPush(true);
 }
 function netPush(force){if(!netHostOn()||!S||!net.started)return;const js=JSON.stringify(S);if(!force&&js===net.lastState)return;net.lastState=js;net.seq++;netWrite({state:js,seq:net.seq,acked:net.acked,p_h:{'.sv':'timestamp'}});}
@@ -2317,7 +2338,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
 
 // ----- guest: join, send actions, take the board the host sends
 async function netJoin(code){
-  if(online)return;code=(code||$('inCode').value||'').trim().toUpperCase();const name=myName();
+  if(online)return;if(needName())return;code=(code||$('inCode').value||'').trim().toUpperCase();const name=myName();$('inName').value=name;
   if(!/^[A-Z]{4}$/.test(code)){netStatus(t('Type the 4-letter code from the host.'));return;}
   netStatus(t('Looking for the match…'));let doc=null;
   try{const r=await fetch(netUrl(code));if(!r.ok)throw 0;doc=await r.json();}catch(e){netStatus(t('Could not reach the match server.'));return;}
@@ -2380,21 +2401,24 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&n
 
 // ----- the lobby: matches waiting for a second player
 async function lobbyRefresh(){const el=$('lobby');if(online){el.innerHTML='';return;}let d=null;
-  try{const r=await fetch(lobbyUrl());if(!r.ok)throw 0;d=await r.json();}catch(e){el.innerHTML='<span class="acthint">'+t('The lobby is not available. Join with a code.')+'</span>';return;}
-  const uid=myUid(),now=Date.now();
+  try{const r=await fetch(lobbyUrl());if(!r.ok)throw 0;d=await r.json();lobbyOff=false;}catch(e){lobbyOff=true;$('codeWrap').hidden=false;el.innerHTML='<span class="acthint">'+t('The lobby is switched off until the database rules are published. Until then, one phone taps I\'m ready and reads out the code it gets; the other types it here.')+'</span>';return;}
+  $('codeWrap').hidden=true;const uid=myUid(),now=Date.now();
   const list=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE&&/^[A-Z]{4}$/.test(x.code)).sort((a,b)=>(b.t||0)-(a.t||0));
-  if(!list.length){el.innerHTML='<span class="acthint">'+t('Nobody is waiting right now. Start a match and they will find you here.')+'</span>';return;}
-  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${x.r||BASE_R} · ${age}${old}</button>`;}).join('');}
+  if(!list.length){el.innerHTML='<span class="acthint">'+t('Nobody is waiting right now. Tap I\'m ready to play and your name goes on this list for the next person who opens it.')+'</span>';return;}
+  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${x.r||BASE_R} · ${age}${old}</button>`;}).join('');}
 function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(online&&net);
-  $('btnHost').hidden=on;$('btnJoin').hidden=on;$('inCode').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inName').disabled=on;
-  if(!on){netStatus(t('One phone starts a match and reads out the 4-letter code, or the other finds it under Open matches. The one who starts runs the game; both see the same board.'));return;}
+  $('btnHost').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inNetName').disabled=on;$('inName').disabled=on;if(on)$('codeWrap').hidden=true;
+  if(!on){netStatus(t('Type your name, then tap the name of the person you want to play. Nobody there? Tap I\'m ready to play and wait for someone to tap yours.'));return;}
+  if(!net.opp){netStatus(t('Your name is on the list. Waiting for someone to tap it…')+(lobbyOff?' '+t('The lobby is switched off, so read out this code instead: {0}.',net.code):''));return;}
   const seen=net.oppSeen?Math.round((Date.now()-net.oppSeen)/1000):null;
-  const who=net.opp?(seen==null?net.opp:seen<20?t('{0} connected',net.opp):t('{0} last seen {1} ago',net.opp,seen<120?t('{0} s',seen):t('{0} min',Math.round(seen/60)))):t('waiting for a friend to join');
-  netStatus((net.role==='host'?t`Match ${net.code} · you host · ${who}`:t`Match ${net.code} · joined · ${who}`)+(net.err?' · '+net.err:'')+(net.lobbyErr&&!net.opp?' · '+t('lobby not published; share the code'):''));}
+  const turn=S&&!S.over?(S.turn===YOU?t('Your turn.'):t`${net.opp}'s turn.`):'';
+  const stale=seen!=null&&seen>=20?' '+t('{0} last seen {1} ago.',net.opp,seen<120?t('{0} s',seen):t('{0} min',Math.round(seen/60))):'';
+  netStatus(t`Connected to ${net.opp}.`+' '+turn+stale+(net.err?' · '+net.err:''));}
 function renderWait(){const el=$('netwait');const w=!!(online&&net&&!net.started);el.classList.toggle('show',w);if(!w)return;
   $('netwaitTitle').textContent=net.role==='host'?t('Waiting for a friend'):t`Joined ${SNAME[BOT]}'s match`;
-  $('netwaitText').innerHTML=net.role==='host'?t('Code {0}. Read it out, or they can find you under Open matches.','<b style="font-family:var(--mono);letter-spacing:.2em">'+net.code+'</b>'):t('Waiting for the host to start…');}
-$('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden;renderNet();lobbyRefresh();});
+  $('netwaitText').innerHTML=net.role==='host'?(t('Your name is on the list. When someone taps it, the game starts here.')+(lobbyOff?'<br>'+t('The lobby is switched off, so read out this code instead: {0}.','<b style="font-family:var(--mono);letter-spacing:.2em">'+net.code+'</b>'):'')):t('Waiting for the host to start…');}
+$('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden;if(!$('inNetName').value)$('inNetName').value=prof.n||'';renderNet();lobbyRefresh();});
+$('inNetName').addEventListener('change',()=>{prof.n=$('inNetName').value.trim().slice(0,12);$('inName').value=prof.n;saveProf();renderRecord();});
 $('btnHost').addEventListener('click',netHost);$('btnJoin').addEventListener('click',()=>netJoin());$('btnLeave').addEventListener('click',netLeave);$('btnNetCancel').addEventListener('click',netLeave);
 $('lobby').addEventListener('click',e=>{const b=e.target.closest('button[data-join]');if(b&&!b.disabled)netJoin(b.dataset.join);});
 setInterval(()=>{if(!$('netbox').hidden&&!online)lobbyRefresh();},8000);
