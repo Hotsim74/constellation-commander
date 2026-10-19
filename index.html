@@ -1177,6 +1177,7 @@ const FR={
 "Connected: {0} ({1}) against {2} ({3}). Asteroids {4} to {5}.": "Connecté : {0} ({1}) contre {2} ({3}). Astéroïdes {4} contre {5}.",
 "Connected to {0}. Your turn.": "Connecté à {0}. À vous.",
 "Connected to {0}. {1}'s turn.": "Connecté à {0}. Au tour de {1}.",
+"{0} · {1} of 9 sectors · {2} games, {3} won": "{0} · {1} secteurs sur 9 · {2} parties, {3} gagnées",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1313,7 +1314,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.36.0';
+const VERSION='1.36.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -2266,6 +2267,9 @@ const NET_KEY='cc1_net',NET_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ',LOBBY_MAX_AGE=30*60
 // online, net and SNAME0 are declared in p2.js (they must exist before the first render at boot)
 const netUrl=code=>`${NET_BASE}/matches/${code}.json`;
 const lobbyUrl=code=>`${NET_BASE}/lobby${code?'/'+code:''}.json`;
+// a player's card on the wire: rating, story sectors held, bot games played and won (the user: so you know who you are playing)
+const myCard=()=>({r:prof.r,g:prof.g,w:prof.w,st:(typeof story!=='undefined'&&story&&story.won)?Object.keys(story.won).length:0});
+const cardText=x=>t`${x.r||BASE_R} · ${x.st||0} of 9 sectors · ${x.g||0} games, ${x.w||0} won`;
 const netGuest=()=>!!(online&&net&&net.role==='guest');
 const netHostOn=()=>!!(online&&net&&net.role==='host');
 const mrow=r=>N-1-r,mkey=k=>mrow(Math.floor(k/N))*N+k%N,mside=x=>x===1?2:x===2?1:x;
@@ -2300,10 +2304,10 @@ async function netHost(){
   if(online)return;if(needName())return;const name=myName();prof.n=name;saveProf();$('inName').value=name;netStatus(t('Setting up the match…'));
   const code=Array.from({length:4},()=>NET_ALPHA[rnd(NET_ALPHA.length)]).join('');
   netStart('host',code,name);
-  const doc={t:Date.now(),v:VERSION,host:{n:name,u:net.uid,r:prof.r},seq:0,acked:0};
+  const me=myCard();const doc={t:Date.now(),v:VERSION,host:Object.assign({n:name,u:net.uid,r:prof.r},me),seq:0,acked:0};
   try{const r=await fetch(netUrl(code),{method:'PUT',body:JSON.stringify(doc)});if(!r.ok)throw 0;}
   catch(e){online=false;net=null;netStatus(t('Could not reach the match server.'));return;}
-  try{const r=await fetch(lobbyUrl(code),{method:'PUT',body:JSON.stringify({n:name,r:prof.r,u:net.uid,t:Date.now(),v:VERSION})});if(!r.ok)net.lobbyErr=true;}catch(_){net.lobbyErr=true;}
+  try{const r=await fetch(lobbyUrl(code),{method:'PUT',body:JSON.stringify(Object.assign({n:name,r:prof.r,u:net.uid,t:Date.now(),v:VERSION},me))});if(!r.ok)net.lobbyErr=true;}catch(_){net.lobbyErr=true;}
   SNAME[YOU]=name;SNAME[BOT]=t('Friend');net.live=true;netRemember();netListen();renderWait();renderNet();
 }
 function netStartGame(){ // the guest is in: asteroids from both ratings, a fresh board, and the first push
@@ -2347,7 +2351,7 @@ async function netJoin(code){
   if(doc.v!==VERSION){netStatus(t`Versions differ: the host has v${doc.v}, you have v${VERSION}. Both reload, then try again.`);return;}
   if(doc.left){netStatus(t`Match ${code} is already over.`);return;}
   prof.n=name;saveProf();netStart('guest',code,name);SNAME[YOU]=name;SNAME[BOT]=doc.host.n||t('Host');net.opp=SNAME[BOT];net.oppR=doc.host.r||BASE_R;
-  net.live=true;await netWrite({guest:{n:name,u:uid,r:prof.r},p_g:{'.sv':'timestamp'}});netRemember();
+  net.live=true;await netWrite({guest:Object.assign({n:name,u:uid,r:prof.r},myCard()),p_g:{'.sv':'timestamp'}});netRemember();
   if(doc.state){net.seq=doc.seq||0;netTakeState(doc.state);}
   netListen();renderWait();renderNet();
 }
@@ -2369,8 +2373,8 @@ function netListen(){if(!net)return;if(net.es)net.es.close();const es=new EventS
   es.onerror=()=>{if(net)net.err=t('reconnecting');};es.onopen=()=>{if(net)net.err=null;};}
 async function netRefetch(){if(!net)return;try{const r=await fetch(netUrl(net.code));if(r.ok)netHandle(await r.json()||{});}catch(_){}}
 function netHandle(o){if(!net||!o)return;
-  if(o.host&&net.role==='guest'){net.opp=o.host.n||t('Host');net.oppR=o.host.r||BASE_R;SNAME[BOT]=net.opp;}
-  if(o.guest&&net.role==='host'&&o.guest.u!==net.uid){const first=!net.opp;net.opp=o.guest.n||t('Friend');net.oppR=o.guest.r||BASE_R;SNAME[BOT]=net.opp;
+  if(o.host&&net.role==='guest'){net.opp=o.host.n||t('Host');net.oppR=o.host.r||BASE_R;net.oppCard=cardText(o.host);SNAME[BOT]=net.opp;}
+  if(o.guest&&net.role==='host'&&o.guest.u!==net.uid){const first=!net.opp;net.opp=o.guest.n||t('Friend');net.oppR=o.guest.r||BASE_R;net.oppCard=cardText(o.guest);SNAME[BOT]=net.opp;
     if(first)fetch(lobbyUrl(net.code),{method:'DELETE'}).catch(()=>{});if(!net.started)netStartGame();else netPush(true);}
   if(o.p_h!=null&&net.role==='guest')net.oppSeen=o.p_h;if(o.p_g!=null&&net.role==='host')net.oppSeen=o.p_g;
   if(o.act&&net.role==='host'&&o.act.seq>net.acked){net.acked=o.act.seq;netApplyAct(o.act);}
@@ -2405,7 +2409,7 @@ async function lobbyRefresh(){const el=$('lobby');if(online){el.innerHTML='';ret
   $('codeWrap').hidden=true;const uid=myUid(),now=Date.now();
   const list=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE&&/^[A-Z]{4}$/.test(x.code)).sort((a,b)=>(b.t||0)-(a.t||0));
   if(!list.length){el.innerHTML='<span class="acthint">'+t('Nobody is waiting right now. Tap I\'m ready to play and your name goes on this list for the next person who opens it.')+'</span>';return;}
-  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${x.r||BASE_R} · ${age}${old}</button>`;}).join('');}
+  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${cardText(x)} · ${age}${old}</button>`;}).join('');}
 function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(online&&net);
   $('btnHost').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inNetName').disabled=on;$('inName').disabled=on;if(on)$('codeWrap').hidden=true;
   if(!on){netStatus(t('Type your name, then tap the name of the person you want to play. Nobody there? Tap I\'m ready to play and wait for someone to tap yours.'));return;}
@@ -2413,7 +2417,7 @@ function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(onli
   const seen=net.oppSeen?Math.round((Date.now()-net.oppSeen)/1000):null;
   const turn=S&&!S.over?(S.turn===YOU?t('Your turn.'):t`${net.opp}'s turn.`):'';
   const stale=seen!=null&&seen>=20?' '+t('{0} last seen {1} ago.',net.opp,seen<120?t('{0} s',seen):t('{0} min',Math.round(seen/60))):'';
-  netStatus(t`Connected to ${net.opp}.`+' '+turn+stale+(net.err?' · '+net.err:''));}
+  netStatus(t`Connected to ${net.opp}.`+' '+turn+stale+(net.oppCard?' · '+net.oppCard:'')+(net.err?' · '+net.err:''));}
 function renderWait(){const el=$('netwait');const w=!!(online&&net&&!net.started);el.classList.toggle('show',w);if(!w)return;
   $('netwaitTitle').textContent=net.role==='host'?t('Waiting for a friend'):t`Joined ${SNAME[BOT]}'s match`;
   $('netwaitText').innerHTML=net.role==='host'?(t('Your name is on the list. When someone taps it, the game starts here.')+(lobbyOff?'<br>'+t('The lobby is switched off, so read out this code instead: {0}.','<b style="font-family:var(--mono);letter-spacing:.2em">'+net.code+'</b>'):'')):t('Waiting for the host to start…');}
