@@ -1178,6 +1178,7 @@ const FR={
 "Connected to {0}. Your turn.": "Connecté à {0}. À vous.",
 "Connected to {0}. {1}'s turn.": "Connecté à {0}. Au tour de {1}.",
 "{0} · {1} of 9 sectors · {2} games, {3} won": "{0} · {1} secteurs sur 9 · {2} parties, {3} gagnées",
+"Bot skill set to {0} from here on.": "Niveau du bot réglé à {0} à partir de maintenant.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1314,7 +1315,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.36.1';
+const VERSION='1.37.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1780,6 +1781,8 @@ async function botTurn(me){
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
   const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and shields can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
+  const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
+  const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=2; // a siege two squares from an unguarded command drone: this turn must deal with it
   for(const d of dronesOf(me)){
     if(S.tut&&d.kind==='X')continue; // the coached game: the bot's siege stays put, so a beginner is never walked into a surprise loss
     if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
@@ -1800,6 +1803,8 @@ async function botTurn(me){
       if(kind==='dark')v-=1;
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
       if(L>=6&&d.kind!=='X'&&threat.has(k))v-=8*d.power; // do not park where it can be taken next turn
+      if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
+      if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60; // or a shield steps in beside it // the command drone never flees into a siege: beside one with no shield is the game
       if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a shield stays beside the command drone
       opts.push({type:'move',d,r,c,v});}
   }
@@ -2178,7 +2183,7 @@ $('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStora
 $('introTut').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}newGame({tut:true});});
 setInterval(()=>{if(S&&S.tut&&!busy&&S.turn===YOU&&!S.over)renderGuide();},2000);
 $('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
-$('inSkill').addEventListener('change',()=>{snapSkill();renderRecord();renderSkillNote();});
+$('inSkill').addEventListener('change',()=>{const v=snapSkill();renderRecord();renderSkillNote();if(S&&!S.over&&!S.tut&&!S.story&&!(online&&net)&&S.skill!==v){S.skill=v;note(t`Bot skill set to ${v} from here on.`);save();renderAll();}}); // a skill change applies to the game in progress
 snapSkill();renderSkillNote();
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
