@@ -155,6 +155,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .log div:first-child{color:var(--text)}
 .legend{font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:4px}
 .legend b{color:var(--text)}
+.legend .lg{white-space:nowrap}
 .tipcard{background:var(--panel2);border-left:3px solid var(--you);padding:8px 28px 8px 10px;margin-top:8px;font-size:13px;line-height:1.45;position:relative}
 .tipcard b{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-size:12px;margin-right:4px}
 .tipcard .x{position:absolute;right:8px;top:4px;cursor:pointer;color:var(--mute);font-size:18px;line-height:1}
@@ -288,7 +289,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <main>
   <div class="boardwrap">
     <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
-    <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> shield · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
+    <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
     <div class="acts" id="acts"></div>
@@ -331,8 +332,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
     <li><b>You are trying to claim more of the sky than the bot.</b> Your land is gold, the bot's is blue. 69 squares wins.</li>
     <li><b>Line up stars.</b> Anything over 3 in a row gets you a drone, born where you made it.</li>
     <li><b>A drone is like a checkers or chess piece.</b> You move it around to claim space and fight. Only scouts claim stars for you.</li>
-    <li><b>Or win outright</b> by walking a siege drone up next to the bot's Command drone, the M, with no shield beside it. Keep yours safe.</li>
-    <li><b>Who takes whom.</b> Raiders take what they land on, except a siege. Hunters fight with missiles only. Shields take scouts, hunters, warps and shields by moving next to them on your land. Every take earns a missile for your Command drone; scouts and hunters load from it by standing beside it. Tap any drone, yours or the bot's, to see its reach.</li>
+    <li><b>Or win outright</b> by walking a siege drone up next to the bot's Command drone, the C, with no guard beside it. Keep yours safe.</li>
+    <li><b>Who takes whom.</b> Raiders take what they land on, except a siege. Hunters fight with missiles only. Guards take scouts, hunters, warps and guards by moving next to them on your land. Every take earns a missile for your Command drone; scouts and hunters load from it by standing beside it. Tap any drone, yours or the bot's, to see its reach.</li>
   </ol>
   <button type="button" id="introGo" class="primary">Got it, let's play</button>
   <button type="button" id="introTut" style="margin-top:8px">Walk me through my first game</button>
@@ -794,7 +795,7 @@ const SAYINGS=[
 'Four in a row is a drone. Three in a row is a wish.',
 'Keep the Command drone home. It is not a scout.',
 'Asteroids do not care whose side they are on.',
-'Lose a drone, earn a missile. Lose the M, go make coffee.',
+'Lose a drone, earn a missile. Lose the C, go make coffee.',
 'The bot has no feelings. Take its land.',
 'Claim it now. Argue about it later.',
 'Stars fall toward whoever is moving. So does trouble.',
@@ -823,13 +824,13 @@ const FR={
 "Salvage is on: a destroyed drone leaves a wreck holding its missile. Any drone, yours or the other side's, that ends its move on the wreck takes it. Wrecks fade after five rounds.": "Récupération activée : un drone détruit laisse une épave qui garde son missile. Tout drone, le vôtre ou celui de l'autre camp, qui termine son déplacement sur l'épave le prend. Les épaves disparaissent après cinq tours.",
 "A missile takes one power off a drone. At power 1 the drone is destroyed. With Salvage on, the missile stays in the wreck until someone goes and gets it.": "Un missile enlève une puissance à un drone. À puissance 1 le drone est détruit. Avec la Récupération, le missile reste dans l'épave jusqu'à ce que quelqu'un aille le chercher.",
 "Raiders take what they land on, except a siege. Landing on the drone means standing on its wreck, so that missile goes to your Command drone at once.": "Les pillards prennent ce sur quoi ils atterrissent, sauf un siège. Atterrir sur le drone, c'est se tenir sur son épave : ce missile va à votre drone de commandement tout de suite.",
-"A shield takes an enemy scout, hunter, warp or shield by moving next to it on your land. With Salvage on, the wreck lies beside the shield: step on it to get the missile.": "Un bouclier prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté sur votre terrain. Avec la Récupération, l'épave est à côté du bouclier : posez-vous dessus pour prendre le missile.",
+"A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. With Salvage on, the wreck lies beside the guard: step on it to get the missile.": "Un bouclier prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté sur votre terrain. Avec la Récupération, l'épave est à côté du bouclier : posez-vous dessus pour prendre le missile.",
 "A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. With Salvage on, missiles come from wrecks: go and stand on one.": "Un missile dégage une étoile ou un astéroïde et les étoiles tombent. Les éclaireurs en tirent un par tour, les chasseurs deux à la fois. Avec la Récupération, les missiles viennent des épaves : allez vous poser dessus.",
 "{0} stacked {1} into the {2} at {3}: power {4}.": "{0} {v:avez empilé|a empilé} {1} dans {2} en {3} : puissance {4}.",
 "{0} moved {1} {2} to {3}.": "{0} {v:avez déplacé|a déplacé} {1} de {2} à {3}.",
 "{0} claimed at {1}: {2} square{3}{4}.": "{0} {v:avez revendiqué|a revendiqué} en {1} : {2} case{3}{4}.",
 "{0} warped to {1}: {2} square{3} taken{4}. The warp drone is used up.": "{0} {v:avez sauté|a sauté} en {1} : {2} case{3} prise{3}{4}. Le drone de saut est consommé.",
-"{0} rammed the shield at {1}. Both are gone.": "{0} a percuté le bouclier en {1}. Les deux sont perdus.",
+"{0} rammed the guard at {1}. Both are gone.": "{0} a percuté le bouclier en {1}. Les deux sont perdus.",
 "{0}: a missile hit {1} at {2}; it holds. Only a siege drone can take it.": "{0} : un missile a touché {1} en {2} ; il tient. Seul un drone de siège peut le prendre.",
 "{0}: a missile destroyed {1} at {2}{3}": "{0} : un missile a détruit {1} en {2}{3}",
 "{0}: a missile hit {1} at {2}: power {3}.": "{0} : un missile a touché {1} en {2} : puissance {3}.",
@@ -887,7 +888,7 @@ const FR={
 "{0} · skill {1}": "{0} · niveau {1}",
 "Fire missile{0} ({1} loaded)": "Tirer ({1} chargé)",
 "Claim the 3 × 3 here ({0} to take)": "Revendiquer le 3 × 3 ici ({0} à prendre)",
-"Ram the shield at {0} (both lost)": "Percuter le bouclier en {0} (les deux perdus)",
+"Ram the guard at {0} (both lost)": "Percuter le bouclier en {0} (les deux perdus)",
 "Aim two targets within {0} squares, then they fire together.": "Visez deux cibles à {0} cases ou moins, puis elles tirent ensemble.",
 "Tap a target within {0} squares: an enemy drone, an asteroid, or a star.": "Touchez une cible à {0} cases ou moins : un drone ennemi, un astéroïde ou une étoile.",
 "Tap the gold star at {0}, then the blue star right above it.": "Touchez l'étoile dorée en {0}, puis l'étoile bleue juste au-dessus.",
@@ -910,14 +911,14 @@ const FR={
 "That stacks the two. The stack keeps the kind of {0} and each power takes one more missile to bring down.": "Ça empile les deux. La pile garde le type de {0} et chaque point de puissance demande un missile de plus pour tomber.",
 "Two of your drones can stack: this one onto {0} at {1}. A stack is armor against missiles.": "Deux de vos drones peuvent s'empiler : celui-ci sur {0} en {1}. Une pile est un blindage contre les missiles.",
 "Tap your siege drone at {0}.": "Touchez votre drone de siège en {0}.",
-"It is the other way to win: walk it next to the bot's Command drone, the M{0}.": "C'est l'autre façon de gagner : amenez-le à côté du drone de commandement du bot, le M{0}.",
+"It is the other way to win: walk it next to the bot's Command drone, the C{0}.": "C'est l'autre façon de gagner : amenez-le à côté du drone de commandement du bot, le C{0}.",
 "{0} more squares.": "{0} cases de plus.",
 "Tap your scout at {0}.": "Touchez votre éclaireur en {0}.",
 "It can claim {0} squares. You hold {1} of {2}.": "Il peut revendiquer {0} cases. Vous tenez {1} sur {2}.",
 "They make {0}, which pays a drone.": "Elles forment {0}, ce qui rapporte un drone.",
 " You hold {0} of {1}.": " Vous tenez {0} sur {1}.",
 "Tap your scout at {0} and walk it toward open land.": "Touchez votre éclaireur en {0} et avancez-le vers du terrain libre.",
-"You are trying to claim more of the sky than the bot: {0} squares wins, or a siege drone standing next to the bot's Command drone. You own {1}, the bot owns {2}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.": "Vous essayez de revendiquer plus de ciel que le bot : {0} cases gagnent, ou un drone de siège posté à côté du drone de commandement du bot. Vous possédez {1}, le bot possède {2}. Alignez des étoiles : tout ce qui dépasse 3 d'affilée vous donne un drone. Un drone est comme un pion de dames ou une pièce d'échecs : vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous. Gardez votre propre drone de commandement, le M, en sécurité.",
+"You are trying to claim more of the sky than the bot: {0} squares wins, or a siege drone standing next to the bot's Command drone. You own {1}, the bot owns {2}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the C, safe.": "Vous essayez de revendiquer plus de ciel que le bot : {0} cases gagnent, ou un drone de siège posté à côté du drone de commandement du bot. Vous possédez {1}, le bot possède {2}. Alignez des étoiles : tout ce qui dépasse 3 d'affilée vous donne un drone. Un drone est comme un pion de dames ou une pièce d'échecs : vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous. Gardez votre propre drone de commandement, le C, en sécurité.",
 "Rating {0} → {1} ({2}{3}). {4} was rated {5}; asteroids {6} to {7}.": "Classement {0} → {1} ({2}{3}). {4} était classé {5} ; astéroïdes {6} contre {7}.",
 "{0} is rated {1}. A game against a person moves your rating at full weight.": "{0} est classé {1}. Une partie contre une personne fait bouger votre classement à plein poids.",
 "Leave the match? An unfinished match counts as a loss.": "Quitter la partie ? Une partie inachevée compte comme une défaite.",
@@ -975,7 +976,7 @@ const FR={
 "Fired. Now take your turn: swap, move, claim or warp.": "Tiré. Maintenant jouez votre tour : échanger, déplacer, revendiquer ou sauter.",
 "Nothing there to hit.": "Rien à toucher là.",
 "That is your own drone.": "C'est votre propre drone.",
-"Warp to a cleared square on your side, not next to an enemy shield.": "Sautez vers une case dégagée de votre côté, pas à côté d'un bouclier ennemi.",
+"Warp to a cleared square on your side, not next to an enemy guard.": "Sautez vers une case dégagée de votre côté, pas à côté d'un bouclier ennemi.",
 "That square is in the fog. Bring a drone next to it, or claim with a scout.": "Cette case est dans le brouillard. Amenez un drone à côté, ou revendiquez avec un éclaireur.",
 ". Tap a marked square to move, red to take, green to stack.": ". Touchez une case marquée pour déplacer, rouge pour prendre, verte pour empiler.",
 "An asteroid. A missile clears it.": "Un astéroïde. Un missile le dégage.",
@@ -995,7 +996,7 @@ const FR={
 "Cancel": "Annuler",
 "Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.": "Touchez un éclaireur ou un chasseur pour tirer un missile d'abord, ou échangez deux étoiles, ou touchez un drone pour le déplacer.",
 "Swap two stars side by side, or tap one of your drones.": "Échangez deux étoiles voisines, ou touchez un de vos drones.",
-"Tap a cleared square on your side to warp there. Not on or next to an enemy shield.": "Touchez une case dégagée de votre côté pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
+"Tap a cleared square on your side to warp there. Not on or next to an enemy guard.": "Touchez une case dégagée de votre côté pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
 "That star is on the bot's land. You can only swap stars on open land or your own.": "Cette étoile est sur le terrain du bot. Vous ne pouvez échanger que des étoiles en terrain libre ou sur le vôtre.",
 "{0} made {1} on {2}: stars cleared, nothing paid.": "{0} {v:avez fait|a fait} {1} sur {2} : étoiles effacées, rien gagné.",
 "{0} takes {1}": "{0} prend {1}",
@@ -1020,26 +1021,26 @@ const FR={
 "That is {0}. Blue dots: where it can go. Red: what it can take.": "C'est {0}. Points bleus : où il peut aller. Rouge : ce qu'il peut prendre.",
 "Line up 4 or more stars and a drone is born where the line was. 3 in a line only clears.": "Alignez 4 étoiles ou plus et un drone naît là où était la ligne. 3 en ligne ne fait qu'effacer.",
 "4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.": "4 en ligne fait un éclaireur. Les éclaireurs revendiquent du terrain : touchez-en un, puis Revendiquer, et le 3 × 3 autour est à vous. Deux revendications chacun.",
-"A 2 × 2 block makes a shield. A shield guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or shield by moving next to it.": "Un bloc 2 × 2 fait un bouclier. Un bouclier garde : à côté de votre drone de commandement ou d'un siège ennemi il bloque le siège, et sur votre terrain il prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté.",
+"A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.": "Un bloc 2 × 2 fait un bouclier. Un bouclier garde : à côté de votre drone de commandement ou d'un siège ennemi il bloque le siège, et sur votre terrain il prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté.",
 "A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.": "Un pillard glisse sur toute la diagonale et prend tout drone ennemi sur lequel il s'arrête, sauf un siège.",
 "A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un chasseur se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, et tire deux missiles par tour : visez les deux, ils touchent ensemble. Il ne prend pas en atterrissant ; il se bat au missile.",
 "A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.": "Un drone de saut peut sauter vers n'importe quelle case dégagée de votre côté et y revendiquer le 3 × 3 d'un coup. Un seul usage.",
-"A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no shield beside either, it wins the game.": "Un drone de siège avance d'1 case par tour. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie.",
+"A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.": "Un drone de siège avance d'1 case par tour. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie.",
 "A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.": "Une bombe explose à la fin de votre troisième tour et efface une croix aussi loin que vous voyez, drones compris, les vôtres aussi.",
 "Scouts move 1 square any way, or ride their own star color for free.": "Les éclaireurs se déplacent d'1 case dans tous les sens, ou suivent gratuitement leur propre couleur d'étoile.",
-"Shields move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and shields they stop next to on your land.": "Les boucliers se déplacent d'1 case, seulement sur votre terrain ou des cases dégagées. Ils prennent les éclaireurs, chasseurs, drones de saut et boucliers ennemis à côté desquels ils s'arrêtent sur votre terrain.",
+"Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.": "Les boucliers se déplacent d'1 case, seulement sur votre terrain ou des cases dégagées. Ils prennent les éclaireurs, chasseurs, drones de saut et boucliers ennemis à côté desquels ils s'arrêtent sur votre terrain.",
 "Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.": "Les pillards glissent sur toute la diagonale jusqu'à ce que quelque chose les arrête, et prennent ce sur quoi ils atterrissent sauf un siège.",
 "Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.": "Les chasseurs se déplacent d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, en tournant s'ils veulent. Ils tirent deux missiles par tour et ne prennent jamais en atterrissant.",
 "Warp drones walk 1 square, or warp: tap one and choose Warp.": "Les drones de saut marchent d'1 case, ou sautent : touchez-en un et choisissez Sauter.",
-"Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no shield beside, the game is won.": "Les sièges avancent d'exactement 1 case par tour. À côté du drone de commandement ennemi sans bouclier à côté, la partie est gagnée.",
+"Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.": "Les sièges avancent d'exactement 1 case par tour. À côté du drone de commandement ennemi sans bouclier à côté, la partie est gagnée.",
 "Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.": "Les bombes se déplacent d'1 case ou suivent leur couleur. Gardez vos propres drones hors de la croix avant qu'elle explose.",
 "The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.": "Le drone de commandement se déplace d'1 case et suit les couleurs des drones empilés dedans. Gardez-le couvert : le perdre, c'est perdre la partie.",
 "Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.": "Chaque prise rapporte un missile à votre drone de commandement. Les pillards prennent ce sur quoi ils atterrissent, sauf un siège.",
-"A shield takes an enemy scout, hunter, warp or shield by moving next to it on your land. Every take earns a missile for your Command drone.": "Un bouclier prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté sur votre terrain. Chaque prise rapporte un missile à votre drone de commandement.",
+"A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.": "Un bouclier prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté sur votre terrain. Chaque prise rapporte un missile à votre drone de commandement.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum.",
 "A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.": "Une revendication prend le 3 × 3 autour de l'éclaireur. Le terrain compte pour la victoire, et l'autre camp ne peut plus y échanger d'étoiles. Deux revendications et l'éclaireur est consommé.",
 "A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.": "Un saut revendique les cases libres autour de l'arrivée et retire les drones ennemis sur les cases désormais à vous. Il est consommé.",
-"A siege can ram the shield in its way. Both are gone.": "Un siège peut percuter le bouclier en travers. Les deux disparaissent.",
+"A siege can ram the guard in its way. Both are gone.": "Un siège peut percuter le bouclier en travers. Les deux disparaissent.",
 "A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.": "Un missile enlève une puissance à un drone. À puissance 1 le drone est détruit, et détruire un drone rapporte un missile à votre drone de commandement. Les éclaireurs et les chasseurs s'y chargent en se tenant à côté.",
 "A missile takes one power off a drone. A stack takes one hit per power.": "Un missile enlève une puissance à un drone. Une pile encaisse un coup par point de puissance.",
 "Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.": "Les missiles ne peuvent pas détruire le drone de commandement, seulement lui retirer les drones empilés. Seul un siège posté à côté termine la partie.",
@@ -1053,18 +1054,18 @@ const FR={
 "Explain moves": "Expliquer les coups",
 "what happened, and why": "ce qui s'est passé, et pourquoi",
 "Who takes whom.": "Qui prend qui.",
-"Raiders take what they land on, except a siege. Hunters fight with missiles only. Shields take scouts, hunters, warps and shields by moving next to them on your land. Every take earns a missile for your Command drone; scouts and hunters load from it by standing beside it. Tap any drone, yours or the bot's, to see its reach.": "Les pillards prennent ce sur quoi ils atterrissent, sauf un siège. Les chasseurs se battent au missile seulement. Les boucliers prennent éclaireurs, chasseurs, drones de saut et boucliers en se plaçant à côté sur votre terrain. Chaque prise rapporte un missile à votre drone de commandement ; les éclaireurs et les chasseurs s'y chargent en se tenant à côté. Touchez n'importe quel drone, le vôtre ou celui du bot, pour voir sa portée.",
+"Raiders take what they land on, except a siege. Hunters fight with missiles only. Guards take scouts, hunters, warps and guards by moving next to them on your land. Every take earns a missile for your Command drone; scouts and hunters load from it by standing beside it. Tap any drone, yours or the bot's, to see its reach.": "Les pillards prennent ce sur quoi ils atterrissent, sauf un siège. Les chasseurs se battent au missile seulement. Les boucliers prennent éclaireurs, chasseurs, drones de saut et boucliers en se plaçant à côté sur votre terrain. Chaque prise rapporte un missile à votre drone de commandement ; les éclaireurs et les chasseurs s'y chargent en se tenant à côté. Touchez n'importe quel drone, le vôtre ou celui du bot, pour voir sa portée.",
 "Plays its best move {0}% of the time. ": "Joue son meilleur coup {0} % du temps. ",
 "Random. It swaps and moves at random and never fires.": "Au hasard. Il échange et se déplace au hasard et ne tire jamais.",
 "It knows which lines pay a drone and claims land with its scouts.": "Il sait quelles lignes rapportent un drone et revendique du terrain avec ses éclaireurs.",
 "It fires missiles at your drones and takes what it can reach.": "Il tire des missiles sur vos drones et prend ce qu'il peut atteindre.",
-"It keeps its Command drone home and sweeps with its shields on its own land.": "Il garde son drone de commandement à la maison et balaie avec ses boucliers sur son terrain.",
+"It keeps its Command drone home and sweeps with its guards on its own land.": "Il garde son drone de commandement à la maison et balaie avec ses boucliers sur son terrain.",
 "It stacks drones for armor and clears asteroids on its side.": "Il empile des drones comme blindage et dégage les astéroïdes de son côté.",
 "Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.": "Ses chasseurs tirent leurs deux missiles, ses sièges marchent vers votre drone de commandement, et il saute pour du terrain.",
-"It will not park a drone where your raiders, hunters or shields can take it next turn.": "Il ne laisse pas un drone là où vos pillards, chasseurs ou boucliers peuvent le prendre au tour suivant.",
+"It will not park a drone where your raiders, hunters or guards can take it next turn.": "Il ne laisse pas un drone là où vos pillards, chasseurs ou boucliers peuvent le prendre au tour suivant.",
 "It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.": "Il choisit aussi ses échanges pour la cascade : plus d'étoiles effacées, et la dérive des astéroïdes quand il peut atteindre huit.",
 "It goes after wrecks when Salvage is on and walks its bombs toward your drones.": "Il va chercher les épaves quand la Récupération est activée et avance ses bombes vers vos drones.",
-"It keeps a shield beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
+"It keeps a guard beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
 "Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
 "Story": "Histoire",
 "Story mode": "Mode histoire",
@@ -1098,9 +1099,9 @@ const FR={
 "Orion holds. The Hunter sends its regards. We've put another Command drone on the pile for you.": "Orion tient. Le Chasseur vous salue. On a mis un autre drone de commandement sur la pile pour vous.",
 "Cassiopeia": "Cassiopée",
 "The Queen": "La Reine",
-"Sector Cassiopeia. The Queen keeps shields, and her shields sweep. Step onto her land next to one and you're not coming back. The last Command drone we sent came back on a pike. We'd like this one back in one piece.": "Secteur Cassiopée. La Reine garde des boucliers, et ses boucliers balaient. Posez un pied sur son terrain à côté de l'un d'eux et vous ne revenez pas. Le dernier drone de commandement qu'on a envoyé est revenu sur une pique. On aimerait celui-ci en un seul morceau.",
-"Walk onto my land. My shields will meet you.": "Entrez sur mon terrain. Mes boucliers vous accueilleront.",
-"Cassiopeia is ours. The Queen's shields are scrap. Good work, and I don't say that.": "Cassiopée est à nous. Les boucliers de la Reine sont de la ferraille. Bon travail, et je ne dis jamais ça.",
+"Sector Cassiopeia. The Queen keeps guards, and her guards sweep. Step onto her land next to one and you're not coming back. The last Command drone we sent came back on a pike. We'd like this one back in one piece.": "Secteur Cassiopée. La Reine garde des boucliers, et ses boucliers balaient. Posez un pied sur son terrain à côté de l'un d'eux et vous ne revenez pas. Le dernier drone de commandement qu'on a envoyé est revenu sur une pique. On aimerait celui-ci en un seul morceau.",
+"Walk onto my land. My guards will meet you.": "Entrez sur mon terrain. Mes boucliers vous accueilleront.",
+"Cassiopeia is ours. The Queen's guards are scrap. Good work, and I don't say that.": "Cassiopée est à nous. Les boucliers de la Reine sont de la ferraille. Bon travail, et je ne dis jamais ça.",
 "Cassiopeia holds. The Queen kept the pike. She's starting a collection.": "Cassiopée tient. La Reine a gardé la pique. Elle commence une collection.",
 "Draco": "Dragon",
 "The Dragon": "Le Dragon",
@@ -1134,10 +1135,10 @@ const FR={
 "Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.": "Cygne tient. Vos épaves ont nourri ses missiles. Privez-le du terrain la prochaine fois.",
 "Andromeda": "Andromède",
 "The Chained": "L'Enchaînée",
-"Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a shield beside it. Always. Find the moment there isn't.": "Secteur Andromède. L'Enchaînée ne laisse jamais son drone de commandement seul. Il y a toujours un bouclier à côté. Toujours. Trouvez le moment où il n'y en a pas.",
+"Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a guard beside it. Always. Find the moment there isn't.": "Secteur Andromède. L'Enchaînée ne laisse jamais son drone de commandement seul. Il y a toujours un bouclier à côté. Toujours. Trouvez le moment où il n'y en a pas.",
 "My Command drone has never been alone a day in its life.": "Mon drone de commandement n'a jamais été seul un seul jour de sa vie.",
 "Andromeda is ours. The chain broke. One left, and it's the big one.": "Andromède est à nous. La chaîne a cassé. Il en reste un, et c'est le gros.",
-"Andromeda holds. The shield was there every time. Make it move.": "Andromède tient. Le bouclier était là à chaque fois. Faites-le bouger.",
+"Andromeda holds. The guard was there every time. Make it move.": "Andromède tient. Le bouclier était là à chaque fois. Faites-le bouger.",
 "Ursa Major": "Grande Ourse",
 "The Bear": "L'Ourse",
 "Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.": "Secteur Grande Ourse. L'Ourse ne devine pas. Chaque coup est son meilleur. On a envoyé onze drones de commandement. Onze piques. Le vôtre est le douzième.",
@@ -1154,8 +1155,8 @@ const FR={
 "Build a turret ({0} missiles)": "Construire une tourelle ({0} missiles)",
 "Tap an empty square you own. The turret fires once a turn at any enemy drone beside it.": "Touchez une case vide à vous. La tourelle tire une fois par tour sur un drone ennemi à côté d'elle.",
 "A turret goes on an empty square you own.": "Une tourelle se pose sur une case vide à vous.",
-"A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and shields cannot take it. It does not count toward your drones.": "Une tourelle. Elle ne bouge jamais. Au début de chacun de vos tours elle tire une fois sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord. Construite par votre drone de commandement pour 10 missiles sur une case vide à vous. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever ; les missiles rebondissent, les pillards et les boucliers ne peuvent pas la prendre. Elle ne compte pas dans vos drones.",
-"A Command drone holding 10 missiles can spend them on a turret: tap the M, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.": "Un drone de commandement qui a 10 missiles peut les dépenser pour une tourelle : touchez le M, puis Construire une tourelle, puis une case vide à vous. Elle ne bouge jamais et tire une fois par tour sur un drone ennemi à côté d'elle. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
+"A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. It does not count toward your drones.": "Une tourelle. Elle ne bouge jamais. Au début de chacun de vos tours elle tire une fois sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord. Construite par votre drone de commandement pour 10 missiles sur une case vide à vous. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever ; les missiles rebondissent, les pillards et les boucliers ne peuvent pas la prendre. Elle ne compte pas dans vos drones.",
+"A Command drone holding 10 missiles can spend them on a turret: tap the C, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.": "Un drone de commandement qui a 10 missiles peut les dépenser pour une tourelle : touchez le C, puis Construire une tourelle, puis une case vide à vous. Elle ne bouge jamais et tire une fois par tour sur un drone ennemi à côté d'elle. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
 "A turret fires by itself at the start of its owner's turn, at one enemy drone in the 8 squares beside it, sieges first.": "Une tourelle tire toute seule au début du tour de son propriétaire, sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord.",
 "{0}: a missile hit {1} at {2}; it holds. Only a bomb, an asteroid or a siege drone can end it.": "{0} : un missile a touché {1} en {2} ; elle tient. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
 "Missiles bounce off a turret. A bomb, an asteroid, or a siege drone moving onto it ends it; the turret fires at a siege first, so only a stacked siege lives to reach it.": "Les missiles rebondissent sur une tourelle. Une bombe, un astéroïde ou un drone de siège qui se pose dessus l'achève ; la tourelle tire d'abord sur un siège, donc seul un siège empilé survit pour l'atteindre.",
@@ -1225,7 +1226,7 @@ const FR={
 "Tap the green square.": "Touchez la case verte.",
 "stack here": "empilez ici",
 "Tap a marked square toward the top.": "Touchez une case marquée vers le haut.",
-"It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no shield beside either of them, you win.": "Il avance d'une case par tour et aucun drone ne peut le prendre. Dès qu'il se tient à côté du drone de commandement du bot sans bouclier à côté de l'un ou de l'autre, vous gagnez.",
+"It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no guard beside either of them, you win.": "Il avance d'une case par tour et aucun drone ne peut le prendre. Dès qu'il se tient à côté du drone de commandement du bot sans bouclier à côté de l'un ou de l'autre, vous gagnez.",
 "your siege drone": "votre drone de siège",
 "the bot's Command drone": "le drone de commandement du bot",
 "Tap Claim.": "Touchez Revendiquer.",
@@ -1248,18 +1249,18 @@ const FR={
 "Start a new game? This one counts as a loss.": "Commencer une nouvelle partie ? Celle-ci compte comme une défaite.",
 "The game was abandoned.": "La partie a été abandonnée.",
 "Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se déplace d'1 case dans tous les sens, et suit gratuitement sa propre couleur d'étoile. Tire un missile par tour, en se chargeant au drone de commandement quand il est à côté. Revendiquer prend le 3 × 3 autour de lui et y dissipe le brouillard pour de bon. Deux revendications, puis il est consommé.",
-"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège.",
+"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège.",
 "Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.": "Glisse sur toute la diagonale jusqu'à toucher quelque chose, dans le noir aussi, et prend ce sur quoi il s'arrête sauf un drone de siège ou une tourelle. Une glissade dans le brouillard est un engagement.",
 "Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles.": "Se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur d'étoile. Tire deux missiles par tour : visez les deux, ils touchent ensemble. En charge deux au drone de commandement quand il est à côté. Il ne peut pas prendre de drones en atterrissant ; il se bat au missile.",
-"Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case dégagée de votre côté qui n'est pas à côté d'un bouclier ennemi : les cases libres autour deviennent à vous et les drones ennemis sur vos cases sont retirés. Consommé par le saut.",
-"Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.": "Se déplace d'exactement 1 case, dans le noir s'il veut. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie. Ne prend rien sauf une tourelle ennemie, en se posant dessus, et ne peut pas être pris par des drones. Quatre ennemis autour le détruisent. Un bouclier en travers : percutez-le et les deux disparaissent.",
+"Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case dégagée de votre côté qui n'est pas à côté d'un bouclier ennemi : les cases libres autour deviennent à vous et les drones ennemis sur vos cases sont retirés. Consommé par le saut.",
+"Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone.": "Se déplace d'exactement 1 case, dans le noir s'il veut. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie. Ne prend rien sauf une tourelle ennemie, en se posant dessus, et ne peut pas être pris par des drones. Quatre ennemis autour le détruisent. Un bouclier en travers : percutez-le et les deux disparaissent.",
 "Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se déplace d'1 case ou suit sa couleur. Explose à la fin de votre troisième tour : le souffle part en haut, en bas, à gauche et à droite aussi loin que vous avez dissipé le brouillard et emporte chaque astéroïde, étoile et drone sur son chemin, les vôtres aussi.",
-"Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no shield near, or an asteroid landing on it, ends the game.": "Se déplace d'1 case et suit les couleurs d'étoile des drones empilés dedans, jusqu'à deux. Rien ne le prend en atterrissant ni par missile ; un missile ou une bombe ne fait que dépouiller sa pile. Un drone de siège posté à côté sans bouclier à proximité, ou un astéroïde qui retombe dessus, termine la partie.",
+"Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no guard near, or an asteroid landing on it, ends the game.": "Se déplace d'1 case et suit les couleurs d'étoile des drones empilés dedans, jusqu'à deux. Rien ne le prend en atterrissant ni par missile ; un missile ou une bombe ne fait que dépouiller sa pile. Un drone de siège posté à côté sans bouclier à proximité, ou un astéroïde qui retombe dessus, termine la partie.",
 "The sky is big. Claim your piece before the bot does.": "Le ciel est grand. Prenez votre part avant le bot.",
 "Four in a row is a drone. Three in a row is a wish.": "Quatre d'affilée, c'est un drone. Trois d'affilée, c'est un vœu.",
 "Keep the Command drone home. It is not a scout.": "Gardez le drone de commandement à la maison. Ce n'est pas un éclaireur.",
 "Asteroids do not care whose side they are on.": "Les astéroïdes se fichent de savoir de quel côté ils sont.",
-"Lose a drone, earn a missile. Lose the M, go make coffee.": "Perdez un drone, gagnez un missile. Perdez le M, allez faire du café.",
+"Lose a drone, earn a missile. Lose the C, go make coffee.": "Perdez un drone, gagnez un missile. Perdez le C, allez faire du café.",
 "The bot has no feelings. Take its land.": "Le bot n'a pas de sentiments. Prenez son terrain.",
 "Claim it now. Argue about it later.": "Revendiquez maintenant. Discutez après.",
 "Stars fall toward whoever is moving. So does trouble.": "Les étoiles tombent vers celui qui joue. Les ennuis aussi.",
@@ -1305,7 +1306,7 @@ const FR={
 "A drone is like a checkers or chess piece.": "Un drone est comme un pion de dames ou une pièce d'échecs.",
 "You move it around to claim space and fight. Only scouts claim stars for you.": "Vous le déplacez pour prendre de l'espace et combattre. Seuls les éclaireurs revendiquent des étoiles pour vous.",
 "Or win outright": "Ou gagnez d'un coup",
-"by walking a siege drone up next to the bot's Command drone, the M, with no shield beside it. Keep yours safe.": "en amenant un drone de siège à côté du drone de commandement du bot, le M, sans bouclier à côté. Gardez le vôtre en sécurité.",
+"by walking a siege drone up next to the bot's Command drone, the C, with no guard beside it. Keep yours safe.": "en amenant un drone de siège à côté du drone de commandement du bot, le C, sans bouclier à côté. Gardez le vôtre en sécurité.",
 "Got it, let's play": "Compris, on joue",
 "Walk me through my first game": "Guidez-moi pour ma première partie",
 "Read the full rulebook": "Lire les règles complètes",
@@ -1315,14 +1316,14 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.37.1';
+const VERSION='1.38.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
-const TNAME=LANG==='fr'?TNAME_FR:{C:'scout',G:'shield',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone',T:'turret'};
-const LETTER={C:'S',G:'G',S:'R',H:'H',W:'W',X:'X',B:'B',M:'M',T:'T'}; // the letter on the disc: S for scout (the user's call), so the old strike is the raider, R
+const TNAME=LANG==='fr'?TNAME_FR:{C:'scout',G:'guard',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone',T:'turret'};
+const LETTER={C:'S',G:'G',S:'R',H:'H',W:'W',X:'X',B:'B',M:'C',T:'T'}; // v1.38: the Command drone wears a C (the user's mother) // the letter on the disc: S for scout (the user's call), so the old strike is the raider, R
 const TAKES={C:'',G:'',S:'CGSHWB',H:'',W:'',X:'T',B:'',M:'',T:''}; // v1.34: a turret is taken only by a siege moving onto it // v1.32: hunters fight with missiles only // nothing takes the command drone by landing; only a siege beside it ends the game // by landing. G takes by moving next to; W on arrival; X takes nothing
-const SWEEPS='CHWG'; // what a shield takes by moving next to it on its land
+const SWEEPS='CHWG'; // what a guard takes by moving next to it on its land
 const RANK={C:1,G:2,B:2,S:3,H:4,W:5,X:6,M:9,T:3};
 const TURRET_COST=10; // v1.33: a Command drone holding this many missiles can spend them on a turret
 const DIR8=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
@@ -1356,7 +1357,7 @@ function newGame(opts={}){
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
-    S.drones.push(mk(side,b,5,'M',rnd(KINDS)),gstack(side,y,5),mk(side,b,4,'C',rnd(KINDS)),mk(side,b,6,'X',rnd(KINDS))); // v1.30: the command drone in the back middle, a scout on its left, a siege drone on its right, the shield at the front edge: all inside the nine
+    S.drones.push(mk(side,b,5,'M',rnd(KINDS)),gstack(side,y,5),mk(side,b,4,'C',rnd(KINDS)),mk(side,b,6,'X',rnd(KINDS))); // v1.30: the command drone in the back middle, a scout on its left, a siege drone on its right, the guard at the front edge: all inside the nine
   }
   for(const side of [YOU,BOT])reload(side); // the starting missile is on the Command drone; the scout beside it loads it
   for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
@@ -1408,7 +1409,7 @@ function vis(side,r,c){
   for(const d of S.drones)if(d.side===side&&d.kind!=='G'&&Math.abs(d.r-r)<=1&&Math.abs(d.c-c)<=1)return true;
   return false;
 }
-const cleared=(side,r,c)=>!S.fog||(S.fog===1&&half(side,r))||S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a shield may stand on
+const cleared=(side,r,c)=>!S.fog||(S.fog===1&&half(side,r))||S.own[key(r,c)]===side||S.seen[side].includes(key(r,c)); // what a guard may stand on
 function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(!inb(a,b))continue;const k=key(a,b);if(!S.seen[side].includes(k))S.seen[side].push(k);}}
 
 // ---------- shapes ----------
@@ -1586,7 +1587,7 @@ function warpCells(d){const out=[];const e=other(d.side);for(let r=0;r<N;r++)for
   if([[0,0],...DIR8].some(([dr,dc])=>{const o=droneAt(r+dr,c+dc);return o&&o.side===e&&o.kind==='G';}))continue;out.push([r,c]);}return out;}
 const claimCells=(r,c)=>{const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(inb(a,b)&&!isWall(a,b)&&!isCmd(a,b))out.push([a,b]);}return out;};
 function claimGain(d){let g=0;for(const [a,b] of claimCells(d.r,d.c))if(S.own[key(a,b)]!==d.side)g++;return g;}
-function fireTargets(d){ // a siege beside the enemy command drone: guards = enemy shields beside the siege or beside the command drone
+function fireTargets(d){ // a siege beside the enemy command drone: guards = enemy guards beside the siege or beside the command drone
   const e=other(d.side);const walls=[],guards=[];let cmd=false;const m=cmdOf(e);
   const near=(a,b,r,c)=>Math.max(Math.abs(a-r),Math.abs(b-c))<=1;
   if(m&&near(m.r,m.c,d.r,d.c)){cmd=true;for(const g of dronesOf(e))if(g.kind==='G'&&(near(g.r,g.c,d.r,d.c)||near(g.r,g.c,m.r,m.c)))guards.push(g);}
@@ -1606,7 +1607,7 @@ async function turretFire(side){for(const tr of dronesOf(side).filter(d=>d.kind=
 // v1.32: missiles are stock on the Command drone (S.missiles[side]); a scout or hunter beside it loads up to what it fires a turn
 const ammoOf=d=>d.ammo||0;const canShoot=d=>shotsLeft(d)>0&&ammoOf(d)>0;
 const besideM=d=>{const m=cmdOf(d.side);return !!m&&m!==d&&Math.max(Math.abs(m.r-d.r),Math.abs(m.c-d.c))<=1;};
-function gstack(side,r,c){const g=mk(side,r,c,'G',rnd(KINDS));g.power=2;let c2=rnd(KINDS);if(c2===g.colors[0])c2=(c2+1)%KINDS;g.colors.push(c2);return g;} // the starting shield is a 2-stack
+function gstack(side,r,c){const g=mk(side,r,c,'G',rnd(KINDS));g.power=2;let c2=rnd(KINDS);if(c2===g.colors[0])c2=(c2+1)%KINDS;g.colors.push(c2);return g;} // the starting guard is a 2-stack
 function loadShooter(d){if(!d||!shotsOf(d)||!besideM(d))return 0;const take=Math.min(shotsOf(d)-ammoOf(d),S.missiles[d.side]);if(take<=0)return 0;d.ammo=ammoOf(d)+take;S.missiles[d.side]-=take;note(t`${who(d.side)}: ${TNAME[d.kind]} at ${sq(d.r,d.c)} loaded ${take} missile${take===1?'':'s'} from the Command drone.`,{why:'load',at:[[d.r,d.c]],lab:[t('loaded')]});return take;}
 function reload(side){for(const d of dronesOf(side))if(shotsOf(d))loadShooter(d);}
 const range=()=>S.fog?RANGE:3; // with no fog a missile flies 3 squares; in the fog, 5
@@ -1653,7 +1654,7 @@ function applyFire(d){
   if(t.cmd){note(`${who(d.side)} took the Commander.`);gameOver(d.side,`${who(d.side)} took the Commander.`);return true;}
   return false;
 }
-function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);wreckAt(g.r,g.c);wreckAt(d.r,d.c);note(t`${cap(own(d.side,'X'))} rammed the shield at ${sq(g.r,g.c)}. Both are gone.`,{why:'ram',at:[[g.r,g.c]],lab:[t('rammed')]});}
+function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);wreckAt(g.r,g.c);wreckAt(d.r,d.c);note(t`${cap(own(d.side,'X'))} rammed the guard at ${sq(g.r,g.c)}. Both are gone.`,{why:'ram',at:[[g.r,g.c]],lab:[t('rammed')]});}
 async function fireShots(side,list,shooter){
   // every shot is aimed first; then they all fly and land at once and the stars drop once
   if(shooter)await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));
@@ -1715,7 +1716,7 @@ function asteroidAnim(trail){return Promise.all(trail.map(([r0,c0,r1,c1])=>new P
   requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';}));
   setTimeout(()=>{g.remove();dest.style.visibility='';res();},ms+30);})));}
 function sweepSiege(){for(const d of S.drones.slice()){if(d.kind!=='X')continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side)n++;}if(n>=4){queueShatter(d);S.drones=S.drones.filter(x=>x!==d);wreckAt(d.r,d.c);note(t`${cap(own(d.side,'X'))} at ${sq(d.r,d.c)} was surrounded by ${n} drones and destroyed.`,{why:'surround',at:[[d.r,d.c]],lab:[t('surrounded')]});}}}
-function checkSiegeWin(){ // a siege drone beside the enemy command drone, with no enemy shield beside either, ends the game
+function checkSiegeWin(){ // a siege drone beside the enemy command drone, with no enemy guard beside either, ends the game
   for(const x of S.drones){if(x.kind!=='X')continue;const ft=fireTargets(x);if(ft.cmd&&!ft.guards.length){gameOver(x.side,t`${who(x.side)} took the Command drone.`);return true;}}
   return false;}
 function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
@@ -1741,13 +1742,13 @@ const BOT_LADDER=[
 'Random. It swaps and moves at random and never fires.',
 'It knows which lines pay a drone and claims land with its scouts.',
 'It fires missiles at your drones and takes what it can reach.',
-'It keeps its Command drone home and sweeps with its shields on its own land.',
+'It keeps its Command drone home and sweeps with its guards on its own land.',
 'It stacks drones for armor and clears asteroids on its side.',
 'Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.',
-'It will not park a drone where your raiders, hunters or shields can take it next turn.',
+'It will not park a drone where your raiders, hunters or guards can take it next turn.',
 'It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.',
 'It goes after wrecks when Salvage is on and walks its bombs toward your drones.',
-'It keeps a shield beside its Command drone at all times.',
+'It keeps a guard beside its Command drone at all times.',
 'Every turn is its best move. Nothing is random.'];
 function snapSkill(){const v=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10;$('inSkill').value=v;return v;}
 function renderSkillNote(){const el=$('skillNote');if(!el)return;const L=Math.round((+$('inSkill').value||0)/10);el.textContent=(L>=10?'':t('Plays its best move {0}% of the time. ',L*10))+t(BOT_LADDER[L]);}
@@ -1780,7 +1781,7 @@ async function botTurn(me){
   const opts=[];
   if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&dronesOf(me).length>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
-  const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and shields can hit next turn
+  const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
   const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=2; // a siege two squares from an unguarded command drone: this turn must deal with it
@@ -1805,8 +1806,8 @@ async function botTurn(me){
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
       if(L>=6&&d.kind!=='X'&&threat.has(k))v-=8*d.power; // do not park where it can be taken next turn
       if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
-      if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60; // or a shield steps in beside it // the command drone never flees into a siege: beside one with no shield is the game
-      if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a shield stays beside the command drone
+      if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60; // or a guard steps in beside it // the command drone never flees into a siege: beside one with no guard is the game
+      if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a guard stays beside the command drone
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
@@ -1854,7 +1855,7 @@ function onCell(r,c){
     const want=Math.min(shotsLeft(sd),ammoOf(sd));
     if(aimList.length>=want){humanShots(sd,aimList.slice());return;}
     setStatus(t`${aimList.length} of ${want} aimed. Tap another target, or Fire now.`);renderBoard();renderActions();return;}
-  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to a cleared square on your side, not next to an enemy shield.'));return;}
+  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to a cleared square on your side, not next to an enemy guard.'));return;}
   if(mode==='turret'&&sd){if(canTurret(YOU)&&turretCells(YOU).some(([a,b])=>a===r&&b===c))humanTurret(r,c);else setStatus(t('A turret goes on an empty square you own.'));return;}
   if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus(t('That square is in the fog. Bring a drone next to it, or claim with a scout.'));return;}
   if(sd){const T=targets(sd);
@@ -1878,7 +1879,7 @@ const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
   return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
-// the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; shields and sieges ride nothing.
+// the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
 function renderBoard(gone,born,mark,fall){
   if(!S)return;if(S.tut)renderGuide();
@@ -1930,7 +1931,7 @@ function renderActions(){
     if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>`+t`Claim the 3 × 3 here (${claimGain(sd)} to take)`+'</button>');
     if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp">'+t('Warp')+'</button>');
     if(sd.kind==='M'&&canTurret(YOU)&&mode!=='turret')acts.push('<button data-a="turret" class="primary">'+t`Build a turret (${TURRET_COST} missiles)`+'</button>');
-    if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push('<button data-a="ram" class="danger">'+t`Ram the shield at ${sq(g.r,g.c)} (both lost)`+'</button>');}
+    if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push('<button data-a="ram" class="danger">'+t`Ram the guard at ${sq(g.r,g.c)} (both lost)`+'</button>');}
     if(mode==='confirm'&&pending)acts.push('<button data-a="ok" class="primary">'+t('Yes, stack them')+'</button>');
     acts.push('<button data-a="cancel">'+t('Cancel')+'</button>');
   }else if(mine&&sel&&sel.star)acts.push('<button data-a="cancel">'+t('Cancel')+'</button>');
@@ -1945,7 +1946,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(a==='firenow'){if(aimList.length)humanShots(sd,aimList.slice());}
   else if(a==='claim'){if(claimGain(sd))humanClaim(sd);}
   else if(a==='turret'){if(canTurret(YOU)){mode='turret';setStatus(t('Tap an empty square you own. The turret fires once a turn at any enemy drone beside it.'));renderBoard();renderActions();}}
-  else if(a==='warp'){mode='warp';setStatus(t('Tap a cleared square on your side to warp there. Not on or next to an enemy shield.'));renderBoard();renderActions();}
+  else if(a==='warp'){mode='warp';setStatus(t('Tap a cleared square on your side to warp there. Not on or next to an enemy guard.'));renderBoard();renderActions();}
   else if(a==='fire'){if(canFire(sd))humanFireSiege(sd);}
   else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
   else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
@@ -2019,7 +2020,7 @@ function coach(){
   // 8. the siege
   const x=mine.find(d=>d.kind==='X');
   if(x){const em=cmdOf(BOT);
-    if(!tutDone('siege'))return sd&&sd.id===x.id?L(t('Tap a marked square toward the top.'),t("It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no shield beside either of them, you win."),[...targets(x).keys()]):L(note+t`Tap your siege drone at ${sq(x.r,x.c)}.`,t`It is the other way to win: walk it next to the bot's Command drone, the M${em?t` at ${sq(em.r,em.c)}`:''}.`,[[x.r,x.c]],em?[{at:[x.r,x.c],label:t('your siege drone')},{at:[em.r,em.c],label:t("the bot's Command drone"),below:true}]:[{at:[x.r,x.c],label:t('your siege drone')}]);}
+    if(!tutDone('siege'))return sd&&sd.id===x.id?L(t('Tap a marked square toward the top.'),t("It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no guard beside either of them, you win."),[...targets(x).keys()]):L(note+t`Tap your siege drone at ${sq(x.r,x.c)}.`,t`It is the other way to win: walk it next to the bot's Command drone, the C${em?t` at ${sq(em.r,em.c)}`:''}.`,[[x.r,x.c]],em?[{at:[x.r,x.c],label:t('your siege drone')},{at:[em.r,em.c],label:t("the bot's Command drone"),below:true}]:[{at:[x.r,x.c],label:t('your siege drone')}]);}
   // 9. keep claiming, keep swapping
   if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L(t('Tap Claim.'),t`${claimGain(sc)} more squares.`,[[sc.r,sc.c]],[],'claim'):L(note+t`Tap your scout at ${sq(sc.r,sc.c)}.`,t`It can claim ${claimGain(sc)} squares. You hold ${landOf(YOU)} of ${S.win}.`,[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap, then Claim')}]);
   if(bs)return L(note+t('Tap the two stars with the arrows.'),(pays?t`They make ${bs.sh.spawns[0].label}, which pays a drone.`:t('Three in a line, nothing paid, but the board shifts.'))+t` You hold ${landOf(YOU)} of ${S.win}.`,[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
@@ -2035,7 +2036,7 @@ function renderCallouts(c){const b=$('board');for(const el of [...b.querySelecto
 function renderGuide(){const g=$('guide');const c=coach();renderCallouts(c);
   if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>'+t('Coach')+'</b>'+(S.over.w===YOU?t('That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.'):t('That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.'));return;}g.hidden=true;return;}
   const me=SNAME[YOU];const last=S.log.find(l=>l.startsWith(me)&&!/nothing paid|rien gagné/.test(l))||S.log.find(l=>l.startsWith(me));
-  g.hidden=false;g.innerHTML='<div class="do"><b>'+t('Do')+'</b>'+c.text+'</div><div class="why"><b>'+t('Why')+'</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>'+t('Just now')+'</b>'+last+'</div>':'')+'<div class="goal"><b>'+t('The game')+'</b>'+t`You are trying to claim more of the sky than the bot: ${S.win} squares wins, or a siege drone standing next to the bot's Command drone. You own ${landOf(YOU)}, the bot owns ${landOf(BOT)}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the M, safe.`+'</div>';}
+  g.hidden=false;g.innerHTML='<div class="do"><b>'+t('Do')+'</b>'+c.text+'</div><div class="why"><b>'+t('Why')+'</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>'+t('Just now')+'</b>'+last+'</div>':'')+'<div class="goal"><b>'+t('The game')+'</b>'+t`You are trying to claim more of the sky than the bot: ${S.win} squares wins, or a siege drone standing next to the bot's Command drone. You own ${landOf(YOU)}, the bot owns ${landOf(BOT)}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the C, safe.`+'</div>';}
 function tutAdvance(what,d,extra){if(!S||!S.tut)return;
   if(tutDone('claim')&&what!=='claim')tutMark('claimnote');
   if(what==='move'){tutMark('move');if(d&&d.kind!=='C')tutMark('drone');if(extra==='take')tutMark('take');if(extra==='merge')tutMark('stack');if(d&&d.kind==='X')tutMark('siege');}
@@ -2048,26 +2049,26 @@ function tutOnSelect(){}
 const WHY={
 swap:'Line up 4 or more stars and a drone is born where the line was. 3 in a line only clears.',
 born_C:'4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.',
-born_G:'A 2 × 2 block makes a shield. A shield guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or shield by moving next to it.',
+born_G:'A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.',
 born_S:'A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.',
 born_H:'A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.',
 born_W:'A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.',
-born_X:'A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no shield beside either, it wins the game.',
+born_X:'A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.',
 born_B:'A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.',
 move_C:'Scouts move 1 square any way, or ride their own star color for free.',
-move_G:'Shields move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and shields they stop next to on your land.',
+move_G:'Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.',
 move_S:'Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.',
 move_H:'Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.',
 move_W:'Warp drones walk 1 square, or warp: tap one and choose Warp.',
-move_X:'Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no shield beside, the game is won.',
+move_X:'Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.',
 move_B:'Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.',
 move_M:'The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.',
 take:'Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.',
-sweep:'A shield takes an enemy scout, hunter, warp or shield by moving next to it on your land. Every take earns a missile for your Command drone.',
+sweep:'A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.',
 stack:'Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.',
 claim:'A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.',
 warp:'A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.',
-ram:'A siege can ram the shield in its way. Both are gone.',
+ram:'A siege can ram the guard in its way. Both are gone.',
 fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.',
 fire_hit:'A missile takes one power off a drone. A stack takes one hit per power.',
 fire_m:'Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.',
@@ -2078,7 +2079,7 @@ drift:'Clear 8 or more stars on your side in one turn and every asteroid drifts 
 surround:'Four enemy drones around a siege destroy it.',
 nopay:'A shape pays only when part of it is on your side, and not on the other side\'s land.',
 reshuffle:'When no swap is left anywhere, the stars are reshuffled.',
-turret:'A Command drone holding 10 missiles can spend them on a turret: tap the M, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.',
+turret:'A Command drone holding 10 missiles can spend them on a turret: tap the C, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.',
 fire_t:'Missiles bounce off a turret. A bomb, an asteroid, or a siege drone moving onto it ends it; the turret fires at a siege first, so only a stacked siege lives to reach it.',
 turret_fire:'A turret fires by itself at the start of its owner\'s turn, at one enemy drone in the 8 squares beside it, sieges first.',
 load:'Missiles live on the Command drone. A scout or hunter standing beside it loads up: one for a scout, two for a hunter. Walk back to reload.',
@@ -2088,7 +2089,7 @@ over:''};
 const WHY_SV={ // the same rules, told the Salvage way
 fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed. With Salvage on, the missile stays in the wreck until someone goes and gets it.',
 take:'Raiders take what they land on, except a siege. Landing on the drone means standing on its wreck, so that missile goes to your Command drone at once.',
-sweep:'A shield takes an enemy scout, hunter, warp or shield by moving next to it on your land. With Salvage on, the wreck lies beside the shield: step on it to get the missile.',
+sweep:'A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. With Salvage on, the wreck lies beside the guard: step on it to get the missile.',
 fire_clear:'A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. With Salvage on, missiles come from wrecks: go and stand on one.'};
 let explainShown=0,explainTimer=null;
 function clearExplainCalls(){for(const el of [...$('board').querySelectorAll('.callout.ex')])el.remove();}
@@ -2112,14 +2113,14 @@ try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}cat
 
 // ---------- tips ----------
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
-G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or shield by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.',
+G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.',
 H:'Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles.',
-W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy shield: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
-X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no shield beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A shield in the way: ram it and both are gone.',
+W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
+X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
-T:'A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and shields cannot take it. It does not count toward your drones.',
-M:'Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no shield near, or an asteroid landing on it, ends the game.'};
+T:'A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. It does not count toward your drones.',
+M:'Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no guard near, or an asteroid landing on it, ends the game.'};
 let tip=null;
 function showTip(d){if(!$('inTips').checked){$('dtip').hidden=true;return;}tip=d;const el=$('dtip');el.hidden=false;el.innerHTML=`<span class="x">×</span><b style="color:${d.side===YOU?'var(--you)':'var(--bot)'}">${cap(own(d.side,d.kind))}</b> ${t(TIPS[d.kind])}`;}
 $('dtip').addEventListener('click',e=>{if(e.target.classList.contains('x'))$('dtip').hidden=true;});
@@ -2189,7 +2190,7 @@ snapSkill();renderSkillNote();
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
 translateDOM(document.body);
-$('legend').innerHTML=['M','C','G','S','H','W','X','B','T'].map(k=>'<b>'+LETTER[k]+'</b> '+(LANG==='fr'?NOUN_FR[k][0]:TNAME[k])).join(' · ');
+$('legend').innerHTML=['M','C','G','S','H','W','X','B','T'].map(k=>'<span class="lg"><b>'+LETTER[k]+'</b> '+(LANG==='fr'?NOUN_FR[k][0]:TNAME[k])+'</span>').join(' · ');
 if(LANG==='fr')for(const a of document.querySelectorAll('a[href$="rules.html"]'))a.href=a.href.replace('rules.html','rules-fr.html');
 $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
@@ -2445,9 +2446,9 @@ const SECTORS=[
   lose:'Orion holds. The Hunter sends its regards. We\'ve put another Command drone on the pile for you.',
   pts:[[30,10],[70,10],[42,45],[50,47],[58,49],[25,90],[75,90]],lines:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]},
  {id:'cassiopeia',skill:30,name:'Cassiopeia',title:'The Queen',
-  brief:'Sector Cassiopeia. The Queen keeps shields, and her shields sweep. Step onto her land next to one and you\'re not coming back. The last Command drone we sent came back on a pike. We\'d like this one back in one piece.',
-  brag:'Walk onto my land. My shields will meet you.',
-  win:'Cassiopeia is ours. The Queen\'s shields are scrap. Good work, and I don\'t say that.',
+  brief:'Sector Cassiopeia. The Queen keeps guards, and her guards sweep. Step onto her land next to one and you\'re not coming back. The last Command drone we sent came back on a pike. We\'d like this one back in one piece.',
+  brag:'Walk onto my land. My guards will meet you.',
+  win:'Cassiopeia is ours. The Queen\'s guards are scrap. Good work, and I don\'t say that.',
   lose:'Cassiopeia holds. The Queen kept the pike. She\'s starting a collection.',
   pts:[[10,40],[30,70],[50,40],[70,70],[90,40]],lines:[[0,1],[1,2],[2,3],[3,4]]},
  {id:'draco',skill:40,name:'Draco',title:'The Dragon',
@@ -2481,10 +2482,10 @@ const SECTORS=[
   lose:'Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.',
   pts:[[50,10],[50,40],[50,70],[50,90],[20,45],[80,38]],lines:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
  {id:'andromeda',skill:90,name:'Andromeda',title:'The Chained',
-  brief:'Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a shield beside it. Always. Find the moment there isn\'t.',
+  brief:'Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a guard beside it. Always. Find the moment there isn\'t.',
   brag:'My Command drone has never been alone a day in its life.',
   win:'Andromeda is ours. The chain broke. One left, and it\'s the big one.',
-  lose:'Andromeda holds. The shield was there every time. Make it move.',
+  lose:'Andromeda holds. The guard was there every time. Make it move.',
   pts:[[10,70],[30,55],[55,45],[80,30],[95,20],[55,15]],lines:[[0,1],[1,2],[2,3],[3,4],[2,5]]},
  {id:'ursa',skill:100,name:'Ursa Major',title:'The Bear',
   brief:'Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.',
@@ -2517,7 +2518,7 @@ function skyFor(sec){let stars='';for(let i=0;i<70;i++){stars+=`<circle cx="${(M
   return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="#070a10"/>${stars}<g class="constel">${lines}${pts}</g></svg>`;}
 function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false;b.dataset.sec=sec.id;
   $('briefSky').innerHTML=skyFor(sec);$('briefName').textContent=t(sec.name);$('briefTitle').textContent=t(sec.title)+' · '+t('Skill {0}',sec.skill);
-  $('briefBoss').innerHTML=`<div class="dr s2 talk" style="border-color:${KCOL[3]}">${cmdSVG(BOT)}<b class="lt">M</b></div>`;
+  $('briefBoss').innerHTML=`<div class="dr s2 talk" style="border-color:${KCOL[3]}">${cmdSVG(BOT)}<b class="lt">${LETTER.M}</b></div>`;
   $('briefBrag').textContent='';$('briefWho').textContent=t('Dispatch');$('briefSpeak').classList.add('on');
   storyPlay(sec,'brief');
   typeOut($('briefText'),t(sec.brief),()=>{$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>$('briefBoss').classList.remove('speaking'));});}
