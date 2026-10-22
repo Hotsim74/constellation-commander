@@ -1195,6 +1195,13 @@ const FR={
 "{0}: the guard swept {1} at {2}: power {3}.": "{0} : le bouclier a balayé {1} en {2} : puissance {3}.",
 "swept": "balayé",
 "A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.": "Un pillard n'est pas pris par un balayage, mais un pillard empilé perd une puissance chaque fois qu'un bouclier vient se placer à côté de lui sur votre terrain. À puissance 1 il est à l'abri des boucliers et seuls les missiles, les bombes ou une prise peuvent l'achever.",
+"Tap one of the marked squares: {0}.": "Touchez une des cases marquées : {0}.",
+"a raider slides along a diagonal, as far as you like": "un pillard glisse le long d'une diagonale, aussi loin que vous voulez",
+"a hunter steps one square, plus free steps on any color": "un chasseur avance d'une case, plus des pas gratuits sur n'importe quelle couleur",
+"a warp drone walks one square, or warps with the button": "un drone de saut marche d'une case, ou saute avec le bouton",
+"a siege moves exactly one square": "un siège avance d'exactement une case",
+"a bomb walks one square or rides its color": "une bombe marche d'une case ou suit sa couleur",
+"Tap a marked square toward the top: a siege moves exactly one square, any direction.": "Touchez une case marquée vers le haut : un siège avance d'exactement une case, dans n'importe quelle direction.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1331,7 +1338,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.40.0';
+const VERSION='1.40.1';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1978,6 +1985,7 @@ function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderAct
 // Every step is two parts: DO this, and WHY. The goal of the game stays pinned under the coach's words
 // the whole game, and a "just now" line names what the player's last tap did. Lessons come once each,
 // in the order they first make sense; between lessons the coach keeps pointing at a good move.
+const MOVEHINT={S:'a raider slides along a diagonal, as far as you like',H:'a hunter steps one square, plus free steps on any color',W:'a warp drone walks one square, or warps with the button',X:'a siege moves exactly one square',B:'a bomb walks one square or rides its color'};
 function tutDone(k){return !!(S&&S.tutDone&&S.tutDone.includes(k));}
 function tutMark(k){if(!S||!S.tut)return;if(!S.tutDone)S.tutDone=[];if(!S.tutDone.includes(k))S.tutDone.push(k);}
 function bestSwap(){return validSwaps(YOU).sort((a,b)=>shapeValue(b.sh,YOU)-shapeValue(a.sh,YOU))[0]||null;}
@@ -2012,9 +2020,9 @@ function coach(){
     if(bs)return L(note+t('Tap the two stars with the arrows.'),t('Three in a line pays nothing, but it clears them and new stars fall in, which can set up a four.'),[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
     return L(note+t('No swap is open. Move a drone instead.'),t('The stars shift as the game goes on; a line will come.'),[]);}
   // 4. meet the new drone
-  const newest=mine.filter(d=>d.kind!=='G'&&d.kind!=='C'&&d.kind!=='M').sort((a,b)=>b.id-a.id)[0];
+  const newest=mine.filter(d=>d.kind!=='G'&&d.kind!=='C'&&d.kind!=='M'&&d.kind!=='T'&&d.id>8).sort((a,b)=>b.id-a.id)[0]; // born this game: the starting siege (ids 1-8) is not "new"
   if(!tutDone('drone')&&newest){
-    if(sd&&sd.id===newest.id)return L(note+t('Tap one of the marked squares.'),t`That is ${aname(newest.kind)}. ${t(TIPS[newest.kind]).split('.')[0]}. Red squares mean it takes the enemy drone there.`,[...targets(newest).keys()]);
+    if(sd&&sd.id===newest.id)return L(note+t`Tap one of the marked squares: ${t(MOVEHINT[newest.kind])}.`,t`That is ${aname(newest.kind)}. ${t(TIPS[newest.kind]).split('.')[0]}. Red squares mean it takes the enemy drone there.`,[...targets(newest).keys()]);
     return L(note+t`Tap your new ${TNAME[newest.kind]}, the ${LETTER[newest.kind]} at ${sq(newest.r,newest.c)}.`,t('Each kind of drone moves and fights its own way. Tapping one shows where it can go and tells you what it does.'),[[newest.r,newest.c]],[{at:[newest.r,newest.c],label:t`tap your new ${TNAME[newest.kind]}`}]);}
   // 5. fire a missile: at the bot's scout once it has walked up, else at an asteroid
   if(!tutDone('fire')&&mine.some(canShoot)){
@@ -2037,7 +2045,7 @@ function coach(){
   // 8. the siege
   const x=mine.find(d=>d.kind==='X');
   if(x){const em=cmdOf(BOT);
-    if(!tutDone('siege'))return sd&&sd.id===x.id?L(t('Tap a marked square toward the top.'),t("It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no guard beside either of them, you win."),[...targets(x).keys()]):L(note+t`Tap your siege drone at ${sq(x.r,x.c)}.`,t`It is the other way to win: walk it next to the bot's Command drone, the C${em?t` at ${sq(em.r,em.c)}`:''}.`,[[x.r,x.c]],em?[{at:[x.r,x.c],label:t('your siege drone')},{at:[em.r,em.c],label:t("the bot's Command drone"),below:true}]:[{at:[x.r,x.c],label:t('your siege drone')}]);}
+    if(!tutDone('siege'))return sd&&sd.id===x.id?L(t('Tap a marked square toward the top: a siege moves exactly one square, any direction.'),t("It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no guard beside either of them, you win."),[...targets(x).keys()]):L(note+t`Tap your siege drone at ${sq(x.r,x.c)}.`,t`It is the other way to win: walk it next to the bot's Command drone, the C${em?t` at ${sq(em.r,em.c)}`:''}.`,[[x.r,x.c]],em?[{at:[x.r,x.c],label:t('your siege drone')},{at:[em.r,em.c],label:t("the bot's Command drone"),below:true}]:[{at:[x.r,x.c],label:t('your siege drone')}]);}
   // 9. keep claiming, keep swapping
   if(sc&&claimGain(sc)>=5)return sd&&sd.id===sc.id?L(t('Tap Claim.'),t`${claimGain(sc)} more squares.`,[[sc.r,sc.c]],[],'claim'):L(note+t`Tap your scout at ${sq(sc.r,sc.c)}.`,t`It can claim ${claimGain(sc)} squares. You hold ${landOf(YOU)} of ${S.win}.`,[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap, then Claim')}]);
   if(bs)return L(note+t('Tap the two stars with the arrows.'),(pays?t`They make ${bs.sh.spawns[0].label}, which pays a drone.`:t('Three in a line, nothing paid, but the board shifts.'))+t` You hold ${landOf(YOU)} of ${S.win}.`,[bs.a,bs.b],[{at:bs.a,label:t('1. tap')},{at:bs.b,label:t('2. tap')}]);
