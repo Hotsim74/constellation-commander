@@ -279,7 +279,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <span class="lbl">Play a friend</span>
   <div class="netrow"><span class="acthint">Playing as</span><input type="text" id="inNetName" maxlength="12" placeholder="your name" style="width:150px"></div>
   <div class="acthint" id="netstat" style="max-width:80ch"></div>
-  <div class="netrow"><button type="button" id="btnHost" class="primary">I'm ready to play</button><button type="button" id="btnLeave" class="danger" hidden>Leave the match</button></div>
+  <div class="netrow"><button type="button" id="btnHost" class="primary">I'm ready to play</button><button type="button" id="btnLeave" class="danger" hidden>Leave the match</button><button type="button" id="btnRejoin" class="primary" hidden>Rejoin your last match</button><button type="button" id="btnReconnect" hidden>Reconnect</button></div>
   <div id="lobbyWrap"><span class="lbl" style="display:block;margin-top:10px">Waiting to play · tap a name</span><div class="netrow" id="lobby"></div></div>
   <div id="codeWrap" class="netrow" hidden><input type="text" id="inCode" maxlength="4" placeholder="CODE" style="width:92px;text-transform:uppercase;letter-spacing:.2em"><button type="button" id="btnJoin">Join with code</button></div>
 </div>
@@ -1180,6 +1180,18 @@ const FR={
 "Connected to {0}. {1}'s turn.": "Connecté à {0}. Au tour de {1}.",
 "{0} · {1} of 9 sectors · {2} games, {3} won": "{0} · {1} secteurs sur 9 · {2} parties, {3} gagnées",
 "Bot skill set to {0} from here on.": "Niveau du bot réglé à {0} à partir de maintenant.",
+"Rejoin your last match": "Reprendre ma dernière partie",
+"Reconnect": "Reconnecter",
+"Reconnecting…": "Reconnexion…",
+"Connection lost. Reconnecting…": "Connexion perdue. Reconnexion…",
+"Your last match may still be going. Tap Rejoin to get back into it.": "Votre dernière partie est peut-être encore en cours. Touchez Reprendre pour y revenir.",
+"Playing now · tap to watch": "En cours · touchez pour regarder",
+"{0} against {1} · {2}": "{0} contre {1} · {2}",
+"That game is gone.": "Cette partie n'existe plus.",
+"Watching {0} against {1}.": "Vous regardez {0} contre {1}.",
+"Watching {0} against {1}. {2}'s turn.": "Vous regardez {0} contre {1}. Au tour de {2}.",
+"Watching": "Vous regardez",
+"Stop watching": "Arrêter de regarder",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1316,7 +1328,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.38.0';
+const VERSION='1.39.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1383,7 +1395,7 @@ function layOpening(){
   S.asteroids={1:TUT_ROWS.join('').split('R').length-1,2:S.asteroids[2]};S.tutSwap=TUT_SWAP;
 }
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
-function save(){try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}}
+function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
 function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w)(S.ev||(S.ev=[])).push(Object.assign({text:t},w));}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
@@ -1843,7 +1855,7 @@ async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;
 // ---------- input ----------
 let peek=null; // an enemy drone whose reach is being shown
 function onCell(r,c){
-  if(busy||!S||S.over||S.turn!==YOU)return;
+  if(busy||!S||S.over||S.turn!==YOU||netSpec())return;
   const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
   if(!(d&&d.side===BOT))peek=null;clearExplainCalls();
   if(mode==='confirm'){mode=null;pending=null;}
@@ -1923,7 +1935,7 @@ function renderSide(){
 }
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
 function renderActions(){
-  const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy;
+  const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy&&!netSpec();
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(mine&&sd){
     if(canShoot(sd)&&mode!=='aim')acts.push('<button data-a="aim">'+t`Fire missile${shotsOf(sd)===2?'s':''} (${ammoOf(sd)} loaded)`+'</button>');
@@ -1953,8 +1965,8 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();renderExplain();
-  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=S.over.w===YOU?t('You win'):(online&&net)?t`${SNAME[BOT]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
-  else{ov.classList.remove('show');if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus((online&&net&&net.opp)?t`Connected to ${SNAME[BOT]}. Your turn.`:t('Your move.'));}else setStatus((online&&net)?t`Connected to ${SNAME[BOT]}. ${SNAME[BOT]}'s turn.`:t('The bot is thinking…'));}
+  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=(S.over.w===YOU&&!netSpec())?t('You win'):(online&&net)?t`${SNAME[S.over.w]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
+  else{ov.classList.remove('show');if(netSpec())setStatus(t`Watching ${SNAME[1]} against ${SNAME[2]}. ${SNAME[S.turn]}'s turn.`);else if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus((online&&net&&net.opp)?t`Connected to ${SNAME[BOT]}. Your turn.`:t('Your move.'));}else setStatus((online&&net)?t`Connected to ${SNAME[BOT]}. ${SNAME[BOT]}'s turn.`:t('The bot is thinking…'));}
   netPush();}
 
 // ---------- the coach: a whole first game, one suggestion at a time ----------
@@ -2133,7 +2145,7 @@ const botRating=s=>800+12*s;
 const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.floor(Math.abs(rA-rB)/ROCK_PTS);let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
-function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}
+function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}
   const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
@@ -2148,7 +2160,7 @@ setInterval(()=>{if(!S||S.over||S.tut||busy||online||S.turn!==YOU||hintShow||S.s
   const bs=bestSwap();if(!bs){hintAt=Date.now();return;}hintShow=[bs.a,bs.b];renderBoard();if(!sel&&!mode)setStatus(t('Stuck? The two green stars make a line.'));},1000);
 
 // ---------- clocks ----------
-setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;if(netGuest())return;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
+setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;if(netGuest()||netSpec())return;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
   if((tn===YOU||netHostOn())&&!netGuest()&&S.moveLeft>0){S.moveLeft-=250;if(S.moveLeft<=0){note(t('You ran out of move time. Turn passes.'));sel=null;mode=null;afterAction();return;}}
   $('ck1').textContent=fmt(S.clock[1]);$('ck2').textContent=fmt(S.clock[2]);},250);
 setInterval(()=>{if(S)save();},3000);
@@ -2169,7 +2181,7 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
 // copy or share: the phone's share sheet when there is one, else the clipboard, else a box to copy from. A finished game is kept so New game never loses it.
 async function copyText(txt){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
   try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();}
-function keepLastGame(){if(!S||!S.over)return;try{localStorage.setItem('cc_lastgame',gameText());}catch(_){}$('btnCopyLast').hidden=false;}
+function keepLastGame(){if(!S||!S.over||netSpec())return;try{localStorage.setItem('cc_lastgame',gameText());}catch(_){}$('btnCopyLast').hidden=false;}
 $('btnCopy').addEventListener('click',()=>copyText(gameText()));
 $('btnCopyOver').addEventListener('click',e=>{e.stopPropagation();copyText(gameText());});
 $('btnCopyLast').addEventListener('click',()=>{let s='';try{s=localStorage.getItem('cc_lastgame')||'';}catch(_){}if(s)copyText(s);});
@@ -2277,6 +2289,9 @@ const lobbyUrl=code=>`${NET_BASE}/lobby${code?'/'+code:''}.json`;
 // a player's card on the wire: rating, story sectors held, bot games played and won (the user: so you know who you are playing)
 const myCard=()=>({r:prof.r,g:prof.g,w:prof.w,st:(typeof story!=='undefined'&&story&&story.won)?Object.keys(story.won).length:0});
 const cardText=x=>t`${x.r||BASE_R} · ${x.st||0} of 9 sectors · ${x.g||0} games, ${x.w||0} won`;
+const netSpec=()=>!!(online&&net&&net.role==='spec'); // watching a game: no input, no saving, no rating
+let netPending=null; // a match we could not reach at boot (flaky line): offered as Rejoin, never forgotten for that
+const LIVE_MAX_AGE=4*3600e3;
 const netGuest=()=>!!(online&&net&&net.role==='guest');
 const netHostOn=()=>!!(online&&net&&net.role==='host');
 const mrow=r=>N-1-r,mkey=k=>mrow(Math.floor(k/N))*N+k%N,mside=x=>x===1?2:x===2?1:x;
@@ -2325,7 +2340,8 @@ function netStartGame(){ // the guest is in: asteroids from both ratings, a fres
   note(t`Connected: ${SNAME[YOU]} (${prof.r}) against ${SNAME[BOT]} (${net.oppR}). Asteroids ${r1} to ${r2}.`);note(t`${SNAME[YOU]} moves first.`);
   save();renderAll();netPush(true);
 }
-function netPush(force){if(!netHostOn()||!S||!net.started)return;const js=JSON.stringify(S);if(!force&&js===net.lastState)return;net.lastState=js;net.seq++;netWrite({state:js,seq:net.seq,acked:net.acked,p_h:{'.sv':'timestamp'}});}
+function netPush(force){if(!netHostOn()||!S||!net.started)return;const js=JSON.stringify(S);if(!force&&js===net.lastState)return;net.lastState=js;net.seq++;netWrite({state:js,seq:net.seq,acked:net.acked,p_h:{'.sv':'timestamp'}});
+  if(S.over&&!net.lobbyDone){net.lobbyDone=true;fetch(lobbyUrl(net.code),{method:'DELETE'}).catch(()=>{});}}
 const byId=id=>S.drones.find(x=>x.id===id);
 async function netApplyAct(a){ // the guest's action, in the host's frame; the guest is side 2 here
   if(!S||!a)return;const me=BOT;
@@ -2382,7 +2398,8 @@ async function netRefetch(){if(!net)return;try{const r=await fetch(netUrl(net.co
 function netHandle(o){if(!net||!o)return;
   if(o.host&&net.role==='guest'){net.opp=o.host.n||t('Host');net.oppR=o.host.r||BASE_R;net.oppCard=cardText(o.host);SNAME[BOT]=net.opp;}
   if(o.guest&&net.role==='host'&&o.guest.u!==net.uid){const first=!net.opp;net.opp=o.guest.n||t('Friend');net.oppR=o.guest.r||BASE_R;net.oppCard=cardText(o.guest);SNAME[BOT]=net.opp;
-    if(first)fetch(lobbyUrl(net.code),{method:'DELETE'}).catch(()=>{});if(!net.started)netStartGame();else netPush(true);}
+    if(first)fetch(lobbyUrl(net.code),{method:'PATCH',body:JSON.stringify({live:1,n2:net.opp,t:Date.now()})}).catch(()=>{});if(!net.started)netStartGame();else netPush(true);}
+  if(net.role==='spec'){if(o.host)SNAME[1]=o.host.n||SNAME[1];if(o.guest)SNAME[2]=o.guest.n||SNAME[2];if(o.state&&(o.seq==null||o.seq!==net.seq)){if(o.seq!=null)net.seq=o.seq;specTake(o.state);}if(o.left)net.err=t('{0} left the match.',o.left==='host'?SNAME[1]:SNAME[2]);}
   if(o.p_h!=null&&net.role==='guest')net.oppSeen=o.p_h;if(o.p_g!=null&&net.role==='host')net.oppSeen=o.p_g;
   if(o.act&&net.role==='host'&&o.act.seq>net.acked){net.acked=o.act.seq;netApplyAct(o.act);}
   if(o.state&&net.role==='guest'&&(o.seq==null||o.seq!==net.seq)){if(o.seq!=null)net.seq=o.seq;netTakeState(o.state);}
@@ -2393,19 +2410,24 @@ function netOppLeft(){if(!net)return;
   else{if(S&&!S.over){S.over={w:YOU,reason:t`${SNAME[BOT]} left the match.`};note(t`Game over. ${who(YOU)} win${''}. ${S.over.reason}`);rateGame(YOU);save();renderAll();}}
   net.err=t('{0} left the match.',SNAME[BOT]);}
 async function netLeave(){if(!net)return;const n=net;
+  if(n.role==='spec'){if(n.es)n.es.close();online=false;net=null;Object.assign(SNAME,SNAME0);S=n.prevS||null;if(!S)newGame();else{sel=null;mode=null;busy=false;renderAll();}renderWait();renderNet();return;}
   if(n.role==='host'){fetch(lobbyUrl(n.code),{method:'DELETE'}).catch(()=>{});if(n.started&&S&&!S.over&&S.turnNo>2){gameOver(BOT,t`${SNAME[YOU]} left the match.`);save();renderAll();netPush(true);}await netWrite({left:'host'});}
   else{if(S&&!S.over&&S.turnNo>2)await netWrite({act:{type:'resign',seq:Date.now()}});await netWrite({left:'guest'});}
   if(n.es)n.es.close();online=false;net=null;netForget();Object.assign(SNAME,SNAME0);note(t('Left the match.'));renderWait();renderNet();newGame();
 }
 async function netResume(){let info=null;try{info=JSON.parse(localStorage.getItem(NET_KEY)||'null');}catch(_){}if(!info||!info.code)return false;
-  let doc=null;try{const r=await fetch(netUrl(info.code));if(r.ok)doc=await r.json();}catch(_){}
-  if(!doc||!doc.host||doc.v!==VERSION||Date.now()-(doc.t||0)>12*3600e3||doc.left){netForget();return false;}
+  let doc=null,failed=false;try{const r=await fetch(netUrl(info.code));if(r.ok)doc=await r.json();else if(r.status>=500)failed=true;}catch(_){failed=true;}
+  if(failed){netPending=info;renderNet();return false;}
+  netPending=null;if(!doc||!doc.host||doc.v!==VERSION||Date.now()-(doc.t||0)>12*3600e3||doc.left){netForget();return false;}
   netStart(info.role,info.code,info.name||t('Player'));net.uid=info.uid||net.uid;$('inName').value=net.name;SNAME[YOU]=net.name;
   if(net.role==='host'){net.acked=doc.acked||0;net.seq=doc.seq||0;net.started=!!doc.state;if(doc.guest){net.opp=doc.guest.n;net.oppR=doc.guest.r||BASE_R;}SNAME[BOT]=net.opp||t('Friend');
     if(!S&&doc.state){try{S=JSON.parse(doc.state);}catch(_){}}if(S&&S.over)net.rated=true;net.live=true;if(net.started)netPush(true);}
   else{net.opp=doc.host.n;net.oppR=doc.host.r||BASE_R;SNAME[BOT]=net.opp;net.live=true;if(doc.state){net.seq=doc.seq||0;if(S&&S.over)net.rated=true;netTakeState(doc.state);}}
   netListen();renderWait();renderNet();return true;}
-setInterval(()=>{if(!online||!net||!net.live)return;netWrite({['p_'+net.role[0]]:{'.sv':'timestamp'}});},5000);
+setInterval(()=>{if(!online||!net||!net.live||net.role==='spec')return;netWrite({['p_'+net.role[0]]:{'.sv':'timestamp'}});},5000);
+setInterval(()=>{if(online&&net&&net.live&&net.es&&net.es.readyState===2)netListen();},3000); // the stream closed for good: open it again
+window.addEventListener('online',()=>{if(online&&net&&net.live){netListen();netRefetch();if(netHostOn())netPush(true);}});
+function netReconnect(){if(!online||!net)return;net.err=t('Reconnecting…');netListen();netRefetch();if(netHostOn())netPush(true);renderNet();}
 setInterval(()=>{if(netGuest()&&net.pending&&Date.now()-net.pending>NET_WAIT_MS){net.pending=null;busy=false;renderAll();setStatus(t('No answer from the host yet. Try again.'));}
   if(online&&net)renderNet();},1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&net&&net.live&&(!net.es||net.es.readyState===2))netListen();});
@@ -2414,24 +2436,40 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&online&&n
 async function lobbyRefresh(){const el=$('lobby');if(online){el.innerHTML='';return;}let d=null;
   try{const r=await fetch(lobbyUrl());if(!r.ok)throw 0;d=await r.json();lobbyOff=false;}catch(e){lobbyOff=true;$('codeWrap').hidden=false;el.innerHTML='<span class="acthint">'+t('The lobby is switched off until the database rules are published. Until then, one phone taps I\'m ready and reads out the code it gets; the other types it here.')+'</span>';return;}
   $('codeWrap').hidden=true;const uid=myUid(),now=Date.now();
-  const list=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE&&/^[A-Z]{4}$/.test(x.code)).sort((a,b)=>(b.t||0)-(a.t||0));
-  if(!list.length){el.innerHTML='<span class="acthint">'+t('Nobody is waiting right now. Tap I\'m ready to play and your name goes on this list for the next person who opens it.')+'</span>';return;}
-  el.innerHTML=list.map(x=>{const m=Math.round((now-(x.t||0))/60000);const age=m<1?t('just now'):t('{0} min ago',m);const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${(x.n||'?').replace(/[<>&]/g,'')} · ${cardText(x)} · ${age}${old}</button>`;}).join('');}
+  const all=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&/^[A-Z]{4}$/.test(x.code));
+  const list=all.filter(x=>!x.live&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE).sort((a,b)=>(b.t||0)-(a.t||0));
+  const live=all.filter(x=>x.live&&x.u!==uid&&now-(x.t||0)<LIVE_MAX_AGE).sort((a,b)=>(b.t||0)-(a.t||0));
+  const esc=s=>String(s||'?').replace(/[<>&]/g,'');const ageOf=x=>{const m=Math.round((now-(x.t||0))/60000);return m<1?t('just now'):t('{0} min ago',m);};
+  let h=list.length?list.map(x=>{const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${esc(x.n)} · ${cardText(x)} · ${ageOf(x)}${old}</button>`;}).join(''):'<span class="acthint">'+t('Nobody is waiting right now. Tap I\'m ready to play and your name goes on this list for the next person who opens it.')+'</span>';
+  if(live.length)h+='<span class="lbl" style="display:block;width:100%;margin-top:8px">'+t('Playing now · tap to watch')+'</span>'+live.map(x=>`<button type="button" data-watch="${x.code}" ${x.v!==VERSION?'disabled':''}>${t('{0} against {1} · {2}',esc(x.n),esc(x.n2),ageOf(x))}</button>`).join('');
+  el.innerHTML=h;}
+// ----- spectators: read the match, show the board as the host sees it, touch nothing
+async function netSpectate(code){if(online)return;netStatus(t('Looking for the match…'));let doc=null;
+  try{const r=await fetch(netUrl(code));if(!r.ok)throw 0;doc=await r.json();}catch(e){netStatus(t('Could not reach the match server.'));return;}
+  if(!doc||!doc.host){netStatus(t('That game is gone.'));return;}
+  netStart('spec',code,myName()||'Watcher');net.prevS=S;net.live=true;SNAME[1]=doc.host.n||'?';SNAME[2]=doc.guest?doc.guest.n:'?';net.opp=SNAME[1];
+  if(doc.state){net.seq=doc.seq||0;specTake(doc.state);}else{S=null;}
+  netListen();renderWait();renderNet();}
+function specTake(js){let s;try{s=JSON.parse(js);}catch(_){return;}S=s;net.started=true;busy=false;sel=null;mode=null;pending=null;aimList=[];renderAll();}
 function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(online&&net);
   $('btnHost').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inNetName').disabled=on;$('inName').disabled=on;if(on)$('codeWrap').hidden=true;
-  if(!on){netStatus(t('Type your name, then tap the name of the person you want to play. Nobody there? Tap I\'m ready to play and wait for someone to tap yours.'));return;}
+  $('btnRejoin').hidden=on||!netPending;$('btnReconnect').hidden=!on||!(net.err||(net.oppSeen&&Date.now()-net.oppSeen>45000));$('btnLeave').textContent=on&&net.role==='spec'?t('Stop watching'):t('Leave the match');
+  if(!on){netStatus(netPending?t('Your last match may still be going. Tap Rejoin to get back into it.'):t('Type your name, then tap the name of the person you want to play. Nobody there? Tap I\'m ready to play and wait for someone to tap yours.'));return;}
+  if(net.role==='spec'){netStatus(t`Watching ${SNAME[1]} against ${SNAME[2]}.`+(S&&!S.over?' '+t`${SNAME[S.turn]}'s turn.`:'')+(net.err?' · '+net.err:''));return;}
   if(!net.opp){netStatus(t('Your name is on the list. Waiting for someone to tap it…')+(lobbyOff?' '+t('The lobby is switched off, so read out this code instead: {0}.',net.code):''));return;}
   const seen=net.oppSeen?Math.round((Date.now()-net.oppSeen)/1000):null;
   const turn=S&&!S.over?(S.turn===YOU?t('Your turn.'):t`${net.opp}'s turn.`):'';
   const stale=seen!=null&&seen>=20?' '+t('{0} last seen {1} ago.',net.opp,seen<120?t('{0} s',seen):t('{0} min',Math.round(seen/60))):'';
-  netStatus(t`Connected to ${net.opp}.`+' '+turn+stale+(net.oppCard?' · '+net.oppCard:'')+(net.err?' · '+net.err:''));}
+  const line=net.err?t('Connection lost. Reconnecting…')+' ':'';
+  netStatus(line+t`Connected to ${net.opp}.`+' '+turn+stale+(net.oppCard?' · '+net.oppCard:''));}
 function renderWait(){const el=$('netwait');const w=!!(online&&net&&!net.started);el.classList.toggle('show',w);if(!w)return;
-  $('netwaitTitle').textContent=net.role==='host'?t('Waiting for a friend'):t`Joined ${SNAME[BOT]}'s match`;
+  $('netwaitTitle').textContent=net.role==='host'?t('Waiting for a friend'):net.role==='spec'?t('Watching'):t`Joined ${SNAME[BOT]}'s match`;
   $('netwaitText').innerHTML=net.role==='host'?(t('Your name is on the list. When someone taps it, the game starts here.')+(lobbyOff?'<br>'+t('The lobby is switched off, so read out this code instead: {0}.','<b style="font-family:var(--mono);letter-spacing:.2em">'+net.code+'</b>'):'')):t('Waiting for the host to start…');}
 $('btnNet').addEventListener('click',()=>{$('netbox').hidden=!$('netbox').hidden;if(!$('inNetName').value)$('inNetName').value=prof.n||'';renderNet();lobbyRefresh();});
 $('inNetName').addEventListener('change',()=>{prof.n=$('inNetName').value.trim().slice(0,12);$('inName').value=prof.n;saveProf();renderRecord();});
 $('btnHost').addEventListener('click',netHost);$('btnJoin').addEventListener('click',()=>netJoin());$('btnLeave').addEventListener('click',netLeave);$('btnNetCancel').addEventListener('click',netLeave);
-$('lobby').addEventListener('click',e=>{const b=e.target.closest('button[data-join]');if(b&&!b.disabled)netJoin(b.dataset.join);});
+$('lobby').addEventListener('click',e=>{const b=e.target.closest('button[data-join],button[data-watch]');if(!b||b.disabled)return;if(b.dataset.join)netJoin(b.dataset.join);else netSpectate(b.dataset.watch);});
+$('btnRejoin').addEventListener('click',()=>{netResume();});$('btnReconnect').addEventListener('click',netReconnect);
 setInterval(()=>{if(!$('netbox').hidden&&!online)lobbyRefresh();},8000);
 // ---------- story mode (v1.27, the user's Punch-Out idea). Nine sectors, each a constellation, skill 20 up
 // to 100 by tens. A dispatcher sends you in with a briefing, the sector's boss brags about the one thing
