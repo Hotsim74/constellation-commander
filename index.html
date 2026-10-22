@@ -1339,7 +1339,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.40.2';
+const VERSION='1.40.3';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1796,7 +1796,8 @@ async function botTurn(me){
       for(const sh of dronesOf(me).filter(canShoot)){
         for(let r=Math.max(0,sh.r-range());r<=Math.min(N-1,sh.r+range());r++)for(let c=Math.max(0,sh.c-range());c<=Math.min(N-1,sh.c+range());c++){
           if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
-          if(o&&o.side===him)v=(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0);
+          if(o&&o.side===him&&(o.kind==='T'||(o.kind==='M'&&o.power<=1)))continue; // missiles bounce off turrets and a lone Command drone: never waste one there
+          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
           else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
           else continue;
           if(!best||v>best.v)best={r,c,v,sh};}}
