@@ -1192,6 +1192,9 @@ const FR={
 "Watching {0} against {1}. {2}'s turn.": "Vous regardez {0} contre {1}. Au tour de {2}.",
 "Watching": "Vous regardez",
 "Stop watching": "Arrêter de regarder",
+"{0}: the guard swept {1} at {2}: power {3}.": "{0} : le bouclier a balayé {1} en {2} : puissance {3}.",
+"swept": "balayé",
+"A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.": "Un pillard n'est pas pris par un balayage, mais un pillard empilé perd une puissance chaque fois qu'un bouclier vient se placer à côté de lui sur votre terrain. À puissance 1 il est à l'abri des boucliers et seuls les missiles, les bombes ou une prise peuvent l'achever.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1328,7 +1331,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.39.0';
+const VERSION='1.40.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1631,7 +1634,9 @@ function landed(d){
   if(!S.drones.includes(d))return;
   salvageAt(d.side,d.r,d.c);
   if(d.kind==='M')reload(d.side);else loadShooter(d);
-  if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(e&&e.side!==d.side&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===d.side)takeDrone(d.side,e,t('by moving beside it'),d);}}
+  if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(!e||e.side===d.side||S.own[key(e.r,e.c)]!==d.side)continue;
+    if(SWEEPS.includes(e.kind))takeDrone(d.side,e,t('by moving beside it'),d);
+    else if(e.kind==='S'&&e.power>1){e.power--;if(e.colors.length>e.power)e.colors=e.colors.slice(0,e.power);queueHit(e.r,e.c);note(t`${who(d.side)}: the guard swept ${own(e.side,'S')} at ${sq(e.r,e.c)}: power ${e.power}.`,{why:'sweep_s',at:[[e.r,e.c]],lab:[t('swept')]});}}} // v1.40: a stacked raider loses one power to a sweep; a lone raider is not swept
 }
 function applyMove(d,r,c){
   if(d.kind==='S'){ // a slide: it stops at the first thing it meets, seen or not
@@ -1812,7 +1817,7 @@ async function botTurn(me){
       if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
       if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
-      if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&SWEEPS.includes(e.kind)&&S.own[key(e.r,e.c)]===me)v+=12*e.power;}}
+      if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&S.own[key(e.r,e.c)]===me){if(SWEEPS.includes(e.kind))v+=12*e.power;else if(e.kind==='S'&&e.power>1)v+=5;}}}
       if((d.kind==='S'||d.kind==='H')&&L>=5)v+=0.75*(dist(d.r,d.c)-dist(r,c));
       if(kind==='dark')v-=1;
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
@@ -2077,6 +2082,7 @@ move_B:'Bombs move 1 square or ride their color. Keep your own drones out of the
 move_M:'The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.',
 take:'Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.',
 sweep:'A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.',
+sweep_s:'A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.',
 stack:'Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.',
 claim:'A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.',
 warp:'A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.',
