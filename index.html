@@ -1202,6 +1202,7 @@ const FR={
 "a siege moves exactly one square": "un siège avance d'exactement une case",
 "a bomb walks one square or rides its color": "une bombe marche d'une case ou suit sa couleur",
 "Tap a marked square toward the top: a siege moves exactly one square, any direction.": "Touchez une case marquée vers le haut : un siège avance d'exactement une case, dans n'importe quelle direction.",
+"I am the voice from the map: I say where to turn, you drive. Go your own way any time and I will find a new route from wherever you end up.": "Je suis la voix du GPS : je dis où tourner, c'est vous qui conduisez. Prenez votre propre chemin quand vous voulez et je trouverai une nouvelle route depuis là où vous serez.",
 "Stuck? The two green stars make a line.": "Bloqué ? Les deux étoiles vertes font une ligne.",
 "You win": "Vous gagnez",
 "The bot wins": "Le bot gagne",
@@ -1338,7 +1339,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.40.1';
+const VERSION='1.40.2';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -2061,7 +2062,7 @@ function renderCallouts(c){const b=$('board');for(const el of [...b.querySelecto
 function renderGuide(){const g=$('guide');const c=coach();renderCallouts(c);
   if(!c){if(S&&S.tut&&S.over){g.hidden=false;g.innerHTML='<b>'+t('Coach')+'</b>'+(S.over.w===YOU?t('That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.'):t('That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.'));return;}g.hidden=true;return;}
   const me=SNAME[YOU];const last=S.log.find(l=>l.startsWith(me)&&!/nothing paid|rien gagné/.test(l))||S.log.find(l=>l.startsWith(me));
-  g.hidden=false;g.innerHTML='<div class="do"><b>'+t('Do')+'</b>'+c.text+'</div><div class="why"><b>'+t('Why')+'</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>'+t('Just now')+'</b>'+last+'</div>':'')+'<div class="goal"><b>'+t('The game')+'</b>'+t`You are trying to claim more of the sky than the bot: ${S.win} squares wins, or a siege drone standing next to the bot's Command drone. You own ${landOf(YOU)}, the bot owns ${landOf(BOT)}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the C, safe.`+'</div>';}
+  g.hidden=false;g.innerHTML=(tutDone('swap')?'':'<div class="just"><b>'+t('Coach')+'</b>'+t('I am the voice from the map: I say where to turn, you drive. Go your own way any time and I will find a new route from wherever you end up.')+'</div>')+'<div class="do"><b>'+t('Do')+'</b>'+c.text+'</div><div class="why"><b>'+t('Why')+'</b>'+(c.why||'')+'</div>'+(last&&tutDone('swap')?'<div class="just"><b>'+t('Just now')+'</b>'+last+'</div>':'')+'<div class="goal"><b>'+t('The game')+'</b>'+t`You are trying to claim more of the sky than the bot: ${S.win} squares wins, or a siege drone standing next to the bot's Command drone. You own ${landOf(YOU)}, the bot owns ${landOf(BOT)}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the C, safe.`+'</div>';}
 function tutAdvance(what,d,extra){if(!S||!S.tut)return;
   if(tutDone('claim')&&what!=='claim')tutMark('claimnote');
   if(what==='move'){tutMark('move');if(d&&d.kind!=='C')tutMark('drone');if(extra==='take')tutMark('take');if(extra==='merge')tutMark('stack');if(d&&d.kind==='X')tutMark('siege');}
