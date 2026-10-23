@@ -264,7 +264,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
-  <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> on the start screen</label></div>
+  <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
@@ -1073,7 +1073,7 @@ const FR={
 "Story": "Histoire",
 "Story mode": "Mode histoire",
 "Music": "Musique",
-"on the start screen": "sur l'écran d'accueil",
+"follows the game": "suit la partie",
 "Sound": "Son",
 "sound effects and story voices": "effets sonores et voix de l'histoire",
 "Copy this game": "Copier cette partie",
@@ -1349,7 +1349,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.49.0';
+const VERSION='1.50.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -2602,7 +2602,7 @@ const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||null;
 const soundOn=()=>{try{return localStorage.getItem('cc_sound')!=='0';}catch(_){return true;}};
 let storyAudio=null;
 function storyPlay(sec,kind){if(storyAudio){try{storyAudio.pause();}catch(_){}storyAudio=null;}if(!soundOn())return;
-  try{const a=new Audio('story/'+sec.id+'-'+kind+'.mp3');a.addEventListener('error',()=>{});storyAudio=a;a.play().catch(()=>{});}catch(_){}}
+  try{const a=new Audio('story/'+sec.id+'-'+kind+'.mp3');a.addEventListener('error',()=>{});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{});}catch(_){}}
 // ----- the sector map
 function renderStoryMap(){const el=$('storyList');const next=storyNext();
   el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
@@ -2650,38 +2650,70 @@ $('btnStoryMap').addEventListener('click',openStoryMap);
 $('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
-// ---------- music (v1.28, tightened v1.31): the start-screen loop, music/title_loop.mp3 (ACE-Step, made to loop).
-// Web Audio so the loop is seamless and a gain node does the fades (1.5 s in, 1 s out); an <audio> element if
-// decoding fails. It tries to start the moment the page opens; where the browser refuses sound before a tap
-// (most phones) it starts on the first tap instead. It plays only while the cover, or the story map and briefing
-// opened from the cover, are up, and a game starting stops it for good: Play, Launch, Back to the game, and a
-// watchdog that fades anything still playing once the cover phase is over. Settings → Music (cc_music).
-const MUSIC_URL='music/title_loop.mp3',MUSIC_VOL=0.45;
-let musicCtx=null,musicBuf=null,musicSrc=null,musicGain=null,musicEl=null,musicWant=true,musicLoading=false;
+// ---------- music (v1.50, was the start-screen loop only): one engine for every screen. Fourteen tracks in music/,
+// made from scratch by music/make_music.py; the title loop stays the ACE-Step one the user picked (the generated
+// title_loop_synth.mp3 sits beside it). The crossfading loops share one spine (D minor, 96 BPM, 32 bars = 80 s), so
+// a switch starts the new loop at the point in the bar the old one has reached and the two-second crossfade lands on
+// the beat. The state is read twice a second:
+//   title (cover) · map (sector map) · brief (briefing; boss_sting as it opens) · lobby (waiting for a friend)
+//   coach (the guided first game) · calm / tense / late (a game, read off the board) · a clock layer on top when
+//   timers are under two minutes · over (one jingle, then quiet). A state holds 20 s before it steps down, never up.
+// Story voice lines duck the music to 40%. Settings → Music (cc_music). Nothing plays before the first tap where
+// the browser insists on one. sfx.js shares musicCtx.
+const MUSIC_DIR='music/',MUSIC_SPINE=80,MUSIC_FADE=2,MUSIC_HOLD=20000;
+const MUSIC_TRACKS={title:['title_loop',.45,0],map:['map_loop',.4,1],brief:['brief_loop',.35,1],lobby:['lobby_loop',.35,0],coach:['coach_loop',.3,0],calm:['play_calm_loop',.3,1],tense:['play_tense_loop',.33,1],late:['play_late_loop',.36,1]}; // state: [file, gain, on the spine]
+const MUSIC_LAYER=['play_clock_layer',.25],MUSIC_RANK={calm:0,tense:1,late:2};
+let musicCtx=null,musicMaster=null,musicBuf={},musicLoading={},musicCur=null,musicLayerCur=null,musicState=null,musicSince=0,musicOverGid=null,musicDuckN=0,musicArmed=false;
 const musicOn=()=>{try{return localStorage.getItem('cc_music')!=='0';}catch(_){return true;}};
-const coverPhase=()=>musicWant&&(!$('cover').hidden||!$('story').hidden||!$('brief').hidden);
-async function musicStart(){if(!coverPhase()||!musicOn()||musicSrc||musicEl||musicLoading)return;musicLoading=true;
-  try{musicCtx=musicCtx||new (window.AudioContext||window.webkitAudioContext)();
-    if(musicCtx.state!=='running'){await Promise.race([musicCtx.resume(),new Promise(r=>setTimeout(r,400))]);if(musicCtx.state!=='running')throw 'blocked';}
-    if(!musicBuf){const r=await fetch(MUSIC_URL);if(!r.ok)throw 0;musicBuf=await musicCtx.decodeAudioData(await r.arrayBuffer());}
-    if(!coverPhase()||!musicOn()){musicLoading=false;return;}
-    musicGain=musicCtx.createGain();musicGain.gain.setValueAtTime(0.0001,musicCtx.currentTime);musicGain.connect(musicCtx.destination);
-    musicSrc=musicCtx.createBufferSource();musicSrc.buffer=musicBuf;musicSrc.loop=true;musicSrc.connect(musicGain);musicSrc.start();
-    musicGain.gain.exponentialRampToValueAtTime(MUSIC_VOL,musicCtx.currentTime+1.5);}
-  catch(e){if(e!=='blocked'){try{const el=new Audio(MUSIC_URL);el.loop=true;el.volume=0;await el.play();if(!coverPhase()){el.pause();}else{musicEl=el;const t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1500);if(musicEl===el)el.volume=MUSIC_VOL*k;if(k>=1||musicEl!==el)clearInterval(iv);},50);}}catch(_){musicEl=null;}}}
-  musicLoading=false;}
-function musicFade(){ // fade out and stop; the wish to play stays (Settings toggles)
-  if(musicSrc&&musicGain&&musicCtx){const g=musicGain,s=musicSrc,now=musicCtx.currentTime;try{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),now);g.gain.exponentialRampToValueAtTime(0.0001,now+1);}catch(_){}setTimeout(()=>{try{s.stop();}catch(_){}try{s.disconnect();g.disconnect();}catch(_){}},1100);musicSrc=null;musicGain=null;}
-  if(musicEl){const el=musicEl;musicEl=null;const v0=el.volume,t0=Date.now();const iv=setInterval(()=>{const k=Math.min(1,(Date.now()-t0)/1000);el.volume=v0*(1-k);if(k>=1){clearInterval(iv);el.pause();}},50);}}
-function musicStop(){musicWant=false;musicFade();} // a game is starting: off, and it stays off until the page opens again
-for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,()=>{if(coverPhase()&&musicOn())musicStart();},{passive:true});
-$('coverGo').addEventListener('click',musicStop);
-$('btnBriefGo').addEventListener('click',musicStop);
-$('btnStoryClose').addEventListener('click',()=>{if($('cover').hidden)musicStop();});
-setInterval(()=>{if((musicSrc||musicEl)&&!coverPhase())musicFade();},500); // the watchdog: nothing plays over a game
+function musicCtxGet(){if(!musicCtx){try{musicCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){return null;}}
+  if(!musicMaster){musicMaster=musicCtx.createGain();musicMaster.gain.value=1;musicMaster.connect(musicCtx.destination);}
+  if(musicCtx.state!=='running'){try{musicCtx.resume();}catch(_){}}return musicCtx;}
+function musicLoad(name,cb){if(musicBuf[name]){cb(musicBuf[name]);return;}if(musicBuf[name]===null){cb(null);return;}
+  if(musicLoading[name]){musicLoading[name].push(cb);return;}musicLoading[name]=[cb];const ctx=musicCtxGet();if(!ctx){delete musicLoading[name];return;}
+  fetch(MUSIC_DIR+name+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>ctx.decodeAudioData(ab)).then(b=>{musicBuf[name]=b;const cbs=musicLoading[name]||[];delete musicLoading[name];for(const f of cbs)f(b);})
+    .catch(()=>{musicBuf[name]=null;const cbs=musicLoading[name]||[];delete musicLoading[name];for(const f of cbs)f(null);});}
+const musicSpineOff=now=>{const c=musicCur&&musicCur.aligned?musicCur:(musicLayerCur&&musicLayerCur.src?musicLayerCur:null);return c?((now-c.t0+c.off)%MUSIC_SPINE+MUSIC_SPINE)%MUSIC_SPINE:0;};
+function musicFadeOut(cur,secs){if(!cur||!musicCtx)return;const now=musicCtx.currentTime;try{cur.gain.gain.cancelScheduledValues(now);cur.gain.gain.setValueAtTime(Math.max(0.0001,cur.gain.gain.value),now);cur.gain.gain.exponentialRampToValueAtTime(0.0001,now+secs);}catch(_){}
+  setTimeout(()=>{try{cur.src.stop();}catch(_){}try{cur.src.disconnect();cur.gain.disconnect();}catch(_){}},secs*1000+100);}
+function musicStartLoop(name,gain,aligned,fade){const ctx=musicCtxGet();if(!ctx)return null;const b=musicBuf[name];if(!b)return null;const now=ctx.currentTime,off=aligned?musicSpineOff(now):0;
+  const g=ctx.createGain();g.gain.setValueAtTime(0.0001,now);g.connect(musicMaster);const s=ctx.createBufferSource();s.buffer=b;s.loop=true;s.connect(g);s.start(now,off%b.duration);g.gain.exponentialRampToValueAtTime(gain,now+fade);
+  return {name,src:s,gain:g,t0:now,off,aligned,vol:gain};}
+function musicPlayLoop(state){const [name,gain,aligned]=MUSIC_TRACKS[state];
+  musicLoad(name,b=>{if(!b||musicState!==state||!musicOn())return; /* the state moved on while it loaded */ if(musicCur&&musicCur.state===state)return;
+    const next=musicStartLoop(name,gain,aligned,MUSIC_FADE);if(!next)return;musicFadeOut(musicCur,MUSIC_FADE);next.state=state;musicCur=next;});}
+function musicOnce(name,gain){musicLoad(name,b=>{const ctx=musicCtxGet();if(!b||!ctx||!musicOn())return;const g=ctx.createGain();g.gain.value=gain;g.connect(musicMaster);const s=ctx.createBufferSource();s.buffer=b;s.connect(g);s.start();});}
+function musicLayerSet(on){if(on&&!musicLayerCur&&musicCur&&musicCur.aligned){musicLayerCur={loading:1};musicLoad(MUSIC_LAYER[0],b=>{if(!b||!musicCur||!musicCur.aligned||!(musicLayerCur&&musicLayerCur.loading)){musicLayerCur=null;return;}musicLayerCur=musicStartLoop(MUSIC_LAYER[0],MUSIC_LAYER[1],1,1);});}
+  else if(!on&&musicLayerCur){if(musicLayerCur.src)musicFadeOut(musicLayerCur,1);musicLayerCur=null;}}
+function musicStopAll(secs){musicFadeOut(musicCur,secs);musicCur=null;musicLayerSet(false);}
+// what the board calls for: late when either side is within ten squares of the land win or down to three drones;
+// tense when a siege is within three of a Command drone, or a loaded shooter has a stacked, unguarded one in range
+function musicMood(){let late=false,tense=false;const near=(a,b)=>Math.max(Math.abs(a.r-b.r),Math.abs(a.c-b.c));
+  for(const s of [YOU,BOT]){if(landOf(s)>=S.win-10||droneCount(s)<=3)late=true;const m=cmdOf(s);if(!m)continue;const foe=other(s);const guarded=dronesOf(s).some(g=>g.kind==='G'&&near(g,m)<=1);
+    for(const x of S.drones){if(x.side!==foe)continue;if(x.kind==='X'&&near(x,m)<=3)tense=true;else if((x.kind==='H'||x.kind==='C')&&ammoOf(x)>0&&m.power>1&&!guarded&&inRange(x,m.r,m.c))tense=true;}}
+  return late?'late':tense?'tense':'calm';}
+function musicWantState(){if(!$('cover').hidden)return 'title';if(!$('brief').hidden)return 'brief';if(!$('story').hidden)return 'map';
+  if(online&&net&&!net.started&&net.role!=='spec')return 'lobby';if(!S)return null;if(S.over)return 'over';if(S.tut)return 'coach';return musicMood();}
+function musicTick(){if(!musicArmed)return;const want=musicWantState();let st=want;
+  if(st&&MUSIC_RANK[st]!=null&&MUSIC_RANK[musicState]!=null&&MUSIC_RANK[st]<MUSIC_RANK[musicState]&&Date.now()-musicSince<MUSIC_HOLD)st=musicState; /* step down only after the hold */
+  if(!musicOn()){if(musicCur)musicStopAll(1);musicState=st;return;}
+  if(st!==musicState){const from=musicState;musicState=st;musicSince=Date.now();
+    if(st==='brief'&&from!=='brief')musicOnce('boss_sting',.5);
+    if(st==='over'){musicStopAll(1);if(S.gid!==musicOverGid){musicOverGid=S.gid;const won=S.over.w===YOU&&!netSpec();musicOnce(won?(S.story?(S.story==='ursa'?'story_end':'sector_fanfare'):'win_jingle'):'lose_jingle',.5);}}
+    else if(!st)musicStopAll(1);
+    else musicPlayLoop(st);}
+  else if(st&&st!=='over'&&!musicCur&&!musicLoading[MUSIC_TRACKS[st][0]])musicPlayLoop(st); /* Music switched back on */
+  if(musicCur&&st&&st!==musicCur.state&&st!=='over')musicPlayLoop(st); /* a loop that lost the race while loading */
+  musicLayerSet(!!(S&&!S.over&&S.timers&&MUSIC_RANK[st]!=null&&Math.min(S.clock[1],S.clock[2])<120000));}
+setInterval(musicTick,500);
+// a story voice line: the music drops to 40% while it speaks
+function musicDuck(on){musicDuckN=Math.max(0,musicDuckN+(on?1:-1));if(!musicMaster||!musicCtx)return;const now=musicCtx.currentTime;try{musicMaster.gain.cancelScheduledValues(now);musicMaster.gain.setValueAtTime(musicMaster.gain.value,now);musicMaster.gain.linearRampToValueAtTime(musicDuckN?0.4:1,now+0.4);}catch(_){}}
+function musicVoice(a){musicDuck(true);let done=false;const off=()=>{if(done)return;done=true;musicDuck(false);};a.addEventListener('ended',off);a.addEventListener('pause',off);a.addEventListener('error',off);setTimeout(off,30000);}
+function musicArm(){if(musicArmed)return;const ctx=musicCtxGet();if(!ctx)return;musicArmed=true;if(S&&S.over)musicOverGid=S.gid; /* a finished game on reload does not play its jingle again */
+  musicLoad('play_calm_loop',()=>{});musicTick();}
+for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,musicArm,{passive:true});
 $('inMusic').checked=musicOn();
-$('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}if($('inMusic').checked){if(coverPhase())musicStart();}else musicFade();});
-musicStart(); // the second the page opens, where the browser allows it
+$('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}musicTick();});
+(()=>{const ctx=musicCtxGet();if(!ctx)return;setTimeout(()=>{if(ctx.state==='running')musicArm();},300);})(); // where the browser allows sound at open, the title starts at once
 // ---------- sound effects (v1.47): forty short clips in sfx/, made from scratch by sfx/make_sfx.py, one per event.
 // Most hang off the reason tag every log line already carries (note's why), so the bot's moves sound the same as
 // yours. A guest or spectator phone gets the host's event list with each state and replays the same sounds.
