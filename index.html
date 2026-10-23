@@ -1065,7 +1065,7 @@ const FR={
 "It stacks drones for armor and clears asteroids on its side.": "Il empile des drones comme blindage et dégage les astéroïdes de son côté.",
 "Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.": "Ses chasseurs tirent leurs deux missiles, ses sièges marchent vers votre drone de commandement, et il saute pour du terrain.",
 "It will not park a drone where your raiders, hunters or guards can take it next turn.": "Il ne laisse pas un drone là où vos pillards, chasseurs ou boucliers peuvent le prendre au tour suivant.",
-"It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.": "Il choisit aussi ses échanges pour la cascade : plus d'étoiles effacées, et la dérive des astéroïdes quand il peut atteindre huit.",
+"It picks swaps for the cascade too: more stars cleared, and it looks at where the asteroids would land before it clears eight.": "Il choisit aussi ses échanges pour la cascade : plus d'étoiles effacées, et il regarde où tomberaient les astéroïdes avant d'en effacer huit.",
 "It goes after wrecks when Salvage is on and walks its bombs toward your drones.": "Il va chercher les épaves quand la Récupération est activée et avance ses bombes vers vos drones.",
 "It keeps a guard beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
 "Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
@@ -1348,7 +1348,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.47.0';
+const VERSION='1.48.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1755,6 +1755,21 @@ async function asteroidDrift(side){
   if(S.over)return;
   const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(500);await resolve(side,null);
 }
+// v1.48: what a drift toward `side` would do right now, without doing it: the drones it would destroy or dent,
+// and whether an asteroid would land on a Command drone (via = the stack it jumped to get there). Same rules as asteroidDrift.
+function driftPreview(side){const dr=side===YOU?1:-1;const rows=[];for(let r=0;r<N;r++)rows.push(r);if(dr>0)rows.reverse();
+  const rock=new Set();for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(S.grid[r][c]===ROCK)rock.add(key(r,c));
+  const ds=S.drones.map(d=>({id:d.id,side:d.side,kind:d.kind,power:d.power,r:d.r,c:d.c}));const at=(r,c)=>ds.find(d=>d.r===r&&d.c===c);
+  const out={lost:[],dent:[],killM:null,via:null};
+  for(const r of rows)for(let c=0;c<N;c++){if(!rock.has(key(r,c)))continue;const r1=r+dr;if(!inb(r1,c)||isWall(r1,c)||rock.has(key(r1,c)))continue;
+    const d=at(r1,c);const land=rr=>{rock.delete(key(r,c));rock.add(key(rr,c));};
+    if(!d){land(r1);continue;}
+    if(d.power<=1&&d.kind!=='M'){out.lost.push(d);ds.splice(ds.indexOf(d),1);land(r1);continue;}
+    const r2=r1+dr;if(!inb(r2,c)||isWall(r2,c)||rock.has(key(r2,c)))continue;
+    if(d.power>1){d.power--;out.dent.push(d);}
+    const d2=at(r2,c);if(d2&&d2.kind==='M'){out.killM=d2;out.via=d;land(r2);return out;}
+    if(d2){out.lost.push(d2);ds.splice(ds.indexOf(d2),1);}land(r2);}
+  return out;}
 function asteroidAnim(trail){return Promise.all(trail.map(([r0,c0,r1,c1])=>new Promise(res=>{const b=$('board');const [x0,y0,w]=cellXY(r0,c0),[x1,y1]=cellXY(r1,c1);
   const g=document.createElement('div');g.className='ghost';g.style.width=g.style.height=w+'px';g.style.left=x0+'px';g.style.top=y0+'px';g.innerHTML='<i class="asteroid v'+((r1*7+c1)%4)+'" style="width:80%;height:80%;margin:10%"></i>';b.appendChild(g);
   const dest=cellEl(r1,c1).firstChild;dest.style.visibility='hidden';
@@ -1792,7 +1807,7 @@ const BOT_LADDER=[
 'It stacks drones for armor and clears asteroids on its side.',
 'Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.',
 'It will not park a drone where your raiders, hunters or guards can take it next turn.',
-'It picks swaps for the cascade too: more stars cleared, and the asteroid drift when it can reach eight.',
+'It picks swaps for the cascade too: more stars cleared, and it looks at where the asteroids would land before it clears eight.',
 'It goes after wrecks when Salvage is on and walks its bombs toward your drones.',
 'It keeps a guard beside its Command drone at all times.',
 'Every turn is its best move. Nothing is random.'];
@@ -1827,15 +1842,16 @@ async function botTurn(me){
   }
   if(S.over)return;
   const opts=[];
-  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
+  let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
   const threat=new Set(),fire=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(shotsOf(e)&&ammoOf(e)>0)for(let r=e.r-range();r<=e.r+range();r++)for(let c=e.c-range();c<=e.c+range();c++)if(inb(r,c))fire.add(key(r,c));if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
+  const trap=L>=7?(drift=driftPreview(me)):null;const trapVia=trap&&trap.killM&&trap.killM.side===me?trap.via:null; /* the stack that an asteroid would jump to land on the Command drone */
   const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=2; // a siege two squares from an unguarded command drone: this turn must deal with it
   for(const d of dronesOf(me)){
     if(S.tut&&d.kind==='X')continue; // the coached game: the bot's siege stays put, so a beginner is never walked into a surprise loss
-    if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
+    if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger&&!trapVia){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
     if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?(g>=4?8+4*g+(half(me,d.r)?0:3):2*g):1});}
     if(L>=5&&d.kind==='X'&&d.armed){let n=0,mine=0;for(const [dr,dc] of DIR4){let r=d.r+dr,c=d.c+dc;while(inb(r,c)&&vis(me,r,c)&&!solid(r,c)){const e=droneAt(r,c);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;r+=dr;c+=dc;}}if(n>=3&&n>mine)opts.push({type:'detonate',d,v:10*n-8*mine});}
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
@@ -1858,6 +1874,7 @@ async function botTurn(me){
       if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
       if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60; // or a guard steps in beside it // the command drone never flees into a siege: beside one with no guard is the game
       if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a guard stays beside the command drone
+      if(trapVia&&(d.id===trapVia.id||d.kind==='M')&&c!==d.c)v+=40; /* step the jumped stack, or the Command drone, out of the asteroid's column */
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
