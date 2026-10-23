@@ -264,7 +264,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> on the start screen</label></div>
-  <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> voices in story mode</label></div>
+  <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option></select></div>
@@ -1074,7 +1074,7 @@ const FR={
 "Music": "Musique",
 "on the start screen": "sur l'écran d'accueil",
 "Sound": "Son",
-"voices in story mode": "voix dans le mode histoire",
+"sound effects and story voices": "effets sonores et voix de l'histoire",
 "Copy this game": "Copier cette partie",
 "Next sector": "Secteur suivant",
 "Retry": "Réessayer",
@@ -1348,7 +1348,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.46.0';
+const VERSION='1.47.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1417,7 +1417,7 @@ function layOpening(){
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
 function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
-function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w)(S.ev||(S.ev=[])).push(Object.assign({text:t},w));}
+function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));sfxNote(w);}}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 function wreckAt(r,c){if(!S.salvage)return;S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
 const earned=()=>S.salvage?t(': a wreck holds its missile.'):t(': a missile earned.');
@@ -1572,11 +1572,11 @@ async function resolve(side,anchor){
   let chain=0;
   while(true){
     const sh=detectShapes(S.grid,anchor);if(!sh.cells.size)break;
-    chain++;
+    chain++;sfx(chain>1?'cascade':'clear');
     for(const sp of sh.spawns)spawnFrom(side,sp);
     renderBoard(sh.cells);await sleep(260);
     for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}
-    const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);
+    const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);sfx('fall',120);await sleep(780);
     anchor=null;if(chain>12)break;
   }
 }
@@ -1695,7 +1695,7 @@ function applyFire(d){
 function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);wreckAt(g.r,g.c);wreckAt(d.r,d.c);note(t`${cap(own(d.side,'X'))} rammed the guard at ${sq(g.r,g.c)}. Both are gone.`,{why:'ram',at:[[g.r,g.c]],lab:[t('rammed')]});}
 async function fireShots(side,list,shooter){
   // every shot is aimed first; then they all fly and land at once and the stars drop once
-  if(shooter)await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));
+  if(shooter){sfx(shooter.kind==='T'?'turret-fire':list.length>1?'fire2':'fire');await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));}
   if(shooter&&shooter.bombAmmo){delete shooter.bombAmmo;const tg=list[0];await blastAt(side,tg.r,tg.c,t`${cap(own(side,'H'))}'s bomb missile`);return;} /* the bomb missile: one shot, a blast where it lands */
   let dropped=false;
   for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
@@ -1774,7 +1774,7 @@ async function afterAction(){const actor=S.turn;
   await tickBombs(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}
   sweepSiege();if(checkLand()||checkSiegeWin()){closeAction(actor);save();renderAll();return;}
   closeAction(actor);S.turn=other(S.turn);S.turnNo++;reload(S.turn);await turretFire(S.turn);if(!S.over){sweepSiege();if(checkLand()||checkSiegeWin()){save();renderAll();return;}}else{save();renderAll();return;}if(S.wrecks)for(const k in S.wrecks)if(S.turnNo+1-S.wrecks[k]>=WRECK_TTL)delete S.wrecks[k];S.cleared={1:0,2:0};S.drifted=false;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
-  S.moveLeft=S.timers?60000:0;
+  S.moveLeft=S.timers?60000:0;sfxTurn();
   if(!validSwaps().length)reshuffle();
   save();renderAll();
   if(S.turn===BOT&&!online){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
@@ -1877,7 +1877,7 @@ async function botTurn(me){
 async function humanSwap(a,b){
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
   const sh=detectShapes(g,b);
-  if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sel=null;renderBoard();return;}
+  if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sfx('swap-no');sel=null;renderBoard();return;}
   if(netGuest()){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];netSend({type:'swap',a,b});return;}
   busy=true;sel=null;note(t`${who(YOU)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard();
   await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
@@ -1914,13 +1914,13 @@ function onCell(r,c){
     if(T.has(k)){const tt=T.get(k);
       if(tt==='merge'){if(wasPending&&wasPending.d===sd&&wasPending.r===r&&wasPending.c===c){humanMove(sd,r,c);return;} /* a second tap on the green square confirms */const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(t`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? You get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}. Tap it again, or Yes below.`);renderBoard();renderActions();return;}
       humanMove(sd,r,c);return;}}
-  if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];showTip(d);setStatus(describe(d)+t('. Tap a marked square to move, red to take, green to stack.'));renderBoard();renderActions();return;}
+  if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];sfx('tap');showTip(d);setStatus(describe(d)+t('. Tap a marked square to move, red to take, green to stack.'));renderBoard();renderActions();return;}
   if(d){sel=null;peek=(peek&&peek.id===d.id)?null:{id:d.id};showTip(d);setStatus(peek?t`That is ${own(BOT,d.kind)}. Blue dots: where it can go. Red: what it can take.`:t`That is ${own(BOT,d.kind)}.`);renderBoard();renderActions();return;}
   if(S.grid[r][c]===ROCK){sel=null;setStatus(t('An asteroid. A missile clears it.'));renderBoard();renderActions();return;}
   if(isWall(r,c)||isCmd(r,c)){sel=null;renderBoard();renderActions();return;}
   if(S.own[k]===BOT){sel=null;setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));renderBoard();renderActions();return;}
   if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
-  sel={star:[r,c]};setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
+  sel={star:[r,c]};sfx('tap');setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
 function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 2 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
   const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')+(d.armed?t(', carrying a bomb'):'')+(d.bombAmmo?t(', a bomb missile loaded'):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.fuse!=null)parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
@@ -2008,7 +2008,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
 });
 function setStatus(t){const el=$('status');el.textContent=t;el.className='status'+(S&&!S.over?(S.turn===YOU?' you':' bot'):'');}
 function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderActions();renderRecord();renderGuide();renderExplain();
-  const ov=$('over');if(S.over){ov.classList.add('show');keepLastGame();$('overTitle').textContent=(S.over.w===YOU&&!netSpec())?t('You win'):(online&&net)?t`${SNAME[S.over.w]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
+  const ov=$('over');if(S.over){ov.classList.add('show');sfxOver(S.over.w===YOU&&!netSpec()?(S.story?'sector-won':'win'):netSpec()?'win':'lose');keepLastGame();$('overTitle').textContent=(S.over.w===YOU&&!netSpec())?t('You win'):(online&&net)?t`${SNAME[S.over.w]} wins`:t('The bot wins');$('overText').textContent=S.over.reason;setStatus(t('Game over.')+' '+S.over.reason);storyOver();}
   else{ov.classList.remove('show');if(netSpec())setStatus(t`Watching ${SNAME[1]} against ${SNAME[2]}. ${SNAME[S.turn]}'s turn.`);else if(S.turn===YOU){if(!sel&&!mode&&!(netGuest()&&busy))setStatus((online&&net&&net.opp)?t`Connected to ${SNAME[BOT]}. Your turn.`:t('Your move.'));}else setStatus((online&&net)?t`Connected to ${SNAME[BOT]}. ${SNAME[BOT]}'s turn.`:t('The bot is thinking…'));}
   netPush();}
 
@@ -2202,7 +2202,7 @@ const HINT_MS=30000,HINT_SKILL=50;
 let hintAt=0,hintTurn=-1,hintShow=null;
 function armHint(){if(!S)return;const tn=S.turn===YOU?S.turnNo:-1;if(tn!==hintTurn){hintTurn=tn;hintAt=Date.now();hintShow=null;}}
 setInterval(()=>{if(!S||S.over||S.tut||busy||online||S.turn!==YOU||hintShow||S.skill>HINT_SKILL)return;if(Date.now()-hintAt<HINT_MS)return;
-  const bs=bestSwap();if(!bs){hintAt=Date.now();return;}hintShow=[bs.a,bs.b];renderBoard();if(!sel&&!mode)setStatus(t('Stuck? The two green stars make a line.'));},1000);
+  const bs=bestSwap();if(!bs){hintAt=Date.now();return;}hintShow=[bs.a,bs.b];sfx('hint');renderBoard();if(!sel&&!mode)setStatus(t('Stuck? The two green stars make a line.'));},1000);
 
 // ---------- clocks ----------
 setInterval(()=>{if(!S||S.over||!S.timers||busy)return;const tn=S.turn;S.clock[tn]-=250;if(S.clock[tn]<=0){S.clock[tn]=0;if(netGuest()||netSpec())return;gameOver(other(tn),t`${who(tn)} ran out of time.`);save();renderAll();return;}
@@ -2430,7 +2430,7 @@ function netSend(a){ // true = handled here (the guest), false = not online as a
   const f=netFlipAct(a);f.seq=Date.now();busy=true;sel=null;mode=null;pending=null;aimList=[];net.pending=Date.now();
   renderBoard();renderActions();setStatus(t('Sending…'));netWrite({act:f,p_g:{'.sv':'timestamp'}});return true;}
 function netTakeState(js){let s;try{s=JSON.parse(js);}catch(_){return;}
-  S=flipState(s);SNAME[YOU]=net.name;net.started=true;net.pending=null;busy=false;sel=null;mode=null;pending=null;aimList=[];
+  const prev=S,first=!net.started;S=flipState(s);SNAME[YOU]=net.name;net.started=true;net.pending=null;if(first)sfx('connected');else sfxFromState(prev);busy=false;sel=null;mode=null;pending=null;aimList=[];
   save();renderAll();if(S.over)rateGame(S.over.w);}
 
 // ----- both: the stream, presence, leaving, resuming
@@ -2444,14 +2444,14 @@ async function netRefetch(){if(!net)return;try{const r=await fetch(netUrl(net.co
 function netHandle(o){if(!net||!o)return;
   if(o.host&&net.role==='guest'){net.opp=o.host.n||t('Host');net.oppR=o.host.r||BASE_R;net.oppCard=cardText(o.host);SNAME[BOT]=net.opp;}
   if(o.guest&&net.role==='host'&&o.guest.u!==net.uid){const first=!net.opp;net.opp=o.guest.n||t('Friend');net.oppR=o.guest.r||BASE_R;net.oppCard=cardText(o.guest);SNAME[BOT]=net.opp;
-    if(first)fetch(lobbyUrl(net.code),{method:'PATCH',body:JSON.stringify({live:1,n2:net.opp,t:Date.now()})}).catch(()=>{});if(!net.started)netStartGame();else netPush(true);}
+    if(first){sfx('connected');fetch(lobbyUrl(net.code),{method:'PATCH',body:JSON.stringify({live:1,n2:net.opp,t:Date.now()})}).catch(()=>{});}if(!net.started)netStartGame();else netPush(true);}
   if(net.role==='spec'){if(o.host)SNAME[1]=o.host.n||SNAME[1];if(o.guest)SNAME[2]=o.guest.n||SNAME[2];if(o.state&&(o.seq==null||o.seq!==net.seq)){if(o.seq!=null)net.seq=o.seq;specTake(o.state);}if(o.left)net.err=t('{0} left the match.',o.left==='host'?SNAME[1]:SNAME[2]);}
   if(o.p_h!=null&&net.role==='guest')net.oppSeen=o.p_h;if(o.p_g!=null&&net.role==='host')net.oppSeen=o.p_g;
   if(o.act&&net.role==='host'&&o.act.seq>net.acked){net.acked=o.act.seq;netApplyAct(o.act);}
   if(o.state&&net.role==='guest'&&(o.seq==null||o.seq!==net.seq)){if(o.seq!=null)net.seq=o.seq;netTakeState(o.state);}
   if(o.left&&o.left!==net.role)netOppLeft();
   renderWait();renderNet();}
-function netOppLeft(){if(!net)return;
+function netOppLeft(){if(!net)return;sfx('left');
   if(net.role==='host'){if(net.started&&S&&!S.over){gameOver(YOU,t`${SNAME[BOT]} left the match.`);save();renderAll();netPush(true);}else if(!net.started){net.opp=null;SNAME[BOT]=t('Friend');}}
   else{if(S&&!S.over){S.over={w:YOU,reason:t`${SNAME[BOT]} left the match.`};note(t`Game over. ${who(YOU)} win${''}. ${S.over.reason}`);rateGame(YOU);save();renderAll();}}
   net.err=t('{0} left the match.',SNAME[BOT]);}
@@ -2484,7 +2484,7 @@ async function lobbyRefresh(){const el=$('lobby');if(online){el.innerHTML='';ret
   $('codeWrap').hidden=true;const uid=myUid(),now=Date.now();
   const all=Object.entries(d||{}).map(([code,x])=>Object.assign({code},x)).filter(x=>x&&/^[A-Z]{4}$/.test(x.code));
   const list=all.filter(x=>!x.live&&x.u!==uid&&now-(x.t||0)<LOBBY_MAX_AGE).sort((a,b)=>(b.t||0)-(a.t||0));
-  const live=all.filter(x=>x.live&&x.u!==uid&&now-(x.t||0)<LIVE_MAX_AGE).sort((a,b)=>(b.t||0)-(a.t||0));
+  const live=all.filter(x=>x.live&&x.u!==uid&&now-(x.t||0)<LIVE_MAX_AGE).sort((a,b)=>(b.t||0)-(a.t||0));sfxLobby(list.map(x=>x.code));
   const esc=s=>String(s||'?').replace(/[<>&]/g,'');const ageOf=x=>{const m=Math.round((now-(x.t||0))/60000);return m<1?t('just now'):t('{0} min ago',m);};
   let h=list.length?list.map(x=>{const old=x.v!==VERSION?' · v'+x.v:'';return `<button type="button" class="primary" data-join="${x.code}" ${x.v!==VERSION?'disabled':''}>${esc(x.n)} · ${cardText(x)} · ${ageOf(x)}${old}</button>`;}).join(''):'<span class="acthint">'+t('Nobody is waiting right now. Tap I\'m ready to play and your name goes on this list for the next person who opens it.')+'</span>';
   if(live.length)h+='<span class="lbl" style="display:block;width:100%;margin-top:8px">'+t('Playing now · tap to watch')+'</span>'+live.map(x=>`<button type="button" data-watch="${x.code}" ${x.v!==VERSION?'disabled':''}>${t('{0} against {1} · {2}',esc(x.n),esc(x.n2),ageOf(x))}</button>`).join('');
@@ -2496,7 +2496,7 @@ async function netSpectate(code){if(online)return;netStatus(t('Looking for the m
   netStart('spec',code,myName()||'Watcher');net.prevS=S;net.live=true;SNAME[1]=doc.host.n||'?';SNAME[2]=doc.guest?doc.guest.n:'?';net.opp=SNAME[1];
   if(doc.state){net.seq=doc.seq||0;specTake(doc.state);}else{S=null;}
   netListen();renderWait();renderNet();}
-function specTake(js){let s;try{s=JSON.parse(js);}catch(_){return;}S=s;net.started=true;busy=false;sel=null;mode=null;pending=null;aimList=[];renderAll();}
+function specTake(js){let s;try{s=JSON.parse(js);}catch(_){return;}const prev=S;S=s;sfxFromState(prev);net.started=true;busy=false;sel=null;mode=null;pending=null;aimList=[];renderAll();}
 function renderNet(){const box=$('netbox');if(box.hidden)return;const on=!!(online&&net);
   $('btnHost').hidden=on;$('btnLeave').hidden=!on;$('lobbyWrap').hidden=on;$('inNetName').disabled=on;$('inName').disabled=on;if(on)$('codeWrap').hidden=true;
   $('btnRejoin').hidden=on||!netPending;$('btnReconnect').hidden=!on||!(net.err||(net.oppSeen&&Date.now()-net.oppSeen>45000));$('btnLeave').textContent=on&&net.role==='spec'?t('Stop watching'):t('Leave the match');
@@ -2664,6 +2664,54 @@ setInterval(()=>{if((musicSrc||musicEl)&&!coverPhase())musicFade();},500); // th
 $('inMusic').checked=musicOn();
 $('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',$('inMusic').checked?'1':'0');}catch(_){}if($('inMusic').checked){if(coverPhase())musicStart();}else musicFade();});
 musicStart(); // the second the page opens, where the browser allows it
+// ---------- sound effects (v1.47): forty short clips in sfx/, made from scratch by sfx/make_sfx.py, one per event.
+// Most hang off the reason tag every log line already carries (note's why), so the bot's moves sound the same as
+// yours. A guest or spectator phone gets the host's event list with each state and replays the same sounds.
+// Web Audio, sharing the music's context where there is one; clips load on the first tap and play from memory.
+// Settings → Sound (cc_sound) covers these and the story voices. Nothing plays before the first tap on the page.
+var SFX_GAIN={tap:.4,move:.55,swap:.6,'swap-no':.5,clear:.6,cascade:.65,fall:.4,born:.7,'born-big':.8,load:.6,hit:.7,hold:.6,
+  destroy:.8,take:.8,bomb:1,'bomb-tick':.6,'your-turn':.55,hint:.5,'siege-near':.7,win:.8,lose:.7,'sector-won':.85,
+  'lobby-new':.5,connected:.6,left:.6,asteroid:.7,'asteroid-crush':.8,ride:.5,slide:.6,stack:.7,claim:.7,warp:.8,ram:.9,
+  fire:.7,fire2:.75,'turret-build':.7,'turret-fire':.6,reshuffle:.6,salvage:.6,sweep:.7};
+var SFX_ALL=Object.keys(SFX_GAIN);
+var SFX_WHY={swap:'swap',stack:'stack',take:'take',sweep:'sweep',sweep_s:'sweep',claim:'claim',warp:'warp',ram:'ram',
+  fire_t:'hold',fire_m:'hold',fire_kill:'destroy',fire_hit:'hit',fire_clear:'clear',bomb:'bomb',bomb_fuse:'bomb-tick',
+  turret:'turret-build',load:'load',salvage:'salvage',reshuffle:'reshuffle',surround:'destroy'};
+var sfxCtx=null,sfxBuf={},sfxLoading={},sfxLast={},sfxArmed=false,sfxOverGid=null,sfxSiegeSeen={},lobbySeen=null;
+function sfxWhyName(w){const why=w&&w.why;if(!why)return null;
+  if(SFX_WHY[why])return SFX_WHY[why];
+  if(why.startsWith('born_'))return 'HWX'.includes(why[5])?'born-big':'born';
+  if(why==='move_S')return 'slide';
+  if(why.startsWith('move_')){const a=w.at;const far=a&&a.length>1&&Math.max(Math.abs(a[0][0]-a[1][0]),Math.abs(a[0][1]-a[1][1]))>1;return far?'ride':'move';}
+  if(why==='drift')return w.at?'asteroid-crush':'asteroid';
+  return null;}
+function sfxCtxGet(){if(!sfxCtx){try{sfxCtx=musicCtx||new (window.AudioContext||window.webkitAudioContext)();if(!musicCtx)musicCtx=sfxCtx;}catch(_){return null;}}
+  if(sfxCtx.state!=='running'){try{sfxCtx.resume();}catch(_){}}return sfxCtx;}
+function sfxLoad(name){if(sfxBuf[name]||sfxLoading[name])return;const ctx=sfxCtxGet();if(!ctx)return;sfxLoading[name]=true;
+  fetch('sfx/'+name+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(ab=>ctx.decodeAudioData(ab)).then(b=>{sfxBuf[name]=b;delete sfxLoading[name];}).catch(()=>{sfxBuf[name]=null;delete sfxLoading[name];});}
+function sfxPlay(name,when){const ctx=sfxCtxGet(),b=sfxBuf[name];if(!ctx||!b)return;
+  try{const g=ctx.createGain();g.gain.value=SFX_GAIN[name]||.7;g.connect(ctx.destination);const s=ctx.createBufferSource();s.buffer=b;s.connect(g);s.start(when||0);}catch(_){}}
+// play a clip: delay in ms; the same clip twice within 90 ms plays once (a blast that breaks six drones is one bang)
+function sfx(name,delay){if(!sfxArmed||!SFX_GAIN[name])return;try{if(!soundOn())return;}catch(_){return;}
+  const now=Date.now()+(delay||0);if(sfxLast[name]&&now-sfxLast[name]<90)return;sfxLast[name]=now;
+  if(sfxBuf[name]){const ctx=sfxCtxGet();if(ctx)sfxPlay(name,ctx.currentTime+(delay||0)/1000);return;}
+  if(sfxBuf[name]===null)return;sfxLoad(name);const t0=Date.now();const iv=setInterval(()=>{if(sfxBuf[name]){clearInterval(iv);if(Date.now()-t0<1500)sfxPlay(name,0);}else if(sfxBuf[name]===null||Date.now()-t0>4000)clearInterval(iv);},60);}
+function sfxNote(w){const n=sfxWhyName(w);if(n)sfx(n,n==='born'||n==='born-big'?320:0);}
+// a guest or spectator: the host's events arrive with the state; replay the ones not heard yet
+function sfxFromState(prev){if(!S||!prev||prev.gid!==S.gid){return;}
+  let evs=[];if((S.lastN||0)!==(prev.lastN||0))evs=(S.last&&S.last.ev||[]).concat(S.ev||[]);else evs=(S.ev||[]).slice((prev.ev||[]).length);
+  let i=0;for(const w of evs.slice(0,8)){const n=sfxWhyName(w);if(n){sfx(n,i*110);i++;}}
+  if(S.turn===YOU&&prev.turn!==YOU&&!S.over)sfxTurn();}
+// the turn comes to you: a two-note, and a warning the first time an enemy siege is within two of your Command drone
+function sfxTurn(){if(!S||S.over||S.turn!==YOU||netSpec())return;sfx('your-turn');
+  const m=cmdOf(YOU);if(!m)return;for(const x of S.drones){if(x.kind!=='X'||x.side===YOU)continue;const k=S.gid+':'+x.id;if(sfxSiegeSeen[k])continue;
+    if(Math.max(Math.abs(x.r-m.r),Math.abs(x.c-m.c))<=2){sfxSiegeSeen[k]=1;sfx('siege-near',700);}}}
+function sfxOver(name){if(!S||S.gid===sfxOverGid)return;sfxOverGid=S.gid;sfx(name,300);}
+function sfxLobby(codes){if(lobbySeen&&codes.some(c=>!lobbySeen.has(c)))sfx('lobby-new');lobbySeen=new Set(codes);}
+function sfxArm(){if(sfxArmed)return;sfxArmed=true;if(S&&S.over)sfxOverGid=S.gid; /* a finished game on reload does not cheer again */
+  let i=0;for(const n of ['tap','swap','clear','fall','born','move','your-turn','fire','hit','destroy'])sfxLoad(n);
+  for(const n of SFX_ALL)setTimeout(()=>sfxLoad(n),400+60*(i++));}
+for(const ev of ['pointerdown','keydown','touchend'])document.addEventListener(ev,sfxArm,{passive:true});
 </script>
 </body>
 </html>
