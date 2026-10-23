@@ -881,7 +881,8 @@ const FR={
 "{0} swapped {1} and {2}.": "{0} {v:avez échangé|a échangé} {1} et {2}.",
 "Out of range or in the fog. A missile flies {0} squares at something you can see.": "Hors de portée ou dans le brouillard. Un missile vole {0} cases vers quelque chose que vous voyez.",
 "{0} of {1} aimed. Tap another target, or Fire now.": "{0} sur {1} visé. Touchez une autre cible, ou Tirer maintenant.",
-"Stack the {0} into the {1}? The {2} is gone; you get a power {3} {4}.": "Empiler {0} dans {1} ? Le premier disparaît ; vous obtenez {4} de puissance {3}.",
+"Stack the {0} into the {1}? You get a power {2} {3}. Tap it again, or Yes below.": "Empiler {0} dans {1} ? Vous obtenez {3} de puissance {2}. Touchez encore, ou Oui en bas.",
+"The bomb on {0}": "La bombe sur {0}",
 "That is {0}.": "C'est {0}.",
 "{0} of {1} drones · {2} missile{3} on the Command drone": "{0} drones sur {1} · {2} missile{3} sur le drone de commandement",
 " · sees {0} squares": " · voit {0} cases",
@@ -1339,7 +1340,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.44.0';
+const VERSION='1.45.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1555,7 +1556,7 @@ function spawnFrom(side,sp){
   }
 }
 function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
-function mergeInto(o,d){o.power=Math.min(MAXP,o.power+d.power);if(o.kind==='M')S.missiles[o.side]+=ammoOf(d);else if(shotsOf(o))o.ammo=Math.min(shotsOf(o),ammoOf(o)+ammoOf(d));for(const k of d.colors)if(!o.colors.includes(k))o.colors.push(k);if(o.kind==='C'&&d.kind==='C')o.claims=Math.min(2,(o.claims||0)+(d.claims||0));}
+function mergeInto(o,d){o.power=Math.min(MAXP,o.power+d.power);if(d.fuse!=null)o.fuse=o.fuse!=null?Math.min(o.fuse,d.fuse):d.fuse; /* v1.45: a stacked bomb rides along: the drone it joins carries the fuse */if(o.kind==='M')S.missiles[o.side]+=ammoOf(d);else if(shotsOf(o))o.ammo=Math.min(shotsOf(o),ammoOf(o)+ammoOf(d));for(const k of d.colors)if(!o.colors.includes(k))o.colors.push(k);if(o.kind==='C'&&d.kind==='C')o.claims=Math.min(2,(o.claims||0)+(d.claims||0));}
 async function resolve(side,anchor){
   let chain=0;
   while(true){
@@ -1655,7 +1656,7 @@ function applyMove(d,r,c){
       stop=[rr,cc];if(rr===r&&cc===c)break;rr+=dr;cc+=dc;}
     if(!stop)return;[r,c]=stop;}
   const o=droneAt(r,c);
-  if(o&&o.side===d.side&&d.kind==='M'){S.missiles[d.side]+=ammoOf(o);delete o.ammo;o.kind='M';delete o.claims;delete o.fuse;delete o.sq;} // the command drone absorbs what it lands on and stays the command drone
+  if(o&&o.side===d.side&&d.kind==='M'){S.missiles[d.side]+=ammoOf(o);delete o.ammo;o.kind='M';delete o.claims;delete o.sq;} // the command drone absorbs what it lands on and stays the command drone
   if(o&&o.side===d.side){mergeInto(o,d);S.drones=S.drones.filter(x=>x!==d);note(t`${who(d.side)} stacked ${aname(d.kind)} into the ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});return;}
   if(o){takeDrone(d.side,o,null,d);}
   const fr=d.r,fc=d.c,from=sq(d.r,d.c);d.r=r;d.c=c;note(t`${who(d.side)} moved ${TNAME[d.kind]} ${from} to ${sq(r,c)}.`,{why:'move_'+d.kind,at:[[fr,fc],[r,c]],lab:[t('from'),t('to')]});landed(d);
@@ -1693,13 +1694,14 @@ async function fireShots(side,list,shooter){
   renderBoard();await playFX();
   if(dropped){const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
+const bombName=(side,b)=>b.kind==='B'?cap(own(side,'B')):t`The bomb on ${own(side,b.kind)}`;
 async function tickBombs(side){
-  for(const b of dronesOf(side).filter(d=>d.kind==='B')){b.fuse--;
-    if(b.fuse>0){note(t`${cap(own(side,'B'))} at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`,{why:'bomb_fuse',at:[[b.r,b.c]],lab:[t('{0} to go',b.fuse)]});continue;}
+  for(const b of dronesOf(side).filter(d=>d.fuse!=null)){b.fuse--; /* bombs, and drones carrying one */
+    if(b.fuse>0){note(t`${bombName(side,b)} at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`,{why:'bomb_fuse',at:[[b.r,b.c]],lab:[t('{0} to go',b.fuse)]});continue;}
     const hit=[[b.r,b.c]];for(const [dr,dc] of DIR4){let r=b.r+dr,c=b.c+dc;while(inb(r,c)&&vis(side,r,c)&&!isWall(r,c)&&!isCmd(r,c)){hit.push([r,c]);r+=dr;c+=dc;}}
-    S.drones=S.drones.filter(x=>x!==b);let gone=0;
+    if(b.kind==='B')S.drones=S.drones.filter(x=>x!==b);else delete b.fuse; /* a carrier stands in the middle of its own blast */let gone=0;
     for(const [r,c] of hit){const o=droneAt(r,c);if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);note(t`The blast stripped the stack off ${own(o.side,'M')}.`);}}else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);wreckAt(r,c);gone++;}if(S.grid[r][c]>=0){S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}cellEl(r,c).classList.add('blast');}
-    note(t`${cap(own(side,'B'))} went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`,{why:'bomb',at:[[b.r,b.c]],lab:[t('boom')]});
+    note(t`${bombName(side,b)} went off at ${sq(b.r,b.c)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`,{why:'bomb',at:[[b.r,b.c]],lab:[t('boom')]});
     renderBoard();await playFX();for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
     const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 }
@@ -1874,7 +1876,7 @@ function onCell(r,c){
   if(busy||!S||S.over||S.turn!==YOU||netSpec())return;
   const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
   if(!(d&&d.side===BOT))peek=null;clearExplainCalls();
-  if(mode==='confirm'){mode=null;pending=null;}
+  const wasPending=(mode==='confirm'&&pending)?pending:null;if(mode==='confirm'){mode=null;pending=null;}
   if(mode==='aim'&&sd){
     if(!vis(YOU,r,c)||!inRange(sd,r,c)){setStatus(t`Out of range or in the fog. A missile flies ${range()} squares at something you can see.`);return;}
     if(!(d&&d.side===BOT)&&S.grid[r][c]<0){setStatus(t('Nothing there to hit.'));return;}
@@ -1888,7 +1890,7 @@ function onCell(r,c){
   if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus(t('That square is in the fog. Bring a drone next to it, or claim with a scout.'));return;}
   if(sd){const T=targets(sd);
     if(T.has(k)){const tt=T.get(k);
-      if(tt==='merge'){const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(t`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? The ${TNAME[sd.kind]} is gone; you get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}.`);renderBoard();renderActions();return;}
+      if(tt==='merge'){if(wasPending&&wasPending.d===sd&&wasPending.r===r&&wasPending.c===c){humanMove(sd,r,c);return;} /* a second tap on the green square confirms */const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(t`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? You get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}. Tap it again, or Yes below.`);renderBoard();renderActions();return;}
       humanMove(sd,r,c);return;}}
   if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];showTip(d);setStatus(describe(d)+t('. Tap a marked square to move, red to take, green to stack.'));renderBoard();renderActions();return;}
   if(d){sel=null;peek=(peek&&peek.id===d.id)?null:{id:d.id};showTip(d);setStatus(peek?t`That is ${own(BOT,d.kind)}. Blue dots: where it can go. Red: what it can take.`:t`That is ${own(BOT,d.kind)}.`);renderBoard();renderActions();return;}
@@ -1899,14 +1901,14 @@ function onCell(r,c){
   sel={star:[r,c]};setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
 function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 2 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
-  const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.kind==='B')parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
+  const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.fuse!=null)parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
 
 // ---------- render ----------
 const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.kind==='B'?`<span class="fuse">${d.fuse}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
+  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
 function renderBoard(gone,born,mark,fall){
