@@ -1155,7 +1155,7 @@ const FR={
 "Build a turret ({0} missiles)": "Construire une tourelle ({0} missiles)",
 "Tap an empty square you own. The turret fires once a turn at any enemy drone beside it.": "Touchez une case vide à vous. La tourelle tire une fois par tour sur un drone ennemi à côté d'elle.",
 "A turret goes on an empty square you own.": "Une tourelle se pose sur une case vide à vous.",
-"A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. It does not count toward your drones.": "Une tourelle. Elle ne bouge jamais. Au début de chacun de vos tours elle tire une fois sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord. Construite par votre drone de commandement pour 10 missiles sur une case vide à vous. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever ; les missiles rebondissent, les pillards et les boucliers ne peuvent pas la prendre. Elle ne compte pas dans vos drones.",
+"A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. Every two turrets count as one drone toward your nine.": "Une tourelle. Elle ne bouge jamais. Au début de chacun de vos tours elle tire une fois sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord. Construite par votre drone de commandement pour 10 missiles sur une case vide à vous. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever ; les missiles rebondissent, les pillards et les boucliers ne peuvent pas la prendre. Deux tourelles comptent pour un drone dans vos neuf.",
 "A Command drone holding 10 missiles can spend them on a turret: tap the C, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.": "Un drone de commandement qui a 10 missiles peut les dépenser pour une tourelle : touchez le C, puis Construire une tourelle, puis une case vide à vous. Elle ne bouge jamais et tire une fois par tour sur un drone ennemi à côté d'elle. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
 "A turret fires by itself at the start of its owner's turn, at one enemy drone in the 8 squares beside it, sieges first.": "Une tourelle tire toute seule au début du tour de son propriétaire, sur un drone ennemi dans les 8 cases autour d'elle, les sièges d'abord.",
 "{0}: a missile hit {1} at {2}; it holds. Only a bomb, an asteroid or a siege drone can end it.": "{0} : un missile a touché {1} en {2} ; elle tient. Seuls une bombe, un astéroïde ou un drone de siège peuvent l'achever.",
@@ -1339,7 +1339,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.41.0';
+const VERSION='1.42.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1416,6 +1416,7 @@ function salvageAt(side,r,c){const k=key(r,c);if(!S.salvage||!S.wrecks||!S.wreck
 function closeAction(actor){if(!S)return;S.last={ev:S.ev||[],side:actor,n:(S.lastN||0)+1};S.lastN=S.last.n;S.ev=[];} // the events of the action that just finished, for the explain card
 const droneAt=(r,c)=>S.drones.find(d=>d.r===r&&d.c===c);
 const dronesOf=side=>S.drones.filter(d=>d.side===side);
+const droneCount=side=>{const ds=dronesOf(side);const t=ds.filter(d=>d.kind==='T').length;return ds.length-t+Math.floor(t/2);}; // v1.42: every two turrets count as one drone toward the cap
 const isWall=(r,c)=>S.wall[key(r,c)]!=null;
 const isCmd=(r,c)=>false; // the Commander is a drone now (kind M)
 const cmdOf=side=>S.drones.find(d=>d.side===side&&d.kind==='M');
@@ -1540,7 +1541,7 @@ function spawnFrom(side,sp){
   if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});return;} // v1.19: a line entirely on their land pays nothing
   for(const letter of sp.letters){
     let [r,c]=at;let o=droneAt(r,c);
-    const full=dronesOf(side).filter(x=>x.kind!=='T').length>=MAXD&&!(o&&o.side===side); // turrets do not count toward the cap
+    const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
     if(full&&sp.cap!=='always'){
       if(sp.cap==='missile'){S.missiles[side]++;note(t`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
       else if(sp.cap==='asteroid'){rockOnto(other(side));note(t`${who(side)} made ${sp.label} at ${MAXD} drones: an asteroid lands on ${landName(other(side))}.`);}
@@ -1805,7 +1806,7 @@ async function botTurn(me){
   }
   if(S.over)return;
   const opts=[];
-  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&dronesOf(me).length>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
+  if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine+(mine>=8?6:0);}opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
   const threat=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
@@ -1942,7 +1943,7 @@ function renderBoard(gone,born,mark,fall){
 }
 function renderSide(){
   $('land1').textContent=landOf(YOU)+' / '+S.win;$('land2').textContent=landOf(BOT)+' / '+S.win;
-  for(const s of [YOU,BOT]){const n=dronesOf(s).filter(d=>d.kind!=='T').length,m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:'');} // only the owner sees missiles
+  for(const s of [YOU,BOT]){const n=droneCount(s),m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:'');} // only the owner sees missiles
   $('botlbl').textContent=(online&&net)?`${SNAME[BOT]} · ${net.oppR}`:t`${SNAME[BOT]} · skill ${S.skill}`;
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
@@ -2147,7 +2148,7 @@ H:'Moves 1 square plus up to 2 free steps on any star color. Fires two missiles 
 W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
 X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
-T:'A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. It does not count toward your drones.',
+T:'A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. Every two turrets count as one drone toward your nine.',
 M:'Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no guard near, or an asteroid landing on it, ends the game.'};
 let tip=null;
 function showTip(d){if(!$('inTips').checked){$('dtip').hidden=true;return;}tip=d;const el=$('dtip');el.hidden=false;el.innerHTML=`<span class="x">×</span><b style="color:${d.side===YOU?'var(--you)':'var(--bot)'}">${cap(own(d.side,d.kind))}</b> ${t(TIPS[d.kind])}`;}
