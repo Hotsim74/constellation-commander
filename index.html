@@ -157,6 +157,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.shd{box-shadow:0 0 0 3px rgba(80,220,255,.9),0 0 12px 4px rgba(80,220,255,.55)}.fuse.sh{background:#1aa8c8;color:#fff}
 .dr.on0{filter:drop-shadow(0 0 3px rgba(229,72,77,1)) drop-shadow(0 0 9px rgba(229,72,77,.85))}.dr.on1{filter:drop-shadow(0 0 3px rgba(240,165,43,1)) drop-shadow(0 0 9px rgba(240,165,43,.85))}.dr.on2{filter:drop-shadow(0 0 3px rgba(62,194,122,1)) drop-shadow(0 0 9px rgba(62,194,122,.85))}.dr.on3{filter:drop-shadow(0 0 3px rgba(63,143,240,1)) drop-shadow(0 0 9px rgba(63,143,240,.85))}.dr.on4{filter:drop-shadow(0 0 3px rgba(176,108,232,1)) drop-shadow(0 0 9px rgba(176,108,232,.85))}
 .dr svg{width:100%;height:100%;display:block;overflow:hidden}
+/* v1.60: the guard is an eye with a searchlight that sweeps its land and pauses to look; the pupil follows the beam */
+.dr.kG svg{overflow:visible}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
+@keyframes gsweep{0%{transform:rotate(-30deg)}28%{transform:rotate(70deg)}40%{transform:rotate(70deg)}70%{transform:rotate(-130deg)}82%{transform:rotate(-130deg)}100%{transform:rotate(-30deg)}}
+.legend .gsweep,.bark .gsweep{animation:none}
 .dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(12px,3vw,20px);text-shadow:0 0 2px #000,0 0 4px #000,0 0 8px #000,0 1px 1px #000;pointer-events:none;z-index:3}
 .dr.s1 .lt{color:#ff5a5a}.dr.s2 .lt{color:#fff}
 /* v1.59: on the board the letter floats above the hull like a tag, with its own slow bob */
@@ -411,67 +415,23 @@ function warpSVG(side){return WARP_SHIP.replace(/SIDE/g,side===YOU?'y':'b').repl
 // ---------- the guard: the user's Gimbal Iris asset. SIDE = id suffix; LIGHT = beam color; EYE1..3 = eye gradient stops.
 const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
   <defs>
-    <linearGradient id="beamSIDE" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0%" stop-color="LIGHT" stop-opacity="0.8"/>
-      <stop offset="40%" stop-color="LIGHT" stop-opacity="0.1"/>
-      <stop offset="80%" stop-color="LIGHT" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="eyeGlowSIDE" cx="50%" cy="50%" fx="30%" fy="30%" r="50%">
-      <stop offset="0%" stop-color="EYE1"/>
-      <stop offset="40%" stop-color="EYE2"/>
-      <stop offset="85%" stop-color="EYE3"/>
-      <stop offset="100%" stop-color="#000000"/>
-    </radialGradient>
-    <radialGradient id="armorMetalSIDE" cx="50%" cy="50%" r="50%">
-      <stop offset="60%" stop-color="#333333"/>
-      <stop offset="100%" stop-color="#0a0a0a"/>
-    </radialGradient>
-    <linearGradient id="steelArmSIDE" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#bcc6cc"/>
-      <stop offset="50%" stop-color="#8a959e"/>
-      <stop offset="100%" stop-color="#3c444a"/>
-    </linearGradient>
-    <pattern id="hazardSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="#ffcc00"/>
-      <rect width="4" height="8" fill="#111111"/>
-    </pattern>
-    <polygon id="bladeSIDE" points="64,34 110,18 110,64" fill="#222" stroke="#111" stroke-width="1.5"/>
-    <clipPath id="shutterClipSIDE"><circle cx="64" cy="64" r="38"/></clipPath>
+    <radialGradient id="gBodySIDE" cx="42%" cy="38%" r="62%"><stop offset="0%" stop-color="#6b7884"/><stop offset="50%" stop-color="#2b3238"/><stop offset="100%" stop-color="#090c0f"/></radialGradient>
+    <radialGradient id="gIrisSIDE" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="EYE1"/><stop offset="40%" stop-color="EYE2"/><stop offset="100%" stop-color="EYE3"/></radialGradient>
+    <linearGradient id="gBeamSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="LIGHT" stop-opacity="0.75"/><stop offset="55%" stop-color="LIGHT" stop-opacity="0.28"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></linearGradient>
+    <polygon id="gPetalSIDE" points="64,8 86,20 80,42 64,36 48,42 42,20" fill="#1b2026" stroke="#090c0f" stroke-width="1.5"/>
   </defs>
-  <g transform="translate(-4, 0) rotate(-55, 34, 64)">
-    <polygon points="16,58 -20,0 52,0" fill="url(#beamSIDE)"/>
-    <path d="M 12 48 L 36 44 L 40 64 L 36 84 L 12 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 16 52 L 32 49 L 34 79 L 16 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
-    <circle cx="34" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
-    <circle cx="34" cy="64" r="3" fill="#111"/>
-    <circle cx="16" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
-    <ellipse cx="16" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
+  <circle cx="64" cy="64" r="58" fill="url(#gBodySIDE)" stroke="#05070a" stroke-width="3"/>
+  <use href="#gPetalSIDE" transform="rotate(0 64 64)"/><use href="#gPetalSIDE" transform="rotate(45 64 64)"/><use href="#gPetalSIDE" transform="rotate(90 64 64)"/><use href="#gPetalSIDE" transform="rotate(135 64 64)"/><use href="#gPetalSIDE" transform="rotate(180 64 64)"/><use href="#gPetalSIDE" transform="rotate(225 64 64)"/><use href="#gPetalSIDE" transform="rotate(270 64 64)"/><use href="#gPetalSIDE" transform="rotate(315 64 64)"/>
+  <circle cx="64" cy="64" r="37" fill="#05070a"/>
+  <g class="gsweep">
+    <polygon points="64,64 200,16 200,112" fill="url(#gBeamSIDE)"/>
+    <circle cx="64" cy="64" r="33" fill="url(#gIrisSIDE)"/>
+    <circle cx="98" cy="64" r="5" fill="#ffffff" opacity="0.95"/>
+    <circle cx="77" cy="64" r="11" fill="#05070a"/>
+    <circle cx="80" cy="60" r="3" fill="#ffffff" opacity="0.85"/>
   </g>
-  <g>
-    <polygon points="112,58 72,0 152,0" fill="url(#beamSIDE)"/>
-    <path d="M 116 48 L 92 44 L 88 64 L 92 84 L 116 80 Z" fill="url(#steelArmSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 112 52 L 96 49 L 94 79 L 112 76 Z" fill="url(#hazardSIDE)" stroke="#000" stroke-width="1.5"/>
-    <circle cx="94" cy="64" r="8" fill="#222" stroke="#444" stroke-width="2"/>
-    <circle cx="94" cy="64" r="3" fill="#111"/>
-    <circle cx="112" cy="64" r="12" fill="#1a1a1a" stroke="#444" stroke-width="2"/>
-    <ellipse cx="112" cy="58" rx="8" ry="4" fill="#ffffff" opacity="0.9"/>
-  </g>
-  <circle cx="64" cy="64" r="40" fill="url(#armorMetalSIDE)" stroke="#050505" stroke-width="3"/>
-  <g clip-path="url(#shutterClipSIDE)">
-    <use href="#bladeSIDE" transform="rotate(0 64 64)"/>
-    <use href="#bladeSIDE" transform="rotate(60 64 64)"/>
-    <use href="#bladeSIDE" transform="rotate(120 64 64)"/>
-    <use href="#bladeSIDE" transform="rotate(180 64 64)"/>
-    <use href="#bladeSIDE" transform="rotate(240 64 64)"/>
-    <use href="#bladeSIDE" transform="rotate(300 64 64)"/>
-  </g>
-  <circle cx="64" cy="64" r="26" fill="none" stroke="#444" stroke-width="4"/>
-  <circle cx="64" cy="64" r="24" fill="#050505"/>
-  <circle cx="64" cy="64" r="22" fill="url(#eyeGlowSIDE)"/>
-  <ellipse cx="56" cy="56" rx="3" ry="14" fill="#000000" transform="rotate(-35, 56, 56)"/>
-  <circle cx="64" cy="64" r="22" fill="none" stroke="#000000" stroke-width="4" opacity="0.7"/>
-  <path d="M 46 48 A 18 18 0 0 1 82 48 A 24 24 0 0 0 46 48 Z" fill="#ffffff" opacity="0.35"/>
-  <circle cx="76" cy="76" r="3" fill="#ffffff" opacity="0.2"/>
+  <circle cx="64" cy="64" r="35" fill="none" stroke="#000000" stroke-width="4" opacity="0.7"/>
+  <path d="M 40 50 A 30 30 0 0 1 88 50 A 34 34 0 0 0 40 50 Z" fill="#ffffff" opacity="0.16"/>
 </svg>`;
 function guardSVG(side){
   const you=side===YOU;
@@ -1503,7 +1463,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.59.0';
+const VERSION='1.60.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
