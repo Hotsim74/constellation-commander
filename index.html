@@ -103,6 +103,23 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .flash{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(255,180,80,.9);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:flash .4s ease-out forwards}
 @keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,200,120,.95);opacity:1}100%{box-shadow:0 0 18px 26px rgba(255,120,40,0);opacity:0}}
 .ghost{position:absolute;transform:translate(-50%,-50%);z-index:8;pointer-events:none}
+.board .dd::after{content:'';position:absolute;left:16%;right:16%;bottom:2%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);z-index:2;pointer-events:none}
+.board .dd:empty::after{display:none}
+.board .dr{animation:hover 2.8s ease-in-out infinite alternate}.board .dr.kT{animation:none;transform:none}
+@keyframes hover{from{transform:translateY(-5%)}to{transform:translateY(-10%)}}
+.ghost .dr{animation:none;transform:none}
+.ghost.fly .body{position:absolute;inset:0;transition:transform .25s ease-out}
+.ghost.fly.go .body{transform:translateY(-16%) scale(1.14)}.ghost.fly.land .body{transform:translateY(-5%) scale(1)}
+.ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
+.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
+.ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none}
+.ghost.fly .flare{position:absolute;top:50%;left:-26%;width:52%;height:42%;transform:translateY(-50%) scale(.4);border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0,#9be7ff 22%,rgba(80,200,255,.8) 48%,rgba(80,200,255,0) 74%);opacity:0;filter:blur(1px);transition:opacity .18s ease-in,transform .18s ease-in}
+.ghost.fly.s1 .flare{background:radial-gradient(ellipse at 72% 50%,#fff 0,#ffe08a 22%,rgba(255,170,60,.8) 48%,rgba(255,170,60,0) 74%)}
+.ghost.fly.spool .flare{opacity:.85;transform:translateY(-50%) scale(1)}
+.ghost.fly.go .flare{opacity:1;animation:flick2 .11s ease-in-out infinite alternate}.ghost.fly.land .flare{opacity:0;transform:translateY(-50%) scale(.4)}
+@keyframes flick2{from{transform:translateY(-50%) scale(1)}to{transform:translateY(-50%) scale(1.18,1.06)}}
+.streak{position:absolute;height:6px;transform-origin:0 50%;z-index:7;pointer-events:none;border-radius:3px;background:linear-gradient(90deg,rgba(80,200,255,0),rgba(80,200,255,.55) 60%,rgba(170,240,255,.95));opacity:.9}
+.streak.s1{background:linear-gradient(90deg,rgba(255,170,60,0),rgba(255,170,60,.55) 60%,rgba(255,230,160,.95))}
 .ghost .dr{position:relative;inset:auto;width:100%;height:100%}
 .callout{position:absolute;transform:translate(-50%,-100%);z-index:12;pointer-events:none;display:flex;flex-direction:column;align-items:center}
 .callout .bub{background:var(--you);color:#1a1200;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;padding:5px 9px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.55)}
@@ -1476,7 +1493,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.57.0';
+const VERSION='1.58.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -2115,7 +2132,7 @@ const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
+  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
@@ -2476,12 +2493,20 @@ function shootAnim(from,to){return new Promise(res=>{const b=$('board');const [x
   const dist=Math.hypot(x1-x0,y1-y0);const ms=Math.max(180,Math.min(520,dist*1.1));m.style.transition=`left ${ms}ms linear,top ${ms}ms linear`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{m.style.left=x1+'px';m.style.top=y1+'px';}));
   setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);setTimeout(()=>f.remove(),420);res();},ms);});}
+// ---------- a drone in flight (v1.58): engines spool up for a beat, the drone lifts off its shadow, turns its engine to
+// face the way it is going, leaves a streak in its side's color, and settles back down on landing. The letter stays upright.
+const SPOOL=180;
 function flyDrone(from,to,html){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');const [x0,y0,w]=cellXY(from[0],from[1]),[x1,y1]=cellXY(to[0],to[1]);
-  const g=document.createElement('div');g.className='ghost';g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x0+'px';g.style.top=y0+'px';g.innerHTML=html;b.appendChild(g);
+  const ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI,dist=Math.hypot(x1-x0,y1-y0),ms=Math.max(260,Math.min(700,dist*1.2)),side=/class="dr s1/.test(html)?'s1':'s2';
+  const g=document.createElement('div');g.className='ghost fly '+side;g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x0+'px';g.style.top=y0+'px';g.style.setProperty('--ang',ang+'deg');
+  g.innerHTML='<i class="shade"></i><div class="eng"><i class="flare"></i></div><div class="body">'+html+'</div>';b.appendChild(g);
   const dest=cellEl(to[0],to[1]).lastChild;dest.style.visibility='hidden';
-  const dist=Math.hypot(x1-x0,y1-y0);const ms=Math.max(200,Math.min(600,dist*1.2));g.style.transition=`left ${ms}ms cubic-bezier(.3,.6,.3,1),top ${ms}ms cubic-bezier(.3,.6,.3,1)`;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';}));
-  setTimeout(()=>{g.remove();dest.style.visibility='';res();},ms+20);});}
+  const st=document.createElement('div');st.className='streak '+side;st.style.left=x0+'px';st.style.top=y0+'px';st.style.width='0px';st.style.transform=`translate(0,-50%) rotate(${ang}deg)`;b.appendChild(st);
+  requestAnimationFrame(()=>g.classList.add('spool'));
+  setTimeout(()=>{g.classList.remove('spool');g.classList.add('go');g.style.transition=`left ${ms}ms cubic-bezier(.45,0,.2,1),top ${ms}ms cubic-bezier(.45,0,.2,1)`;st.style.transition=`width ${ms}ms cubic-bezier(.45,0,.2,1),opacity ${Math.round(ms*0.5)}ms ease-in ${Math.round(ms*0.55)}ms`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';st.style.width=dist+'px';st.style.opacity='0';}));},SPOOL);
+  setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},SPOOL+ms);
+  setTimeout(()=>{g.remove();st.remove();dest.style.visibility='';res();},SPOOL+ms+170);});}
 async function movedAnim(d,from){renderBoard();await flyDrone(from,[d.r,d.c],droneHTML(d));await playFX();}
 
 
