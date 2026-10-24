@@ -1451,7 +1451,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.54.0';
+const VERSION='1.55.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -1981,10 +1981,11 @@ async function botTurn(me){
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
   const trap=L>=7?(drift=driftPreview(me)):null;const trapVia=trap&&trap.killM&&trap.killM.side===me?trap.via:null; /* the stack that an asteroid would jump to land on the Command drone */
-  const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=2; // a siege two squares from an unguarded command drone: this turn must deal with it
+  const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=3; /* v1.55: at three, not two: a lone siege cannot be shot, so the only answers are a guard beside the Command drone, room to run, a bomb, or four drones around it */
+  if(L>=5&&sieges.length&&!guarded.length)for(const o of opts)if(o.type==='swap'&&o.sw.sh.spawns.some(sp=>sp.letters.includes('G')))o.v+=20; /* a guard shape is worth a lot with a siege on the board and none beside the Command drone */ // a siege two squares from an unguarded command drone: this turn must deal with it
   for(const d of dronesOf(me)){
     if(S.tut&&d.kind==='X')continue; // the coached game: the bot's siege stays put, so a beginner is never walked into a surprise loss
-    if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=2);if(!danger&&!trapVia){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
+    if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=3);if(!danger&&!trapVia){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
     if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?(g>=4?8+4*g+(half(me,d.r)?0:3):2*g):1});}
     if(L>=5&&d.kind==='X'&&d.armed){let n=0,mine=0;for(const [dr,dc] of DIR4){let r=d.r+dr,c=d.c+dc;while(inb(r,c)&&vis(me,r,c)&&!solid(r,c)){const e=droneAt(r,c);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;r+=dr;c+=dc;}}if(n>=3&&n>mine)opts.push({type:'detonate',d,v:10*n-8*mine});}
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
@@ -2005,14 +2006,16 @@ async function botTurn(me){
       if(L>=6&&d.kind!=='X'&&threat.has(k))v-=8*d.power; // do not park where it can be taken next turn
       if(L>=6&&d.kind!=='X'&&d.kind!=='M'&&fire.has(k))v-=(d.power===1?6:3); // nor in range of a loaded enemy shooter
       if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
-      if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60; // or a guard steps in beside it // the command drone never flees into a siege: beside one with no guard is the game
+      if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60;
+      if(L>=5&&d.kind==='G'&&myM&&!guarded.length&&sieges.length&&sdist(myM.r,myM.c)<=4&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=30; /* a guard heads home while the siege is still four away */
+      if(L>=6&&myM&&d.kind!=='M'&&kind!=='merge'&&kind!=='take'){for(const x of sieges){if(Math.max(Math.abs(x.r-myM.r),Math.abs(x.c-myM.c))>2||Math.max(Math.abs(x.r-r),Math.abs(x.c-c))!==1)continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(x.r+dr,x.c+dc);if(e&&e.side===me&&e!==d)n++;}v+=n>=3?45:4+3*n;}} /* close the ring on a siege near the Command drone: the fourth drone beside it ends it */ // or a guard steps in beside it // the command drone never flees into a siege: beside one with no guard is the game
       if(L>=9&&myM&&d.kind==='G'){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1;const wasNear=guarded.includes(d);if(near&&!guarded.length)v+=10;if(wasNear&&!near&&guarded.length<=1)v-=8;} // a guard stays beside the command drone
       if(trapVia&&(d.id===trapVia.id||d.kind==='M')&&c!==d.c)v+=40; /* step the jumped stack, or the Command drone, out of the asteroid's column */
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
   if(smart&&L>=8&&!S.story&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play only: story bosses stay as they are */
-  let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else pick=opts[rnd(opts.length)];
+  let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else{const safe=L>=3?opts.filter(o=>o.v>-500):opts;pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
