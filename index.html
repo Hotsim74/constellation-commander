@@ -1451,7 +1451,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.53.0';
+const VERSION='1.54.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -1702,14 +1702,14 @@ function targets(d){
   if(d.kind==='T')return T; // a turret never moves
   if(d.kind==='S'){ // slides the full diagonal, into the dark too; stops at the first thing it meets
     for(const [dr,dc] of DIAG){let r=d.r+dr,c=d.c+dc;while(inb(r,c)){if(solid(r,c))break;const o=droneAt(r,c);
-      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)&&vis(d.side,r,c))T.set(key(r,c),'take');else if(o.side===d.side&&o.power+d.power<=MAXP&&o.kind!=='X'&&vis(d.side,r,c))T.set(key(r,c),'merge');break;} // v1.41: a raider may slide into one of its own to stack
+      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)&&vis(d.side,r,c))T.set(key(r,c),'take');else if(o.side===d.side&&o.power+d.power<=MAXP&&vis(d.side,r,c))T.set(key(r,c),'merge');break;} // v1.41: a raider may slide into one of its own to stack
       T.set(key(r,c),vis(d.side,r,c)?'move':'dark');r+=dr;c+=dc;}}
     return T;}
   if(d.kind==='X'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c))continue;const o=droneAt(r,c);if(o){if(o.side!==d.side&&o.kind==='T'&&vis(d.side,r,c))T.set(key(r,c),'take');continue;}T.set(key(r,c),vis(d.side,r,c)?'move':'dark');}return T;}
-  if(d.kind==='G'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c)||!cleared(d.side,r,c))continue;const o=droneAt(r,c);if(!o)T.set(key(r,c),'move');else if(o.side===d.side&&o.power+d.power<=MAXP&&o.kind!=='X')T.set(key(r,c),'merge');}return T;}
+  if(d.kind==='G'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c)||!cleared(d.side,r,c))continue;const o=droneAt(r,c);if(!o)T.set(key(r,c),'move');else if(o.side===d.side&&o.power+d.power<=MAXP)T.set(key(r,c),'merge');}return T;}
   const consider=(r,c)=>{if(solid(r,c)||!vis(d.side,r,c))return false;const o=droneAt(r,c);
     if(!o){T.set(key(r,c),'move');return true;}
-    if(o.side===d.side){if(o.power+d.power<=MAXP&&o.kind!=='X')T.set(key(r,c),'merge');return false;}
+    if(o.side===d.side){if(o.power+d.power<=MAXP)T.set(key(r,c),'merge');return false;}
     if(TAKES[d.kind].includes(o.kind))T.set(key(r,c),'take');return false;};
   const any=d.kind==='H';const maxPaid=1;
   const seen=new Set([key(d.r,d.c)*20]);const q=[[d.r,d.c,0,0]];
@@ -1767,7 +1767,7 @@ function applyMove(d,r,c){
   if(d.kind==='S'){ // a slide: it stops at the first thing it meets, seen or not
     const dr=Math.sign(r-d.r),dc=Math.sign(c-d.c);let rr=d.r+dr,cc=d.c+dc,stop=null;
     while(inb(rr,cc)){if(solid(rr,cc))break;const o=droneAt(rr,cc);
-      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)){stop=[rr,cc];}else if(o.side===d.side&&o.power+d.power<=MAXP&&o.kind!=='X'&&rr===r&&cc===c){stop=[rr,cc];}break;}
+      if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)){stop=[rr,cc];}else if(o.side===d.side&&o.power+d.power<=MAXP&&rr===r&&cc===c){stop=[rr,cc];}break;}
       stop=[rr,cc];if(rr===r&&cc===c)break;rr+=dr;cc+=dc;}
     if(!stop)return;[r,c]=stop;}
   const o=droneAt(r,c);
