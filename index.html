@@ -87,7 +87,17 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes hintpulse{from{box-shadow:inset 0 0 0 2px var(--ok)}to{box-shadow:inset 0 0 0 5px rgba(62,194,122,.5)}}
 .cell.boom{animation:boom .5s ease-out}
 @keyframes boom{0%{background:#fff}100%{}}
-.cell.blast{background:#ff9a3c!important}
+.cell.blast{animation:blastfade 1.3s ease-out forwards}
+@keyframes blastfade{0%{background:#fff}15%{background:#ff9a3c}100%{background:#4a2410}}
+.fire{position:absolute;transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:fireup 1.1s ease-out forwards;filter:drop-shadow(0 0 10px rgba(255,120,30,.9))}
+.fire i{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 58%,#fff 0,#fff6c0 18%,#ffc130 38%,#ff6a1a 60%,rgba(220,40,0,.85) 78%,rgba(140,10,0,0) 96%);animation:flick .18s ease-in-out infinite alternate}
+.fire i:nth-child(2){inset:12% 18% 0 22%;animation-delay:.06s}.fire i:nth-child(3){inset:0 8% 18% 4%;animation-delay:.11s}
+@keyframes fireup{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}20%{transform:translate(-50%,-50%) scale(1.35);opacity:1}65%{transform:translate(-50%,-60%) scale(1.15);opacity:.95}100%{transform:translate(-50%,-90%) scale(.55);opacity:0}}
+@keyframes flick{from{transform:scale(1) rotate(-4deg)}to{transform:scale(1.1) rotate(5deg)}}
+.ember{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffd27a;box-shadow:0 0 6px 2px #ff8a1a;z-index:10;pointer-events:none;animation:ember 1.1s ease-out forwards}
+@keyframes ember{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx,0px),-80px);opacity:0}}
+.shock{position:absolute;width:20px;height:20px;border-radius:50%;border:4px solid rgba(255,220,150,.9);box-shadow:0 0 18px 6px rgba(255,140,40,.6),inset 0 0 12px 4px rgba(255,200,100,.5);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:shock .8s ease-out forwards}
+@keyframes shock{to{width:300px;height:300px;opacity:0;border-width:1px}}
 .msl{position:absolute;width:14px;height:6px;border-radius:3px;background:#fff;box-shadow:0 0 6px 2px #ff9a3c,0 0 16px 6px rgba(255,120,40,.45);z-index:9;pointer-events:none}
 .msl::after{content:'';position:absolute;right:100%;top:1px;width:26px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,154,60,0),rgba(255,154,60,.9))}
 .flash{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(255,180,80,.9);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:flash .4s ease-out forwards}
@@ -1451,7 +1461,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.55.0';
+const VERSION='1.56.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -1816,9 +1826,9 @@ const bombName=(side,b)=>b.kind==='B'?cap(own(side,'B')):t`The bomb on ${own(sid
 async function blastAt(side,r0,c0,what){
   const hit=[[r0,c0]];for(const [dr,dc] of DIR4){let r=r0+dr,c=c0+dc;while(inb(r,c)&&vis(side,r,c)&&!isWall(r,c)&&!isCmd(r,c)){hit.push([r,c]);r+=dr;c+=dc;}}
   let gone=0;
-  for(const [r,c] of hit){const o=droneAt(r,c);if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);note(t`The blast stripped the stack off ${own(o.side,'M')}.`);}}else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);wreckAt(r,c);gone++;}if(S.grid[r][c]>=0){S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}cellEl(r,c).classList.add('blast');}
+  for(const [r,c] of hit){const o=droneAt(r,c);if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);note(t`The blast stripped the stack off ${own(o.side,'M')}.`);}}else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);wreckAt(r,c);gone++;}if(S.grid[r][c]>=0){S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}fireAt(r,c,55*Math.max(Math.abs(r-r0),Math.abs(c-c0)));}shockAt(r0,c0); /* v1.56: fire spreads out from the bomb along the cross */
   note(t`${what} went off at ${sq(r0,c0)}: ${hit.length} squares, ${gone} drone${gone===1?'':'s'}.`,{why:'bomb',at:[[r0,c0]],lab:[t('boom')]});
-  renderBoard();await playFX();for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');
+  renderBoard();await playFX();await sleep(450);setTimeout(()=>{for(const [r,c] of hit)cellEl(r,c).classList.remove('blast');},900);
   const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(780);await resolve(side,null);}
 async function tickBombs(side){
   for(const b of dronesOf(side).filter(d=>d.fuse!=null)){b.fuse--; /* bombs, and drones carrying one on a fuse */
@@ -2474,6 +2484,11 @@ function playFX(){const list=fx;fx=[];if(!list.length)return Promise.resolve();c
   return sleep(620);}
 
 // ---------- the command drone's emblem: a four-point star in the side's color over a dark disc
+// ---------- the bomb's fire (v1.56): a three-tongue fireball over each square of the cross, embers rising, a shockwave from the middle
+function fireAt(r,c,delay){const b=$('board');const el=cellEl(r,c);setTimeout(()=>{el.classList.add('blast');const [x,y,w]=cellXY(r,c);const f=document.createElement('div');f.className='fire';f.style.left=x+'px';f.style.top=y+'px';f.style.width=f.style.height=(w*(1.9+Math.random()*.7))+'px';f.innerHTML='<i></i><i></i><i></i>';f.querySelectorAll('i').forEach(i=>{i.style.transform='rotate('+Math.round(Math.random()*360)+'deg) scale('+(0.85+Math.random()*.3).toFixed(2)+')';});b.appendChild(f);
+  for(let i=0;i<5;i++){const e=document.createElement('div');e.className='ember';e.style.left=(x+(Math.random()-.5)*w*.8)+'px';e.style.top=(y+(Math.random()-.5)*w*.4)+'px';e.style.setProperty('--dx',((Math.random()-.5)*50)+'px');e.style.animationDelay=(Math.random()*.35)+'s';b.appendChild(e);setTimeout(()=>e.remove(),1500);}
+  setTimeout(()=>f.remove(),1100);},delay);}
+function shockAt(r,c){const b=$('board');const [x,y]=cellXY(r,c);const s=document.createElement('div');s.className='shock';s.style.left=x+'px';s.style.top=y+'px';b.appendChild(s);setTimeout(()=>s.remove(),900);}
 function turretSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="turret"><rect x="26" y="26" width="76" height="76" rx="14" fill="#0b1016" stroke="${col}" stroke-width="3"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="60" y="6" width="8" height="24" rx="2" fill="${col}" transform="rotate(${a} 64 64)"/>`).join('')}<circle cx="64" cy="64" r="24" fill="#1a222d" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="8" fill="${col}"/></svg>`;}
 function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="command drone"><circle cx="64" cy="64" r="56" fill="#0b1016" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="44" fill="none" stroke="${col}" stroke-width="1.5" opacity=".45"/><polygon points="64,14 76,52 114,64 76,76 64,114 52,76 14,64 52,52" fill="${col}" opacity=".9"/><polygon points="64,34 70,58 94,64 70,70 64,94 58,70 34,64 58,58" fill="#fff" opacity=".85"/><circle cx="64" cy="64" r="7" fill="${col}"/></svg>`;}
 // ---------- two phones (v1.20). One match document in the Firebase Realtime Database, reached with
