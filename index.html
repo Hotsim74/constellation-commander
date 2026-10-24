@@ -1069,7 +1069,7 @@ const FR={
 "Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.": "Ses chasseurs tirent leurs deux missiles, ses sièges marchent vers votre drone de commandement, et il saute pour du terrain.",
 "It will not park a drone where your raiders, hunters or guards can take it next turn.": "Il ne laisse pas un drone là où vos pillards, chasseurs ou boucliers peuvent le prendre au tour suivant.",
 "It picks swaps for the cascade too: more stars cleared, and it looks at where the asteroids would land before it clears eight.": "Il choisit aussi ses échanges pour la cascade : plus d'étoiles effacées, et il regarde où tomberaient les astéroïdes avant d'en effacer huit.",
-"It goes after wrecks when Salvage is on and walks its bombs toward your drones.": "Il va chercher les épaves quand la Récupération est activée et avance ses bombes vers vos drones.",
+"It goes after wrecks when Salvage is on, walks its bombs toward your drones, and in free play looks one move ahead: what you could take, shoot or win with after each move it considers.": "Il va chercher les épaves quand la récupération est activée, marche ses bombes vers vos drones, et en partie libre regarde un coup en avant : ce que vous pourriez prendre, abattre ou gagner après chaque coup qu'il envisage.",
 "It keeps a guard beside its Command drone at all times.": "Il garde en permanence un bouclier à côté de son drone de commandement.",
 "Every turn is its best move. Nothing is random.": "Chaque tour est son meilleur coup. Rien n'est au hasard.",
 "Story": "Histoire",
@@ -1451,7 +1451,8 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.52.0';
+const VERSION='1.53.0';
+let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1520,7 +1521,7 @@ function layOpening(){
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
 function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
-function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));sfxNote(w);storyBark(w);}}
+function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 function wreckAt(r,c){if(!S.salvage)return;S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
 const earned=()=>S.salvage?t(': a wreck holds its missile.'):t(': a missile earned.');
@@ -1885,7 +1886,7 @@ function checkSiegeWin(){ // a siege drone beside the enemy command drone, with 
   for(const x of S.drones){if(x.kind!=='X')continue;const ft=fireTargets(x);if(ft.cmd&&!ft.guards.length){gameOver(x.side,t`${who(x.side)} took the Command drone.`);return true;}}
   return false;}
 function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
-function gameOver(w,reason){if(S.over)return;S.over={w,reason};note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);}
+function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);}
 async function afterAction(){const actor=S.turn;
   if(S.over){closeAction(actor);save();renderAll();return;}
   if((S.cleared[S.turn]||0)>=8&&!S.drifted){S.drifted=true;await asteroidDrift(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}}
@@ -1912,7 +1913,7 @@ const BOT_LADDER=[
 'Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.',
 'It will not park a drone where your raiders, hunters or guards can take it next turn.',
 'It picks swaps for the cascade too: more stars cleared, and it looks at where the asteroids would land before it clears eight.',
-'It goes after wrecks when Salvage is on and walks its bombs toward your drones.',
+'It goes after wrecks when Salvage is on, walks its bombs toward your drones, and in free play looks one move ahead: what you could take, shoot or win with after each move it considers.',
 'It keeps a guard beside its Command drone at all times.',
 'Every turn is its best move. Nothing is random.'];
 function snapSkill(){const v=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10;$('inSkill').value=v;return v;}
@@ -1921,6 +1922,34 @@ async function botSafely(){
   try{await botTurn(BOT);}
   catch(e){note(t`Bot error: ${e&&e.message||e}. Turn skipped.`);console.error(e);S.turn=YOU;for(const d of S.drones)d.shots=0;save();renderAll();}
 }
+
+// ---------- v1.53: one move ahead (free play, skill 80+). What the other side could do next turn on this board:
+// a siege step that wins, a claim that reaches the land win (either = 10000), then its missiles plus its one
+// worst action (a take, a guard sweep, a warp landing). Static, no animation; run on a sandbox copy of S.
+function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b,r,c)=>Math.max(Math.abs(a-r),Math.abs(b-c));
+  const val=d=>d.kind==='M'?0:(d.kind==='X'?10:d.kind==='H'?9:d.kind==='G'?8:d.kind==='T'?12:6)*Math.max(1,d.power)+2*(d.ammo||0);
+  if(myM){for(const x of dronesOf(him)){if(x.kind!=='X')continue;const sqs=[[x.r,x.c]];for(const [k,t] of targets(x))if(t==='move'||t==='dark')sqs.push(rc(k));
+    for(const [r,c] of sqs){if(near(r,c,myM.r,myM.c)!==1)continue;const g=dronesOf(me).some(g=>g.kind==='G'&&(near(g.r,g.c,r,c)<=1||near(g.r,g.c,myM.r,myM.c)<=1));if(!g)return 10000;}}}
+  let best=0;for(const d of dronesOf(him))if(d.kind==='C'&&d.claims>0)best=Math.max(best,claimGain(d));if(landOf(him)+best>=S.win)return 10000;
+  const hits=[];for(const e of dronesOf(him)){if(!shotsOf(e)||!ammoOf(e))continue;const n=Math.min(shotsOf(e),ammoOf(e));const cand=[];
+    for(const d of dronesOf(me)){if(!inRange(e,d.r,d.c)||!vis(him,d.r,d.c))continue;if(d.kind==='T'||((d.kind==='M'||d.kind==='X')&&d.power<=1))continue;cand.push(d.power===1?val(d):0.35*val(d));}
+    cand.sort((a,b)=>b-a);for(let i=0;i<n&&i<cand.length;i++)hits.push(cand[i]);}
+  let dmg=0.8*hits.reduce((a,b)=>a+b,0),worst=0;
+  for(const e of dronesOf(him)){
+    for(const [k,t] of targets(e)){if(t!=='take')continue;const v=droneAt(...rc(k));if(v&&v.side===me)worst=Math.max(worst,val(v));}
+    if(e.kind==='G')for(const [k,t] of targets(e)){if(t!=='move')continue;const [r,c]=rc(k);let s=0;for(const [dr,dc] of DIR8){const v=droneAt(r+dr,c+dc);if(v&&v.side===me&&S.own[key(r+dr,c+dc)]===him){if(SWEEPS.includes(v.kind))s+=val(v);else if(v.kind==='S'&&v.power>1)s+=4;}}worst=Math.max(worst,s);}
+    if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&v.kind!=='X'&&v.kind!=='T'&&(S.own[key(a,b)]===him||S.own[key(a,b)]===0))s+=val(v);}worst=Math.max(worst,s);}}
+  return dmg+worst;}
+// try each of the best options on a copy of the board and charge it what the other side could do back
+function lookAhead(me,opts){const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,8);const base=replyDamage(me);
+  for(const o of top){if(o.type==='detonate')continue;const saved=S;S=JSON.parse(JSON.stringify(saved));simQuiet=true;let ok=true;
+    try{const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
+      if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
+      else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else ok=false;
+      if(ok){reload(him);o.la=replyDamage(me)-base;}}
+    catch(e){ok=false;}
+    S=saved;simQuiet=false;fx=[];
+    if(ok&&o.la!=null)o.v-=o.la;}}
 async function botTurn(me){
   if(S.over)return;
   // the coached game: until the player has fired, the bot walks its scout into the player's view so there is something to shoot
@@ -1982,6 +2011,7 @@ async function botTurn(me){
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
+  if(smart&&L>=8&&!S.story&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play only: story bosses stay as they are */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else pick=opts[rnd(opts.length)];
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
