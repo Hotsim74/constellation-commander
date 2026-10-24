@@ -204,6 +204,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes constelIn{from{opacity:0;transform:scale(.92);transform-origin:50% 50%}to{opacity:1;transform:none}}
 .brief .bhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 0}
 .brief .bhead h2{margin:0;font-size:22px}
+.bark{position:absolute;left:6px;right:6px;top:6px;z-index:20;display:flex;gap:10px;align-items:center;background:rgba(10,16,24,.94);border:1px solid var(--bot);border-radius:8px;padding:8px 12px;pointer-events:none;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.bark.show{opacity:1;animation:barkIn .35s ease-out}.bark.out{animation:barkOut .4s ease-in forwards}@keyframes barkIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}@keyframes barkOut{to{opacity:0;transform:translateY(-6px)}}.bark .dr{position:relative;inset:auto;width:40px;height:40px;flex:none;animation:bosspulse 1s ease-out infinite}.bark .bk{display:flex;flex-direction:column;gap:2px;font-size:15px;line-height:1.35}.bark .bk b{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bot)}
 .brief .boss{width:64px;height:64px;position:relative;flex:none}.brief .boss .dr{position:absolute;inset:0;transition:box-shadow .2s}
 .brief .boss.speaking .dr{animation:bosspulse .7s ease-in-out infinite alternate}
 @keyframes bosspulse{from{box-shadow:0 0 0 2px rgba(78,168,220,.4)}to{box-shadow:0 0 0 8px rgba(78,168,220,0)}}
@@ -290,7 +292,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1346,13 +1348,110 @@ const FR={
 "Got it, let's play": "Compris, on joue",
 "Walk me through my first game": "Guidez-moi pour ma première partie",
 "Read the full rulebook": "Lire les règles complètes",
-"All three are in Settings any time.": "Les trois sont dans les Réglages à tout moment."
-}
-;
+"All three are in Settings any time.": "Les trois sont dans les Réglages à tout moment.",
+"Move something. I dare you.": "Bougez quelque chose. Je vous mets au défi.",
+"Told you. Anything that moves.": "Je vous l'avais dit. Tout ce qui bouge.",
+"That one was slow anyway.": "Celui-là était lent de toute façon.",
+"Claim all you like. I shoot over lines.": "Revendiquez tant que vous voulez. Je tire par-dessus les lignes.",
+"Big swing. I only need a small one.": "Grand geste. Il m'en faut un petit.",
+"Eight barrels. Now I reach even more.": "Huit canons. J'atteins encore plus loin.",
+"Loud. I prefer accurate.": "Bruyant. Je préfère précis.",
+"That's my siege at your door. Knock knock.": "C'est mon siège à votre porte. Toc toc.",
+"Three left. Three is plenty to shoot with.": "Il m'en reste trois. Trois, c'est assez pour tirer.",
+"Running out of targets. Shame.": "Je manque de cibles. Dommage.",
+"Twenty turns and you're still moving. Good. More to shoot.": "Vingt tours et vous bougez encore. Bien. Plus à tirer.",
+"My land. My guards. Mind your step.": "Ma terre. Mes gardes. Regardez où vous marchez.",
+"A guard met you. I did warn you.": "Un garde vous a reçu. Je vous avais prévenu.",
+"One drone. The court has more.": "Un drone. La cour en a d'autres.",
+"Draw your lines. Mine have guards on them.": "Tracez vos lignes. Les miennes ont des gardes.",
+"A tantrum of stars. How common.": "Une crise d'étoiles. Comme c'est vulgaire.",
+"The palace has a new wall.": "Le palais a un nouveau mur.",
+"Noise in the court. Unseemly.": "Du bruit à la cour. Inconvenant.",
+"My siege is calling on your Command drone. Receive it.": "Mon siège rend visite à votre drone de commandement. Recevez-le.",
+"Three loyal drones. That is still a court.": "Trois drones loyaux. C'est encore une cour.",
+"Your army is a rumor now.": "Votre armée n'est plus qu'une rumeur.",
+"Twenty turns. You bow slowly, I'll grant you that.": "Vingt tours. Vous vous inclinez lentement, je vous l'accorde.",
+"Count my stacks. Then count your missiles.": "Comptez mes piles. Puis comptez vos missiles.",
+"Chewed. Swallowed. Next.": "Mâché. Avalé. Au suivant.",
+"You scratched a scale. I have more.": "Vous avez rayé une écaille. J'en ai d'autres.",
+"Land. I'll stack on it later.": "De la terre. J'empilerai dessus plus tard.",
+"Rocks rolling. I chew rocks.": "Des rochers qui roulent. Je mâche les rochers.",
+"A tower on the hoard. Try it.": "Une tour sur le trésor. Essayez donc.",
+"Hot. I like hot.": "Chaud. J'aime le chaud.",
+"My siege, three deep, at your door.": "Mon siège, trois d'épaisseur, à votre porte.",
+"Three drones, but how deep?": "Trois drones, mais de quelle épaisseur ?",
+"Thin. You are so thin.": "Mince. Vous êtes si mince.",
+"Twenty turns and my stacks are taller than when we started.": "Vingt tours et mes piles sont plus hautes qu'au départ.",
+"Listen. Two missiles, one breath.": "Écoutez. Deux missiles, un souffle.",
+"That was a chord.": "C'était un accord.",
+"A wrong note. The song goes on.": "Une fausse note. La chanson continue.",
+"Lines on a board. I play lines too.": "Des lignes sur un plateau. Moi aussi je joue des lignes.",
+"A crash of stars. Loud, not pretty.": "Un fracas d'étoiles. Fort, pas joli.",
+"A new instrument. Eight strings.": "Un nouvel instrument. Huit cordes.",
+"Percussion. Overrated.": "Des percussions. Surestimées.",
+"My siege walks in four-four time, straight at your Command drone.": "Mon siège marche à quatre temps, droit sur votre drone de commandement.",
+"Three strings still play.": "Trois cordes jouent encore.",
+"You're down to a solo.": "Vous en êtes au solo.",
+"Twenty bars in. The tempo is mine.": "Vingt mesures. Le tempo est à moi.",
+"Come find a drone to take. Go on.": "Venez trouver un drone à prendre. Allez-y.",
+"You stood still. I don't.": "Vous êtes resté immobile. Pas moi.",
+"You caught one. Note how long it took.": "Vous en avez attrapé un. Notez le temps qu'il a fallu.",
+"Claim it. I won't be standing on it.": "Revendiquez-la. Je ne serai pas dessus.",
+"Rocks. I was already out of their way.": "Des rochers. J'étais déjà hors de leur chemin.",
+"A turret never moves. Mine doesn't need to.": "Une tourelle ne bouge jamais. La mienne n'en a pas besoin.",
+"A blast where I used to be.": "Une explosion là où j'étais.",
+"My siege is beside your Command drone, and nowhere you can reach.": "Mon siège est à côté de votre drone de commandement, et hors de votre portée.",
+"Three drones, and you can't touch any of them.": "Trois drones, et vous ne pouvez en toucher aucun.",
+"Three left. Which one do you want to lose?": "Il vous en reste trois. Lequel voulez-vous perdre ?",
+"Twenty turns. Have you taken a clean shot yet?": "Vingt tours. Avez-vous eu un seul tir net ?",
+"One swap. Watch what falls.": "Un échange. Regardez ce qui tombe.",
+"That one fell with the rest.": "Celui-là est tombé avec le reste.",
+"Cut a head. Count the heads.": "Coupez une tête. Comptez les têtes.",
+"Lines. I'll pull them out from under you.": "Des lignes. Je les tirerai sous vos pieds.",
+"Eight stars? Cute. Now watch mine.": "Huit étoiles ? Mignon. Regardez les miennes.",
+"It fires on its own. Like my cascades.": "Elle tire toute seule. Comme mes cascades.",
+"A blast. My cascades are quieter and do more.": "Une explosion. Mes cascades font moins de bruit et plus de dégâts.",
+"My siege came in on the cascade. It's at your door.": "Mon siège est arrivé sur la cascade. Il est à votre porte.",
+"Three heads. The old number was nine.": "Trois têtes. Avant, c'était neuf.",
+"You're down to three. The rocks will finish it.": "Il vous en reste trois. Les rochers finiront le travail.",
+"Twenty turns. The board is tilting my way.": "Vingt tours. Le plateau penche de mon côté.",
+"Lose something. I'll pick it up.": "Perdez quelque chose. Je le ramasserai.",
+"Mine now. It will pay me a missile.": "À moi maintenant. Il me paiera un missile.",
+"Leave it there. I'll be back for it.": "Laissez-le là. Je reviendrai le chercher.",
+"Your land. My wrecks on it, soon.": "Votre terre. Mes épaves dessus, bientôt.",
+"Stars everywhere. Wrecks soon.": "Des étoiles partout. Des épaves bientôt.",
+"A turret. Built from what you lost.": "Une tourelle. Bâtie avec ce que vous avez perdu.",
+"That one was mine. They know where you sleep.": "Celle-là était à moi. Elles savent où vous dormez.",
+"My siege is at your Command drone. Sleep lightly.": "Mon siège est à votre drone de commandement. Dormez léger.",
+"Three left, and a field of wrecks to feed them.": "Il m'en reste trois, et un champ d'épaves pour les nourrir.",
+"Three left. I'll collect them in order.": "Il vous en reste trois. Je les ramasserai dans l'ordre.",
+"Twenty turns. The field is mine to pick.": "Vingt tours. Le champ est à moi.",
+"My Command drone has a guard. It always will.": "Mon drone de commandement a un garde. Il en aura toujours un.",
+"The guard did that. The guard does everything.": "C'est le garde qui a fait ça. Le garde fait tout.",
+"Not the guard. Never the guard.": "Pas le garde. Jamais le garde.",
+"Claim. My guard stays where it is.": "Revendiquez. Mon garde reste où il est.",
+"Rocks. The guard doesn't move for rocks.": "Des rochers. Le garde ne bouge pas pour des rochers.",
+"Another thing that never leaves.": "Encore une chose qui ne part jamais.",
+"A blast. The guard is still beside me.": "Une explosion. Le garde est toujours à côté de moi.",
+"My siege is beside your Command drone. Where is your guard?": "Mon siège est à côté de votre drone de commandement. Où est votre garde ?",
+"Three. One is the guard. Do the math.": "Trois. L'un est le garde. Faites le calcul.",
+"Three left. Is one a guard? It should be.": "Il vous en reste trois. L'un est-il un garde ? Il devrait.",
+"Twenty turns. The guard has not moved. It won't.": "Vingt tours. Le garde n'a pas bougé. Il ne bougera pas.",
+"Twelve. Begin.": "Douze. Commencez.",
+"Expected.": "Prévu.",
+"Noted.": "Noté.",
+"I saw it before you swapped.": "Je l'ai vu avant votre échange.",
+"Ten missiles, placed.": "Dix missiles, placés.",
+"Accounted for.": "Pris en compte.",
+"My siege is where it was always going to be.": "Mon siège est là où il devait toujours être.",
+"Three is enough.": "Trois suffisent.",
+"Three. It ends the way the numbers say.": "Trois. Ça finit comme les chiffres le disent.",
+"Twenty turns. Nothing has surprised me.": "Vingt tours. Rien ne m'a surpris."
+};
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.51.0';
+const VERSION='1.52.0';
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
@@ -1421,7 +1520,7 @@ function layOpening(){
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
 function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
-function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));sfxNote(w);}}
+function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));sfxNote(w);storyBark(w);}}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 function wreckAt(r,c){if(!S.salvage)return;S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
 const earned=()=>S.salvage?t(': a wreck holds its missile.'):t(': a missile earned.');
@@ -1794,7 +1893,7 @@ async function afterAction(){const actor=S.turn;
   await tickBombs(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}
   sweepSiege();if(checkLand()||checkSiegeWin()){closeAction(actor);save();renderAll();return;}
   closeAction(actor);S.turn=other(S.turn);S.turnNo++;reload(S.turn);await turretFire(S.turn);if(!S.over){sweepSiege();if(checkLand()||checkSiegeWin()){save();renderAll();return;}}else{save();renderAll();return;}if(S.wrecks)for(const k in S.wrecks)if(S.turnNo+1-S.wrecks[k]>=WRECK_TTL)delete S.wrecks[k];S.cleared={1:0,2:0};S.drifted=false;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
-  S.moveLeft=S.timers?60000:0;sfxTurn();
+  S.moveLeft=S.timers?60000:0;sfxTurn();storyBarkTurn();
   if(!validSwaps().length)reshuffle();
   save();renderAll();
   if(S.turn===BOT&&!online){busy=true;await sleep(S.tut?1500:900+rnd(1200));await botSafely();busy=false;}
@@ -2552,54 +2651,63 @@ const SECTORS=[
   brag:'I shoot what I can reach, and I reach a lot.',
   win:'Orion is held. Nobody back here expected that. Don\'t get comfortable.',
   lose:'Orion holds. The Hunter sends its regards. We\'ve put another Command drone on the pile for you.',
+  b:{start:'Move something. I dare you.',took:'Told you. Anything that moves.',lost:'That one was slow anyway.',claim:'Claim all you like. I shoot over lines.',bigclear:'Big swing. I only need a small one.',turret:'Eight barrels. Now I reach even more.',bomb:'Loud. I prefer accurate.',siege:'That\'s my siege at your door. Knock knock.',low:'Three left. Three is plenty to shoot with.',yourlow:'Running out of targets. Shame.',mid:'Twenty turns and you\'re still moving. Good. More to shoot.'},
   pts:[[30,10],[70,10],[42,45],[50,47],[58,49],[25,90],[75,90]],lines:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]},
  {id:'cassiopeia',skill:30,name:'Cassiopeia',title:'The Queen',
   brief:'Sector Cassiopeia. The Queen keeps guards, and her guards sweep. Step onto her land next to one and you\'re not coming back. The last Command drone we sent came back on a pike. We\'d like this one back in one piece.',
   brag:'Walk onto my land. My guards will meet you.',
   win:'Cassiopeia is ours. The Queen\'s guards are scrap. Good work, and I don\'t say that.',
   lose:'Cassiopeia holds. The Queen kept the pike. She\'s starting a collection.',
+  b:{start:'My land. My guards. Mind your step.',took:'A guard met you. I did warn you.',lost:'One drone. The court has more.',claim:'Draw your lines. Mine have guards on them.',bigclear:'A tantrum of stars. How common.',turret:'The palace has a new wall.',bomb:'Noise in the court. Unseemly.',siege:'My siege is calling on your Command drone. Receive it.',low:'Three loyal drones. That is still a court.',yourlow:'Your army is a rumor now.',mid:'Twenty turns. You bow slowly, I\'ll grant you that.'},
   pts:[[10,40],[30,70],[50,40],[70,70],[90,40]],lines:[[0,1],[1,2],[2,3],[3,4]]},
  {id:'draco',skill:40,name:'Draco',title:'The Dragon',
   brief:'Sector Draco. The Dragon stacks its drones three deep and chews through asteroids to make room. Bring missiles. Bring more than that.',
   brag:'My drones stand three deep. Count your missiles.',
   win:'Draco is ours. Three deep and it still went down. Somebody write that down.',
   lose:'Draco holds. Your drones were armor for its drones, it seems. Try again.',
+  b:{start:'Count my stacks. Then count your missiles.',took:'Chewed. Swallowed. Next.',lost:'You scratched a scale. I have more.',claim:'Land. I\'ll stack on it later.',bigclear:'Rocks rolling. I chew rocks.',turret:'A tower on the hoard. Try it.',bomb:'Hot. I like hot.',siege:'My siege, three deep, at your door.',low:'Three drones, but how deep?',yourlow:'Thin. You are so thin.',mid:'Twenty turns and my stacks are taller than when we started.'},
   pts:[[10,80],[25,60],[40,70],[55,50],[70,55],[85,35],[75,15],[90,10]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
  {id:'lyra',skill:50,name:'Lyra',title:'The Harp',
   brief:'Sector Lyra. The Harp\'s hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.',
   brag:'Two missiles, one breath. My hunters play in chords.',
   win:'Lyra is ours. The Harp is out of tune. Keep moving.',
   lose:'Lyra holds. Two missiles, one Command drone, no music. Again.',
+  b:{start:'Listen. Two missiles, one breath.',took:'That was a chord.',lost:'A wrong note. The song goes on.',claim:'Lines on a board. I play lines too.',bigclear:'A crash of stars. Loud, not pretty.',turret:'A new instrument. Eight strings.',bomb:'Percussion. Overrated.',siege:'My siege walks in four-four time, straight at your Command drone.',low:'Three strings still play.',yourlow:'You\'re down to a solo.',mid:'Twenty bars in. The tempo is mine.'},
   pts:[[50,10],[45,35],[60,38],[48,62],[64,66]],lines:[[0,1],[1,2],[1,3],[2,4],[3,4]]},
  {id:'scorpius',skill:60,name:'Scorpius',title:'The Scorpion',
   brief:'Sector Scorpius. The Scorpion never leaves a drone where you can take it. You will have to make it come to you. Patience, or whatever you\'ve got instead.',
   brag:'You will never catch one of my drones standing where you can take it.',
   win:'Scorpius is ours. You out-waited a scorpion. That\'s a first.',
   lose:'Scorpius holds. It never gave you a shot, did it. Think about that before the next one.',
+  b:{start:'Come find a drone to take. Go on.',took:'You stood still. I don\'t.',lost:'You caught one. Note how long it took.',claim:'Claim it. I won\'t be standing on it.',bigclear:'Rocks. I was already out of their way.',turret:'A turret never moves. Mine doesn\'t need to.',bomb:'A blast where I used to be.',siege:'My siege is beside your Command drone, and nowhere you can reach.',low:'Three drones, and you can\'t touch any of them.',yourlow:'Three left. Which one do you want to lose?',mid:'Twenty turns. Have you taken a clean shot yet?'},
   pts:[[15,15],[25,30],[35,45],[45,60],[60,70],[75,75],[85,65],[80,50]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
  {id:'hydra',skill:70,name:'Hydra',title:'The Serpent',
   brief:'Sector Hydra. The Serpent plays the cascade: one swap, three lines, and the asteroids come rolling at you. Watch its side of the board, not yours.',
   brag:'Cut one line and three more fall. I play for the cascade.',
   win:'Hydra is ours. All heads accounted for. Command is impressed, which is unsettling.',
   lose:'Hydra holds. The asteroids did half the work. The Serpent did the rest.',
+  b:{start:'One swap. Watch what falls.',took:'That one fell with the rest.',lost:'Cut a head. Count the heads.',claim:'Lines. I\'ll pull them out from under you.',bigclear:'Eight stars? Cute. Now watch mine.',turret:'It fires on its own. Like my cascades.',bomb:'A blast. My cascades are quieter and do more.',siege:'My siege came in on the cascade. It\'s at your door.',low:'Three heads. The old number was nine.',yourlow:'You\'re down to three. The rocks will finish it.',mid:'Twenty turns. The board is tilting my way.'},
   pts:[[5,60],[18,50],[30,58],[45,48],[58,58],[72,50],[85,58],[95,45]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
  {id:'cygnus',skill:80,name:'Cygnus',title:'The Swan',
   brief:'Sector Cygnus. The Swan picks the wrecks clean and walks its bombs to where your drones sleep. Nothing you lose stays lost; it just changes hands.',
   brag:'I pick the wrecks clean, and my bombs know where you sleep.',
   win:'Cygnus is ours. The Swan is grounded. Two sectors left. Breathe.',
   lose:'Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.',
+  b:{start:'Lose something. I\'ll pick it up.',took:'Mine now. It will pay me a missile.',lost:'Leave it there. I\'ll be back for it.',claim:'Your land. My wrecks on it, soon.',bigclear:'Stars everywhere. Wrecks soon.',turret:'A turret. Built from what you lost.',bomb:'That one was mine. They know where you sleep.',siege:'My siege is at your Command drone. Sleep lightly.',low:'Three left, and a field of wrecks to feed them.',yourlow:'Three left. I\'ll collect them in order.',mid:'Twenty turns. The field is mine to pick.'},
   pts:[[50,10],[50,40],[50,70],[50,90],[20,45],[80,38]],lines:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
  {id:'andromeda',skill:90,name:'Andromeda',title:'The Chained',
   brief:'Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a guard beside it. Always. Find the moment there isn\'t.',
   brag:'My Command drone has never been alone a day in its life.',
   win:'Andromeda is ours. The chain broke. One left, and it\'s the big one.',
   lose:'Andromeda holds. The guard was there every time. Make it move.',
+  b:{start:'My Command drone has a guard. It always will.',took:'The guard did that. The guard does everything.',lost:'Not the guard. Never the guard.',claim:'Claim. My guard stays where it is.',bigclear:'Rocks. The guard doesn\'t move for rocks.',turret:'Another thing that never leaves.',bomb:'A blast. The guard is still beside me.',siege:'My siege is beside your Command drone. Where is your guard?',low:'Three. One is the guard. Do the math.',yourlow:'Three left. Is one a guard? It should be.',mid:'Twenty turns. The guard has not moved. It won\'t.'},
   pts:[[10,70],[30,55],[55,45],[80,30],[95,20],[55,15]],lines:[[0,1],[1,2],[2,3],[3,4],[2,5]]},
  {id:'ursa',skill:100,name:'Ursa Major',title:'The Bear',
   brief:'Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.',
   brag:'I do not guess.',
   win:'Ursa Major is ours. All nine sectors. Twelve was the number. Go home, Commander. You\'ve earned a long one.',
   lose:'Ursa Major holds. The pike was waiting. There is no shame on it; everyone\'s is.',
+  b:{start:'Twelve. Begin.',took:'Expected.',lost:'Noted.',claim:'Noted.',bigclear:'I saw it before you swapped.',turret:'Ten missiles, placed.',bomb:'Accounted for.',siege:'My siege is where it was always going to be.',low:'Three is enough.',yourlow:'Three. It ends the way the numbers say.',mid:'Twenty turns. Nothing has surprised me.'},
   pts:[[10,30],[30,35],[48,45],[62,42],[80,45],[78,70],[58,72]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]}];
 const STORY_KEY='cc_story';
 let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
@@ -2634,7 +2742,27 @@ function storyLaunch(){const id=$('brief').dataset.sec;const sec=SECTORS.find(s=
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
   $('inSkill').value=sec.skill;newGame({story:sec.id});SNAME[BOT]=t(sec.name);S.log.length=0;
-  note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);}
+  note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);setTimeout(()=>{if(bossSec()&&S.story===sec.id)showBark('start');},1500);}
+
+// ----- the boss talks during the game (v1.52). One line per event per game, at least two turns apart, shown
+// in a bubble over the board for seven seconds and kept in the log. Audio slot: story/<id>-<event>.mp3.
+const BARK_GAP=2;let barkTimer=null,barkHide=null;
+function bossSec(){return S&&S.story&&!S.over?SECTORS.find(s=>s.id===S.story):null;}
+function showBark(ev){const sec=bossSec();if(!sec||!sec.b||!sec.b[ev])return;S.barked=S.barked||{};if(S.barked[ev])return;
+  if(ev!=='start'&&ev!=='low'&&ev!=='yourlow'&&S.barkT!=null&&S.turnNo-S.barkT<BARK_GAP)return;S.barked[ev]=1;S.barkT=S.turnNo;
+  const line=t(sec.b[ev]);note(t`${t(sec.title)}: ${line}`);
+  const el=$('bark');$('barkWho').textContent=t(sec.title);$('barkText').textContent='“'+line+'”';el.querySelector('.dr').innerHTML=cmdSVG(BOT)+'<b class="lt">'+LETTER.M+'</b>';
+  el.hidden=false;el.classList.remove('show','out');void el.offsetWidth;el.classList.add('show');clearTimeout(barkTimer);clearTimeout(barkHide);barkTimer=setTimeout(()=>{el.classList.add('out');barkHide=setTimeout(()=>{el.hidden=true;el.classList.remove('show','out');},400);},7000);
+  storyPlay(sec,ev);}
+function storyBark(w){if(!bossSec()||!w||!w.why)return;const why=w.why,actor=S.turn;
+  if(why==='take'||why==='sweep'||why==='fire_kill'||why==='surround')showBark(actor===BOT?'took':'lost');
+  else if(why==='claim'&&actor===YOU)showBark('claim');
+  else if(why==='turret'&&actor===BOT)showBark('turret');
+  else if(why==='bomb')showBark('bomb');
+  else if(why==='drift'&&!w.at&&actor===YOU)showBark('bigclear');}
+function storyBarkTurn(){const sec=bossSec();if(!sec||S.turn!==YOU)return;const m=cmdOf(YOU);
+  if(m&&dronesOf(BOT).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-m.r),Math.abs(x.c-m.c))<=2))showBark('siege');
+  if(droneCount(BOT)<=3)showBark('low');if(droneCount(YOU)<=3)showBark('yourlow');if(S.turnNo>=20)showBark('mid');}
 // ----- the end of a sector: the dispatcher's word, and where to go next
 function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?SECTORS.find(s=>s.id===S.story):null;
   for(const id of ['btnStoryNext','btnStoryRetry','btnStoryMap'])$(id).hidden=true;$('btnAgain').hidden=inStory;
