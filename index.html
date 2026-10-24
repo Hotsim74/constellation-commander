@@ -108,10 +108,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .board .dr{animation:hover 2.8s ease-in-out infinite alternate}.board .dr.kT{animation:none;transform:none}
 @keyframes hover{from{transform:translateY(-5%)}to{transform:translateY(-10%)}}
 .ghost .dr{animation:none;transform:none}
-.ghost.fly .body{position:absolute;inset:0;transition:transform .25s ease-out}
-.ghost.fly.go .body{transform:translateY(-16%) scale(1.14)}.ghost.fly.land .body{transform:translateY(-5%) scale(1)}
+.ghost.fly .body{position:absolute;inset:0;transition:transform .26s ease-in}
+.ghost.fly.lift .body,.ghost.fly.go .body{transform:translateY(-62%) scale(1.14)}.ghost.fly.land .body{transform:translateY(0) scale(1);transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
 .ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
-.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
+.ghost.fly.lift .shade,.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
 .ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none}
 .ghost.fly .flare{position:absolute;top:50%;left:-26%;width:52%;height:42%;transform:translateY(-50%) scale(.4);border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0,#9be7ff 22%,rgba(80,200,255,.8) 48%,rgba(80,200,255,0) 74%);opacity:0;filter:blur(1px);transition:opacity .18s ease-in,transform .18s ease-in}
 .ghost.fly.s1 .flare{background:radial-gradient(ellipse at 72% 50%,#fff 0,#ffe08a 22%,rgba(255,170,60,.8) 48%,rgba(255,170,60,0) 74%)}
@@ -159,6 +159,16 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr svg{width:100%;height:100%;display:block;overflow:hidden}
 .dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(12px,3vw,20px);text-shadow:0 0 2px #000,0 0 4px #000,0 0 8px #000,0 1px 1px #000;pointer-events:none;z-index:3}
 .dr.s1 .lt{color:#ff5a5a}.dr.s2 .lt{color:#fff}
+/* v1.59: on the board the letter floats above the hull like a tag, with its own slow bob */
+.board .dr .lt{inset:auto;top:-30%;left:50%;width:auto;height:auto;transform:translate(-50%,0);animation:ltbob 2.8s ease-in-out -1.4s infinite alternate;text-shadow:0 0 2px #000,0 0 6px #000,0 0 10px currentColor}
+.board .dr.kT .lt{animation:none}
+@keyframes ltbob{from{transform:translate(-50%,-8%)}to{transform:translate(-50%,8%)}}
+.board .dr .lt.orbit{animation:orbitin .4s cubic-bezier(.3,1.4,.5,1)}
+@keyframes orbitin{from{transform:translate(-50%,-90%);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.ghost.fly .tag{position:absolute;top:-30%;left:50%;transform:translate(-50%,0);font-family:var(--display);font-weight:800;font-size:clamp(12px,3vw,20px);text-shadow:0 0 2px #000,0 0 6px #000,0 0 10px currentColor;z-index:4;transition:opacity .22s ease-in .12s}
+.ghost.fly.s1 .tag{color:#ff5a5a}.ghost.fly.s2 .tag{color:#fff}
+.ghost.fly.go .tag,.ghost.fly.land .tag{opacity:0}
+.ghost.fly.lift .flare{opacity:1;transform:translateY(-50%) scale(1.05)}
 .dr .pw{position:absolute;right:-6%;bottom:-6%;min-width:38%;height:38%;border-radius:50%;background:#fff;color:#000;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .ammo{position:absolute;right:-8%;top:-12%;display:flex;gap:1px;z-index:4;pointer-events:none}
@@ -1493,7 +1503,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.58.0';
+const VERSION='1.59.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -2495,18 +2505,20 @@ function shootAnim(from,to){return new Promise(res=>{const b=$('board');const [x
   setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);setTimeout(()=>f.remove(),420);res();},ms);});}
 // ---------- a drone in flight (v1.58): engines spool up for a beat, the drone lifts off its shadow, turns its engine to
 // face the way it is going, leaves a streak in its side's color, and settles back down on landing. The letter stays upright.
-const SPOOL=180;
+const SPOOL=180,LIFT=240,LAND=220;
 function flyDrone(from,to,html){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');const [x0,y0,w]=cellXY(from[0],from[1]),[x1,y1]=cellXY(to[0],to[1]);
   const ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI,dist=Math.hypot(x1-x0,y1-y0),ms=Math.max(260,Math.min(700,dist*1.2)),side=/class="dr s1/.test(html)?'s1':'s2';
+  const tag=(html.match(/<b class="lt">[\s\S]*?<\/b>/)||[''])[0],hull=tag?html.replace(tag,''):html; /* v1.59: the letter is a tag that floats above the hull; the hull flies up through it */
   const g=document.createElement('div');g.className='ghost fly '+side;g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x0+'px';g.style.top=y0+'px';g.style.setProperty('--ang',ang+'deg');
-  g.innerHTML='<i class="shade"></i><div class="eng"><i class="flare"></i></div><div class="body">'+html+'</div>';b.appendChild(g);
+  g.innerHTML='<i class="shade"></i><div class="eng"><i class="flare"></i></div><div class="body">'+hull+'</div>'+(tag?tag.replace('class="lt"','class="tag"'):'');b.appendChild(g);
   const dest=cellEl(to[0],to[1]).lastChild;dest.style.visibility='hidden';
   const st=document.createElement('div');st.className='streak '+side;st.style.left=x0+'px';st.style.top=y0+'px';st.style.width='0px';st.style.transform=`translate(0,-50%) rotate(${ang}deg)`;b.appendChild(st);
   requestAnimationFrame(()=>g.classList.add('spool'));
-  setTimeout(()=>{g.classList.remove('spool');g.classList.add('go');g.style.transition=`left ${ms}ms cubic-bezier(.45,0,.2,1),top ${ms}ms cubic-bezier(.45,0,.2,1)`;st.style.transition=`width ${ms}ms cubic-bezier(.45,0,.2,1),opacity ${Math.round(ms*0.5)}ms ease-in ${Math.round(ms*0.55)}ms`;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';st.style.width=dist+'px';st.style.opacity='0';}));},SPOOL);
-  setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},SPOOL+ms);
-  setTimeout(()=>{g.remove();st.remove();dest.style.visibility='';res();},SPOOL+ms+170);});}
+  setTimeout(()=>{g.classList.remove('spool');g.classList.add('lift');},SPOOL); /* engines up: the hull rises through the tag */
+  setTimeout(()=>{g.classList.remove('lift');g.classList.add('go');g.style.transition=`left ${ms}ms cubic-bezier(.45,0,.2,1),top ${ms}ms cubic-bezier(.45,0,.2,1)`;st.style.transition=`width ${ms}ms cubic-bezier(.45,0,.2,1),opacity ${Math.round(ms*0.5)}ms ease-in ${Math.round(ms*0.55)}ms`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';st.style.width=dist+'px';st.style.opacity='0';}));},SPOOL+LIFT);
+  setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},SPOOL+LIFT+ms); /* and drops back down */
+  setTimeout(()=>{g.remove();st.remove();dest.style.visibility='';const lt=dest.querySelector('.lt');if(lt){lt.classList.add('orbit');setTimeout(()=>lt.classList.remove('orbit'),450);}res();},SPOOL+LIFT+ms+LAND);});}
 async function movedAnim(d,from){renderBoard();await flyDrone(from,[d.r,d.c],droneHTML(d));await playFX();}
 
 
