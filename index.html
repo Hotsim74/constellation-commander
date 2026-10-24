@@ -161,6 +161,9 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.kG svg{overflow:visible}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
 @keyframes gsweep{0%{transform:rotate(-30deg)}28%{transform:rotate(70deg)}40%{transform:rotate(70deg)}70%{transform:rotate(-130deg)}82%{transform:rotate(-130deg)}100%{transform:rotate(-30deg)}}
 .legend .gsweep,.bark .gsweep{animation:none}
+/* v1.61: an enemy on the guard's land within three squares: the eye goes red and the light locks onto it */
+.dr.kG.angry .gsweep{animation:none;transform:rotate(var(--look,0deg));transition:transform .5s ease-out}.dr.kG.angry .gRage{opacity:.7;animation:rage .5s ease-in-out infinite alternate}.dr.kG.angry .gBeamRed{opacity:1}
+@keyframes rage{from{opacity:.5}to{opacity:.85}}
 .dr .lt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(12px,3vw,20px);text-shadow:0 0 2px #000,0 0 4px #000,0 0 8px #000,0 1px 1px #000;pointer-events:none;z-index:3}
 .dr.s1 .lt{color:#ff5a5a}.dr.s2 .lt{color:#fff}
 /* v1.59: on the board the letter floats above the hull like a tag, with its own slow bob */
@@ -417,6 +420,7 @@ const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
   <defs>
     <radialGradient id="gBodySIDE" cx="42%" cy="38%" r="62%"><stop offset="0%" stop-color="#6b7884"/><stop offset="50%" stop-color="#2b3238"/><stop offset="100%" stop-color="#090c0f"/></radialGradient>
     <radialGradient id="gIrisSIDE" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="EYE1"/><stop offset="40%" stop-color="EYE2"/><stop offset="100%" stop-color="EYE3"/></radialGradient>
+    <linearGradient id="gRageSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff3b1f" stop-opacity="0.85"/><stop offset="55%" stop-color="#ff3b1f" stop-opacity="0.35"/><stop offset="100%" stop-color="#ff3b1f" stop-opacity="0"/></linearGradient>
     <linearGradient id="gBeamSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="LIGHT" stop-opacity="0.75"/><stop offset="55%" stop-color="LIGHT" stop-opacity="0.28"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></linearGradient>
     <polygon id="gPetalSIDE" points="64,8 86,20 80,42 64,36 48,42 42,20" fill="#1b2026" stroke="#090c0f" stroke-width="1.5"/>
   </defs>
@@ -425,7 +429,9 @@ const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
   <circle cx="64" cy="64" r="37" fill="#05070a"/>
   <g class="gsweep">
     <polygon points="64,64 200,16 200,112" fill="url(#gBeamSIDE)"/>
+    <polygon class="gBeamRed" points="64,64 200,10 200,118" fill="url(#gRageSIDE)" opacity="0"/>
     <circle cx="64" cy="64" r="33" fill="url(#gIrisSIDE)"/>
+    <circle class="gRage" cx="64" cy="64" r="33" fill="#ff2d1a" opacity="0"/>
     <circle cx="98" cy="64" r="5" fill="#ffffff" opacity="0.95"/>
     <circle cx="77" cy="64" r="11" fill="#05070a"/>
     <circle cx="80" cy="60" r="3" fill="#ffffff" opacity="0.85"/>
@@ -1463,7 +1469,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.60.0';
+const VERSION='1.61.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -2135,8 +2141,8 @@ function renderBoard(gone,born,mark,fall){
     else if(!fall){gem.style.transition='';gem.style.transform='';gem.style.opacity='';}
     if(isCmd(r,c)&&seen){dd.textContent='★';dd.className='dd';dd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2';dd.dataset.did='';continue;}
     const d=droneAt(r,c);const show=d&&(d.side===YOU||seen);
-    const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors.join('')}:${d.claims||0}:${d.ammo||0}:${d.kind==='M'?S.missiles[d.side]:0}:${sel&&sel.id===d.id?1:0}:${isStar(v)?v:'-'}:${d.shield||0}:${d.charge||0}`:'';
-    if(dd.dataset.did!==sig){dd.dataset.did=sig;dd.style.cssText='';dd.className='dd';dd.innerHTML=show?droneHTML(d):'';if(show&&sel&&sel.id===d.id)dd.firstChild.classList.add('sel');if(show&&isStar(v))dd.firstChild.classList.add('on'+v);if(show&&d.shield)dd.firstChild.classList.add('shd');} /* v1.49: a drone glows in the color of the star under it */
+    const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors.join('')}:${d.claims||0}:${d.ammo||0}:${d.kind==='M'?S.missiles[d.side]:0}:${sel&&sel.id===d.id?1:0}:${isStar(v)?v:'-'}:${d.shield||0}:${d.charge||0}:${d.kind==='G'?guardLook(d):''}`:'';
+    if(dd.dataset.did!==sig){dd.dataset.did=sig;dd.style.cssText='';dd.className='dd';dd.innerHTML=show?droneHTML(d):'';if(show&&sel&&sel.id===d.id)dd.firstChild.classList.add('sel');if(show&&isStar(v))dd.firstChild.classList.add('on'+v);if(show&&d.shield)dd.firstChild.classList.add('shd');if(show&&d.kind==='G'){const lk=guardLook(d);if(lk!=null){dd.firstChild.classList.add('angry');dd.firstChild.style.setProperty('--look',lk+'deg');}}} /* v1.49: a drone glows in the color of the star under it */
   }
 }
 function renderSide(){
@@ -2509,6 +2515,8 @@ function fireAt(r,c,delay){const b=$('board');const el=cellEl(r,c);setTimeout(()
   for(let i=0;i<5;i++){const e=document.createElement('div');e.className='ember';e.style.left=(x+(Math.random()-.5)*w*.8)+'px';e.style.top=(y+(Math.random()-.5)*w*.4)+'px';e.style.setProperty('--dx',((Math.random()-.5)*50)+'px');e.style.animationDelay=(Math.random()*.35)+'s';b.appendChild(e);setTimeout(()=>e.remove(),1500);}
   setTimeout(()=>f.remove(),1100);},delay);}
 function shockAt(r,c){const b=$('board');const [x,y]=cellXY(r,c);const s=document.createElement('div');s.className='shock';s.style.left=x+'px';s.style.top=y+'px';b.appendChild(s);setTimeout(()=>s.remove(),900);}
+// the guard's eye: the nearest enemy drone standing on the guard's land within three squares, as an angle for the beam; null if none
+function guardLook(g){let best=null;for(const e of S.drones){if(e.side===g.side)continue;const dr=e.r-g.r,dc=e.c-g.c;const d=Math.max(Math.abs(dr),Math.abs(dc));if(d>3||S.own[key(e.r,e.c)]!==g.side)continue;if(!best||d<best.d)best={d,ang:Math.round(Math.atan2(dr,dc)*180/Math.PI)};}return best?best.ang:null;}
 function turretSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="turret"><rect x="26" y="26" width="76" height="76" rx="14" fill="#0b1016" stroke="${col}" stroke-width="3"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="60" y="6" width="8" height="24" rx="2" fill="${col}" transform="rotate(${a} 64 64)"/>`).join('')}<circle cx="64" cy="64" r="24" fill="#1a222d" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="8" fill="${col}"/></svg>`;}
 function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="command drone"><circle cx="64" cy="64" r="56" fill="#0b1016" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="44" fill="none" stroke="${col}" stroke-width="1.5" opacity=".45"/><polygon points="64,14 76,52 114,64 76,76 64,114 52,76 14,64 52,52" fill="${col}" opacity=".9"/><polygon points="64,34 70,58 94,64 70,70 64,94 58,70 34,64 58,58" fill="#fff" opacity=".85"/><circle cx="64" cy="64" r="7" fill="${col}"/></svg>`;}
 // ---------- two phones (v1.20). One match document in the Firebase Realtime Database, reached with
