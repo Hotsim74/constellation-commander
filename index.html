@@ -114,7 +114,9 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .ghost.fly.lift .body,.ghost.fly.go .body{transform:translateY(-62%) scale(1.14)}.ghost.fly.land .body{transform:translateY(0) scale(1);transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
 .ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
 .ghost.fly.lift .shade,.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
-.ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none}
+.ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none;transition:transform .16s linear}
+.gem.pass{animation:gempass .45s ease-out}
+@keyframes gempass{0%{filter:brightness(1)}30%{filter:brightness(2.4) drop-shadow(0 0 6px #fff);transform:scale(1.14)}100%{filter:brightness(1);transform:scale(1)}}
 .ghost.fly .flare{position:absolute;top:50%;left:-26%;width:52%;height:42%;transform:translateY(-50%) scale(.4);border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0,#9be7ff 22%,rgba(80,200,255,.8) 48%,rgba(80,200,255,0) 74%);opacity:0;filter:blur(1px);transition:opacity .18s ease-in,transform .18s ease-in}
 .ghost.fly.s1 .flare{background:radial-gradient(ellipse at 72% 50%,#fff 0,#ffe08a 22%,rgba(255,170,60,.8) 48%,rgba(255,170,60,0) 74%)}
 .ghost.fly.spool .flare{opacity:.85;transform:translateY(-50%) scale(1)}
@@ -1521,7 +1523,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.64.0';
+const VERSION='1.65.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -1834,6 +1836,18 @@ function landed(d){
     if(SWEEPS.includes(e.kind))takeDrone(d.side,e,t('by moving beside it'),d);
     else if(e.kind==='S'&&e.power>1){e.power--;if(e.colors.length>e.power)e.colors=e.colors.slice(0,e.power);queueHit(e.r,e.c);note(t`${who(d.side)}: the guard swept ${own(e.side,'S')} at ${sq(e.r,e.c)}: power ${e.power}.`,{why:'sweep_s',at:[[e.r,e.c]],lab:[t('swept')]});}}} // v1.40: a stacked raider loses one power to a sweep; a lone raider is not swept
 }
+// v1.65: the squares a drone passes through on its way to (r,c): the same search as targets(), with parents kept,
+// so the flight can be drawn star by star. A raider's slide is its diagonal; a siege or guard steps once.
+function movePath(d,r,c){
+  if(d.kind==='S'){const dr=Math.sign(r-d.r),dc=Math.sign(c-d.c);const out=[[d.r,d.c]];let rr=d.r,cc=d.c;while((rr!==r||cc!==c)&&out.length<=N){rr+=dr;cc+=dc;out.push([rr,cc]);}return out;}
+  if(d.kind==='X'||d.kind==='G'||d.kind==='T')return [[d.r,d.c],[r,c]];
+  const any=d.kind==='H';const maxPaid=1;const par=new Map();const start=key(d.r,d.c)*20;par.set(start,null);const q=[[d.r,d.c,0,0,start]];
+  while(q.length){const [r0,c0,used,steps,pk]=q.shift();
+    for(const [dr,dc] of DIR8){const rr=r0+dr,cc=c0+dc;if(!inb(rr,cc))continue;let free=any?steps<HUNTER_STEPS:d.colors.includes(S.grid[rr][cc]);if(!free&&used>=maxPaid)continue;
+      const nu=free?used:used+1,ns=(free&&any)?steps+1:steps;const sk=key(rr,cc)*20+nu*10+ns;if(par.has(sk))continue;if(rr===d.r&&cc===d.c)continue;par.set(sk,pk);
+      if(rr===r&&cc===c){const out=[];let k=sk;while(k!=null){out.push(rc(Math.floor(k/20)));k=par.get(k);}return out.reverse();}
+      if(solid(rr,cc)||!vis(d.side,rr,cc)||droneAt(rr,cc))continue;q.push([rr,cc,nu,ns,sk]);}}
+  return [[d.r,d.c],[r,c]];}
 function applyMove(d,r,c){
   if(d.kind==='S'){ // a slide: it stops at the first thing it meets, seen or not
     const dr=Math.sign(r-d.r),dc=Math.sign(c-d.c);let rr=d.r+dr,cc=d.c+dc,stop=null;
@@ -1841,6 +1855,7 @@ function applyMove(d,r,c){
       if(o){if(o.side!==d.side&&TAKES.S.includes(o.kind)&&!o.shield){stop=[rr,cc];}else if(o.side===d.side&&o.power+d.power<=MAXP&&rr===r&&cc===c){stop=[rr,cc];}break;}
       stop=[rr,cc];if(rr===r&&cc===c)break;rr+=dr;cc+=dc;}
     if(!stop)return;[r,c]=stop;}
+  d.lastPath=movePath(d,r,c); /* for the flight animation; read and dropped by movedAnim */
   const o=droneAt(r,c);
   if(o&&o.side===d.side&&d.kind==='M'){S.missiles[d.side]+=ammoOf(o);delete o.ammo;o.kind='M';delete o.claims;delete o.sq;} // the command drone absorbs what it lands on and stays the command drone
   if(o&&o.side===d.side){mergeInto(o,d);S.drones=S.drones.filter(x=>x!==d);note(t`${who(d.side)} stacked ${aname(d.kind)} into the ${TNAME[o.kind]} at ${sq(r,c)}: power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});return;}
@@ -2526,21 +2541,25 @@ function shootAnim(from,to){return new Promise(res=>{const b=$('board');const [x
   setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);setTimeout(()=>f.remove(),420);res();},ms);});}
 // ---------- a drone in flight (v1.58): engines spool up for a beat, the drone lifts off its shadow, turns its engine to
 // face the way it is going, leaves a streak in its side's color, and settles back down on landing. The letter stays upright.
-const SPOOL=180,LIFT=240,LAND=220;
-function flyDrone(from,to,html){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');const [x0,y0,w]=cellXY(from[0],from[1]),[x1,y1]=cellXY(to[0],to[1]);
-  const ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI,dist=Math.hypot(x1-x0,y1-y0),ms=Math.max(260,Math.min(700,dist*1.2)),side=/class="dr s1/.test(html)?'s1':'s2';
-  const tag=(html.match(/<b class="lt">[\s\S]*?<\/b>/)||[''])[0],hull=tag?html.replace(tag,''):html; /* v1.59: the letter is a tag that floats above the hull; the hull flies up through it */
-  const g=document.createElement('div');g.className='ghost fly '+side;g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x0+'px';g.style.top=y0+'px';g.style.setProperty('--ang',ang+'deg');
+const SPOOL=180,LIFT=240,LAND=220,HOP_MS=190; /* v1.65: a ride is flown star by star, HOP_MS a square */
+function flyDrone(from,to,html,path){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');
+  const hops=(path&&path.length>2)?path:[from,to];const pts=hops.map(([r,c])=>cellXY(r,c));const w=pts[0][2];const side=/class="dr s1/.test(html)?'s1':'s2';
+  const angOf=i=>Math.atan2(pts[i+1][1]-pts[i][1],pts[i+1][0]-pts[i][0])*180/Math.PI;
+  const tag=(html.match(/<b class="lt">[\s\S]*?<\/b>/)||[''])[0],hull=tag?html.replace(tag,''):html;
+  const g=document.createElement('div');g.className='ghost fly '+side;g.style.width=g.style.height=(w*0.84)+'px';g.style.left=pts[0][0]+'px';g.style.top=pts[0][1]+'px';g.style.setProperty('--ang',angOf(0)+'deg');
   g.innerHTML='<i class="shade"></i><div class="eng"><i class="flare"></i></div><div class="body">'+hull+'</div>'+(tag?tag.replace('class="lt"','class="tag"'):'');b.appendChild(g);
   const dest=cellEl(to[0],to[1]).lastChild;dest.style.visibility='hidden';
-  const st=document.createElement('div');st.className='streak '+side;st.style.left=x0+'px';st.style.top=y0+'px';st.style.width='0px';st.style.transform=`translate(0,-50%) rotate(${ang}deg)`;b.appendChild(st);
-  requestAnimationFrame(()=>g.classList.add('spool'));
-  setTimeout(()=>{g.classList.remove('spool');g.classList.add('lift');},SPOOL); /* engines up: the hull rises through the tag */
-  setTimeout(()=>{g.classList.remove('lift');g.classList.add('go');g.style.transition=`left ${ms}ms cubic-bezier(.45,0,.2,1),top ${ms}ms cubic-bezier(.45,0,.2,1)`;st.style.transition=`width ${ms}ms cubic-bezier(.45,0,.2,1),opacity ${Math.round(ms*0.5)}ms ease-in ${Math.round(ms*0.55)}ms`;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=x1+'px';g.style.top=y1+'px';st.style.width=dist+'px';st.style.opacity='0';}));},SPOOL+LIFT);
-  setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},SPOOL+LIFT+ms); /* and drops back down */
-  setTimeout(()=>{g.remove();st.remove();dest.style.visibility='';const lt=dest.querySelector('.lt');if(lt){lt.classList.add('orbit');setTimeout(()=>lt.classList.remove('orbit'),450);}res();},SPOOL+LIFT+ms+LAND);});}
-async function movedAnim(d,from){renderBoard();await flyDrone(from,[d.r,d.c],droneHTML(d));await playFX();}
+  const streaks=[];const streak=(i,ms)=>{const [x0,y0]=pts[i],[x1,y1]=pts[i+1];const st=document.createElement('div');st.className='streak '+side;st.style.left=x0+'px';st.style.top=y0+'px';st.style.width='0px';st.style.transform=`translate(0,-50%) rotate(${angOf(i)}deg)`;b.appendChild(st);streaks.push(st);
+    st.style.transition=`width ${ms}ms linear,opacity ${Math.round(ms*1.6)}ms ease-in ${Math.round(ms*0.6)}ms`;requestAnimationFrame(()=>requestAnimationFrame(()=>{st.style.width=Math.hypot(x1-x0,y1-y0)+'px';st.style.opacity='0';}));};
+  const many=hops.length>2;const hopMs=many?HOP_MS:Math.max(260,Math.min(700,Math.hypot(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1])*1.2));
+  let t=0;requestAnimationFrame(()=>g.classList.add('spool'));
+  t+=SPOOL;setTimeout(()=>{g.classList.remove('spool');g.classList.add('lift');},t);
+  t+=LIFT;for(let i=0;i<hops.length-1;i++){const at=t,ii=i;setTimeout(()=>{if(ii===0)g.classList.remove('lift'),g.classList.add('go');g.style.setProperty('--ang',angOf(ii)+'deg');g.style.transition=`left ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'},top ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'}`;streak(ii,hopMs);
+      if(ii>0){const [r,c]=hops[ii];const gem=cellEl(r,c).firstChild;gem.classList.remove('pass');void gem.offsetWidth;gem.classList.add('pass');setTimeout(()=>gem.classList.remove('pass'),500);} /* the star it flies over lights up */
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=pts[ii+1][0]+'px';g.style.top=pts[ii+1][1]+'px';}));},at);t+=hopMs;}
+  setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},t); /* and drops back down */
+  t+=LAND;setTimeout(()=>{g.remove();for(const st of streaks)st.remove();dest.style.visibility='';const lt=dest.querySelector('.lt');if(lt){lt.classList.add('orbit');setTimeout(()=>lt.classList.remove('orbit'),450);}res();},t);});}
+async function movedAnim(d,from){renderBoard();const path=d.lastPath;delete d.lastPath;await flyDrone(from,[d.r,d.c],droneHTML(d),path);await playFX();}
 
 
 // ---------- destruction: a drone that dies breaks up where it stood; a hit shakes and sparks ----------
