@@ -100,7 +100,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes ember{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx,0px),-80px);opacity:0}}
 .shock{position:absolute;width:20px;height:20px;border-radius:50%;border:4px solid rgba(255,220,150,.9);box-shadow:0 0 18px 6px rgba(255,140,40,.6),inset 0 0 12px 4px rgba(255,200,100,.5);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:shock .8s ease-out forwards}
 @keyframes shock{to{width:300px;height:300px;opacity:0;border-width:1px}}
-.msl{position:absolute;width:14px;height:6px;border-radius:3px;background:#fff;box-shadow:0 0 6px 2px #ff9a3c,0 0 16px 6px rgba(255,120,40,.45);z-index:9;pointer-events:none}
+.msl{position:absolute;width:20px;height:7px;border-radius:4px 50% 50% 4px;background:linear-gradient(90deg,#3a2a14 0,#ffb84a 30%,#fff6dc 100%);box-shadow:0 0 6px 2px rgba(255,154,60,.9),0 0 16px 6px rgba(255,120,40,.45);z-index:9;pointer-events:none}
+.msl::after{content:'';position:absolute;right:100%;top:50%;width:44px;height:5px;transform:translateY(-50%);border-radius:3px;background:linear-gradient(90deg,rgba(255,120,40,0),rgba(255,170,60,.6) 60%,#fff);filter:blur(.6px)}
+.impact{position:absolute;width:12px;height:12px;border-radius:50%;border:3px solid rgba(255,230,160,.95);box-shadow:0 0 14px 4px rgba(255,140,40,.7);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:impact .5s ease-out forwards}
+@keyframes impact{to{width:90px;height:90px;opacity:0;border-width:1px}}
 .msl::after{content:'';position:absolute;right:100%;top:1px;width:26px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(255,154,60,0),rgba(255,154,60,.9))}
 .flash{position:absolute;width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(255,180,80,.9);transform:translate(-50%,-50%);z-index:9;pointer-events:none;animation:flash .4s ease-out forwards}
 @keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,200,120,.95);opacity:1}100%{box-shadow:0 0 18px 26px rgba(255,120,40,0);opacity:0}}
@@ -157,7 +160,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .asteroid.v1{clip-path:polygon(10% 12%,48% 0,88% 10%,100% 48%,86% 86%,50% 100%,14% 92%,0 50%)}
 .asteroid.v2{clip-path:polygon(30% 0,74% 6%,100% 36%,94% 76%,62% 100%,22% 92%,0 60%,6% 22%)}
 .asteroid.v3{clip-path:polygon(16% 6%,56% 0,96% 24%,100% 64%,72% 100%,32% 96%,4% 70%,0 30%)}
-.dr{position:absolute;inset:8%;border-radius:50%;background:#0e131a;border:2px solid;z-index:3;display:flex;align-items:center;justify-content:center;padding:4%;pointer-events:none}
+.dr{position:absolute;inset:3%;border-radius:50%;background:#0e131a;border:2px solid;z-index:3;display:flex;align-items:center;justify-content:center;padding:3%;pointer-events:none}
 .dr.s1{border-color:var(--you)}.dr.s2{border-color:var(--bot)}
 .dr.shd{box-shadow:0 0 0 3px rgba(80,220,255,.9),0 0 12px 4px rgba(80,220,255,.55)}.fuse.sh{background:#1aa8c8;color:#fff}
 .dr.on0{filter:drop-shadow(0 0 3px rgba(229,72,77,1)) drop-shadow(0 0 9px rgba(229,72,77,.85))}.dr.on1{filter:drop-shadow(0 0 3px rgba(240,165,43,1)) drop-shadow(0 0 9px rgba(240,165,43,.85))}.dr.on2{filter:drop-shadow(0 0 3px rgba(62,194,122,1)) drop-shadow(0 0 9px rgba(62,194,122,.85))}.dr.on3{filter:drop-shadow(0 0 3px rgba(63,143,240,1)) drop-shadow(0 0 9px rgba(63,143,240,.85))}.dr.on4{filter:drop-shadow(0 0 3px rgba(176,108,232,1)) drop-shadow(0 0 9px rgba(176,108,232,.85))}
@@ -351,9 +354,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
+  <div class="field"><span class="lbl">Swipe</span><label><input type="checkbox" id="inSwipe"> swipe a star to swap it, swipe a drone to move it</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
-  <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option></select></div>
+  <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
   <button type="button" id="btnStory" class="primary">Story mode</button>
   <button type="button" id="btnNet" class="primary">Play a friend</button>
   <button type="button" id="btnHow">How to play</button>
@@ -397,7 +401,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="cvPlanet"></div>
   <svg id="cvConst" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice"></svg>
   <div id="cvFleet"></div>
-  <div class="langs"><button type="button" data-lang="en">English</button><button type="button" data-lang="fr">Français</button></div>
+  <div class="langs"><button type="button" data-lang="en">English</button><button type="button" data-lang="fr">Français</button><button type="button" data-lang="es">Español</button></div>
   <div class="cvUI">
     <div class="cvBy">Aaron Schuemann <span>presents</span></div>
     <div class="cvTitleWrap"><h1 class="cvTitle"><span>Constellation</span><span>Commander</span></h1></div>
@@ -810,39 +814,50 @@ const SIEGE_SHIP=`<svg viewBox="0 0 128 128" aria-label="siege drone">
   <circle cx="51" cy="41" r="4.5" fill="#ef4444" opacity="0.25"/><circle cx="81" cy="87" r="4.5" fill="#eab308" opacity="0.25"/>
 </svg>`;
 function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
-// ---------- language: English or French (v1.17). Every line the player reads goes through t(): the
-// English text is the key, the French lives in one/fr.json (inlined by the build as FR). Tagged
-// templates keep their slots: t`${who(side)} moved ${x}` looks up "{0} moved {1}". In French the verb
-// may depend on the subject: {v:avez|a} picks the first form when a slot holds "Vous". Drone names
-// carry their own article in French (l'éclaireur, la bombe), so the English "the" is simply dropped
-// from the French pattern. own(side,kind) gives "your scout" / "the bot's scout" in either language.
+// ---------- language: English, French (v1.17) or Spanish (v1.66). Every line the player reads goes through t(): the
+// English text is the key; the French lives in one/fr.json (inlined by the build as FR), the Spanish in one/es.json (ES).
+// Tagged templates keep their slots: t`${who(side)} moved ${x}` looks up "{0} moved {1}". The verb may depend on the
+// subject: {v:avez|a} picks the first form when a slot holds the language's "you" (Vous, Tú). Drone names carry their
+// own article (l'éclaireur, la bombe, el explorador), so the English "the" is simply dropped from the pattern.
+// own(side,kind) gives "your scout" / "the bot's scout" in each language.
 let LANG='en';try{LANG=localStorage.getItem('cc_lang')||'';}catch(_){}
-if(!LANG){try{LANG=/^fr/i.test(navigator.language||'')?'fr':'en';}catch(_){LANG='en';}}
-if(LANG!=='fr')LANG='en';
+if(!LANG){try{const nl=navigator.language||'';LANG=/^fr/i.test(nl)?'fr':/^es/i.test(nl)?'es':'en';}catch(_){LANG='en';}}
+if(LANG!=='fr'&&LANG!=='es')LANG='en';
 const NOUN_FR={C:['éclaireur','m'],G:['bouclier','m'],S:['pillard','m'],H:['chasseur','m'],W:['drone de saut','m'],X:['drone de siège','m'],B:['bombe','f'],M:['drone de commandement','m'],T:['tourelle','f']};
+const NOUN_ES={C:['explorador','m'],G:['guardián','m'],S:['asaltante','m'],H:['cazador','m'],W:['dron de salto','m'],X:['dron de asedio','m'],B:['bomba','f'],M:['dron de mando','m'],T:['torreta','f']};
+const NOUN={fr:NOUN_FR,es:NOUN_ES};
 const frDef=k=>{const [n,g]=NOUN_FR[k];return (/^[aeiouéèh]/i.test(n)?"l'":g==='f'?'la ':'le ')+n;};
 const frInd=k=>{const [n,g]=NOUN_FR[k];return (g==='f'?'une ':'un ')+n;};
+const esDef=k=>{const [n,g]=NOUN_ES[k];return (g==='f'?'la ':'el ')+n;};
+const esInd=k=>{const [n,g]=NOUN_ES[k];return (g==='f'?'una ':'un ')+n;};
 const TNAME_FR={};for(const k in NOUN_FR)TNAME_FR[k]=frDef(k);
+const TNAME_ES={};for(const k in NOUN_ES)TNAME_ES[k]=esDef(k);
 const KNAME_FR=['rouge','dorée','verte','bleue','violette']; // the colors of a star (feminine, étoile)
+const KNAME_ES=['roja','dorada','verde','azul','violeta']; // estrella, feminine too
+const YOU_WORD={en:'You',fr:'Vous',es:'Tú'};
 const deName=n=>(/^[aeiouyàâäéèêëïîôöùûüh]/i.test(n)?"d'":'de ')+n;
-function own(side,k){if(online&&net){const n=SNAME[side];return LANG==='fr'?frDef(k)+' '+deName(n):n+"'s "+TNAME[k];}return LANG==='fr'?(side===YOU?'votre '+NOUN_FR[k][0]:frDef(k)+' du bot'):(side===YOU?'your ':"the bot's ")+TNAME[k];}
-function aname(k){return LANG==='fr'?frInd(k):'a '+TNAME[k];}
-function landName(side){if(online&&net){const n=SNAME[side];return LANG==='fr'?'le terrain '+deName(n):n+"'s land";}return LANG==='fr'?(side===YOU?'votre terrain':'le terrain du bot'):(side===YOU?'your land':"the bot's land");}
+function own(side,k){if(online&&net){const n=SNAME[side];return LANG==='fr'?frDef(k)+' '+deName(n):LANG==='es'?esDef(k)+' de '+n:n+"'s "+TNAME[k];}
+  if(LANG==='fr')return side===YOU?'votre '+NOUN_FR[k][0]:frDef(k)+' du bot';if(LANG==='es')return side===YOU?'tu '+NOUN_ES[k][0]:esDef(k)+' del bot';return (side===YOU?'your ':"the bot's ")+TNAME[k];}
+function aname(k){return LANG==='fr'?frInd(k):LANG==='es'?esInd(k):'a '+TNAME[k];}
+function landName(side){if(online&&net){const n=SNAME[side];return LANG==='fr'?'le terrain '+deName(n):LANG==='es'?'el terreno de '+n:n+"'s land";}
+  if(LANG==='fr')return side===YOU?'votre terrain':'le terrain du bot';if(LANG==='es')return side===YOU?'tu terreno':'el terreno del bot';return side===YOU?'your land':"the bot's land";}
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
-const MISSING=new Set(); // English lines with no French yet (for the build check)
+const MISSING=new Set(); // English lines with no translation yet (for the build check)
+const TR=()=>LANG==='fr'?FR:LANG==='es'?ES:null;
 function t(s,...v){let pat;
   if(Array.isArray(s)){pat='';for(let i=0;i<s.length;i++)pat+=s[i]+(i<s.length-1?'{'+i+'}':'');}
   else pat=String(s);
-  let out=pat;
-  if(LANG==='fr'){const f=FR[pat];if(f!=null)out=f;else MISSING.add(pat);}
-  out=out.replace(/\{v:([^|}]*)\|([^}]*)\}/g,(m,a,b)=>v.includes('Vous')?a:b);
+  let out=pat;const tr=TR();
+  if(tr){const f=tr[pat];if(f!=null)out=f;else MISSING.add(pat);}
+  const you=YOU_WORD[LANG];out=out.replace(/\{v:([^|}]*)\|([^}]*)\}/g,(m,a,b)=>v.includes(you)?a:b);
   out=out.replace(/\{(\d+)\}/g,(m,i)=>v[+i]==null?'':String(v[+i]));
   if(LANG==='fr')out=out.replace(/\b([dD])e le /g,'$1u ').replace(/\b([dD])e les /g,'$1es ').replace(/\b([àÀ]) le /g,(m,a)=>a==='à'?'au ':'Au ').replace(/\b([àÀ]) les /g,(m,a)=>a==='à'?'aux ':'Aux ');
+  if(LANG==='es')out=out.replace(/\b([dD])e el /g,'$1el ').replace(/\b([aA]) el /g,(m,a)=>a==='a'?'al ':'Al ');
   return out;}
-function translateDOM(root){if(LANG==='en')return;
+function translateDOM(root){const tr=TR();if(!tr)return;
   const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const list=[];while(w.nextNode())list.push(w.currentNode);
   for(const n of list){const p=n.parentNode;if(!p||p.nodeName==='STYLE'||p.nodeName==='SCRIPT')continue;const s=n.nodeValue;const k=s.trim();if(!k)continue;
-    const f=FR[k];if(f!=null)n.nodeValue=s.replace(k,f);else if(/[a-zA-Z]{3}/.test(k))MISSING.add(k);}}
+    const f=tr[k];if(f!=null)n.nodeValue=s.replace(k,f);else if(/[a-zA-Z]{3}/.test(k))MISSING.add(k);}}
 const SAYINGS=[
 'The sky is big. Claim your piece before the bot does.',
 'Four in a row is a drone. Three in a row is a wish.',
@@ -1518,17 +1533,676 @@ const FR={
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, une tourelle ou un drone protégé.",
 "presents": "présente",
 "Constellation": "Constellation",
-"Commander": "Commander"
+"Commander": "Commander",
+"Español": "Español",
+"Swipe": "Glisser",
+"swipe a star to swap it, swipe a drone to move it": "glissez une étoile pour l'échanger, glissez un drone pour le déplacer",
+"Nothing that way.": "Rien par là."
+};
+const ES={
+"New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
+"{0} salvaged the wreck at {1}: a missile.": "{0} {v:recuperaste|recuperó} los restos en {1}: un misil.",
+"a {0} crossing a {1}": "un {0} cruzando un {1}",
+"{0} in a line": "{0} en línea",
+"{0} made {1} on the other side: stars cleared, nothing paid.": "{0} {v:hiciste|hizo} {1} en el otro lado: estrellas despejadas, nada pagado.",
+"{0} made {1} on {2}: stars cleared, nothing paid.": "{0} {v:hiciste|hizo} {1} en {2}: estrellas despejadas, nada pagado.",
+"{0} made {1} at {2} drones: 1 missile instead.": "{0} {v:hiciste|hizo} {1} con {2} drones: 1 misil en su lugar.",
+"{0} made {1} at {2} drones: an asteroid lands on {3}.": "{0} {v:hiciste|hizo} {1} con {2} drones: un asteroide cae en {3}.",
+"{0} made {1} but already has {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones.",
+"{0} made {1} but there was no room.": "{0} {v:hiciste|hizo} {1} pero no había sitio.",
+"{0} made {1} on the wall: nothing paid.": "{0} {v:hiciste|hizo} {1} en el muro: nada pagado.",
+"{0} made {1} under a drone: stacked to power {2}.": "{0} {v:hiciste|hizo} {1} bajo un dron: apilado a potencia {2}.",
+"{0} made {1}: {2}{3}, {4}.": "{0} {v:hiciste|hizo} {1}: {2}{3}, {4}.",
+"{0} built a turret at {1} for {2} missiles.": "{0} {v:construiste|construyó} una torreta en {1} por {2} misiles.",
+"{0} at {1} fires.": "{0} en {1} dispara.",
+"{0}: {1} at {2} loaded {3} missile{4} from the Command drone.": "{0}: {1} en {2} cargó {3} misil(es) del dron de mando.",
+"{0} took {1}{2} at {3}{4}{5}": "{0} {v:tomaste|tomó} {1}{2} en {3}{4}{5}",
+"{0} takes {1}": "{0} toma {1}",
+"{0}: the guard swept {1} at {2}: power {3}.": "{0}: el guardián barrió {1} en {2}: potencia {3}.",
+"{0} stacked {1} into the {2} at {3}: power {4}.": "{0} {v:apilaste|apiló} {1} en {2} en {3}: potencia {4}.",
+"{0} moved {1} {2} to {3}.": "{0} {v:moviste|movió} {1} de {2} a {3}.",
+"{0} claimed at {1}: {2} square{3}{4}.": "{0} {v:reclamaste|reclamó} en {1}: {2} casilla(s){4}.",
+"{0} warped to {1}: {2} square{3} taken{4}. The warp drone is used up.": "{0} {v:saltaste|saltó} a {1}: {2} casilla(s) tomada(s){4}. El dron de salto se ha gastado.",
+"{0}: the guard threw itself at {1}{2} at {3}. Both are gone{4}": "{0}: el guardián se lanzó contra {1}{2} en {3}. Los dos han desaparecido{4}",
+"{0} rammed the guard at {1}. Both are gone.": "{0} embistió al guardián en {1}. Los dos han desaparecido.",
+"{0}'s bomb missile": "el misil bomba de {0}",
+"{0}: a missile hit {1} at {2}; it holds. Only a bomb, an asteroid or a siege drone can end it.": "{0}: un misil alcanzó {1} en {2}; aguanta. Solo una bomba, un asteroide o un dron de asedio pueden acabar con ella.",
+"{0}: a missile hit the shield on {1} at {2}; it holds.": "{0}: un misil alcanzó el escudo de {1} en {2}; aguanta.",
+"{0}: a missile hit {1} at {2}; it holds. Only a bomb or four drones around it can end it.": "{0}: un misil alcanzó {1} en {2}; aguanta. Solo una bomba o cuatro drones a su alrededor pueden acabar con él.",
+"{0}: a missile hit {1} at {2}; it holds. Only a siege drone can take it.": "{0}: un misil alcanzó {1} en {2}; aguanta. Solo un dron de asedio puede tomarlo.",
+"{0}: a missile destroyed {1} at {2}{3}": "{0}: un misil destruyó {1} en {2}{3}",
+"{0}: a missile hit {1} at {2}: power {3}.": "{0}: un misil alcanzó {1} en {2}: potencia {3}.",
+"{0}: a missile cleared {1} at {2}.": "{0}: un misil despejó {1} en {2}.",
+"The bomb on {0}": "La bomba en {0}",
+"The blast stripped the stack off {0}.": "La explosión arrancó la pila de {0}.",
+"The blast broke on the shield of {0}.": "La explosión se rompió contra el escudo de {0}.",
+"{0} went off at {1}: {2} squares, {3} drone{4}.": "{0} estalló en {1}: {2} casillas, {3} dron(es).",
+"The shield on {0} at {1} wore off.": "El escudo de {0} en {1} se desvaneció.",
+"{0} at {1}: {2} turn{3} to go.": "{0} en {1}: faltan {2} turno(s).",
+"{0}: the siege put a shield on {1} at {2}: {3} turns. Only four enemy drones around it can end it.": "{0}: el asedio puso un escudo en {1} en {2}: {3} turnos. Solo cuatro drones enemigos a su alrededor pueden acabar con él.",
+"An asteroid rolled over {0} at {1}: destroyed.": "Un asteroide pasó por encima de {0} en {1}: destruido.",
+"An asteroid jumped {0} at {1}: power {2}.": "Un asteroide saltó {0} en {1}: potencia {2}.",
+"An asteroid jumped over {0} at {1}.": "Un asteroide saltó por encima de {0} en {1}.",
+"The asteroid landed on {0} at {1}.": "El asteroide cayó sobre {0} en {1}.",
+"An asteroid landed on {0}.": "Un asteroide cayó sobre {0}.",
+"It landed on {0} at {1}: destroyed.": "Cayó sobre {0} en {1}: destruido.",
+"{0} cleared {1} stars this turn: the asteroids drift {2} a square.": "{0} {v:despejaste|despejó} {1} estrellas este turno: los asteroides se desplazan {2} una casilla.",
+"{0} at {1} was surrounded by {2} drones and destroyed.": "{0} en {1} fue rodeado por {2} drones y destruido.",
+"{0} took the Command drone.": "{0} {v:tomaste|tomó} el dron de mando.",
+"{0} hold{1} {2} squares.": "{0} {v:tienes|tiene} {2} casillas.",
+"Game over. {0} win{1}. {2}": "Fin de la partida. {0} {v:ganas|gana}. {2}",
+", clocks on": ", con relojes",
+", relaxed": ", relajada",
+"You move first: swap two stars, or tap your scout.": "Mueves primero: intercambia dos estrellas o toca tu explorador.",
+": a wreck holds its missile.": ": los restos guardan su misil.",
+": a missile earned.": ": un misil ganado.",
+"salvaged": "recuperado",
+"an X of 5": "una X de 5",
+"a V of two diagonals": "una V de dos diagonales",
+"an L of 4 and 3": "una L de 4 y 3",
+"a plus": "una cruz",
+"a T of two 3-lines": "una T de dos líneas de 3",
+"an L of two 3-lines": "una L de dos líneas de 3",
+"an L of 4": "una L de 4",
+"a 2×2 block": "un bloque de 2×2",
+"a 2×3 block": "un bloque de 2×3",
+"a 3×3 block": "un bloque de 3×3",
+"stacked": "apilado",
+" (white)": " (blanco)",
+" (red)": " (rojo)",
+"born here": "nació aquí",
+"No swap left anywhere: the stars were reshuffled.": "No queda ningún intercambio: las estrellas se han barajado.",
+"turret": "torreta",
+"turret fires": "la torreta dispara",
+"loaded": "cargado",
+" (power {0})": " (potencia {0})",
+"taken": "tomado",
+"by moving beside it": "al ponerse a su lado",
+"swept": "barrido",
+"from": "desde",
+"to": "hasta",
+", one claim left": ", queda un reclamo",
+", the scout is used up": ", el explorador se ha gastado",
+"claimed": "reclamado",
+"on arrival": "al llegar",
+", {0} drone{1} removed": ", {0} dron(es) eliminado(s)",
+"warped here": "saltó aquí",
+"thrown": "lanzado",
+"destroyed": "destruido",
+"rammed": "embestido",
+"it holds": "aguanta",
+"hit": "impacto",
+"an asteroid": "un asteroide",
+"a {0} star": "una estrella {0}",
+"cleared": "despejado",
+"boom": "bum",
+"shield gone": "escudo caído",
+"{0} to go": "faltan {0}",
+"shielded": "protegido",
+"jumped": "saltado",
+"down": "hacia abajo",
+"up": "hacia arriba",
+"surrounded": "rodeado",
+"Bot error: {0}. Turn skipped.": "Error del bot: {0}. Turno saltado.",
+"{0} had nothing to do.": "{0} no {v:tenías|tenía} nada que hacer.",
+"{0} swapped {1} and {2}.": "{0} {v:intercambiaste|intercambió} {1} y {2}.",
+"Out of range or in the fog. A missile flies {0} squares at something you can see.": "Fuera de alcance o en la niebla. Un misil vuela {0} casillas hacia algo que puedes ver.",
+"{0} of {1} aimed. Tap another target, or Fire now.": "{0} de {1} apuntados. Toca otro objetivo o Dispara ya.",
+"Stack the {0} into the {1}? You get a power {2} {3}. Tap it again, or Yes below.": "¿Apilar {0} en {1}? Obtienes {3} de potencia {2}. Tócalo otra vez, o Sí abajo.",
+"That is {0}. Blue dots: where it can go. Red: what it can take.": "Eso es {0}. Puntos azules: adónde puede ir. Rojos: lo que puede tomar.",
+"That is {0}.": "Eso es {0}.",
+"{0} of {1} drones · {2} missile{3} on the Command drone": "{0} de {1} drones · {2} misil(es) en el dron de mando",
+"{0} of {1} drones": "{0} de {1} drones",
+" · sees {0} squares": " · ve {0} casillas",
+"{0} · skill {1}": "{0} · nivel {1}",
+"Fire missile{0} ({1} loaded)": "Disparar misil(es) ({1} cargados)",
+"Claim the 3 × 3 here ({0} to take)": "Reclamar el 3 × 3 aquí ({0} por tomar)",
+"Build a turret ({0} missiles)": "Construir una torreta ({0} misiles)",
+"Ram the guard at {0} (both lost)": "Embestir al guardián en {0} (se pierden los dos)",
+"Tap a square within {0} squares. The bomb goes off there, a cross as far as you can see.": "Toca una casilla a menos de {0} casillas. La bomba estalla ahí, en cruz hasta donde alcances a ver.",
+"Aim two targets within {0} squares, then they fire together.": "Apunta a dos objetivos a menos de {0} casillas; disparan juntos.",
+"Tap a target within {0} squares: an enemy drone, an asteroid, or a star.": "Toca un objetivo a menos de {0} casillas: un dron enemigo, un asteroide o una estrella.",
+"{0} wins": "{0} gana",
+"Watching {0} against {1}. {2}'s turn.": "Viendo {0} contra {1}. Turno de {2}.",
+"Connected to {0}. Your turn.": "Conectado con {0}. Tu turno.",
+"Connected to {0}. {1}'s turn.": "Conectado con {0}. Turno de {1}.",
+"Tap the gold star at {0}, then the blue star right above it.": "Toca la estrella dorada en {0}, luego la estrella azul justo encima.",
+"Tap your new scout, the S at {0}.": "Toca tu nuevo explorador, la S en {0}.",
+"The gold squares are your land: {0} so far. You win at {1}. Scouts are the drones that claim land.": "Las casillas doradas son tu terreno: {0} por ahora. Ganas con {1}. Los exploradores son los drones que reclaman terreno.",
+"your land: {0} squares": "tu terreno: {0} casillas",
+"The 9 squares around the scout become yours: {0} becomes {1}. Claiming is a turn, like a move.": "Las 9 casillas alrededor del explorador pasan a ser tuyas: {0} pasa a {1}. Reclamar es un turno, como mover.",
+"They make {0}, and that pays a drone. More drones, more land.": "Forman {0}, y eso paga un dron. Más drones, más terreno.",
+"Tap one of the marked squares: {0}.": "Toca una de las casillas marcadas: {0}.",
+"That is {0}. {1}. Red squares mean it takes the enemy drone there.": "Eso es {0}. {1}. Las casillas rojas indican que toma el dron enemigo que hay ahí.",
+"Tap your new {0}, the {1} at {2}.": "Toca tu nuevo {0}, la {1} en {2}.",
+"tap your new {0}": "toca tu nuevo {0}",
+"Tap {0}.": "Toca {0}.",
+"A missile takes one power off a drone. This one has {0}, so it is destroyed, and destroying an enemy drone earns you a missile back.": "Un misil quita una potencia a un dron. Este tiene {0}, así que queda destruido, y destruir un dron enemigo te devuelve un misil.",
+"Tap your {0} at {1}.": "Toca tu {0} en {1}.",
+"{0} has walked up to {1} to claim land near you. You have a missile, and scouts and hunters fire them. Shoot it before it claims.": "{0} ha subido hasta {1} para reclamar terreno cerca de ti. Tienes un misil, y los exploradores y cazadores los disparan. Dispárale antes de que reclame.",
+"Your {0} lands on {1} and takes it. Every take earns a missile.": "Tu {0} aterriza sobre {1} y lo toma. Cada toma gana un misil.",
+"It can take {0} at {1}. Fewer enemy drones, less enemy land.": "Puede tomar {0} en {1}. Menos drones enemigos, menos terreno enemigo.",
+"A take is open: your {0} at {1}.": "Hay una toma abierta: tu {0} en {1}.",
+"It can land on the bot's drone at {0}.": "Puede aterrizar sobre el dron del bot en {0}.",
+"That stacks the two. The stack keeps the kind of {0} and each power takes one more missile to bring down.": "Eso apila los dos. La pila conserva el tipo de {0} y cada potencia necesita un misil más para derribarla.",
+"Two of your drones can stack: this one onto {0} at {1}. A stack is armor against missiles.": "Dos de tus drones pueden apilarse: este sobre {0} en {1}. Una pila es blindaje contra misiles.",
+"Tap your siege drone at {0}.": "Toca tu dron de asedio en {0}.",
+"It is the other way to win: walk it next to the bot's Command drone, the C{0}.": "Es la otra forma de ganar: llévalo junto al dron de mando del bot, la C{0}.",
+"{0} more squares.": "{0} casillas más.",
+"Tap your scout at {0}.": "Toca tu explorador en {0}.",
+"It can claim {0} squares. You hold {1} of {2}.": "Puede reclamar {0} casillas. Tienes {1} de {2}.",
+"They make {0}, which pays a drone.": "Forman {0}, que paga un dron.",
+" You hold {0} of {1}.": " Tienes {0} de {1}.",
+"Tap your scout at {0} and walk it toward open land.": "Toca tu explorador en {0} y llévalo hacia terreno libre.",
+"You are trying to claim more of the sky than the bot: {0} squares wins, or a siege drone standing next to the bot's Command drone. You own {1}, the bot owns {2}. Line up stars, and anything over 3 in a row gets you a drone. A drone is like a checkers or chess piece: you move it around to claim space and fight. Only scouts claim stars for you. Keep your own Command drone, the C, safe.": "Intentas reclamar más cielo que el bot: {0} casillas ganan, o un dron de asedio junto al dron de mando del bot. Tú tienes {1}, el bot tiene {2}. Alinea estrellas, y más de 3 en línea te dan un dron. Un dron es como una ficha de damas o ajedrez: lo mueves para reclamar espacio y luchar. Solo los exploradores reclaman estrellas para ti. Mantén a salvo tu propio dron de mando, la C.",
+"Rating {0} → {1} ({2}{3}). {4} was rated {5}; asteroids {6} to {7}.": "Puntuación {0} → {1} ({2}{3}). {4} tenía {5}; asteroides {6} a {7}.",
+"Rating <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} game{2}, {3} won": "Puntuación <b style=\"font-family:var(--mono);font-size:16px;color:var(--text)\">{0}</b> · {1} partida(s), {3} ganadas",
+"{0} is rated {1}. A game against a person moves your rating at full weight.": "{0} tiene {1}. Una partida contra una persona mueve tu puntuación con todo su peso.",
+"Bot at skill {0} is rated {1}; a game against it moves you at {2}% of a game against a person.": "El bot a nivel {0} tiene {1}; una partida contra él te mueve al {2}% de una partida contra una persona.",
+"{0} ran out of time.": "{0} se {v:quedaste|quedó} sin tiempo.",
+"You have v{0}. v{1} is out.": "Tienes la v{0}. Ya está la v{1}.",
+"Bot skill set to {0} from here on.": "Nivel del bot fijado en {0} a partir de ahora.",
+"Plays its best move {0}% of the time. ": "Juega su mejor jugada el {0}% de las veces. ",
+"swapped": "intercambiado",
+"No line there. Try another swap.": "Ahí no hay línea. Prueba otro intercambio.",
+"Fired. This drone can fire again, or take your turn.": "Disparado. Este dron puede disparar otra vez, o haz tu turno.",
+"Fired. Now take your turn: swap, move, claim or warp.": "Disparado. Ahora haz tu turno: intercambia, mueve, reclama o salta.",
+"Nothing there to hit.": "Ahí no hay nada que alcanzar.",
+"That is your own drone.": "Ese es tu propio dron.",
+"A missile bounces off a turret, a lone Command drone and a lone siege. Aim at something else.": "Un misil rebota en una torreta, en un dron de mando solo y en un asedio solo. Apunta a otra cosa.",
+"Tap an enemy drone beside the guard.": "Toca un dron enemigo junto al guardián.",
+"Tap one of your drones beside the siege. Not the Command drone.": "Toca uno de tus drones junto al asedio. No el dron de mando.",
+"Warp to a cleared square on your side, not next to an enemy guard.": "Salta a una casilla despejada de tu lado, no junto a un guardián enemigo.",
+"A turret goes on an empty square you own.": "Una torreta va en una casilla vacía tuya.",
+"That square is in the fog. Bring a drone next to it, or claim with a scout.": "Esa casilla está en la niebla. Acerca un dron, o reclama con un explorador.",
+". Tap a marked square to move, red to take, green to stack.": ". Toca una casilla marcada para mover, roja para tomar, verde para apilar.",
+"An asteroid. A missile clears it.": "Un asteroide. Un misil lo despeja.",
+"That star is on the bot's land. You can only swap stars on open land or your own.": "Esa estrella está en terreno del bot. Solo puedes intercambiar estrellas en terreno libre o tuyo.",
+"Now tap a star next to it to swap.": "Ahora toca una estrella contigua para intercambiar.",
+"slides the diagonals": "se desliza por las diagonales",
+"rides any color, 2 free steps": "viaja por cualquier color, 2 pasos libres",
+"no free rides": "sin viajes libres",
+"rides {0}": "viaja por {0}",
+" and ": " y ",
+", holding a shield": ", con un escudo guardado",
+", shielded ({0} turns)": ", protegido ({0} turnos)",
+", a bomb missile loaded": ", con un misil bomba cargado",
+"power {0}": "potencia {0}",
+"{0} claim{1}": "{0} reclamo(s)",
+"{0} turn{1} to go": "faltan {0} turno(s)",
+"relaxed": "relajada",
+"Fire the bomb missile": "Disparar el misil bomba",
+"Throw at a drone": "Lanzarse contra un dron",
+"Shield a drone": "Proteger un dron",
+"Fire now": "Disparar ya",
+"Warp": "Saltar",
+"Yes, stack them": "Sí, apilarlos",
+"Cancel": "Cancelar",
+"Tap a scout or hunter to fire a missile first, or swap two stars, or tap a drone to move it.": "Toca un explorador o cazador para disparar un misil primero, o intercambia dos estrellas, o toca un dron para moverlo.",
+"Swap two stars side by side, or tap one of your drones.": "Intercambia dos estrellas contiguas, o toca uno de tus drones.",
+"Tap an empty square you own. The turret fires once a turn at any enemy drone beside it.": "Toca una casilla vacía tuya. La torreta dispara una vez por turno a cualquier dron enemigo a su lado.",
+"Tap a cleared square on your side to warp there. Not on or next to an enemy guard.": "Toca una casilla despejada de tu lado para saltar ahí. No sobre un guardián enemigo ni a su lado.",
+"Tap the enemy drone beside the guard to throw at it. Both are destroyed.": "Toca el dron enemigo junto al guardián para lanzarte contra él. Los dos quedan destruidos.",
+"Tap one of your drones beside the siege to shield it for six turns. Not the Command drone.": "Toca uno de tus drones junto al asedio para protegerlo seis turnos. No el dron de mando.",
+"You win": "Ganas",
+"The bot wins": "Gana el bot",
+"Game over.": "Fin de la partida.",
+"Your move.": "Te toca.",
+"The bot is thinking…": "El bot está pensando…",
+"The bot is taking its turn.": "El bot está haciendo su turno.",
+"It plays by the same rules. In this first game it only moves its drones; it will not touch the stars.": "Juega con las mismas reglas. En esta primera partida solo mueve sus drones; no tocará las estrellas.",
+"That scout has one claim left; a scout claims twice, then it is used up. ": "A ese explorador le queda un reclamo; un explorador reclama dos veces y luego se gasta. ",
+"Swapping them lines up four blue stars. Four in a line makes you a drone. Drones are how you take land, and land is how you win.": "Al intercambiarlas se alinean cuatro estrellas azules. Cuatro en línea te dan un dron. Con los drones tomas terreno, y con el terreno ganas.",
+"1. tap this gold": "1. toca esta dorada",
+"2. then this blue": "2. luego esta azul",
+"Tap the square with the arrow to move the scout there.": "Toca la casilla con la flecha para mover el explorador ahí.",
+"A scout claims the 9 squares around itself. Out in the open those squares are empty, so it gets all 9. One move is one turn.": "Un explorador reclama las 9 casillas a su alrededor. En campo abierto están vacías, así que se queda las 9. Un movimiento es un turno.",
+"move it here": "muévelo aquí",
+"tap your scout": "toca tu explorador",
+"Tap the Claim button under the board.": "Toca el botón Reclamar bajo el tablero.",
+"tap Claim below": "toca Reclamar abajo",
+"Tap the scout again.": "Toca el explorador otra vez.",
+"This time it will claim the land around it instead of moving.": "Esta vez reclamará el terreno a su alrededor en lugar de moverse.",
+"tap it again": "tócalo otra vez",
+"Tap the two stars with the arrows, one after the other.": "Toca las dos estrellas con flechas, una tras otra.",
+"1. tap": "1. toca",
+"2. tap": "2. toca",
+"Tap the two stars with the arrows.": "Toca las dos estrellas con flechas.",
+"Three in a line pays nothing, but it clears them and new stars fall in, which can set up a four.": "Tres en línea no pagan nada, pero las despejan y caen estrellas nuevas, lo que puede preparar un cuatro.",
+"No swap is open. Move a drone instead.": "No hay intercambio posible. Mueve un dron.",
+"The stars shift as the game goes on; a line will come.": "Las estrellas cambian a medida que avanza la partida; llegará una línea.",
+"Each kind of drone moves and fights its own way. Tapping one shows where it can go and tells you what it does.": "Cada tipo de dron se mueve y lucha a su manera. Al tocar uno ves adónde puede ir y qué hace.",
+"shoot it": "dispárale",
+"Tap the Fire missile button under the board.": "Toca el botón Disparar misil bajo el tablero.",
+"Missiles come before your move, so firing does not cost your turn.": "Los misiles van antes de tu movimiento, así que disparar no gasta tu turno.",
+"tap, then Fire": "toca, luego Disparar",
+"Tap the asteroid with the arrow.": "Toca el asteroide con la flecha.",
+"The missile clears it and the stars drop into the gap.": "El misil lo despeja y las estrellas caen en el hueco.",
+"shoot this asteroid": "dispara a este asteroide",
+"Missiles come before your move, so this does not cost your turn.": "Los misiles van antes de tu movimiento, así que esto no gasta tu turno.",
+"You have a missile. Scouts and hunters fire them. An asteroid is in range: asteroids block the stars from lining up, and a missile clears one.": "Tienes un misil. Los exploradores y cazadores los disparan. Hay un asteroide a tiro: los asteroides impiden que las estrellas se alineen, y un misil lo despeja.",
+"Tap the red square.": "Toca la casilla roja.",
+"take it": "tómalo",
+"tap this one": "toca este",
+"A take.": "Una toma.",
+"Tap the green square.": "Toca la casilla verde.",
+"stack here": "apila aquí",
+"Tap a marked square toward the top: a siege moves exactly one square, any direction.": "Toca una casilla marcada hacia arriba: un asedio se mueve exactamente una casilla, en cualquier dirección.",
+"It walks one square a turn and no drone can take it. The moment it stands next to the bot's Command drone with no guard beside either of them, you win.": "Avanza una casilla por turno y ningún dron puede tomarlo. En cuanto está junto al dron de mando del bot sin un guardián al lado de ninguno de los dos, ganas.",
+"your siege drone": "tu dron de asedio",
+"the bot's Command drone": "el dron de mando del bot",
+"Tap Claim.": "Toca Reclamar.",
+"tap, then Claim": "toca, luego Reclamar",
+"Three in a line, nothing paid, but the board shifts.": "Tres en línea, nada pagado, pero el tablero cambia.",
+"No paying swap is in sight; claiming is the other way to gain.": "No hay a la vista ningún intercambio que pague; reclamar es la otra forma de ganar.",
+"Move a drone forward.": "Mueve un dron hacia delante.",
+"Nothing pays right now; the stars will shift.": "Ahora mismo nada paga; las estrellas cambiarán.",
+"Coach": "Guía",
+"That was a whole game, and you won it. From here the bot gets smarter as you raise its skill in Settings. Guided first game is there too, any time.": "Esa fue una partida entera, y la ganaste. A partir de aquí el bot es más listo según subes su nivel en Ajustes. La primera partida guiada también está ahí, cuando quieras.",
+"That was a whole game. Losing one is how everyone learns the board. Play again, and the coach is in Settings any time.": "Esa fue una partida entera. Perder una es como todo el mundo aprende el tablero. Juega otra vez; la guía está en Ajustes cuando quieras.",
+"I am the voice from the map: I say where to turn, you drive. Go your own way any time and I will find a new route from wherever you end up.": "Soy la voz del mapa: digo dónde girar, tú conduces. Ve por tu camino cuando quieras y buscaré una ruta nueva desde donde acabes.",
+"Do": "Haz",
+"Why": "Por qué",
+"Just now": "Ahora mismo",
+"The game": "La partida",
+"Why?": "¿Por qué?",
+"Stuck? The two green stars make a line.": "¿Atascado? Las dos estrellas verdes forman una línea.",
+"You ran out of move time. Turn passes.": "Se te acabó el tiempo del movimiento. Pasa el turno.",
+"Reloading…": "Recargando…",
+"Game copied as text.": "Partida copiada como texto.",
+"Copy this:": "Copia esto:",
+"Leave the match? An unfinished match counts as a loss.": "¿Dejar la partida? Una partida sin terminar cuenta como derrota.",
+"Start a new game? This one counts as a loss.": "¿Empezar una partida nueva? Esta cuenta como derrota.",
+"The game was abandoned.": "La partida fue abandonada.",
+"{0} · {1} of 9 sectors · {2} games, {3} won": "{0} · {1} de 9 sectores · {2} partidas, {3} ganadas",
+"Connected: {0} ({1}) against {2} ({3}). Asteroids {4} to {5}.": "Conectado: {0} ({1}) contra {2} ({3}). Asteroides {4} a {5}.",
+"{0} moves first.": "{0} mueve primero.",
+"{0} left the match.": "{0} dejó la partida.",
+"No match called {0}. Check the code with the host.": "No hay ninguna partida llamada {0}. Comprueba el código con el anfitrión.",
+"Match {0} already has two players.": "La partida {0} ya tiene dos jugadores.",
+"Versions differ: the host has v{0}, you have v{1}. Both reload, then try again.": "Las versiones no coinciden: el anfitrión tiene la v{0}, tú la v{1}. Recargad los dos y volved a intentarlo.",
+"Match {0} is already over.": "La partida {0} ya ha terminado.",
+"Watching {0} against {1}.": "Viendo {0} contra {1}.",
+"{0}'s turn.": "Turno de {0}.",
+"Connected to {0}.": "Conectado con {0}.",
+"Joined {0}'s match": "Te has unido a la partida de {0}",
+"Type your name first.": "Escribe tu nombre primero.",
+"write failed": "no se pudo escribir",
+"no connection": "sin conexión",
+"Setting up the match…": "Preparando la partida…",
+"Could not reach the match server.": "No se pudo conectar con el servidor de partidas.",
+"Friend": "Amigo",
+"Type the 4-letter code from the host.": "Escribe el código de 4 letras del anfitrión.",
+"Looking for the match…": "Buscando la partida…",
+"Host": "Anfitrión",
+"Sending…": "Enviando…",
+"reconnecting": "reconectando",
+"Left the match.": "Has dejado la partida.",
+"Player": "Jugador",
+"Reconnecting…": "Reconectando…",
+"No answer from the host yet. Try again.": "El anfitrión aún no responde. Inténtalo otra vez.",
+"The lobby is switched off until the database rules are published. Until then, one phone taps I'm ready and reads out the code it gets; the other types it here.": "La sala está apagada hasta que se publiquen las reglas de la base de datos. Mientras tanto, un teléfono toca Estoy listo y lee en voz alta el código que recibe; el otro lo escribe aquí.",
+"just now": "ahora mismo",
+"{0} min ago": "hace {0} min",
+"Nobody is waiting right now. Tap I'm ready to play and your name goes on this list for the next person who opens it.": "Nadie está esperando ahora. Toca Estoy listo para jugar y tu nombre aparecerá en esta lista para la siguiente persona que la abra.",
+"Playing now · tap to watch": "Jugando ahora · toca para ver",
+"{0} against {1} · {2}": "{0} contra {1} · {2}",
+"That game is gone.": "Esa partida ya no existe.",
+"Stop watching": "Dejar de ver",
+"Leave the match": "Dejar la partida",
+"Your last match may still be going. Tap Rejoin to get back into it.": "Tu última partida puede seguir en marcha. Toca Volver para entrar de nuevo.",
+"Type your name, then tap the name of the person you want to play. Nobody there? Tap I'm ready to play and wait for someone to tap yours.": "Escribe tu nombre y toca el nombre de la persona con quien quieres jugar. ¿No hay nadie? Toca Estoy listo para jugar y espera a que alguien toque el tuyo.",
+"Your name is on the list. Waiting for someone to tap it…": "Tu nombre está en la lista. Esperando a que alguien lo toque…",
+"The lobby is switched off, so read out this code instead: {0}.": "La sala está apagada, así que lee este código en su lugar: {0}.",
+"Your turn.": "Tu turno.",
+"{0} last seen {1} ago.": "{0} visto por última vez hace {1}.",
+"{0} s": "{0} s",
+"{0} min": "{0} min",
+"Connection lost. Reconnecting…": "Conexión perdida. Reconectando…",
+"Waiting for a friend": "Esperando a un amigo",
+"Watching": "Viendo",
+"Your name is on the list. When someone taps it, the game starts here.": "Tu nombre está en la lista. Cuando alguien lo toque, la partida empieza aquí.",
+"Waiting for the host to start…": "Esperando a que el anfitrión empiece…",
+"{0}: {1}": "{0}: {1}",
+"Sector {0}, skill {1}. Take it.": "Sector {0}, nivel {1}. Tómalo.",
+"Held": "En tu poder",
+"Next": "Siguiente",
+"Locked": "Bloqueado",
+"Skill {0}": "Nivel {0}",
+"Dispatch": "Mando",
+"Sector held": "Sector conquistado",
+"Sector lost": "Sector perdido",
+"Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se mueve 1 casilla en cualquier dirección y viaja gratis por el color de su propia estrella. Dispara un misil por turno, cargándolo del dron de mando cuando está a su lado. Reclamar toma el 3 × 3 a su alrededor y despeja la niebla ahí para siempre. Dos reclamos, y luego se gasta.",
+"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it can throw itself at an enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 puede lanzarse contra un dron enemigo a su lado: los dos quedan destruidos.",
+"Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.": "Se desliza por toda la diagonal hasta chocar con algo, también en la oscuridad, y toma lo que haya donde aterriza, salvo un asedio o una torreta. Deslizarse en la niebla es un compromiso.",
+"Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella. Dispara dos misiles por turno: apunta a los dos y aciertan juntos. Carga dos del dron de mando cuando está a su lado. No puede tomar drones aterrizando; lucha con misiles. Apila una bomba sobre él y suelta sus misiles por un misil bomba: dispáralo 3 casillas y la explosión estalla donde cae.",
+"Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se mueve 1 casilla. O salta a cualquier casilla despejada de tu lado que no esté junto a un guardián enemigo: las casillas sin reclamar a su alrededor pasan a ser tuyas y los drones enemigos en tus casillas se eliminan. El salto lo gasta.",
+"Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone. Stack a bomb onto it and the bomb becomes a shield: tap the siege, Shield a drone, then one of your drones beside it. For six turns that drone cannot be taken, swept, shot or blasted; only four enemy drones around it end it. Not the Command drone. Missiles cannot destroy it: a stacked siege loses a power, a lone one holds.": "Se mueve exactamente 1 casilla, en la oscuridad si quiere. Junto al dron de mando enemigo sin un guardián al lado de ninguno de los dos, gana la partida. No toma nada salvo una torreta enemiga, al ponerse encima, y los drones no pueden tomarlo. Cuatro enemigos a su alrededor lo destruyen. Un guardián en medio: embístelo y los dos desaparecen. Apila una bomba sobre él y la bomba se convierte en escudo: toca el asedio, Proteger un dron, y luego uno de tus drones a su lado. Durante seis turnos ese dron no puede ser tomado, barrido, alcanzado ni volado; solo cuatro drones enemigos a su alrededor acaban con él. No el dron de mando. Los misiles no pueden destruirlo: un asedio apilado pierde una potencia, uno solo aguanta.",
+"Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se mueve 1 casilla o viaja por su color. Estalla al final de tu tercer turno: la explosión corre arriba, abajo, izquierda y derecha hasta donde hayas despejado la niebla y se lleva cada asteroide, estrella y dron en su camino, los tuyos también.",
+"A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. Every two turrets count as one drone toward your nine.": "Una torreta. Nunca se mueve. Al principio de cada uno de tus turnos dispara una vez a un dron enemigo en las 8 casillas a su lado, primero a los asedios. La construye tu dron de mando por 10 misiles en una casilla vacía tuya. Solo una bomba, un asteroide o un dron de asedio pueden acabar con ella; los misiles rebotan, los asaltantes y guardianes no pueden tomarla. Cada dos torretas cuentan como un dron para tus nueve.",
+"Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no guard near, or an asteroid landing on it, ends the game.": "Se mueve 1 casilla y viaja por los colores de estrella de los drones apilados en él, hasta dos. Nada lo toma aterrizando ni con misiles; un misil o una bomba solo le arrancan la pila. Un dron de asedio a su lado sin guardián cerca, o un asteroide cayéndole encima, termina la partida.",
+"Line up 4 or more stars and a drone is born where the line was. 3 in a line only clears.": "Alinea 4 o más estrellas y nace un dron donde estaba la línea. 3 en línea solo despejan.",
+"4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.": "4 en línea hacen un explorador. Los exploradores reclaman terreno: toca uno, luego Reclamar, y el 3 × 3 a su alrededor es tuyo. Dos reclamos cada uno.",
+"A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.": "Un bloque de 2 × 2 hace un guardián. Un guardián guarda: junto a tu dron de mando o junto a un asedio enemigo bloquea el asedio, y en tu terreno toma un explorador, cazador, dron de salto o guardián enemigo al ponerse a su lado.",
+"A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.": "Un asaltante se desliza por toda la diagonal y toma cualquier dron enemigo sobre el que se detenga, salvo un asedio.",
+"A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un cazador se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella, y dispara dos misiles por turno: apunta a los dos y caen juntos. No puede tomar aterrizando; lucha con misiles.",
+"A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.": "Un dron de salto puede saltar a cualquier casilla despejada de tu lado y reclamar el 3 × 3 de ahí directamente. Un solo uso.",
+"A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.": "Un dron de asedio avanza 1 casilla por turno. Junto al dron de mando enemigo sin un guardián al lado de ninguno de los dos, gana la partida.",
+"A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.": "Una bomba estalla al final de tu tercer turno y despeja una cruz hasta donde alcances a ver, drones incluidos, los tuyos también.",
+"Scouts move 1 square any way, or ride their own star color for free.": "Los exploradores se mueven 1 casilla en cualquier dirección, o viajan gratis por el color de su propia estrella.",
+"Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.": "Los guardianes se mueven 1 casilla, solo a tu terreno o a casillas despejadas. Toman exploradores, cazadores, drones de salto y guardianes enemigos junto a los que se detienen en tu terreno.",
+"Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.": "Los asaltantes se deslizan por toda la diagonal hasta que algo los detiene, y toman lo que haya donde aterrizan, salvo un asedio.",
+"Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.": "Los cazadores se mueven 1 casilla más hasta 2 pasos libres por cualquier color, girando por el camino. Disparan dos misiles por turno y nunca toman aterrizando.",
+"Warp drones walk 1 square, or warp: tap one and choose Warp.": "Los drones de salto caminan 1 casilla, o saltan: toca uno y elige Saltar.",
+"Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.": "Los asedios avanzan exactamente 1 casilla por turno. Junto al dron de mando enemigo sin guardián al lado, la partida está ganada.",
+"Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.": "Las bombas se mueven 1 casilla o viajan por su color. Saca tus propios drones de la cruz antes de que estalle.",
+"The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.": "El dron de mando se mueve 1 casilla y viaja por los colores de estrella de los drones apilados en él. Mantenlo cubierto: si lo pierdes, pierdes la partida.",
+"Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.": "Cada toma gana un misil para tu dron de mando. Los asaltantes toman lo que haya donde aterrizan, salvo un asedio.",
+"A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.": "Un guardián toma un explorador, cazador, dron de salto o guardián enemigo al ponerse a su lado en tu terreno. Cada toma gana un misil para tu dron de mando.",
+"A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.": "Un asaltante no es tomado por un barrido, pero un asaltante apilado pierde una potencia cada vez que un guardián se pone a su lado en tu terreno. A potencia 1 está a salvo de los guardianes y solo los misiles, las bombas o una toma pueden acabar con él.",
+"Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo.",
+"A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.": "Un reclamo toma el 3 × 3 alrededor del explorador. El terreno cuenta para ganar, y el otro lado ya no puede intercambiar estrellas en él. Dos reclamos y el explorador se gasta.",
+"A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.": "Un salto reclama las casillas sin reclamar alrededor de donde aterriza y elimina los drones enemigos en casillas que ahora son tuyas. Se gasta.",
+"A siege can ram the guard in its way. Both are gone.": "Un asedio puede embestir al guardián que le estorba. Los dos desaparecen.",
+"A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, una torreta ni un dron protegido.",
+"A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.": "Un misil quita una potencia a un dron. A potencia 1 el dron queda destruido, y destruir un dron gana un misil para tu dron de mando. Los exploradores y cazadores cargan ahí poniéndose a su lado.",
+"A missile takes one power off a drone. A stack takes one hit per power.": "Un misil quita una potencia a un dron. Una pila aguanta un impacto por potencia.",
+"Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.": "Los misiles no pueden destruir el dron de mando, solo arrancar los drones apilados en él. Solo un asedio a su lado termina la partida.",
+"A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. Missiles come from takes and go to your Command drone; a scout or hunter loads by standing beside it.": "Un misil despeja una estrella o un asteroide y las estrellas caen. Los exploradores disparan uno por turno, los cazadores dos a la vez. Los misiles vienen de las tomas y van a tu dron de mando; un explorador o cazador carga poniéndose a su lado.",
+"A bomb goes off at the end of its owner's third turn.": "Una bomba estalla al final del tercer turno de su dueño.",
+"The blast runs up, down, left and right as far as the fog is cleared and takes every star, asteroid and drone in its path.": "La explosión corre arriba, abajo, izquierda y derecha hasta donde la niebla esté despejada y se lleva cada estrella, asteroide y dron en su camino.",
+"Clear 8 or more stars on your side in one turn and every asteroid drifts a square toward you. A lone drone in the way is destroyed; a stack loses one power and is jumped.": "Despeja 8 o más estrellas de tu lado en un turno y cada asteroide se desplaza una casilla hacia ti. Un dron solo en su camino queda destruido; una pila pierde una potencia y es saltada.",
+"Four enemy drones around a siege destroy it.": "Cuatro drones enemigos alrededor de un asedio lo destruyen.",
+"A shape pays only when part of it is on your side, and not on the other side's land.": "Una forma solo paga cuando parte de ella está de tu lado, y no en terreno del otro lado.",
+"When no swap is left anywhere, the stars are reshuffled.": "Cuando no queda ningún intercambio, las estrellas se barajan.",
+"A Command drone holding 10 missiles can spend them on a turret: tap the C, then Build a turret, then an empty square you own. It never moves and fires once a turn at an enemy drone beside it. Only a bomb, an asteroid or a siege drone can end it.": "Un dron de mando con 10 misiles puede gastarlos en una torreta: toca la C, luego Construir una torreta, luego una casilla vacía tuya. Nunca se mueve y dispara una vez por turno a un dron enemigo a su lado. Solo una bomba, un asteroide o un dron de asedio pueden acabar con ella.",
+"Missiles bounce off a turret. A bomb, an asteroid, or a siege drone moving onto it ends it. Missiles cannot stop a siege either, so a siege simply walks in.": "Los misiles rebotan en una torreta. Una bomba, un asteroide o un dron de asedio que se ponga encima acaban con ella. Los misiles tampoco detienen a un asedio, así que un asedio simplemente entra.",
+"A siege that took a bomb turns it into a shield for a drone beside it. For six turns nothing takes that drone, sweeps it, shoots it or blasts it; only four enemy drones around it end it.": "Un asedio que recibió una bomba la convierte en escudo para un dron a su lado. Durante seis turnos nada toma ese dron, lo barre, lo alcanza ni lo vuela; solo cuatro drones enemigos a su alrededor acaban con él.",
+"Missiles bounce off a shielded drone. Four enemy drones around it is the only way through, until the shield wears off.": "Los misiles rebotan en un dron protegido. Cuatro drones enemigos a su alrededor es la única forma, hasta que el escudo se desvanezca.",
+"Six turns are up. The drone is an ordinary drone again.": "Han pasado los seis turnos. El dron vuelve a ser un dron normal.",
+"Missiles cannot destroy a siege. A stacked siege loses a power to one; a lone siege holds. A bomb, or four enemy drones around it, ends it.": "Los misiles no pueden destruir un asedio. Un asedio apilado pierde una potencia; uno solo aguanta. Una bomba, o cuatro drones enemigos a su alrededor, acaban con él.",
+"A turret fires by itself at the start of its owner's turn, at one enemy drone in the 8 squares beside it, sieges first.": "Una torreta dispara sola al principio del turno de su dueño, a un dron enemigo en las 8 casillas a su lado, primero a los asedios.",
+"Missiles live on the Command drone. A scout or hunter standing beside it loads up: one for a scout, two for a hunter. Walk back to reload.": "Los misiles viven en el dron de mando. Un explorador o cazador a su lado carga: uno el explorador, dos el cazador. Vuelve para recargar.",
+"A drone that ends its move on a wreck takes the missile in it, yours or the other side's.": "Un dron que termina su movimiento sobre unos restos toma el misil que hay en ellos, tuyos o del otro lado.",
+"Salvage is on: a destroyed drone leaves a wreck holding its missile. Any drone, yours or the other side's, that ends its move on the wreck takes it. Wrecks fade after five rounds.": "Recuperación activada: un dron destruido deja unos restos con su misil. Cualquier dron, tuyo o del otro lado, que termine su movimiento sobre los restos lo toma. Los restos desaparecen tras cinco rondas.",
+"A missile takes one power off a drone. At power 1 the drone is destroyed. With Salvage on, the missile stays in the wreck until someone goes and gets it.": "Un misil quita una potencia a un dron. A potencia 1 el dron queda destruido. Con Recuperación activada, el misil se queda en los restos hasta que alguien va a por él.",
+"Raiders take what they land on, except a siege. Landing on the drone means standing on its wreck, so that missile goes to your Command drone at once.": "Los asaltantes toman lo que haya donde aterrizan, salvo un asedio. Aterrizar sobre el dron es estar sobre sus restos, así que ese misil va a tu dron de mando de inmediato.",
+"A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. With Salvage on, the wreck lies beside the guard: step on it to get the missile.": "Un guardián toma un explorador, cazador, dron de salto o guardián enemigo al ponerse a su lado en tu terreno. Con Recuperación activada, los restos quedan junto al guardián: písalos para coger el misil.",
+"A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. With Salvage on, missiles come from wrecks: go and stand on one.": "Un misil despeja una estrella o un asteroide y las estrellas caen. Los exploradores disparan uno por turno, los cazadores dos a la vez. Con Recuperación activada, los misiles vienen de los restos: ve y ponte sobre unos.",
+"Random. It swaps and moves at random and never fires.": "Aleatorio. Intercambia y mueve al azar y nunca dispara.",
+"It knows which lines pay a drone and claims land with its scouts.": "Sabe qué líneas pagan un dron y reclama terreno con sus exploradores.",
+"It fires missiles at your drones and takes what it can reach.": "Dispara misiles a tus drones y toma lo que alcanza.",
+"It keeps its Command drone home and sweeps with its guards on its own land.": "Mantiene su dron de mando en casa y barre con sus guardianes en su propio terreno.",
+"It stacks drones for armor and clears asteroids on its side.": "Apila drones como blindaje y despeja asteroides de su lado.",
+"Its hunters fire both missiles, its sieges walk toward your Command drone, and it warps for land.": "Sus cazadores disparan los dos misiles, sus asedios avanzan hacia tu dron de mando, y salta para ganar terreno.",
+"It will not park a drone where your raiders, hunters or guards can take it next turn.": "No deja un dron donde tus asaltantes, cazadores o guardianes puedan tomarlo el turno siguiente.",
+"It picks swaps for the cascade too: more stars cleared, and it looks at where the asteroids would land before it clears eight.": "Elige intercambios también por la cascada: más estrellas despejadas, y mira dónde caerían los asteroides antes de despejar ocho.",
+"It goes after wrecks when Salvage is on, walks its bombs toward your drones, and in free play looks one move ahead: what you could take, shoot or win with after each move it considers.": "Va a por los restos cuando Recuperación está activada, lleva sus bombas hacia tus drones, y en partida libre mira una jugada por delante: lo que podrías tomar, disparar o ganar tras cada jugada que considera.",
+"It keeps a guard beside its Command drone at all times.": "Mantiene un guardián junto a su dron de mando en todo momento.",
+"Every turn is its best move. Nothing is random.": "Cada turno es su mejor jugada. Nada es aleatorio.",
+"Orion": "Orión",
+"The Hunter": "El Cazador",
+"Sector Orion. First one out of the gate. The Hunter shoots at anything that moves and some things that don't. Keep your scouts out of its reach, or don't. Your call.": "Sector Orión. El primero de la lista. El Cazador dispara a todo lo que se mueve y a algunas cosas que no. Mantén tus exploradores fuera de su alcance, o no. Tú decides.",
+"I shoot what I can reach, and I reach a lot.": "Disparo a lo que alcanzo, y alcanzo mucho.",
+"Orion is held. Nobody back here expected that. Don't get comfortable.": "Orión es nuestro. Nadie por aquí lo esperaba. No te acomodes.",
+"Orion holds. The Hunter sends its regards. We've put another Command drone on the pile for you.": "Orión resiste. El Cazador te manda recuerdos. Hemos puesto otro dron de mando en el montón para ti.",
+"Move something. I dare you.": "Mueve algo. Te reto.",
+"Told you. Anything that moves.": "Te lo dije. Todo lo que se mueve.",
+"That one was slow anyway.": "Ese era lento de todos modos.",
+"Claim all you like. I shoot over lines.": "Reclama lo que quieras. Yo disparo por encima de las líneas.",
+"Big swing. I only need a small one.": "Gran golpe. A mí me basta uno pequeño.",
+"Eight barrels. Now I reach even more.": "Ocho cañones. Ahora alcanzo aún más.",
+"Loud. I prefer accurate.": "Ruidoso. Prefiero preciso.",
+"That's my siege at your door. Knock knock.": "Ese es mi asedio a tu puerta. Toc, toc.",
+"Three left. Three is plenty to shoot with.": "Me quedan tres. Tres sobran para disparar.",
+"Running out of targets. Shame.": "Me quedo sin blancos. Una pena.",
+"Twenty turns and you're still moving. Good. More to shoot.": "Veinte turnos y sigues moviéndote. Bien. Más a lo que disparar.",
+"Cassiopeia": "Casiopea",
+"The Queen": "La Reina",
+"Sector Cassiopeia. The Queen keeps guards, and her guards sweep. Step onto her land next to one and you're not coming back. The last Command drone we sent came back on a pike. We'd like this one back in one piece.": "Sector Casiopea. La Reina tiene guardianes, y sus guardianes barren. Pisa su terreno junto a uno y no vuelves. El último dron de mando que enviamos volvió en una pica. Nos gustaría que este volviera de una pieza.",
+"Walk onto my land. My guards will meet you.": "Entra en mi terreno. Mis guardianes te recibirán.",
+"Cassiopeia is ours. The Queen's guards are scrap. Good work, and I don't say that.": "Casiopea es nuestra. Los guardianes de la Reina son chatarra. Buen trabajo, y yo no digo eso.",
+"Cassiopeia holds. The Queen kept the pike. She's starting a collection.": "Casiopea resiste. La Reina se quedó la pica. Está empezando una colección.",
+"My land. My guards. Mind your step.": "Mi terreno. Mis guardianes. Cuidado por dónde pisas.",
+"A guard met you. I did warn you.": "Un guardián te recibió. Te avisé.",
+"One drone. The court has more.": "Un dron. La corte tiene más.",
+"Draw your lines. Mine have guards on them.": "Traza tus líneas. Las mías tienen guardianes encima.",
+"A tantrum of stars. How common.": "Una rabieta de estrellas. Qué vulgar.",
+"The palace has a new wall.": "El palacio tiene un muro nuevo.",
+"Noise in the court. Unseemly.": "Ruido en la corte. Indecoroso.",
+"My siege is calling on your Command drone. Receive it.": "Mi asedio visita a tu dron de mando. Recíbelo.",
+"Three loyal drones. That is still a court.": "Tres drones leales. Eso sigue siendo una corte.",
+"Your army is a rumor now.": "Tu ejército ya es un rumor.",
+"Twenty turns. You bow slowly, I'll grant you that.": "Veinte turnos. Te inclinas despacio, eso te lo concedo.",
+"Draco": "Draco",
+"The Dragon": "El Dragón",
+"Sector Draco. The Dragon stacks its drones three deep and chews through asteroids to make room. Bring missiles. Bring more than that.": "Sector Draco. El Dragón apila sus drones de tres en tres y mastica asteroides para hacer sitio. Trae misiles. Trae más que eso.",
+"My drones stand three deep. Count your missiles.": "Mis drones van de tres en tres. Cuenta tus misiles.",
+"Draco is ours. Three deep and it still went down. Somebody write that down.": "Draco es nuestro. De tres en tres y aun así cayó. Que alguien lo apunte.",
+"Draco holds. Your drones were armor for its drones, it seems. Try again.": "Draco resiste. Tus drones fueron blindaje para los suyos, parece. Inténtalo otra vez.",
+"Count my stacks. Then count your missiles.": "Cuenta mis pilas. Luego cuenta tus misiles.",
+"Chewed. Swallowed. Next.": "Masticado. Tragado. El siguiente.",
+"You scratched a scale. I have more.": "Arañaste una escama. Tengo más.",
+"Land. I'll stack on it later.": "Terreno. Apilaré encima más tarde.",
+"Rocks rolling. I chew rocks.": "Rocas rodando. Yo mastico rocas.",
+"A tower on the hoard. Try it.": "Una torre sobre el tesoro. Pruébala.",
+"Hot. I like hot.": "Caliente. Me gusta caliente.",
+"My siege, three deep, at your door.": "Mi asedio, de tres en tres, a tu puerta.",
+"Three drones, but how deep?": "Tres drones, ¿pero de cuántos en cuántos?",
+"Thin. You are so thin.": "Flaco. Qué flaco estás.",
+"Twenty turns and my stacks are taller than when we started.": "Veinte turnos y mis pilas son más altas que al empezar.",
+"Lyra": "Lira",
+"The Harp": "El Arpa",
+"Sector Lyra. The Harp's hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.": "Sector Lira. Los cazadores del Arpa disparan dos misiles a la vez, sus asedios van a por tu dron de mando, y salta para ganar terreno. Nombre bonito. Sector cruel.",
+"Two missiles, one breath. My hunters play in chords.": "Dos misiles, un aliento. Mis cazadores tocan acordes.",
+"Lyra is ours. The Harp is out of tune. Keep moving.": "Lira es nuestra. El Arpa está desafinada. Sigue adelante.",
+"Lyra holds. Two missiles, one Command drone, no music. Again.": "Lira resiste. Dos misiles, un dron de mando, sin música. Otra vez.",
+"Listen. Two missiles, one breath.": "Escucha. Dos misiles, un aliento.",
+"That was a chord.": "Eso fue un acorde.",
+"A wrong note. The song goes on.": "Una nota falsa. La canción sigue.",
+"Lines on a board. I play lines too.": "Líneas en un tablero. Yo también toco líneas.",
+"A crash of stars. Loud, not pretty.": "Un estruendo de estrellas. Fuerte, no bonito.",
+"A new instrument. Eight strings.": "Un instrumento nuevo. Ocho cuerdas.",
+"Percussion. Overrated.": "Percusión. Sobrevalorada.",
+"My siege walks in four-four time, straight at your Command drone.": "Mi asedio marcha a cuatro por cuatro, directo a tu dron de mando.",
+"Three strings still play.": "Tres cuerdas aún suenan.",
+"You're down to a solo.": "Te has quedado en un solo.",
+"Twenty bars in. The tempo is mine.": "Veinte compases. El tempo es mío.",
+"Scorpius": "Escorpio",
+"The Scorpion": "El Escorpión",
+"Sector Scorpius. The Scorpion never leaves a drone where you can take it. You will have to make it come to you. Patience, or whatever you've got instead.": "Sector Escorpio. El Escorpión nunca deja un dron donde puedas tomarlo. Tendrás que hacer que venga a ti. Paciencia, o lo que tengas en su lugar.",
+"You will never catch one of my drones standing where you can take it.": "Nunca pillarás a uno de mis drones donde puedas tomarlo.",
+"Scorpius is ours. You out-waited a scorpion. That's a first.": "Escorpio es nuestro. Aguantaste más que un escorpión. Eso es nuevo.",
+"Scorpius holds. It never gave you a shot, did it. Think about that before the next one.": "Escorpio resiste. Nunca te dio un tiro, ¿verdad? Piénsalo antes del siguiente.",
+"Come find a drone to take. Go on.": "Ven a buscar un dron que tomar. Adelante.",
+"You stood still. I don't.": "Te quedaste quieto. Yo no.",
+"You caught one. Note how long it took.": "Pillaste uno. Fíjate cuánto tardaste.",
+"Claim it. I won't be standing on it.": "Reclámalo. Yo no estaré encima.",
+"Rocks. I was already out of their way.": "Rocas. Yo ya estaba fuera de su camino.",
+"A turret never moves. Mine doesn't need to.": "Una torreta nunca se mueve. La mía no lo necesita.",
+"A blast where I used to be.": "Una explosión donde yo estaba.",
+"My siege is beside your Command drone, and nowhere you can reach.": "Mi asedio está junto a tu dron de mando, y fuera de tu alcance.",
+"Three drones, and you can't touch any of them.": "Tres drones, y no puedes tocar ninguno.",
+"Three left. Which one do you want to lose?": "Te quedan tres. ¿Cuál quieres perder?",
+"Twenty turns. Have you taken a clean shot yet?": "Veinte turnos. ¿Has tenido ya un tiro limpio?",
+"Hydra": "Hidra",
+"The Serpent": "La Serpiente",
+"Sector Hydra. The Serpent plays the cascade: one swap, three lines, and the asteroids come rolling at you. Watch its side of the board, not yours.": "Sector Hidra. La Serpiente juega la cascada: un intercambio, tres líneas, y los asteroides ruedan hacia ti. Vigila su lado del tablero, no el tuyo.",
+"Cut one line and three more fall. I play for the cascade.": "Corta una línea y caen tres más. Yo juego por la cascada.",
+"Hydra is ours. All heads accounted for. Command is impressed, which is unsettling.": "Hidra es nuestra. Todas las cabezas contadas. El Mando está impresionado, lo cual inquieta.",
+"Hydra holds. The asteroids did half the work. The Serpent did the rest.": "Hidra resiste. Los asteroides hicieron la mitad del trabajo. La Serpiente, el resto.",
+"One swap. Watch what falls.": "Un intercambio. Mira lo que cae.",
+"That one fell with the rest.": "Ese cayó con los demás.",
+"Cut a head. Count the heads.": "Corta una cabeza. Cuenta las cabezas.",
+"Lines. I'll pull them out from under you.": "Líneas. Te las quitaré de debajo de los pies.",
+"Eight stars? Cute. Now watch mine.": "¿Ocho estrellas? Qué mono. Ahora mira las mías.",
+"It fires on its own. Like my cascades.": "Dispara sola. Como mis cascadas.",
+"A blast. My cascades are quieter and do more.": "Una explosión. Mis cascadas hacen menos ruido y más daño.",
+"My siege came in on the cascade. It's at your door.": "Mi asedio llegó con la cascada. Está a tu puerta.",
+"Three heads. The old number was nine.": "Tres cabezas. Antes eran nueve.",
+"You're down to three. The rocks will finish it.": "Te quedan tres. Las rocas acabarán el trabajo.",
+"Twenty turns. The board is tilting my way.": "Veinte turnos. El tablero se inclina hacia mí.",
+"Cygnus": "Cisne",
+"The Swan": "El Cisne",
+"Sector Cygnus. The Swan picks the wrecks clean and walks its bombs to where your drones sleep. Nothing you lose stays lost; it just changes hands.": "Sector Cisne. El Cisne deja limpios los restos y lleva sus bombas adonde duermen tus drones. Nada de lo que pierdes se queda perdido; solo cambia de manos.",
+"I pick the wrecks clean, and my bombs know where you sleep.": "Dejo limpios los restos, y mis bombas saben dónde duermes.",
+"Cygnus is ours. The Swan is grounded. Two sectors left. Breathe.": "Cisne es nuestro. El Cisne está en tierra. Quedan dos sectores. Respira.",
+"Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.": "Cisne resiste. Tus restos alimentaron sus misiles. Niégale el campo la próxima vez.",
+"Lose something. I'll pick it up.": "Pierde algo. Yo lo recogeré.",
+"Mine now. It will pay me a missile.": "Ahora es mío. Me pagará un misil.",
+"Leave it there. I'll be back for it.": "Déjalo ahí. Volveré a por él.",
+"Your land. My wrecks on it, soon.": "Tu terreno. Mis restos encima, pronto.",
+"Stars everywhere. Wrecks soon.": "Estrellas por todas partes. Restos pronto.",
+"A turret. Built from what you lost.": "Una torreta. Hecha con lo que perdiste.",
+"That one was mine. They know where you sleep.": "Esa era mía. Saben dónde duermes.",
+"My siege is at your Command drone. Sleep lightly.": "Mi asedio está en tu dron de mando. Duerme ligero.",
+"Three left, and a field of wrecks to feed them.": "Me quedan tres, y un campo de restos para alimentarlos.",
+"Three left. I'll collect them in order.": "Te quedan tres. Los recogeré en orden.",
+"Twenty turns. The field is mine to pick.": "Veinte turnos. El campo es mío para recoger.",
+"Andromeda": "Andrómeda",
+"The Chained": "La Encadenada",
+"Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a guard beside it. Always. Find the moment there isn't.": "Sector Andrómeda. La Encadenada nunca deja solo a su dron de mando. Siempre hay un guardián a su lado. Siempre. Encuentra el momento en que no lo haya.",
+"My Command drone has never been alone a day in its life.": "Mi dron de mando no ha estado solo ni un día en su vida.",
+"Andromeda is ours. The chain broke. One left, and it's the big one.": "Andrómeda es nuestra. La cadena se rompió. Queda uno, y es el grande.",
+"Andromeda holds. The guard was there every time. Make it move.": "Andrómeda resiste. El guardián estuvo ahí cada vez. Haz que se mueva.",
+"My Command drone has a guard. It always will.": "Mi dron de mando tiene un guardián. Siempre lo tendrá.",
+"The guard did that. The guard does everything.": "Eso lo hizo el guardián. El guardián lo hace todo.",
+"Not the guard. Never the guard.": "El guardián no. El guardián nunca.",
+"Claim. My guard stays where it is.": "Reclama. Mi guardián se queda donde está.",
+"Rocks. The guard doesn't move for rocks.": "Rocas. El guardián no se mueve por rocas.",
+"Another thing that never leaves.": "Otra cosa que nunca se va.",
+"A blast. The guard is still beside me.": "Una explosión. El guardián sigue a mi lado.",
+"My siege is beside your Command drone. Where is your guard?": "Mi asedio está junto a tu dron de mando. ¿Dónde está tu guardián?",
+"Three. One is the guard. Do the math.": "Tres. Uno es el guardián. Haz la cuenta.",
+"Three left. Is one a guard? It should be.": "Te quedan tres. ¿Es uno un guardián? Debería.",
+"Twenty turns. The guard has not moved. It won't.": "Veinte turnos. El guardián no se ha movido. No lo hará.",
+"Ursa Major": "Osa Mayor",
+"The Bear": "El Oso",
+"Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.": "Sector Osa Mayor. El Oso no adivina. Cada jugada es la mejor. Hemos enviado once drones de mando. Once picas. El tuyo es el doce.",
+"I do not guess.": "Yo no adivino.",
+"Ursa Major is ours. All nine sectors. Twelve was the number. Go home, Commander. You've earned a long one.": "Osa Mayor es nuestra. Los nueve sectores. Doce era el número. Vete a casa, Comandante. Te has ganado un buen descanso.",
+"Ursa Major holds. The pike was waiting. There is no shame on it; everyone's is.": "Osa Mayor resiste. La pica esperaba. No hay vergüenza en ella; ahí están las de todos.",
+"Twelve. Begin.": "Doce. Empieza.",
+"Expected.": "Previsto.",
+"Noted.": "Anotado.",
+"I saw it before you swapped.": "Lo vi antes de tu intercambio.",
+"Ten missiles, placed.": "Diez misiles, colocados.",
+"Accounted for.": "Contabilizado.",
+"My siege is where it was always going to be.": "Mi asedio está donde siempre iba a estar.",
+"Three is enough.": "Tres bastan.",
+"Three. It ends the way the numbers say.": "Tres. Termina como dicen los números.",
+"Twenty turns. Nothing has surprised me.": "Veinte turnos. Nada me ha sorprendido.",
+"The sky is big. Claim your piece before the bot does.": "El cielo es grande. Reclama tu trozo antes que el bot.",
+"Four in a row is a drone. Three in a row is a wish.": "Cuatro en línea es un dron. Tres en línea es un deseo.",
+"Keep the Command drone home. It is not a scout.": "Deja el dron de mando en casa. No es un explorador.",
+"Asteroids do not care whose side they are on.": "A los asteroides no les importa de qué lado están.",
+"Lose a drone, earn a missile. Lose the C, go make coffee.": "Pierde un dron, gana un misil. Pierde la C, ve a hacer café.",
+"The bot has no feelings. Take its land.": "El bot no tiene sentimientos. Quítale el terreno.",
+"Claim it now. Argue about it later.": "Reclámalo ahora. Discútelo después.",
+"Stars fall toward whoever is moving. So does trouble.": "Las estrellas caen hacia quien mueve. Los problemas también.",
+"Every drone was a lucky swap once.": "Cada dron fue una vez un intercambio con suerte.",
+"Nobody ever won by staring at the board. Swap something.": "Nadie ganó nunca mirando el tablero. Intercambia algo.",
+"A newer version of the game is out.": "Hay una versión nueva del juego.",
+"Reload now": "Recargar ahora",
+"Settings": "Ajustes",
+"New game": "Nueva partida",
+"Bot skill %": "Nivel del bot %",
+"Timers": "Relojes",
+"clock 20 min, 60 s a move": "reloj de 20 min, 60 s por jugada",
+"Handicap": "Hándicap",
+"asteroids from ratings": "asteroides según la puntuación",
+"Your asteroids": "Tus asteroides",
+"Bot asteroids": "Asteroides del bot",
+"Squares to win": "Casillas para ganar",
+"Fog of war": "Niebla de guerra",
+"off, the whole board shows": "desactivada, se ve todo el tablero",
+"from the seam: your half lit, scouts clear the rest": "desde la costura: tu mitad iluminada, los exploradores despejan el resto",
+"everything dark, even your own half": "todo a oscuras, incluso tu propia mitad",
+"Drone tips": "Consejos de drones",
+"tap a drone to read": "toca un dron para leer",
+"Explain moves": "Explicar jugadas",
+"what happened, and why": "qué pasó, y por qué",
+"Music": "Música",
+"follows the game": "sigue la partida",
+"Sound": "Sonido",
+"sound effects and story voices": "efectos de sonido y voces de la historia",
+"Salvage": "Recuperación",
+"missiles stay in the wreck until a drone stands on it": "los misiles se quedan en los restos hasta que un dron se pone encima",
+"Your name": "Tu nombre",
+"Language": "Idioma",
+"English": "English",
+"Français": "Français",
+"Story mode": "Modo historia",
+"Play a friend": "Jugar con un amigo",
+"How to play": "Cómo se juega",
+"Guided first game": "Primera partida guiada",
+"Copy as text": "Copiar como texto",
+"Copy last finished game": "Copiar la última partida terminada",
+"Rules": "Reglas",
+"Playing as": "Jugando como",
+"I'm ready to play": "Estoy listo para jugar",
+"Rejoin your last match": "Volver a tu última partida",
+"Reconnect": "Reconectar",
+"Waiting to play · tap a name": "Esperando para jugar · toca un nombre",
+"Join with code": "Unirse con código",
+"Loading…": "Cargando…",
+"Next sector": "Siguiente sector",
+"Retry": "Reintentar",
+"Story map": "Mapa de la historia",
+"Copy this game": "Copiar esta partida",
+"Leave": "Salir",
+"command drone ·": "dron de mando ·",
+"scout ·": "explorador ·",
+"guard ·": "guardián ·",
+"raider ·": "asaltante ·",
+"hunter ·": "cazador ·",
+"warp ·": "salto ·",
+"siege ·": "asedio ·",
+"bomb": "bomba",
+"You": "Tú",
+"Bot": "Bot",
+"Clocks": "Relojes",
+"Your record ▾": "Tu historial ▾",
+"Log ▾": "Registro ▾",
+"Aaron Schuemann": "Aaron Schuemann",
+"presents": "presenta",
+"Constellation": "Constellation",
+"Commander": "Commander",
+"Launch": "Lanzar",
+"Story": "Historia",
+"Nine sectors. Take them in order. The dispatcher will brief you.": "Nueve sectores. Tómalos en orden. El Mando te dará las instrucciones.",
+"All nine sectors are held. Replay any of them.": "Los nueve sectores son tuyos. Vuelve a jugar cualquiera.",
+"Back": "Atrás",
+"Sector": "Sector",
+"How this works": "Cómo funciona",
+"You are trying to claim more of the sky than the bot.": "Intentas reclamar más cielo que el bot.",
+"Your land is gold, the bot's is blue. 69 squares wins.": "Tu terreno es dorado, el del bot es azul. 69 casillas ganan.",
+"Line up stars.": "Alinea estrellas.",
+"Anything over 3 in a row gets you a drone, born where you made it.": "Más de 3 en línea te dan un dron, que nace donde lo hiciste.",
+"A drone is like a checkers or chess piece.": "Un dron es como una ficha de damas o ajedrez.",
+"You move it around to claim space and fight. Only scouts claim stars for you.": "Lo mueves para reclamar espacio y luchar. Solo los exploradores reclaman estrellas para ti.",
+"Or win outright": "O gana directamente",
+"by walking a siege drone up next to the bot's Command drone, the C, with no guard beside it. Keep yours safe.": "llevando un dron de asedio junto al dron de mando del bot, la C, sin un guardián a su lado. Mantén el tuyo a salvo.",
+"Who takes whom.": "Quién toma a quién.",
+"Raiders take what they land on, except a siege. Hunters fight with missiles only. Guards take scouts, hunters, warps and guards by moving next to them on your land. Every take earns a missile for your Command drone; scouts and hunters load from it by standing beside it. Tap any drone, yours or the bot's, to see its reach.": "Los asaltantes toman lo que haya donde aterrizan, salvo un asedio. Los cazadores luchan solo con misiles. Los guardianes toman exploradores, cazadores, drones de salto y guardianes al ponerse a su lado en tu terreno. Cada toma gana un misil para tu dron de mando; los exploradores y cazadores cargan de él poniéndose a su lado. Toca cualquier dron, tuyo o del bot, para ver su alcance.",
+"Got it, let's play": "Entendido, a jugar",
+"Walk me through my first game": "Guíame en mi primera partida",
+"Read the full rulebook": "Leer el reglamento completo",
+"All three are in Settings any time.": "Las tres opciones están en Ajustes cuando quieras.",
+"Español": "Español",
+"Swipe": "Deslizar",
+"swipe a star to swap it, swipe a drone to move it": "desliza una estrella para intercambiarla, desliza un dron para moverlo",
+"Nothing that way.": "Nada por ahí."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.65.0';
+const VERSION='1.66.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
-const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
+const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
 const KCOL=['#e5484d','#f0a52b','#3ec27a','#3f8ff0','#b06ce8'];
-const TNAME=LANG==='fr'?TNAME_FR:{C:'scout',G:'guard',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone',T:'turret'};
+const TNAME=LANG==='fr'?TNAME_FR:LANG==='es'?TNAME_ES:{C:'scout',G:'guard',S:'raider',H:'hunter',W:'warp',X:'siege',B:'bomb',M:'command drone',T:'turret'};
 const LETTER={C:'S',G:'G',S:'R',H:'H',W:'W',X:'X',B:'B',M:'C',T:'T'}; // v1.38: the Command drone wears a C (the user's mother) // the letter on the disc: S for scout (the user's call), so the old strike is the raider, R
 const TAKES={C:'',G:'',S:'CGSHWB',H:'',W:'',X:'T',B:'',M:'',T:''}; // v1.34: a turret is taken only by a siege moving onto it // v1.32: hunters fight with missiles only // nothing takes the command drone by landing; only a siege beside it ends the game // by landing. G takes by moving next to; W on arrival; X takes nothing
 const SWEEPS='CHWG'; // what a guard takes by moving next to it on its land
@@ -1549,7 +2223,7 @@ const half=(side,r)=>side===YOU?r>SEAM:r<SEAM;
 const backRow=side=>side===YOU?N-1:0;
 const sq=(r,c)=>'abcdefghijk'[c]+(N-r);
 let S=null,busy=false,sel=null,mode=null,pending=null,aimList=[];
-let SNAME=LANG==='fr'?{1:'Vous',2:'Le bot'}:{1:'You',2:'Bot'};
+let SNAME=LANG==='fr'?{1:'Vous',2:'Le bot'}:LANG==='es'?{1:'Tú',2:'El bot'}:{1:'You',2:'Bot'};
 const SNAME0=Object.assign({},SNAME); // the plain names, restored after a match or a story sector
 let online=false,net=null; // two-phone play (net.js); declared here so boot can render before net.js has run
 const who=side=>SNAME[side];
@@ -2145,6 +2819,7 @@ async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;
 // ---------- input ----------
 let peek=null; // an enemy drone whose reach is being shown
 function onCell(r,c){
+  if(Date.now()-swDone<350)return; /* the click that follows a swipe */
   if(busy||!S||S.over||S.turn!==YOU||netSpec())return;
   const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
   if(!(d&&d.side===BOT))peek=null;clearExplainCalls();
@@ -2425,6 +3100,26 @@ function renderExplain(){const g=$('explain');if(!S||S.tut||!$('inExplain').chec
 $('explain').addEventListener('click',e=>{const f=e.target.closest('#whyFold');if(f){f.innerHTML='<b>'+t('Why')+'</b>'+f.dataset.k.split(',').map(k=>t((S&&S.salvage&&WHY_SV[k])||WHY[k])).join(' ');}});
 $('inExplain').addEventListener('change',()=>{try{localStorage.setItem('cc_explain',$('inExplain').checked?'1':'0');}catch(_){}renderExplain();});
 try{if(localStorage.getItem('cc_explain')==='0')$('inExplain').checked=false;}catch(_){}
+// ---------- swipe (v1.66, the kid's idea): with Settings → Swipe on, drag a star to swap it with the neighbour in that
+// direction, or drag one of your drones to move it that way: a short drag goes one square, a longer one as far as the
+// lane allows in that line. Taps still work. The board stops scrolling under a finger while the option is on.
+let swipeOn=false;try{swipeOn=localStorage.getItem('cc_swipe')==='1';}catch(_){}
+let swStart=null,swDone=0;
+const DIR8_BY_ANGLE=[[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]];
+function swipeDir8(dx,dy){const k=Math.round(Math.atan2(dy,dx)/(Math.PI/4));return DIR8_BY_ANGLE[(k+8)%8];}
+function doSwipe(r,c,dx,dy,dragged){if(busy||!S||S.over||S.turn!==YOU||netSpec())return;const d=droneAt(r,c);
+  if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw')return;const [dr,dc]=swipeDir8(dx,dy);const want=Math.max(1,Math.round(dragged));let best=null;
+    for(const [k,kind] of targets(d)){if(kind==='dark')continue;const [tr,tc]=rc(k);const vr=tr-r,vc=tc-c;const n=Math.max(Math.abs(vr),Math.abs(vc));if(!n||Math.sign(vr)!==dr||Math.sign(vc)!==dc)continue;const score=Math.abs(n-want);if(!best||score<best.score)best={tr,tc,score};}
+    if(!best){setStatus(t('Nothing that way.'));return;}sel={id:d.id};mode=null;aimList=[];pending=null;renderBoard();onCell(best.tr,best.tc);return;}
+  if(d)return;
+  if(!isStar(S.grid[r][c]))return;const [dr,dc]=Math.abs(dx)>Math.abs(dy)?[0,Math.sign(dx)]:[Math.sign(dy),0];const r2=r+dr,c2=c+dc;if(!inb(r2,c2)||!isStar(S.grid[r2][c2])||droneAt(r2,c2))return;
+  if(S.own[key(r,c)]===BOT||S.own[key(r2,c2)]===BOT){setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));return;}
+  sel=null;mode=null;humanSwap([r,c],[r2,c2]);}
+(()=>{const b=$('board');b.addEventListener('pointerdown',e=>{if(!swipeOn)return;const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;swStart={k:i,x:e.clientX,y:e.clientY,id:e.pointerId};},{passive:true});
+  b.addEventListener('pointerup',e=>{if(!swStart||e.pointerId!==swStart.id)return;const st=swStart;swStart=null;const dx=e.clientX-st.x,dy=e.clientY-st.y;const dist=Math.hypot(dx,dy);const cw=cells[0].offsetWidth||40;if(dist<Math.max(16,cw*.4))return;const [r,c]=rc(st.k);doSwipe(r,c,dx,dy,dist/cw);swDone=Date.now();});
+  b.addEventListener('pointercancel',()=>{swStart=null;});})();
+$('inSwipe').addEventListener('change',()=>{swipeOn=$('inSwipe').checked;try{localStorage.setItem('cc_swipe',swipeOn?'1':'0');}catch(_){}$('board').style.touchAction=swipeOn?'none':'';});
+$('inSwipe').checked=swipeOn;$('board').style.touchAction=swipeOn?'none':'';
 $('inSalvage').addEventListener('change',()=>{try{localStorage.setItem('cc_salvage',$('inSalvage').checked?'1':'0');}catch(_){}});
 try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}catch(_){}
 
@@ -2507,7 +3202,7 @@ snapSkill();renderSkillNote();
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
 translateDOM(document.body);
-$('legend').innerHTML=['M','C','G','S','H','W','X','B','T'].map(k=>'<span class="lg"><b>'+LETTER[k]+'</b> '+(LANG==='fr'?NOUN_FR[k][0]:TNAME[k])+'</span>').join(' · ');
+$('legend').innerHTML=['M','C','G','S','H','W','X','B','T'].map(k=>'<span class="lg"><b>'+LETTER[k]+'</b> '+(NOUN[LANG]?NOUN[LANG][k][0]:TNAME[k])+'</span>').join(' · ');
 if(LANG==='fr')for(const a of document.querySelectorAll('a[href$="rules.html"]'))a.href=a.href.replace('rules.html','rules-fr.html');
 $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
@@ -2538,7 +3233,7 @@ function shootAnim(from,to){return new Promise(res=>{const b=$('board');const [x
   const m=document.createElement('div');m.className='msl';m.style.left=x0+'px';m.style.top=y0+'px';const ang=Math.atan2(y1-y0,x1-x0)*180/Math.PI;m.style.transform=`translate(-50%,-50%) rotate(${ang}deg)`;b.appendChild(m);
   const dist=Math.hypot(x1-x0,y1-y0);const ms=Math.max(180,Math.min(520,dist*1.1));m.style.transition=`left ${ms}ms linear,top ${ms}ms linear`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{m.style.left=x1+'px';m.style.top=y1+'px';}));
-  setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);setTimeout(()=>f.remove(),420);res();},ms);});}
+  setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);const im=document.createElement('div');im.className='impact';im.style.left=x1+'px';im.style.top=y1+'px';b.appendChild(im);setTimeout(()=>{f.remove();im.remove();},520);res();},ms);});}
 // ---------- a drone in flight (v1.58): engines spool up for a beat, the drone lifts off its shadow, turns its engine to
 // face the way it is going, leaves a streak in its side's color, and settles back down on landing. The letter stays upright.
 const SPOOL=180,LIFT=240,LAND=220,HOP_MS=190; /* v1.65: a ride is flown star by star, HOP_MS a square */
@@ -2573,6 +3268,7 @@ function playFX(){const list=fx;fx=[];if(!list.length)return Promise.resolve();c
       for(let i=0;i<5;i++){const s=document.createElement('div');s.className='shard spark';s.style.left=x+'px';s.style.top=y+'px';s.style.background='#fff';b.appendChild(s);const a=Math.random()*6.283,dist=14+Math.random()*16;
         requestAnimationFrame(()=>requestAnimationFrame(()=>{s.style.transform=`translate(${Math.cos(a)*dist}px,${Math.sin(a)*dist}px) rotate(${a}rad)`;s.style.opacity='0';}));setTimeout(()=>s.remove(),500);}
       continue;}
+    {const fb=document.createElement('div');fb.className='fire';fb.style.left=x+'px';fb.style.top=y+'px';fb.style.width=fb.style.height=(w*1.5)+'px';fb.innerHTML='<i></i><i></i><i></i>';b.appendChild(fb);setTimeout(()=>fb.remove(),1100);} /* v1.66: a fireball under the shatter */
     const g=document.createElement('div');g.className='ghost dying';g.style.width=g.style.height=(w*0.84)+'px';g.style.left=x+'px';g.style.top=y+'px';g.innerHTML=f.html;b.appendChild(g);
     const ring=document.createElement('div');ring.className='ring';ring.style.left=x+'px';ring.style.top=y+'px';ring.style.borderColor=f.col;b.appendChild(ring);
     for(let i=0;i<10;i++){const s=document.createElement('div');s.className='shard';s.style.left=x+'px';s.style.top=y+'px';s.style.background=i%3?f.col:'#fff';s.style.width=(5+Math.random()*7)+'px';s.style.height=(3+Math.random()*3)+'px';b.appendChild(s);
