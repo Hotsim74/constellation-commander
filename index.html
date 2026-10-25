@@ -173,6 +173,13 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.kH{inset:-6%;padding:2%;background:transparent;border-color:transparent}.dr.kH svg{overflow:visible}
 .board .dr.kH svg,.cvShip .dr.kH svg{animation:hflip 9s ease-in-out infinite}
 @keyframes hflip{0%,80%{transform:perspective(160px) rotateY(0)}90%{transform:perspective(160px) rotateY(180deg)}100%{transform:perspective(160px) rotateY(360deg)}}
+/* v1.70: the raider is a sentinel: tentacles that wave, lenses that pulse */
+.dr.kS svg{overflow:visible}.dr.kS{inset:-3%;padding:2%}
+.tent{transform-box:view-box;animation:tentwave 2.2s ease-in-out infinite alternate}
+@keyframes tentwave{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+.slens{animation:lenspulse 1.6s ease-in-out infinite alternate}
+@keyframes lenspulse{from{opacity:.75}to{opacity:1}}
+.legend .tent,.bark .tent{animation:none}
 .hthr{transform-box:fill-box;transform-origin:0% 50%;animation:hflick .13s ease-in-out infinite alternate}
 @keyframes hflick{from{transform:scaleX(.8) scaleY(.9)}to{transform:scaleX(1.15) scaleY(1.1)}}
 .legend .hthr,.bark .hthr{animation:none}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
@@ -617,80 +624,19 @@ const HUNTER_SHIP=`<svg viewBox="0 0 128 128" aria-label="hunter drone">
 </svg>`;
 function hunterSVG(side){const you=side===YOU;return HUNTER_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/LENS1/g,you?'#ff9a00':'#0066ff').replace(/LENS2/g,you?'#3d2000':'#001144');}
 // ---------- the strike drone: the user's corner-engine missile. SIDE = id suffix; LIGHT = flame/exhaust color; EN1/EN2 = warhead gradient.
-const STRIKE_SHIP=`<svg viewBox="0 0 128 128" aria-label="strike drone">
+const STRIKE_SHIP=`<svg viewBox="0 0 128 128" aria-label="raider drone">
   <defs>
-    <pattern id="cfSSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="#0f0f0f"/>
-      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
-      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
-      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
-    </pattern>
-    <linearGradient id="waxSSIDE" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
-      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.1"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="cylSSIDE" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.0"/>
-      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.4"/>
-      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.0"/>
-      <stop offset="85%" stop-color="#000000" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="metalSSIDE" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#555555"/>
-      <stop offset="50%" stop-color="#777777"/>
-      <stop offset="100%" stop-color="#222222"/>
-    </linearGradient>
-    <radialGradient id="energySSIDE" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="30%" stop-color="EN1"/>
-      <stop offset="70%" stop-color="EN2"/>
-      <stop offset="100%" stop-color="#000000"/>
-    </radialGradient>
-    <g id="podSSIDE">
-      <rect x="-4" y="6" width="8" height="10" fill="#222" stroke="#111" stroke-width="2"/>
-      <rect x="-10" y="-14" width="20" height="24" rx="4" fill="url(#metalSSIDE)" stroke="#050505" stroke-width="2"/>
-      <path d="M -10 -4 L 10 -4 M -10 4 L 10 4" stroke="#111" stroke-width="1.5"/>
-      <ellipse cx="0" cy="10" rx="6" ry="3" fill="#000" stroke="#333" stroke-width="1"/>
-      <ellipse cx="0" cy="-14" rx="8" ry="4" fill="LIGHT"/>
-      <path d="M -8 -14 L 8 -14 L 0 -34 Z" fill="LIGHT" opacity="0.6"/>
-      <path d="M -4 -14 L 4 -14 L 0 -26 Z" fill="#ffffff" opacity="0.9"/>
-    </g>
+    <radialGradient id="sHeadSIDE" cx="42%" cy="35%" r="65%"><stop offset="0%" stop-color="#8a97a3"/><stop offset="45%" stop-color="#3f4851"/><stop offset="100%" stop-color="#0e1215"/></radialGradient>
+    <radialGradient id="sEyeSIDE" cx="45%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffd0d0"/><stop offset="35%" stop-color="#ff3b30"/><stop offset="100%" stop-color="#5a0008"/></radialGradient>
+    <linearGradient id="sTentSIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9aa6b2"/><stop offset="100%" stop-color="#2a3138"/></linearGradient>
   </defs>
-  <g>
-    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 52 40 L 28 16 L 16 28 L 52 64 Z" fill="url(#waxSSIDE)"/>
-    <path d="M 52 40 L 28 16 L 32 16 L 52 44 Z" fill="#ffffff" opacity="0.15"/>
-    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 76 40 L 100 16 L 112 28 L 76 64 Z" fill="url(#waxSSIDE)"/>
-    <path d="M 76 40 L 100 16 L 96 16 L 76 44 Z" fill="#ffffff" opacity="0.15"/>
-    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 52 88 L 28 112 L 16 100 L 52 64 Z" fill="url(#waxSSIDE)"/>
-    <path d="M 52 88 L 28 112 L 32 112 L 52 84 Z" fill="#ffffff" opacity="0.15"/>
-    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#cfSSIDE)" stroke="#111" stroke-width="2"/>
-    <path d="M 76 88 L 100 112 L 112 100 L 76 64 Z" fill="url(#waxSSIDE)"/>
-    <path d="M 76 88 L 100 112 L 96 112 L 76 84 Z" fill="#ffffff" opacity="0.15"/>
-  </g>
-  <use href="#podSSIDE" transform="translate(22, 22) rotate(-45)"/>
-  <use href="#podSSIDE" transform="translate(106, 22) rotate(45)"/>
-  <use href="#podSSIDE" transform="translate(22, 106) rotate(-135)"/>
-  <use href="#podSSIDE" transform="translate(106, 106) rotate(135)"/>
-  <path d="M 52 96 L 76 96 L 72 104 L 56 104 Z" fill="#222" stroke="#111" stroke-width="1.5"/>
-  <path d="M 56 104 L 72 104 L 64 126 Z" fill="LIGHT" opacity="0.5"/>
-  <path d="M 58 104 L 70 104 L 64 118 Z" fill="#ffffff" opacity="0.9"/>
-  <g>
-    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cfSSIDE)" stroke="#050505" stroke-width="2"/>
-    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#cylSSIDE)"/>
-    <path d="M 64 10 L 78 36 L 76 96 L 52 96 L 50 36 Z" fill="url(#waxSSIDE)"/>
-    <path d="M 52 50 L 76 50 M 52 70 L 76 70 M 52 86 L 76 86" stroke="#000000" stroke-width="1.5" opacity="0.7"/>
-    <path d="M 64 36 L 64 96" stroke="#000000" stroke-width="1.5" opacity="0.4"/>
-  </g>
-  <path d="M 52 36 L 76 36 L 64 10 Z" fill="#111" stroke="#050505" stroke-width="2"/>
-  <path d="M 55 34 L 73 34 L 64 14 Z" fill="url(#energySSIDE)"/>
-  <path d="M 59 32 L 69 32 L 64 20 Z" fill="#ffffff" opacity="0.8"/>
-  <path d="M 55 34 L 64 14 L 60 34 Z" fill="#ffffff" opacity="0.4"/>
+  <g class="tents"><path class="tent" style="animation-delay:0.00s;transform-origin:59.5px 83.6px" d="M 59.5 83.6 Q 64.0 119.1 35.5 132.5" stroke="url(#sTentSIDE)" stroke-width="4.6" fill="none" stroke-linecap="round"/><circle cx="35.5" cy="132.5" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:0.17s;transform-origin:51.0px 80.5px" d="M 51.0 80.5 Q 26.7 111.7 44.7 123.5" stroke="url(#sTentSIDE)" stroke-width="4.0" fill="none" stroke-linecap="round"/><circle cx="44.7" cy="123.5" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:0.34s;transform-origin:44.1px 74.7px" d="M 44.1 74.7 Q 26.7 97.9 1.1 106.6" stroke="url(#sTentSIDE)" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="1.1" cy="106.6" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:0.51s;transform-origin:39.6px 66.9px" d="M 39.6 66.9 Q 6.9 79.2 6.0 83.9" stroke="url(#sTentSIDE)" stroke-width="4.6" fill="none" stroke-linecap="round"/><circle cx="6.0" cy="83.9" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:0.68s;transform-origin:38.0px 58.0px" d="M 38.0 58.0 Q 6.9 58.0 -3.9 58.0" stroke="url(#sTentSIDE)" stroke-width="4.0" fill="none" stroke-linecap="round"/><circle cx="-3.9" cy="58.0" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:0.85s;transform-origin:39.6px 49.1px" d="M 39.6 49.1 Q 13.8 36.8 -5.6 32.1" stroke="url(#sTentSIDE)" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="-5.6" cy="32.1" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:1.02s;transform-origin:44.1px 41.3px" d="M 44.1 41.3 Q 13.8 18.1 22.9 9.4" stroke="url(#sTentSIDE)" stroke-width="4.6" fill="none" stroke-linecap="round"/><circle cx="22.9" cy="9.4" r="2.2" fill="LIGHT" opacity=".9"/><path class="tent" style="animation-delay:1.19s;transform-origin:51.0px 35.5px" d="M 51.0 35.5 Q 44.2 4.3 15.4 -7.5" stroke="url(#sTentSIDE)" stroke-width="4.0" fill="none" stroke-linecap="round"/><circle cx="15.4" cy="-7.5" r="2.2" fill="LIGHT" opacity=".9"/></g>
+  <path d="M 64 18 C 86 18 100 34 100 54 C 100 72 86 84 64 86 C 42 84 28 72 28 54 C 28 34 42 18 64 18 Z" fill="url(#sHeadSIDE)" stroke="#07090b" stroke-width="2.5"/>
+  <g stroke="#0b0d10" stroke-width="1.5" fill="none" opacity=".75"><path d="M 40 30 C 52 24 76 24 88 30"/><path d="M 32 50 C 48 44 80 44 96 50"/><path d="M 36 70 C 50 76 78 76 92 70"/><path d="M 64 18 L 64 86"/><path d="M 46 22 L 40 80 M 82 22 L 88 80"/></g>
+  <circle cx="64" cy="54" r="24" fill="#0b0d10" opacity=".85"/>
+  <circle cx="64" cy="52" r="9" fill="#0b0d10"/><circle class="slens" cx="64" cy="52" r="7" fill="url(#sEyeSIDE)"/><circle cx="61.9" cy="49.5" r="2.1" fill="#ffffff" opacity=".8"/><circle cx="50" cy="46" r="6.5" fill="#0b0d10"/><circle class="slens" cx="50" cy="46" r="4.5" fill="url(#sEyeSIDE)"/><circle cx="48.6" cy="44.4" r="1.3" fill="#ffffff" opacity=".8"/><circle cx="78" cy="46" r="6.5" fill="#0b0d10"/><circle class="slens" cx="78" cy="46" r="4.5" fill="url(#sEyeSIDE)"/><circle cx="76.7" cy="44.4" r="1.3" fill="#ffffff" opacity=".8"/><circle cx="44" cy="58" r="5.5" fill="#0b0d10"/><circle class="slens" cx="44" cy="58" r="3.5" fill="url(#sEyeSIDE)"/><circle cx="43.0" cy="56.8" r="1.1" fill="#ffffff" opacity=".8"/><circle cx="84" cy="58" r="5.5" fill="#0b0d10"/><circle class="slens" cx="84" cy="58" r="3.5" fill="url(#sEyeSIDE)"/><circle cx="83.0" cy="56.8" r="1.1" fill="#ffffff" opacity=".8"/><circle cx="54" cy="64" r="5.2" fill="#0b0d10"/><circle class="slens" cx="54" cy="64" r="3.2" fill="url(#sEyeSIDE)"/><circle cx="53.0" cy="62.9" r="1.0" fill="#ffffff" opacity=".8"/><circle cx="74" cy="64" r="5.2" fill="#0b0d10"/><circle class="slens" cx="74" cy="64" r="3.2" fill="url(#sEyeSIDE)"/><circle cx="73.0" cy="62.9" r="1.0" fill="#ffffff" opacity=".8"/><circle cx="64" cy="68" r="5" fill="#0b0d10"/><circle class="slens" cx="64" cy="68" r="3" fill="url(#sEyeSIDE)"/><circle cx="63.1" cy="67.0" r="0.9" fill="#ffffff" opacity=".8"/>
+  <path d="M 44 34 C 52 26 76 26 84 34 C 74 30 54 30 44 34 Z" fill="#ffffff" opacity=".35"/>
+  <circle cx="34" cy="48" r="3" fill="LIGHT" opacity=".9"/><circle cx="94" cy="48" r="3" fill="LIGHT" opacity=".9"/>
 </svg>`;
 function strikeSVG(side){const you=side===YOU;return STRIKE_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/EN1/g,you?'#ffb84a':'#00e5ff').replace(/EN2/g,you?'#a35a00':'#0077aa');}
 // ---------- the siege drone: the user's jet-powered ram, pushed toward the other ships. SIDE = id suffix; LIGHT = energy color.
@@ -1245,7 +1191,6 @@ const FR={
 "Stop watching": "Arrêter de regarder",
 "{0}: the guard swept {1} at {2}: power {3}.": "{0} : le bouclier a balayé {1} en {2} : puissance {3}.",
 "swept": "balayé",
-"A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.": "Un pillard n'est pas pris par un balayage, mais un pillard empilé perd une puissance chaque fois qu'un bouclier vient se placer à côté de lui sur votre terrain. À puissance 1 il est à l'abri des boucliers et seuls les missiles, les bombes ou une prise peuvent l'achever.",
 "Tap one of the marked squares: {0}.": "Touchez une des cases marquées : {0}.",
 "a raider slides along a diagonal, as far as you like": "un pillard glisse le long d'une diagonale, aussi loin que vous voulez",
 "a hunter steps one square, plus free steps on any color": "un chasseur avance d'une case, plus des pas gratuits sur n'importe quelle couleur",
@@ -1503,7 +1448,6 @@ const FR={
 "A siege that took a bomb turns it into a shield for a drone beside it. For six turns nothing takes that drone, sweeps it, shoots it or blasts it; only four enemy drones around it end it.": "Un siège qui a reçu une bombe la change en bouclier pour un drone à côté de lui. Pendant six tours rien ne prend ce drone, ne le balaie, ne le touche ni ne le souffle ; seuls quatre drones ennemis autour de lui l'achèvent.",
 "Missiles bounce off a shielded drone. Four enemy drones around it is the only way through, until the shield wears off.": "Les missiles rebondissent sur un drone protégé. Quatre drones ennemis autour de lui est le seul moyen, jusqu'à ce que le bouclier se dissipe.",
 "Six turns are up. The drone is an ordinary drone again.": "Les six tours sont passés. Le drone redevient un drone ordinaire.",
-"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it can throw itself at an enemy drone beside it: both are destroyed.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège. À puissance 3 il peut se jeter sur un drone ennemi à côté de lui : les deux sont détruits.",
 "{0}: the guard threw itself at {1}{2} at {3}. Both are gone{4}": "{0} : le bouclier s'est jeté sur {1}{2} en {3}. Les deux ont disparu{4}",
 "thrown": "jeté",
 "Throw at a drone": "Se jeter sur un drone",
@@ -1532,7 +1476,9 @@ const FR={
 "Thrown. Now take your turn: swap, move, claim or warp.": "Lancé. Maintenant jouez votre tour : échangez, déplacez, revendiquez ou sautez.",
 "A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Une forme de sept étoiles ou plus qui ne paie rien, parce qu'elle a été faite de l'autre côté, sur le terrain de l'autre camp ou au plafond de drones, paie à la place un astéroïde à lancer. Lancez-le avant votre coup ; cela ne coûte pas le tour.",
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un astéroïde lancé tombe sur une des neuf cases au hasard. Un drone seul y est détruit, une pile perd une puissance, le drone de commandement et un drone protégé l'encaissent. Si la case est libre ensuite, l'astéroïde reste.",
-"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones."
+"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones.",
+"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège. À puissance 3 il balaie aussi les pillards, et peut se jeter sur n'importe quel drone ennemi à côté de lui : les deux sont détruits.",
+"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un pillard n'est pas pris par le balayage d'un bouclier de puissance 1 ou 2, mais un pillard empilé perd une puissance chaque fois qu'un tel bouclier vient se placer à côté de lui sur votre terrain. Un bouclier de puissance 3 prend un pillard d'un coup."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -1867,7 +1813,6 @@ const ES={
 "Sector held": "Sector conquistado",
 "Sector lost": "Sector perdido",
 "Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se mueve 1 casilla en cualquier dirección y viaja gratis por el color de su propia estrella. Dispara un misil por turno, cargándolo del dron de mando cuando está a su lado. Reclamar toma el 3 × 3 a su alrededor y despeja la niebla ahí para siempre. Dos reclamos, y luego se gasta.",
-"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it can throw itself at an enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 puede lanzarse contra un dron enemigo a su lado: los dos quedan destruidos.",
 "Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.": "Se desliza por toda la diagonal hasta chocar con algo, también en la oscuridad, y toma lo que haya donde aterriza, salvo un asedio o una torreta. Deslizarse en la niebla es un compromiso.",
 "Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella. Dispara dos misiles por turno: apunta a los dos y aciertan juntos. Carga dos del dron de mando cuando está a su lado. No puede tomar drones aterrizando; lucha con misiles. Apila una bomba sobre él y suelta sus misiles por un misil bomba: dispáralo 3 casillas y la explosión estalla donde cae.",
 "Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se mueve 1 casilla. O salta a cualquier casilla despejada de tu lado que no esté junto a un guardián enemigo: las casillas sin reclamar a su alrededor pasan a ser tuyas y los drones enemigos en tus casillas se eliminan. El salto lo gasta.",
@@ -1893,7 +1838,6 @@ const ES={
 "The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.": "El dron de mando se mueve 1 casilla y viaja por los colores de estrella de los drones apilados en él. Mantenlo cubierto: si lo pierdes, pierdes la partida.",
 "Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.": "Cada toma gana un misil para tu dron de mando. Los asaltantes toman lo que haya donde aterrizan, salvo un asedio.",
 "A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.": "Un guardián toma un explorador, cazador, dron de salto o guardián enemigo al ponerse a su lado en tu terreno. Cada toma gana un misil para tu dron de mando.",
-"A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.": "Un asaltante no es tomado por un barrido, pero un asaltante apilado pierde una potencia cada vez que un guardián se pone a su lado en tu terreno. A potencia 1 está a salvo de los guardianes y solo los misiles, las bombas o una toma pueden acabar con él.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo.",
 "A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.": "Un reclamo toma el 3 × 3 alrededor del explorador. El terreno cuenta para ganar, y el otro lado ya no puede intercambiar estrellas en él. Dos reclamos y el explorador se gasta.",
 "A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.": "Un salto reclama las casillas sin reclamar alrededor de donde aterriza y elimina los drones enemigos en casillas que ahora son tuyas. Se gasta.",
@@ -2202,12 +2146,14 @@ const ES={
 "Thrown. Now take your turn: swap, move, claim or warp.": "Lanzado. Ahora haz tu turno: intercambia, mueve, reclama o salta.",
 "A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Una forma de siete o más estrellas que no paga nada, porque se hizo en el otro lado, en terreno del otro lado o con el tope de drones, paga en su lugar un asteroide para lanzar. Lánzalo antes de tu jugada; no gasta el turno.",
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un asteroide lanzado cae en una de las nueve casillas al azar. Un dron solo ahí queda destruido, una pila pierde una potencia, el dron de mando y un dron protegido ni se inmutan. Si la casilla queda libre, el asteroide se queda.",
-"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones."
+"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones.",
+"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 también barre asaltantes, y puede lanzarse contra cualquier dron enemigo a su lado: los dos quedan destruidos.",
+"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un asaltante no es tomado por el barrido de un guardián de potencia 1 o 2, pero un asaltante apilado pierde una potencia cada vez que ese guardián se pone a su lado en tu terreno. Un guardián a potencia 3 toma al asaltante directamente."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.69.0';
+const VERSION='1.70.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2535,7 +2481,7 @@ function landed(d){
   salvageAt(d.side,d.r,d.c);
   if(d.kind==='M')reload(d.side);else loadShooter(d);
   if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(!e||e.side===d.side||S.own[key(e.r,e.c)]!==d.side||e.shield)continue;
-    if(SWEEPS.includes(e.kind))takeDrone(d.side,e,t('by moving beside it'),d);
+    if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))takeDrone(d.side,e,t('by moving beside it'),d); /* v1.70: a guard at full power sweeps raiders too, and keeps itself */
     else if(e.kind==='S'&&e.power>1){e.power--;if(e.colors.length>e.power)e.colors=e.colors.slice(0,e.power);queueHit(e.r,e.c);note(t`${who(d.side)}: the guard swept ${own(e.side,'S')} at ${sq(e.r,e.c)}: power ${e.power}.`,{why:'sweep_s',at:[[e.r,e.c]],lab:[t('swept')]});}}} // v1.40: a stacked raider loses one power to a sweep; a lone raider is not swept
 }
 // v1.65: the squares a drone passes through on its way to (r,c): the same search as targets(), with parents kept,
@@ -2732,7 +2678,7 @@ function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b
   let dmg=0.8*hits.reduce((a,b)=>a+b,0),worst=0;
   for(const e of dronesOf(him)){
     for(const [k,t] of targets(e)){if(t!=='take')continue;const v=droneAt(...rc(k));if(v&&v.side===me)worst=Math.max(worst,val(v));}
-    if(e.kind==='G')for(const [k,t] of targets(e)){if(t!=='move')continue;const [r,c]=rc(k);let s=0;for(const [dr,dc] of DIR8){const v=droneAt(r+dr,c+dc);if(v&&v.side===me&&!v.shield&&S.own[key(r+dr,c+dc)]===him){if(SWEEPS.includes(v.kind))s+=val(v);else if(v.kind==='S'&&v.power>1)s+=4;}}worst=Math.max(worst,s);}
+    if(e.kind==='G')for(const [k,t] of targets(e)){if(t!=='move')continue;const [r,c]=rc(k);let s=0;for(const [dr,dc] of DIR8){const v=droneAt(r+dr,c+dc);if(v&&v.side===me&&!v.shield&&S.own[key(r+dr,c+dc)]===him){if(SWEEPS.includes(v.kind)||(v.kind==='S'&&e.power>=MAXP))s+=val(v);else if(v.kind==='S'&&v.power>1)s+=4;}}worst=Math.max(worst,s);}
     if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&!v.shield&&v.kind!=='X'&&v.kind!=='T'&&(S.own[key(a,b)]===him||S.own[key(a,b)]===0))s+=val(v);}worst=Math.max(worst,s);}}
   return dmg+worst;}
 // try each of the best options on a copy of the board and charge it what the other side could do back
@@ -2797,7 +2743,7 @@ async function botTurn(me){
       if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
       if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
-      if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&S.own[key(e.r,e.c)]===me){if(SWEEPS.includes(e.kind))v+=12*e.power;else if(e.kind==='S'&&e.power>1)v+=5;}}}
+      if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&S.own[key(e.r,e.c)]===me){if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))v+=12*e.power;else if(e.kind==='S'&&e.power>1)v+=5;}}}
       if((d.kind==='S'||d.kind==='H')&&L>=5)v+=0.75*(dist(d.r,d.c)-dist(r,c));
       if(kind==='dark')v-=1;
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
@@ -3090,7 +3036,7 @@ move_B:'Bombs move 1 square or ride their color. Keep your own drones out of the
 move_M:'The Command drone moves 1 square and rides the star colors of drones stacked into it. Keep it covered: lose it and the game is lost.',
 take:'Every take earns a missile for your Command drone. Raiders take what they land on, except a siege.',
 sweep:'A guard takes an enemy scout, hunter, warp or guard by moving next to it on your land. Every take earns a missile for your Command drone.',
-sweep_s:'A raider is not taken by a sweep, but a stacked raider loses one power each time a guard moves up beside it on your land. At power 1 it is safe from guards and only missiles, bombs or a take can end it.',
+sweep_s:'A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.',
 stack:'Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most.',
 claim:'A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.',
 warp:'A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.',
@@ -3166,7 +3112,7 @@ try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}cat
 
 // ---------- tips ----------
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
-G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it can throw itself at an enemy drone beside it: both are destroyed.',
+G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.',
 H:'Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
 W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
@@ -3249,7 +3195,7 @@ $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
 $('inLang').addEventListener('change',()=>setLang($('inLang').value));
 for(const b of document.querySelectorAll('#cover [data-lang]')){b.classList.toggle('on',b.dataset.lang===LANG);b.addEventListener('click',()=>setLang(b.dataset.lang));}
-$('coverGo').addEventListener('click',()=>{$('cover').hidden=true;});
+$('coverGo').addEventListener('click',()=>{$('cover').hidden=true;$('cvFleet').innerHTML='';}); /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
 showCover();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
@@ -3611,7 +3557,7 @@ function renderStoryMap(){const el=$('storyList');const next=storyNext();
   el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
     return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
   $('storyDone').hidden=!!next;}
-function openStoryMap(){$('cover').hidden=true;$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
+function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
 // ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
 let typeTimer=null,typeDone=null;
 function typeOut(el,text,done){if(typeTimer)clearInterval(typeTimer);el.textContent='';let i=0;const step=Math.max(14,Math.min(38,2600/Math.max(1,text.length)));
