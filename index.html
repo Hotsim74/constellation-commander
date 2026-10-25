@@ -248,6 +248,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .cvTitle span{display:block}
 .cvTitleWrap{position:relative;filter:drop-shadow(0 4px 0 rgba(0,0,0,.7)) drop-shadow(0 0 26px rgba(232,166,59,.35))}
 @keyframes cvShine{from{background-position:120% 0}to{background-position:-120% 0}}
+/* v1.64: the first open spells the title out; the Command drone's emblem turns slowly on the cover */
+.cvTitle.split{opacity:1;animation:none;background:none;color:inherit}.cvTitle.split .cvL{display:inline-block;font-style:normal;background:linear-gradient(180deg,#fff6dc 0,#ffd27a 35%,#e8a63b 62%,#a8641a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;transform:translateY(22px) scale(1.3);filter:blur(6px);animation:cvLetter .55s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes cvLetter{to{opacity:1;transform:none;filter:blur(0)}}
+.cvShip .cmdstar{transform-origin:64px 64px;transform-box:view-box;animation:cmdspin 16s linear infinite}
+@keyframes cmdspin{to{transform:rotate(360deg)}}
 .cvUI .say{max-width:520px;margin:0 0 18px;font-family:var(--mono);font-size:15px;line-height:1.45;color:#f1e4c8;border:0;padding:0;min-height:1.4em;opacity:0;animation:cvUp .8s ease-out 1.9s forwards}
 .cvBtns{display:flex;gap:12px;opacity:0;animation:cvUp .8s ease-out 2.2s forwards}
 .cvBtns .go{font-size:18px;padding:14px 34px;border-radius:4px}
@@ -1516,7 +1521,7 @@ const FR={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.63.0';
+const VERSION='1.64.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:['red','gold','green','blue','violet'];
@@ -2568,7 +2573,7 @@ function shockAt(r,c){const b=$('board');const [x,y]=cellXY(r,c);const s=documen
 // the guard's eye: the nearest enemy drone standing on the guard's land within three squares, as an angle for the beam; null if none
 function guardLook(g){let best=null;for(const e of S.drones){if(e.side===g.side)continue;const dr=e.r-g.r,dc=e.c-g.c;const d=Math.max(Math.abs(dr),Math.abs(dc));if(d>3||S.own[key(e.r,e.c)]!==g.side)continue;if(!best||d<best.d)best={d,ang:Math.round(Math.atan2(dr,dc)*180/Math.PI)};}return best?best.ang:null;}
 function turretSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="turret"><rect x="26" y="26" width="76" height="76" rx="14" fill="#0b1016" stroke="${col}" stroke-width="3"/>${[0,45,90,135,180,225,270,315].map(a=>`<rect x="60" y="6" width="8" height="24" rx="2" fill="${col}" transform="rotate(${a} 64 64)"/>`).join('')}<circle cx="64" cy="64" r="24" fill="#1a222d" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="8" fill="${col}"/></svg>`;}
-function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="command drone"><circle cx="64" cy="64" r="56" fill="#0b1016" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="44" fill="none" stroke="${col}" stroke-width="1.5" opacity=".45"/><polygon points="64,14 76,52 114,64 76,76 64,114 52,76 14,64 52,52" fill="${col}" opacity=".9"/><polygon points="64,34 70,58 94,64 70,70 64,94 58,70 34,64 58,58" fill="#fff" opacity=".85"/><circle cx="64" cy="64" r="7" fill="${col}"/></svg>`;}
+function cmdSVG(side){const col=side===YOU?'#ffb84a':'#00e5ff';return `<svg viewBox="0 0 128 128" aria-label="command drone"><circle cx="64" cy="64" r="56" fill="#0b1016" stroke="${col}" stroke-width="3"/><circle cx="64" cy="64" r="44" fill="none" stroke="${col}" stroke-width="1.5" opacity=".45"/><g class="cmdstar"><polygon points="64,14 76,52 114,64 76,76 64,114 52,76 14,64 52,52" fill="${col}" opacity=".9"/><polygon points="64,34 70,58 94,64 70,70 64,94 58,70 34,64 58,58" fill="#fff" opacity=".85"/></g><circle cx="64" cy="64" r="7" fill="${col}"/></svg>`;}
 // ---------- two phones (v1.20). One match document in the Firebase Realtime Database, reached with
 // plain fetch for writes and an event stream for reads. The HOST phone runs the game. The guest
 // phone sends what it wants to do (an action) and shows the board the host sends back after every
@@ -3026,22 +3031,28 @@ for(const ev of ['pointerdown','keydown','touchend'])document.addEventListener(e
 // ---------- the start screen (v1.63): a parallax starfield on a canvas that follows the pointer or the phone's tilt,
 // a drifting nebula, a planet horizon, a constellation that draws itself, the fleet flying in with engines lit, and the
 // title. Functions and var only: showCover() runs at boot, before this part of the script has executed.
-var cvAnim=null,cvStars=null,cvShoot=[],cvPointer={x:0,y:0},cvT0=0;
+var cvAnim=null,cvStars=null,cvShoot=[],cvPointer={x:0,y:0},cvT0=0,cvComet=null,cvNextComet=0;
 function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getContext('2d');
   const resize=()=>{const dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.max(1,cv.clientWidth*dpr);c.height=Math.max(1,cv.clientHeight*dpr);c.dataset.dpr=dpr;};resize();
   if(!cvStars){cvStars=[];for(let i=0;i<240;i++)cvStars.push({x:Math.random(),y:Math.random(),z:Math.random(),tw:Math.random()*6.28,sp:.4+Math.random()*1.4,col:Math.random()<.12?'#9cc6ff':Math.random()<.1?'#ffd27a':'#ffffff'});}
-  cvT0=performance.now();
+  cvT0=performance.now();cvNextComet=2+Math.random()*4;cvComet=null;
   const frame=now=>{if(cv.hidden){cvAnim=null;return;}const t=(now-cvT0)/1000;const W=c.width,H=c.height,dpr=+c.dataset.dpr||1;ctx.clearRect(0,0,W,H);
     for(const s of cvStars){const px=cvPointer.x*(.3+s.z)*26*dpr,py=cvPointer.y*(.3+s.z)*16*dpr;const x=((s.x+t*.0035*(.2+s.z))%1)*W-px,y=s.y*H-py;const r=(.45+s.z*1.5)*dpr;ctx.globalAlpha=.3+.7*Math.abs(Math.sin(s.tw+t*s.sp));ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();}
     ctx.globalAlpha=1;
     if(Math.random()<.005&&cvShoot.length<2)cvShoot.push({x:Math.random()*W*.8,y:Math.random()*H*.45,vx:(7+Math.random()*6)*dpr,vy:(2.5+Math.random()*3)*dpr,life:1});
     for(const sh of cvShoot){sh.x+=sh.vx;sh.y+=sh.vy;sh.life-=.022;const x0=sh.x-sh.vx*9,y0=sh.y-sh.vy*9;const g=ctx.createLinearGradient(x0,y0,sh.x,sh.y);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,`rgba(255,255,255,${Math.max(0,sh.life)})`);ctx.strokeStyle=g;ctx.lineWidth=1.6*dpr;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(sh.x,sh.y);ctx.stroke();}
     cvShoot=cvShoot.filter(s=>s.life>0);
+    /* v1.64: a slow comet now and then, low across the sky, so it passes behind the planet */
+    if(!cvComet&&t>cvNextComet){const ltr=Math.random()<.5;cvComet={x:ltr?-W*.1:W*1.1,y:H*(.42+Math.random()*.2),vx:(ltr?1:-1)*(1.6+Math.random()*.8)*dpr,vy:(Math.random()-.5)*.3*dpr,len:(140+Math.random()*120)*dpr};}
+    if(cvComet){const cm=cvComet;cm.x+=cm.vx;cm.y+=cm.vy;const tx=cm.x-Math.sign(cm.vx)*cm.len,ty=cm.y-cm.vy*(cm.len/Math.abs(cm.vx||1));const g=ctx.createLinearGradient(tx,ty,cm.x,cm.y);g.addColorStop(0,'rgba(160,210,255,0)');g.addColorStop(.7,'rgba(160,210,255,.35)');g.addColorStop(1,'rgba(255,255,255,.95)');ctx.strokeStyle=g;ctx.lineWidth=2.2*dpr;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(cm.x,cm.y);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cm.x,cm.y,2.4*dpr,0,6.283);ctx.fill();if(cm.x<-W*.2||cm.x>W*1.2){cvComet=null;cvNextComet=t+9+Math.random()*10;}}
     cvAnim=requestAnimationFrame(frame);};
   if(cvAnim)cancelAnimationFrame(cvAnim);cvAnim=requestAnimationFrame(frame);
   if(!cv.dataset.wired){cv.dataset.wired='1';window.addEventListener('resize',resize);
     cv.addEventListener('pointermove',e=>{cvPointer.x=(e.clientX/Math.max(1,cv.clientWidth)-.5)*2;cvPointer.y=(e.clientY/Math.max(1,cv.clientHeight)-.5)*2;},{passive:true});
     window.addEventListener('deviceorientation',e=>{if(e.gamma==null||!window.matchMedia('(pointer:coarse)').matches)return;cvPointer.x=Math.max(-1,Math.min(1,e.gamma/30));cvPointer.y=Math.max(-1,Math.min(1,((e.beta||45)-45)/30));},{passive:true});}
+  // the very first open: the title arrives a letter at a time; after that it fades up as one piece
+  const h1=cv.querySelector('.cvTitle');let seen=true;try{seen=!!localStorage.getItem('cc_cover_seen');}catch(_){}
+  if(!h1.dataset.built){h1.dataset.built='1';if(!seen){h1.classList.add('split');let i=0;for(const sp of h1.querySelectorAll('span')){const txt=sp.textContent;sp.innerHTML=[...txt].map(ch=>`<i class="cvL" style="animation-delay:${(1.3+i++*.055).toFixed(3)}s">${ch}</i>`).join('');}try{localStorage.setItem('cc_cover_seen','1');}catch(_){}}}
   // the constellation draws itself, dot by dot, line by line
   const pts=[[110,430],[230,250],[380,330],[500,140],[650,260],[790,170],[910,360]];const sv=$('cvConst');let h='';
   for(let i=1;i<pts.length;i++)h+=`<line x1="${pts[i-1][0]}" y1="${pts[i-1][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" pathLength="1" style="animation-delay:${(.7+i*.3).toFixed(2)}s"/>`;
