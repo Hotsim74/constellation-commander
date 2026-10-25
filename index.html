@@ -173,6 +173,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.kH{inset:-6%;padding:2%;background:transparent;border-color:transparent}.dr.kH svg{overflow:visible}
 .board .dr.kH svg,.cvShip .dr.kH svg{animation:hflip 9s ease-in-out infinite}
 @keyframes hflip{0%,80%{transform:perspective(160px) rotateY(0)}90%{transform:perspective(160px) rotateY(180deg)}100%{transform:perspective(160px) rotateY(360deg)}}
+/* v1.71: the scout is a settler carrier: twin prows, a lit seam down the middle, engines that breathe */
+.dr.kC svg{overflow:visible}.dr.kC{inset:-2%;padding:2%}
+.ceng{transform-box:fill-box;transform-origin:50% 0%;animation:cbreathe 1.1s ease-in-out infinite alternate}
+@keyframes cbreathe{from{transform:scaleY(.75);opacity:.7}to{transform:scaleY(1.1);opacity:1}}
+.legend .ceng,.bark .ceng{animation:none}
 /* v1.70: the raider is a sentinel: tentacles that wave, lenses that pulse */
 .dr.kS svg{overflow:visible}.dr.kS{inset:-3%;padding:2%}
 .tent{transform-box:view-box;animation:tentwave 2.2s ease-in-out infinite alternate}
@@ -514,77 +519,35 @@ function guardSVG(side){
     .replace(/EYE1/g,you?'#ffcc00':'#9fe6ff').replace(/EYE2/g,you?'#ff5500':'#1f8fe0').replace(/EYE3/g,you?'#660000':'#002a55');
 }
 // ---------- the claim drone: the user's planted spider. SIDE = id suffix; LIGHT = energy color.
-const CLAIM_SHIP=`<svg viewBox="0 0 128 128" aria-label="claim drone">
+const CLAIM_SHIP=`<svg viewBox="0 0 128 128" aria-label="scout drone">
   <defs>
-    <pattern id="cfCSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="#0f0f0f"/>
-      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
-      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
-      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
-    </pattern>
-    <radialGradient id="waxCSIDE" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
-      <stop offset="25%" stop-color="#ffffff" stop-opacity="0.1"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
-    </radialGradient>
-    <g id="legCSIDE">
-      <path d="M 60 64 L 68 64 L 66 35 L 62 35 Z" fill="#2a2a2a" stroke="#111" stroke-width="1.5"/>
-      <path d="M 62 60 L 66 60 L 65 38 L 63 38 Z" fill="#3a3a3a"/>
-      <path d="M 61 35 L 67 35 L 65 10 L 63 10 Z" fill="#1a1a1a" stroke="#111" stroke-width="1.5"/>
-      <circle cx="64" cy="35" r="5" fill="#444" stroke="#111" stroke-width="1.5"/>
-      <circle cx="64" cy="35" r="2" fill="#222"/>
-      <polygon points="61,10 67,10 64,6" fill="#111" stroke="LIGHT" stroke-width="1"/>
-      <circle cx="64" cy="10" r="1.5" fill="LIGHT"/>
-    </g>
-    <g id="legRCSIDE">
-      <path d="M 56 42 L 72 42 L 68 28 L 60 28 Z" fill="#444" stroke="#111" stroke-width="1.5"/>
-      <path d="M 58 39 L 70 39 L 66 31 L 62 31 Z" fill="#666"/>
-      <circle cx="64" cy="28" r="6" fill="#777" stroke="#111" stroke-width="1.5"/>
-      <circle cx="64" cy="28" r="3" fill="#333"/>
-      <path d="M 60 28 L 68 28 L 66 12 L 62 12 Z" fill="#555" stroke="#111" stroke-width="1.5"/>
-      <rect x="60" y="8" width="8" height="6" rx="1" fill="#222" stroke="#111" stroke-width="1.5"/>
-      <circle cx="64" cy="8" r="4" fill="#fff"/>
-      <circle cx="64" cy="8" r="8" fill="LIGHT" opacity="0.6"/>
-    </g>
-    <g id="boltsCSIDE">
-      <path d="M 24 24 L 16 14 L 10 18 L 4 4 M 16 14 L 12 8 M 10 18 L 4 20"/>
-      <path d="M 104 104 L 112 114 L 118 110 L 124 124 M 112 114 L 116 120 M 118 110 L 124 108"/>
-    </g>
+    <linearGradient id="cHullSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2a3139"/><stop offset="30%" stop-color="#8d99a6"/><stop offset="50%" stop-color="#c9d3dc"/><stop offset="70%" stop-color="#8d99a6"/><stop offset="100%" stop-color="#2a3139"/></linearGradient>
+    <linearGradient id="cWedgeSIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e6edf3"/><stop offset="60%" stop-color="#7f8b97"/><stop offset="100%" stop-color="#2a3139"/></linearGradient>
+    <linearGradient id="cSeamSIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="LIGHT" stop-opacity="0"/><stop offset="25%" stop-color="LIGHT"/><stop offset="100%" stop-color="LIGHT" stop-opacity=".4"/></linearGradient>
+    <radialGradient id="cEngSIDE" cx="50%" cy="0%" r="90%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="LIGHT"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></radialGradient>
   </defs>
-  <g fill="none" stroke-linecap="square">
-    <path d="M 4 20 L 4 4 L 20 4" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
-    <path d="M 4 20 L 4 4 L 20 4" stroke="#ffffff" stroke-width="1"/>
-    <circle cx="4" cy="4" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
-    <path d="M 124 108 L 124 124 L 108 124" stroke="LIGHT" stroke-width="3" opacity="0.6"/>
-    <path d="M 124 108 L 124 124 L 108 124" stroke="#ffffff" stroke-width="1"/>
-    <circle cx="124" cy="124" r="12" fill="LIGHT" opacity="0.2" stroke="none"/>
-  </g>
-  <use href="#legCSIDE" transform="rotate(0 64 64)"/>
-  <use href="#legCSIDE" transform="rotate(45 64 64)"/>
-  <use href="#legCSIDE" transform="rotate(90 64 64)"/>
-  <use href="#legCSIDE" transform="rotate(180 64 64)"/>
-  <use href="#legCSIDE" transform="rotate(225 64 64)"/>
-  <use href="#legCSIDE" transform="rotate(270 64 64)"/>
-  <circle cx="64" cy="64" r="32" fill="url(#cfCSIDE)" stroke="#111" stroke-width="2"/>
-  <circle cx="64" cy="64" r="32" fill="url(#waxCSIDE)"/>
-  <g stroke="#000000" stroke-width="1.5" opacity="0.6">
-    <path d="M 64 32 L 64 96 M 32 64 L 96 64"/>
-    <path d="M 41.3 41.3 L 86.7 86.7 M 41.3 86.7 L 86.7 41.3"/>
-  </g>
-  <circle cx="64" cy="64" r="14" fill="#111" stroke="#222" stroke-width="2"/>
-  <circle cx="64" cy="64" r="10" fill="#000"/>
-  <circle cx="64" cy="64" r="8" fill="LIGHT" opacity="0.8"/>
-  <circle cx="64" cy="64" r="4" fill="#ffffff"/>
-  <g stroke="LIGHT" stroke-width="2" opacity="0.5">
-    <path d="M 64 78 L 64 96 M 64 50 L 64 32"/>
-    <path d="M 78 64 L 96 64 M 50 64 L 32 64"/>
-  </g>
-  <use href="#legRCSIDE" transform="rotate(315 64 64)"/>
-  <use href="#legRCSIDE" transform="rotate(135 64 64)"/>
-  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="5" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <use href="#boltsCSIDE" fill="none" stroke="LIGHT" stroke-width="2" opacity="0.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <use href="#boltsCSIDE" fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- engine wash behind -->
+  <ellipse class="ceng" cx="48" cy="118" rx="10" ry="16" fill="url(#cEngSIDE)"/>
+  <ellipse class="ceng" cx="80" cy="118" rx="10" ry="16" fill="url(#cEngSIDE)"/>
+  <!-- the two halves of the hull, a seam of light between them -->
+  <path d="M 36 30 L 60 30 L 60 104 L 44 104 C 36 104 32 98 32 90 L 32 44 C 32 36 34 30 36 30 Z" fill="url(#cHullSIDE)" stroke="#0b0e12" stroke-width="2"/>
+  <path d="M 92 30 L 68 30 L 68 104 L 84 104 C 92 104 96 98 96 90 L 96 44 C 96 36 94 30 92 30 Z" fill="url(#cHullSIDE)" stroke="#0b0e12" stroke-width="2"/>
+  <rect x="61" y="26" width="6" height="80" fill="url(#cSeamSIDE)"/>
+  <rect x="62.5" y="28" width="3" height="76" fill="#ffffff" opacity=".55"/>
+  <!-- two wedges out front -->
+  <path d="M 48 4 L 60 28 L 36 28 Z" fill="url(#cWedgeSIDE)" stroke="#0b0e12" stroke-width="2"/>
+  <path d="M 80 4 L 92 28 L 68 28 Z" fill="url(#cWedgeSIDE)" stroke="#0b0e12" stroke-width="2"/>
+  <circle cx="48" cy="12" r="2.2" fill="LIGHT"/><circle cx="80" cy="12" r="2.2" fill="LIGHT"/>
+  <!-- cargo pods on the flanks -->
+  <rect x="24" y="48" width="9" height="40" rx="4" fill="#1b2027" stroke="#0b0e12" stroke-width="1.5"/>
+  <rect x="95" y="48" width="9" height="40" rx="4" fill="#1b2027" stroke="#0b0e12" stroke-width="1.5"/>
+  <g stroke="#3a434d" stroke-width="1.2"><path d="M 26 58 L 31 58 M 26 68 L 31 68 M 26 78 L 31 78 M 97 58 L 102 58 M 97 68 L 102 68 M 97 78 L 102 78"/></g>
+  <!-- habitat windows -->
+  <rect x="40" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="47" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="54" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="70" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="77" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="84" y="46" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="40" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="47" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="54" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="70" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="77" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="84" y="56" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="40" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="47" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="54" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="70" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="77" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="84" y="66" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="40" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="47" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="54" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="70" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="77" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="84" y="76" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="40" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="47" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="54" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.55"/><rect x="70" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="77" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/><rect x="84" y="86" width="4" height="3" rx=".8" fill="#ffe9a8" opacity="0.85"/>
+  <!-- engine block -->
+  <path d="M 38 104 L 90 104 L 86 114 L 42 114 Z" fill="#1b2027" stroke="#0b0e12" stroke-width="1.5"/>
+  <circle cx="48" cy="109" r="3.5" fill="LIGHT"/><circle cx="80" cy="109" r="3.5" fill="LIGHT"/><circle cx="64" cy="109" r="2.2" fill="LIGHT" opacity=".7"/>
+  <path d="M 36 34 L 60 34 L 60 38 L 36 38 Z M 68 34 L 92 34 L 92 38 L 68 38 Z" fill="#ffffff" opacity=".18"/>
 </svg>`;
 function claimSVG(side){return CLAIM_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
 // ---------- the hunter: the user's net-gun turret. SIDE = id suffix; LIGHT = net/coil color; LENS1/LENS2 = eye gradient.
@@ -2153,7 +2116,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.70.0';
+const VERSION='1.71.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
