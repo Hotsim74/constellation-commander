@@ -166,7 +166,14 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr.on0{filter:drop-shadow(0 0 3px rgba(229,72,77,1)) drop-shadow(0 0 9px rgba(229,72,77,.85))}.dr.on1{filter:drop-shadow(0 0 3px rgba(240,165,43,1)) drop-shadow(0 0 9px rgba(240,165,43,.85))}.dr.on2{filter:drop-shadow(0 0 3px rgba(62,194,122,1)) drop-shadow(0 0 9px rgba(62,194,122,.85))}.dr.on3{filter:drop-shadow(0 0 3px rgba(63,143,240,1)) drop-shadow(0 0 9px rgba(63,143,240,.85))}.dr.on4{filter:drop-shadow(0 0 3px rgba(176,108,232,1)) drop-shadow(0 0 9px rgba(176,108,232,.85))}
 .dr svg{width:100%;height:100%;display:block;overflow:hidden}
 /* v1.60: the guard is an eye with a searchlight that sweeps its land and pauses to look; the pupil follows the beam */
-.dr.kG svg{overflow:visible}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
+.dr.kG svg{overflow:visible}.dr.kG{inset:0;padding:1%}
+/* v1.68: the hunter is a roadster a little bigger than its square: barrels out the front, thrust out of every side, a flip now and then */
+.dr.kH{inset:-6%;padding:2%;background:transparent;border-color:transparent}.dr.kH svg{overflow:visible}
+.board .dr.kH svg,.cvShip .dr.kH svg{animation:hflip 9s ease-in-out infinite}
+@keyframes hflip{0%,80%{transform:perspective(160px) rotateY(0)}90%{transform:perspective(160px) rotateY(180deg)}100%{transform:perspective(160px) rotateY(360deg)}}
+.hthr{transform-box:fill-box;transform-origin:0% 50%;animation:hflick .13s ease-in-out infinite alternate}
+@keyframes hflick{from{transform:scaleX(.8) scaleY(.9)}to{transform:scaleX(1.15) scaleY(1.1)}}
+.legend .hthr,.bark .hthr{animation:none}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
 @keyframes gsweep{0%{transform:rotate(-30deg)}28%{transform:rotate(70deg)}40%{transform:rotate(70deg)}70%{transform:rotate(-130deg)}82%{transform:rotate(-130deg)}100%{transform:rotate(-30deg)}}
 .legend .gsweep,.bark .gsweep{animation:none}
 /* v1.61: an enemy on the guard's land within three squares: the eye goes red and the light locks onto it */
@@ -468,25 +475,29 @@ function warpSVG(side){return WARP_SHIP.replace(/SIDE/g,side===YOU?'y':'b').repl
 const GUARD_SHIP=`<svg viewBox="0 0 128 128" aria-label="guard drone">
   <defs>
     <radialGradient id="gBodySIDE" cx="42%" cy="38%" r="62%"><stop offset="0%" stop-color="#6b7884"/><stop offset="50%" stop-color="#2b3238"/><stop offset="100%" stop-color="#090c0f"/></radialGradient>
+    <radialGradient id="gWhiteSIDE" cx="45%" cy="42%" r="60%"><stop offset="0%" stop-color="#fff8f2"/><stop offset="70%" stop-color="#f1dcd8"/><stop offset="100%" stop-color="#c9a8a8"/></radialGradient>
     <radialGradient id="gIrisSIDE" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="EYE1"/><stop offset="40%" stop-color="EYE2"/><stop offset="100%" stop-color="EYE3"/></radialGradient>
     <linearGradient id="gRageSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ff3b1f" stop-opacity="0.85"/><stop offset="55%" stop-color="#ff3b1f" stop-opacity="0.35"/><stop offset="100%" stop-color="#ff3b1f" stop-opacity="0"/></linearGradient>
     <linearGradient id="gBeamSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="LIGHT" stop-opacity="0.75"/><stop offset="55%" stop-color="LIGHT" stop-opacity="0.28"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></linearGradient>
-    <polygon id="gPetalSIDE" points="64,8 86,20 80,42 64,36 48,42 42,20" fill="#1b2026" stroke="#090c0f" stroke-width="1.5"/>
+    <polygon id="gPetalSIDE" points="64,4 84,14 80,30 64,26 48,30 44,14" fill="#1b2026" stroke="#090c0f" stroke-width="1.5"/>
   </defs>
-  <circle cx="64" cy="64" r="58" fill="url(#gBodySIDE)" stroke="#05070a" stroke-width="3"/>
+  <circle cx="64" cy="64" r="61" fill="url(#gBodySIDE)" stroke="#05070a" stroke-width="3"/>
   <use href="#gPetalSIDE" transform="rotate(0 64 64)"/><use href="#gPetalSIDE" transform="rotate(45 64 64)"/><use href="#gPetalSIDE" transform="rotate(90 64 64)"/><use href="#gPetalSIDE" transform="rotate(135 64 64)"/><use href="#gPetalSIDE" transform="rotate(180 64 64)"/><use href="#gPetalSIDE" transform="rotate(225 64 64)"/><use href="#gPetalSIDE" transform="rotate(270 64 64)"/><use href="#gPetalSIDE" transform="rotate(315 64 64)"/>
-  <circle cx="64" cy="64" r="37" fill="#05070a"/>
+  <circle cx="64" cy="64" r="49" fill="#05070a"/>
+  <circle cx="64" cy="64" r="47" fill="url(#gWhiteSIDE)"/>
+  <g class="gveins"><path d="M 101.0 65.0 Q 107.6 68.2 110.8 69.6" stroke="#c8202a" stroke-width="1.5" fill="none" opacity="0.56"/><path d="M 107.6 68.2 L 107.4 71.8" stroke="#c8202a" stroke-width=".9" fill="none" opacity=".6"/><path d="M 96.8 81.1 Q 99.6 79.8 102.6 80.5" stroke="#c8202a" stroke-width="1.3" fill="none" opacity="0.75"/><path d="M 89.9 90.4 Q 96.5 93.9 99.8 95.2" stroke="#c8202a" stroke-width="1.0" fill="none" opacity="0.83"/><path d="M 75.0 99.3 Q 73.6 104.6 76.3 107.0" stroke="#c8202a" stroke-width="1.0" fill="none" opacity="0.63"/><path d="M 73.6 104.6 L 77.5 107.6" stroke="#c8202a" stroke-width=".9" fill="none" opacity=".6"/><path d="M 57.4 100.4 Q 53.9 104.1 49.0 110.1" stroke="#c8202a" stroke-width="1.6" fill="none" opacity="0.79"/><path d="M 38.3 90.6 Q 32.3 93.8 27.4 99.8" stroke="#c8202a" stroke-width="1.0" fill="none" opacity="0.57"/><path d="M 31.4 81.5 Q 27.3 86.3 21.9 92.4" stroke="#c8202a" stroke-width="1.1" fill="none" opacity="0.84"/><path d="M 27.3 86.3 L 27.2 84.8" stroke="#c8202a" stroke-width=".9" fill="none" opacity=".6"/><path d="M 27.0 64.2 Q 23.9 65.6 17.1 70.8" stroke="#c8202a" stroke-width="1.4" fill="none" opacity="0.85"/><path d="M 29.2 51.5 Q 25.6 48.7 21.4 49.9" stroke="#c8202a" stroke-width="0.9" fill="none" opacity="0.61"/><path d="M 43.7 33.1 Q 40.9 29.7 34.6 22.7" stroke="#c8202a" stroke-width="1.1" fill="none" opacity="0.67"/><path d="M 40.9 29.7 L 41.1 31.9" stroke="#c8202a" stroke-width=".9" fill="none" opacity=".6"/><path d="M 52.7 28.8 Q 54.4 21.6 53.2 18.1" stroke="#c8202a" stroke-width="1.6" fill="none" opacity="0.58"/><path d="M 70.9 27.7 Q 72.0 25.2 74.4 19.4" stroke="#c8202a" stroke-width="1.3" fill="none" opacity="0.66"/><path d="M 85.9 34.1 Q 85.4 29.2 87.8 22.7" stroke="#c8202a" stroke-width="1.6" fill="none" opacity="0.61"/><path d="M 85.4 29.2 L 81.8 33.1" stroke="#c8202a" stroke-width=".9" fill="none" opacity=".6"/><path d="M 97.4 48.1 Q 102.0 45.5 105.8 40.3" stroke="#c8202a" stroke-width="1.2" fill="none" opacity="0.70"/></g>
   <g class="gsweep">
     <polygon points="64,64 200,16 200,112" fill="url(#gBeamSIDE)"/>
     <polygon class="gBeamRed" points="64,64 200,10 200,118" fill="url(#gRageSIDE)" opacity="0"/>
-    <circle cx="64" cy="64" r="33" fill="url(#gIrisSIDE)"/>
-    <circle class="gRage" cx="64" cy="64" r="33" fill="#ff2d1a" opacity="0"/>
-    <circle cx="98" cy="64" r="5" fill="#ffffff" opacity="0.95"/>
-    <circle cx="77" cy="64" r="11" fill="#05070a"/>
-    <circle cx="80" cy="60" r="3" fill="#ffffff" opacity="0.85"/>
+    <circle cx="64" cy="64" r="35" fill="url(#gIrisSIDE)"/>
+    <circle class="gRage" cx="64" cy="64" r="35" fill="#ff2d1a" opacity="0"/>
+    <circle cx="99" cy="64" r="5" fill="#ffffff" opacity="0.95"/>
+    <circle cx="78" cy="64" r="12" fill="#05070a"/>
+    <circle cx="81" cy="60" r="3.2" fill="#ffffff" opacity="0.85"/>
   </g>
-  <circle cx="64" cy="64" r="35" fill="none" stroke="#000000" stroke-width="4" opacity="0.7"/>
-  <path d="M 40 50 A 30 30 0 0 1 88 50 A 34 34 0 0 0 40 50 Z" fill="#ffffff" opacity="0.16"/>
+  <circle cx="64" cy="64" r="36" fill="none" stroke="#000000" stroke-width="3" opacity="0.6"/>
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#3a0d10" stroke-width="2" opacity="0.6"/>
+  <path d="M 30 48 A 40 40 0 0 1 98 48 A 44 44 0 0 0 30 48 Z" fill="#ffffff" opacity="0.14"/>
 </svg>`;
 function guardSVG(side){
   const you=side===YOU;
@@ -570,70 +581,37 @@ function claimSVG(side){return CLAIM_SHIP.replace(/SIDE/g,side===YOU?'y':'b').re
 // ---------- the hunter: the user's net-gun turret. SIDE = id suffix; LIGHT = net/coil color; LENS1/LENS2 = eye gradient.
 const HUNTER_SHIP=`<svg viewBox="0 0 128 128" aria-label="hunter drone">
   <defs>
-    <pattern id="cfHSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="#0f0f0f"/>
-      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
-      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
-      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
-    </pattern>
-    <radialGradient id="waxHSIDE" cx="40%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
-      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.95"/>
-    </radialGradient>
-    <linearGradient id="metalHSIDE" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#555555"/>
-      <stop offset="50%" stop-color="#2a2a2a"/>
-      <stop offset="100%" stop-color="#111111"/>
-    </linearGradient>
-    <radialGradient id="lensHSIDE" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="LENS1"/>
-      <stop offset="60%" stop-color="LENS2"/>
-      <stop offset="100%" stop-color="#000000"/>
-    </radialGradient>
-    <g id="netHSIDE" fill="none" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M 34 108 L 44 98 L 54 110 L 64 100 L 74 110 L 84 98 L 94 108" />
-      <path d="M 34 108 L 42 116 L 52 104 L 64 116 L 76 104 L 86 116 L 94 108" />
-      <path d="M 34 108 L 48 106 L 64 108 L 80 106 L 94 108" />
-      <path d="M 44 98 L 52 104 M 54 110 L 64 108 M 64 100 L 76 104 M 74 110 L 86 116" />
-      <path d="M 42 116 L 48 106 M 84 98 L 80 106 M 54 110 L 48 106 M 74 110 L 80 106" />
-    </g>
-    <g id="gunHSIDE">
-      <path d="M -16 10 L 16 10 L 12 45 L -12 45 Z" fill="url(#metalHSIDE)" stroke="#111" stroke-width="2"/>
-      <rect x="-10" y="20" width="20" height="20" fill="#1a1a1a" stroke="#050505" stroke-width="1.5"/>
-      <line x1="-12" y1="35" x2="12" y2="35" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
-      <line x1="-12" y1="39" x2="12" y2="39" stroke="LIGHT" stroke-width="1.5" opacity="0.8"/>
-      <rect x="-16" y="45" width="32" height="15" rx="3" fill="#222" stroke="#000" stroke-width="2"/>
-      <path d="M -10 45 L -10 60 M 10 45 L 10 60" stroke="#444" stroke-width="1.5"/>
-      <circle cx="0" cy="60" r="10" fill="#000" stroke="#333" stroke-width="2"/>
-      <circle cx="0" cy="60" r="6" fill="LIGHT" opacity="0.5"/>
-      <circle cx="0" cy="60" r="2" fill="#ffffff"/>
-    </g>
+    <linearGradient id="hBodySIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eef2f6"/><stop offset="35%" stop-color="#b7c1cc"/><stop offset="70%" stop-color="#5d6873"/><stop offset="100%" stop-color="#1b2027"/></linearGradient>
+    <linearGradient id="hSheenSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="45%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="55%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="hGlassSIDE" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/><stop offset="25%" stop-color="LENS1"/><stop offset="100%" stop-color="LENS2"/></radialGradient>
+    <radialGradient id="hFlameSIDE" cx="30%" cy="50%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="30%" stop-color="LIGHT"/><stop offset="70%" stop-color="LIGHT" stop-opacity="0.55"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></radialGradient>
+    <linearGradient id="hBarrelSIDE" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2a3038"/><stop offset="50%" stop-color="#9aa6b2"/><stop offset="100%" stop-color="#2a3038"/></linearGradient>
+    <g id="hThrSIDE"><ellipse class="hthr" cx="0" cy="0" rx="22" ry="7" fill="url(#hFlameSIDE)"/><ellipse class="hthr" cx="-2" cy="0" rx="12" ry="3.5" fill="#ffffff" opacity="0.85"/></g>
   </defs>
-  <circle cx="64" cy="56" r="44" fill="url(#cfHSIDE)" stroke="#111" stroke-width="2"/>
-  <circle cx="64" cy="56" r="44" fill="url(#waxHSIDE)"/>
-  <g stroke="#000000" stroke-width="2" opacity="0.6">
-    <path d="M 32 26 L 96 26 M 25 80 L 103 80" />
-    <path d="M 64 12 L 64 26 M 46 80 L 46 96 M 82 80 L 82 96" />
-  </g>
-  <use href="#gunHSIDE" transform="translate(64, 56) rotate(30)"/>
-  <use href="#gunHSIDE" transform="translate(64, 56) rotate(-30)"/>
-  <polygon points="64,30 86,42 86,70 64,82 42,70 42,42" fill="url(#metalHSIDE)" stroke="#050505" stroke-width="2"/>
-  <polygon points="64,36 80,45 80,67 64,76 48,67 48,45" fill="#1a1a1a" stroke="#111" stroke-width="2"/>
-  <circle cx="64" cy="56" r="15" fill="#050505" stroke="#333" stroke-width="2"/>
-  <circle cx="64" cy="56" r="12" fill="url(#lensHSIDE)"/>
-  <path d="M 54 50 A 10 10 0 0 1 74 50 A 12 12 0 0 0 54 50 Z" fill="#ffffff" opacity="0.35"/>
-  <circle cx="68" cy="60" r="2" fill="#ffffff" opacity="0.6"/>
-  <circle cx="53" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
-  <circle cx="53" cy="45" r="2" fill="#ff0033" opacity="0.8"/>
-  <circle cx="75" cy="45" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
-  <circle cx="75" cy="45" r="2" fill="#00ff33" opacity="0.8"/>
-  <circle cx="64" cy="71" r="4" fill="#000" stroke="#333" stroke-width="1.5"/>
-  <circle cx="64" cy="71" r="2" fill="#ffcc00" opacity="0.8"/>
-  <use href="#netHSIDE" stroke="LIGHT" stroke-width="6" opacity="0.3"/>
-  <use href="#netHSIDE" stroke="LIGHT" stroke-width="2" opacity="0.9"/>
-  <use href="#netHSIDE" stroke="#ffffff" stroke-width="1" opacity="1.0"/>
+  <!-- thrust out of every side: back, left, right -->
+  <use href="#hThrSIDE" transform="translate(64 112) rotate(90)"/>
+  <use href="#hThrSIDE" transform="translate(50 112) rotate(100)"/>
+  <use href="#hThrSIDE" transform="translate(78 112) rotate(80)"/>
+  <use href="#hThrSIDE" transform="translate(22 78) rotate(160)"/>
+  <use href="#hThrSIDE" transform="translate(106 78) rotate(20)"/>
+  <use href="#hThrSIDE" transform="translate(26 50) rotate(200)"/>
+  <use href="#hThrSIDE" transform="translate(102 50) rotate(-20)"/>
+  <!-- twin barrels out the front -->
+  <rect x="48" y="-14" width="9" height="52" rx="4" fill="url(#hBarrelSIDE)" stroke="#0b0e12" stroke-width="1.5"/>
+  <rect x="71" y="-14" width="9" height="52" rx="4" fill="url(#hBarrelSIDE)" stroke="#0b0e12" stroke-width="1.5"/>
+  <rect x="46" y="-16" width="13" height="8" rx="2" fill="#1b2027" stroke="#0b0e12" stroke-width="1.2"/>
+  <rect x="69" y="-16" width="13" height="8" rx="2" fill="#1b2027" stroke="#0b0e12" stroke-width="1.2"/>
+  <circle cx="52.5" cy="-12" r="2" fill="LIGHT"/><circle cx="75.5" cy="-12" r="2" fill="LIGHT"/>
+  <!-- the roadster: low, wide, pointed nose -->
+  <path d="M 64 10 C 84 14 100 34 102 58 L 104 96 C 104 106 94 112 84 112 L 44 112 C 34 112 24 106 24 96 L 26 58 C 28 34 44 14 64 10 Z" fill="url(#hBodySIDE)" stroke="#0b0e12" stroke-width="2.5"/>
+  <path d="M 64 22 C 78 25 90 40 91 58 L 92 88 L 36 88 L 37 58 C 38 40 50 25 64 22 Z" fill="#0f1318" opacity="0.9"/>
+  <path d="M 64 30 C 74 33 82 44 83 58 L 84 70 L 44 70 L 45 58 C 46 44 54 33 64 30 Z" fill="url(#hGlassSIDE)" stroke="#05070a" stroke-width="1.5"/>
+  <path d="M 50 40 C 56 32 72 32 78 40 C 70 36 58 36 50 40 Z" fill="#ffffff" opacity="0.55"/>
+  <rect x="30" y="62" width="68" height="4" fill="url(#hSheenSIDE)"/>
+  <path d="M 40 92 L 88 92 L 86 104 L 42 104 Z" fill="#1b2027" stroke="#0b0e12" stroke-width="1.5"/>
+  <g fill="LIGHT"><rect x="44" y="95" width="10" height="3" rx="1.5"/><rect x="59" y="95" width="10" height="3" rx="1.5"/><rect x="74" y="95" width="10" height="3" rx="1.5"/></g>
+  <circle cx="34" cy="78" r="5" fill="#0b0e12" stroke="#5d6873" stroke-width="1.5"/><circle cx="94" cy="78" r="5" fill="#0b0e12" stroke="#5d6873" stroke-width="1.5"/>
+  <circle cx="34" cy="78" r="2" fill="LIGHT"/><circle cx="94" cy="78" r="2" fill="LIGHT"/>
 </svg>`;
 function hunterSVG(side){const you=side===YOU;return HUNTER_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/LENS1/g,you?'#ff9a00':'#0066ff').replace(/LENS2/g,you?'#3d2000':'#001144');}
 // ---------- the strike drone: the user's corner-engine missile. SIDE = id suffix; LIGHT = flame/exhaust color; EN1/EN2 = warhead gradient.
@@ -2197,7 +2175,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.67.0';
+const VERSION='1.68.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
