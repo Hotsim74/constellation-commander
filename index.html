@@ -113,6 +113,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .board .dr{animation:hover 2.8s ease-in-out infinite alternate}.board .dr.kT{animation:none;transform:none}
 @keyframes hover{from{transform:translateY(-5%)}to{transform:translateY(-10%)}}
 .ghost .dr{animation:none;transform:none}
+.ghost.rockfall{z-index:12;animation:rockfall .72s cubic-bezier(.55,0,.85,.35) forwards;filter:drop-shadow(0 0 10px rgba(255,170,60,.7))}
+@keyframes rockfall{from{transform:translate(-50%,-50%) translateY(-220px) scale(2.6) rotate(-40deg);opacity:0}15%{opacity:1}to{transform:translate(-50%,-50%) scale(1) rotate(10deg);opacity:1}}
 .ghost.fly .body{position:absolute;inset:0;transition:transform .26s ease-in}
 .ghost.fly.lift .body,.ghost.fly.go .body{transform:translateY(-62%) scale(1.14)}.ghost.fly.land .body{transform:translateY(0) scale(1);transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
 .ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
@@ -854,7 +856,6 @@ const FR={
 "{0} made {1} on the other side: stars cleared, nothing paid.": "{0} {v:avez fait|a fait} {1} de l'autre côté : étoiles effacées, rien gagné.",
 "{0} made {1} at {2} drones: 1 missile instead.": "{0} {v:avez fait|a fait} {1} avec déjà {2} drones : 1 missile à la place.",
 "{0} made {1} at {2} drones: an asteroid lands on {3}.": "{0} {v:avez fait|a fait} {1} avec déjà {2} drones : un astéroïde tombe sur {3}.",
-"{0} made {1} but already has {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones.",
 "{0} made {1} but there was no room.": "{0} {v:avez fait|a fait} {1}, mais il n'y avait pas de place.",
 "{0} made {1} on the wall: nothing paid.": "{0} {v:avez fait|a fait} {1} sur le mur : rien gagné.",
 "{0} made {1} under a drone: stacked to power {2}.": "{0} {v:avez fait|a fait} {1} sous un drone : empilé, puissance {2}.",
@@ -1515,7 +1516,23 @@ const FR={
 "Español": "Español",
 "Swipe": "Glisser",
 "swipe a star to swap it, swipe a drone to move it": "glissez une étoile pour l'échanger, glissez un drone pour le déplacer",
-"Nothing that way.": "Rien par là."
+"Nothing that way.": "Rien par là.",
+"{0} {v:get|gets} an asteroid to throw: {1} stars cleared and nothing paid.": "{0} {v:recevez|reçoit} un astéroïde à lancer : {1} étoiles effacées et rien payé.",
+"the shield on {0} held": "le bouclier de {0} a tenu",
+"it stripped the stack off {0}": "il a arraché la pile de {0}",
+"{0} shrugged it off": "{0} l'a encaissé sans broncher",
+"{0} lost a power": "{0} a perdu une puissance",
+"{0} was destroyed": "{0} a été détruit",
+"empty sky": "du ciel vide",
+"{0} threw an asteroid at {1}: it landed on {2}, {3}.": "{0} {v:avez|a} lancé un astéroïde sur {1} : il est tombé en {2}, {3}.",
+"asteroid": "astéroïde",
+"Throw an asteroid ({0})": "Lancer un astéroïde ({0})",
+"Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.": "Touchez le milieu d'un 3 × 3 que vous voyez. L'astéroïde tombe sur une de ses neuf cases au hasard : un drone seul y est détruit, une pile perd une puissance.",
+"That square is in the fog.": "Cette case est dans le brouillard.",
+"Thrown. Now take your turn: swap, move, claim or warp.": "Lancé. Maintenant jouez votre tour : échangez, déplacez, revendiquez ou sautez.",
+"A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Une forme de sept étoiles ou plus qui ne paie rien, parce qu'elle a été faite de l'autre côté, sur le terrain de l'autre camp ou au plafond de drones, paie à la place un astéroïde à lancer. Lancez-le avant votre coup ; cela ne coûte pas le tour.",
+"A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un astéroïde lancé tombe sur une des neuf cases au hasard. Un drone seul y est détruit, une pile perd une puissance, le drone de commandement et un drone protégé l'encaissent. Si la case est libre ensuite, l'astéroïde reste.",
+"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -1526,7 +1543,6 @@ const ES={
 "{0} made {1} on {2}: stars cleared, nothing paid.": "{0} {v:hiciste|hizo} {1} en {2}: estrellas despejadas, nada pagado.",
 "{0} made {1} at {2} drones: 1 missile instead.": "{0} {v:hiciste|hizo} {1} con {2} drones: 1 misil en su lugar.",
 "{0} made {1} at {2} drones: an asteroid lands on {3}.": "{0} {v:hiciste|hizo} {1} con {2} drones: un asteroide cae en {3}.",
-"{0} made {1} but already has {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones.",
 "{0} made {1} but there was no room.": "{0} {v:hiciste|hizo} {1} pero no había sitio.",
 "{0} made {1} on the wall: nothing paid.": "{0} {v:hiciste|hizo} {1} en el muro: nada pagado.",
 "{0} made {1} under a drone: stacked to power {2}.": "{0} {v:hiciste|hizo} {1} bajo un dron: apilado a potencia {2}.",
@@ -2170,12 +2186,28 @@ const ES={
 "Español": "Español",
 "Swipe": "Deslizar",
 "swipe a star to swap it, swipe a drone to move it": "desliza una estrella para intercambiarla, desliza un dron para moverlo",
-"Nothing that way.": "Nada por ahí."
+"Nothing that way.": "Nada por ahí.",
+"{0} {v:get|gets} an asteroid to throw: {1} stars cleared and nothing paid.": "{0} {v:recibes|recibe} un asteroide para lanzar: {1} estrellas despejadas y nada pagado.",
+"the shield on {0} held": "el escudo de {0} aguantó",
+"it stripped the stack off {0}": "arrancó la pila de {0}",
+"{0} shrugged it off": "{0} ni se inmutó",
+"{0} lost a power": "{0} perdió una potencia",
+"{0} was destroyed": "{0} fue destruido",
+"empty sky": "cielo vacío",
+"{0} threw an asteroid at {1}: it landed on {2}, {3}.": "{0} {v:lanzaste|lanzó} un asteroide a {1}: cayó en {2}, {3}.",
+"asteroid": "asteroide",
+"Throw an asteroid ({0})": "Lanzar un asteroide ({0})",
+"Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.": "Toca el centro de un 3 × 3 que puedas ver. El asteroide cae en una de sus nueve casillas al azar: un dron solo ahí queda destruido, una pila pierde una potencia.",
+"That square is in the fog.": "Esa casilla está en la niebla.",
+"Thrown. Now take your turn: swap, move, claim or warp.": "Lanzado. Ahora haz tu turno: intercambia, mueve, reclama o salta.",
+"A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Una forma de siete o más estrellas que no paga nada, porque se hizo en el otro lado, en terreno del otro lado o con el tope de drones, paga en su lugar un asteroide para lanzar. Lánzalo antes de tu jugada; no gasta el turno.",
+"A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un asteroide lanzado cae en una de las nueve casillas al azar. Un dron solo ahí queda destruido, una pila pierde una potencia, el dron de mando y un dron protegido ni se inmutan. Si la casilla queda libre, el asteroide se queda.",
+"{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.68.0';
+const VERSION='1.69.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2212,7 +2244,7 @@ function pickSafe(g,r,c){let k,t=0;do{k=rnd(KINDS);t++;}while(t<30&&((c>=2&&g[r]
 function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push(pickSafe(g,r,c));}return g;}
 function newGame(opts={}){
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
-  S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:$('inSalvage').checked,wrecks:{},
+  S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:$('inSalvage').checked,wrecks:{},
      over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
@@ -2373,19 +2405,37 @@ function gravity(g,side){
   }
   return {born,fall};
 }
+// ---------- v1.69: a thrown asteroid (user). A shape of seven or more stars that pays nothing (made on the other side,
+// on the other side's land, or at the drone cap) pays an asteroid to throw instead: pick the middle of a 3 × 3, the
+// asteroid lands on one of its nine squares at random. A lone drone there is destroyed, a stack loses one power, the
+// Command drone and a shielded drone shrug it off; if the square is clear afterwards the asteroid stays.
+const ROCK_MIN=7;
+const throwsOf=side=>(S&&S.throws&&S.throws[side])||0;
+function grantRock(side,sp){if(!sp||!sp.cells||sp.cells.length<ROCK_MIN||sp.rockGiven)return;sp.rockGiven=1;S.throws=S.throws||{1:0,2:0};S.throws[side]=(S.throws[side]||0)+1;
+  note(t`${who(side)} {v:get|gets} an asteroid to throw: ${sp.cells.length} stars cleared and nothing paid.`,{why:'rock_get'});}
+function rockCells(r0,c0){const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r=r0+dr,c=c0+dc;if(inb(r,c)&&!isWall(r,c)&&!isCmd(r,c))out.push([r,c]);}return out;}
+function applyRockThrow(side,r0,c0){const cells=rockCells(r0,c0);if(!cells.length||throwsOf(side)<=0)return null;S.throws[side]--;
+  const [r,c]=cells[rnd(cells.length)];const o=droneAt(r,c);let what;
+  if(o&&o.shield){queueHit(r,c);what=t`the shield on ${own(o.side,o.kind)} held`;}
+  else if(o&&o.kind==='M'){if(o.power>1){o.power=1;o.colors=o.colors.slice(0,1);queueHit(r,c);what=t`it stripped the stack off ${own(o.side,'M')}`;}else{queueHit(r,c);what=t`${own(o.side,'M')} shrugged it off`;}}
+  else if(o&&o.power>1){o.power--;if(o.colors.length>o.power)o.colors=o.colors.slice(0,o.power);queueHit(r,c);what=t`${own(o.side,o.kind)} lost a power`;}
+  else if(o){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);if(!S.salvage&&o.side!==side)S.missiles[side]++;wreckAt(r,c);what=t`${own(o.side,o.kind)} was destroyed`;}
+  else what=t('empty sky');
+  if(!droneAt(r,c)&&S.grid[r][c]>=0){S.grid[r][c]=ROCK;}
+  note(t`${who(side)} threw an asteroid at ${sq(r0,c0)}: it landed on ${sq(r,c)}, ${what}.`,{why:'rock',at:[[r,c]],lab:[t('asteroid')]});return [r,c];}
 function spawnFrom(side,sp){
   const at=placeCell(side,sp);
-  if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`,{why:'nopay'});return;}
-  if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});return;} // v1.19: a line entirely on their land pays nothing
+  if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;}
+  if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;} // v1.19: a line entirely on their land pays nothing
   for(const letter of sp.letters){
     let [r,c]=at;let o=droneAt(r,c);
     const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
     if(full&&sp.cap!=='always'){
       if(sp.cap==='missile'){S.missiles[side]++;note(t`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
       else if(sp.cap==='asteroid'){rockOnto(other(side));note(t`${who(side)} made ${sp.label} at ${MAXD} drones: an asteroid lands on ${landName(other(side))}.`);}
-      else note(t`${who(side)} made ${sp.label} but already has ${MAXD} drones.`);
+      else {note(t`${who(side)} made ${sp.label} but already {v:have|has} ${MAXD} drones.`);grantRock(side,sp);}
       continue;}
-    if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(t`${who(side)} made ${sp.label} but there was no room.`);continue;}[r,c]=alt;o=null;}
+    if(o&&o.side!==side){const alt=DIR8.map(([dr,dc])=>[r+dr,c+dc]).find(([a,b])=>inb(a,b)&&!droneAt(a,b)&&!solid(a,b)&&half(side,a));if(!alt){note(t`${who(side)} made ${sp.label} but there was no room.`);grantRock(side,sp);continue;}[r,c]=alt;o=null;}
     if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
     const d=mk(side,r,c,letter,sp.color,letter==='S'?(r+c)%2:sp.sq); // a raider is red or white after the square it is born on: a diagonal slider never leaves that color
     if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});}
@@ -2704,6 +2754,7 @@ async function botTurn(me){
         if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
       else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
   const him=other(me),L=botLevel(),chance=S.story?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!S.story&&L>=10)||rnd(100)<chance; // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
+  if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
   // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
   if(smart&&L>=2&&dronesOf(me).some(canShoot)){
     for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
@@ -2790,6 +2841,12 @@ async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true
 async function humanWarp(d,r,c){if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanTurret(r,c){if(netSend({type:'turret',r,c}))return;busy=true;sel=null;mode=null;applyTurret(YOU,r,c);renderBoard();await playFX();busy=false;await afterAction();}
+async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(t('Thrown. Now take your turn: swap, move, claim or warp.'));}
+/* the asteroid comes down from above the board onto its square */
+function rockAnim(r,c){return new Promise(res=>{const b=$('board');const [x,y,w]=cellXY(r,c);const g=document.createElement('div');g.className='ghost rockfall';g.style.width=g.style.height=w+'px';g.style.left=x+'px';g.style.top=y+'px';g.innerHTML='<i class="asteroid v'+((r*7+c)%4)+'" style="width:84%;height:84%;margin:8%"></i>';b.appendChild(g);setTimeout(()=>{g.remove();const s=document.createElement('div');s.className='shock';s.style.left=x+'px';s.style.top=y+'px';b.appendChild(s);setTimeout(()=>s.remove(),900);res();},720);});}
+// where the bot throws its asteroid: the 3 × 3 whose nine squares hold the most enemy worth and the least of its own
+function botRockTarget(me){const him=other(me);let best=null;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!vis(me,r,c))continue;let v=0,n=0;for(const [a,b] of rockCells(r,c)){n++;const o=droneAt(a,b);if(o&&o.side===him)v+=o.shield||o.kind==='M'?0:(o.power===1?(o.kind==='X'?14:o.kind==='H'?10:o.kind==='T'?12:7):3);else if(o&&o.side===me)v-=o.power===1?8:3;else if(S.own[key(a,b)]===him&&isStar(S.grid[a][b]))v+=1;}
+    if(!n)continue;v=v/n;if(!best||v>best.v)best={r,c,v};}return best&&best.v>0?best:null;}
 async function humanThrow(g,o){if(netSend({type:'throw',id:g.id,tid:o.id}))return;busy=true;sel=null;mode=null;applyThrow(g,o);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanShield(d,o){if(netSend({type:'shield',id:d.id,tid:o.id}))return;busy=true;sel=null;mode=null;applyShield(d,o);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanRam(d){if(netSend({type:'ram',id:d.id}))return;busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
@@ -2812,6 +2869,7 @@ function onCell(r,c){
     const want=Math.min(shotsLeft(sd),shotCap(sd));
     if(aimList.length>=want){humanShots(sd,aimList.slice());return;}
     setStatus(t`${aimList.length} of ${want} aimed. Tap another target, or Fire now.`);renderBoard();renderActions();return;}
+  if(mode==='rock'){if(!vis(YOU,r,c)){setStatus(t('That square is in the fog.'));return;}humanRock(r,c);return;}
   if(mode==='throw'&&sd){const o=droneAt(r,c);if(o&&throwCells(sd).includes(o))humanThrow(sd,o);else setStatus(t('Tap an enemy drone beside the guard.'));return;}
   if(mode==='shield'&&sd){const o=droneAt(r,c);if(o&&shieldCells(sd).includes(o))humanShield(sd,o);else setStatus(t('Tap one of your drones beside the siege. Not the Command drone.'));return;}
   if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to a cleared square on your side, not next to an enemy guard.'));return;}
@@ -2884,6 +2942,7 @@ function renderSide(){
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
 function renderActions(){
   const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy&&!netSpec();
+  if(mine&&throwsOf(YOU)>0)acts.push('<button data-a="rock" class="primary">'+t`Throw an asteroid (${throwsOf(YOU)})`+'</button>'); /* v1.69: a free action, like firing */
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(mine&&sd){
     if(canShoot(sd)&&mode!=='aim')acts.push('<button data-a="aim" class="'+(sd.bombAmmo?'danger':'')+'">'+(sd.bombAmmo?t('Fire the bomb missile'):t`Fire missile${shotsOf(sd)===2?'s':''} (${ammoOf(sd)} loaded)`)+'</button>');
@@ -2911,6 +2970,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(a==='warp'){mode='warp';setStatus(t('Tap a cleared square on your side to warp there. Not on or next to an enemy guard.'));renderBoard();renderActions();}
   else if(a==='fire'){if(canFire(sd))humanFireSiege(sd);}
   else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
+  else if(a==='rock'){if(throwsOf(YOU)>0){mode='rock';sel=null;aimList=[];setStatus(t('Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.'));renderBoard();renderActions();}}
   else if(a==='throw'){if(sd.power>=MAXP&&throwCells(sd).length){mode='throw';setStatus(t('Tap the enemy drone beside the guard to throw at it. Both are destroyed.'));renderBoard();renderActions();}}
   else if(a==='shield'){if(sd.charge&&shieldCells(sd).length){mode='shield';setStatus(t('Tap one of your drones beside the siege to shield it for six turns. Not the Command drone.'));renderBoard();renderActions();}}
   else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
@@ -3035,6 +3095,8 @@ stack:'Stacking adds power: each power takes one more missile to bring down. The
 claim:'A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.',
 warp:'A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.',
 ram:'A siege can ram the guard in its way. Both are gone.',
+rock_get:'A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side\'s land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.',
+rock:'A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.',
 throw:'A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one\'s power. Not the Command drone, a turret or a shielded drone.',
 fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.',
 fire_hit:'A missile takes one power off a drone. A stack takes one hit per power.',
@@ -3351,6 +3413,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
     else if(a.type==='claim'){const d=byId(a.id);if(!d||d.side!==me||d.kind!=='C'||!(d.claims>0)||!claimGain(d))throw 0;applyClaim(d);renderBoard();await afterAction();}
     else if(a.type==='warp'){const d=byId(a.id);if(!d||d.side!==me||d.kind!=='W'||!warpCells(d).some(([r,c])=>r===a.r&&c===a.c))throw 0;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,a.r,a.c);renderBoard();await flyDrone(from,[a.r,a.c],html);await playFX();await afterAction();}
     else if(a.type==='ram'){const d=byId(a.id);if(!d||d.side!==me||!shieldedBy(d))throw 0;applyRam(d);renderBoard();await playFX();await afterAction();}
+    else if(a.type==='rock'){if(throwsOf(me)<=0||!inb(a.r,a.c))throw 0;const hit=applyRockThrow(me,a.r,a.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();closeAction(me);save();renderAll();}
     else if(a.type==='throw'){const d=byId(a.id),o=byId(a.tid);if(!d||d.side!==me||!o||!throwCells(d).includes(o))throw 0;applyThrow(d,o);renderBoard();await playFX();await afterAction();}
     else if(a.type==='shield'){const d=byId(a.id),o=byId(a.tid);if(!d||d.side!==me||!o||!shieldCells(d).includes(o))throw 0;applyShield(d,o);renderBoard();await playFX();await afterAction();}
     else if(a.type==='turret'){if(!canTurret(me)||!turretCells(me).some(([r,c])=>r===a.r&&c===a.c))throw 0;applyTurret(me,a.r,a.c);renderBoard();await playFX();await afterAction();}
@@ -3686,7 +3749,7 @@ var SFX_GAIN={tap:.4,move:.55,swap:.6,'swap-no':.5,clear:.6,cascade:.65,fall:.4,
 var SFX_ALL=Object.keys(SFX_GAIN);
 var SFX_WHY={swap:'swap',stack:'stack',take:'take',sweep:'sweep',sweep_s:'sweep',claim:'claim',warp:'warp',ram:'ram',
   fire_t:'hold',fire_m:'hold',fire_kill:'destroy',fire_hit:'hit',fire_clear:'clear',bomb:'bomb',bomb_fuse:'bomb-tick',
-  turret:'turret-build',shield:'born-big',throw:'ram',fire_sh:'hold',shield_off:'swap-no',load:'load',salvage:'salvage',reshuffle:'reshuffle',surround:'destroy'};
+  turret:'turret-build',shield:'born-big',rock:'asteroid-crush',rock_get:'born',throw:'ram',fire_sh:'hold',shield_off:'swap-no',load:'load',salvage:'salvage',reshuffle:'reshuffle',surround:'destroy'};
 var sfxCtx=null,sfxBuf={},sfxLoading={},sfxLast={},sfxArmed=false,sfxOverGid=null,sfxSiegeSeen={},lobbySeen=null;
 function sfxWhyName(w){const why=w&&w.why;if(!why)return null;
   if(SFX_WHY[why])return SFX_WHY[why];
