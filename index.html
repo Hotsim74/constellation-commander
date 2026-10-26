@@ -311,6 +311,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes constelIn{from{opacity:0;transform:scale(.92);transform-origin:50% 50%}to{opacity:1;transform:none}}
 .brief .bhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 0}
 .brief .bhead h2{margin:0;font-size:22px}
+.rockpop{position:absolute;left:8px;right:8px;top:14%;z-index:22;display:flex;gap:14px;align-items:center;background:rgba(10,16,24,.96);border:2px solid var(--you);border-radius:10px;padding:14px 16px;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 24px rgba(232,166,59,.35)}
+.rockpop.show{opacity:1;animation:barkIn .3s ease-out}.rockpop .asteroid{position:relative;display:block;width:56px;height:56px;flex:none;margin:0;animation:rockspin 6s linear infinite}
+@keyframes rockspin{to{transform:rotate(360deg)}}
+.rockpop .rk{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}.rockpop .rk b{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--you)}.rockpop .rk p{margin:0}.rockpop .rq{color:#f1e4c8;font-family:var(--mono);font-size:13px}.rockpop .rb{display:flex;gap:8px;margin-top:4px}
+@media (max-width:720px){.rockpop{top:8%;padding:12px}.rockpop .asteroid{width:44px;height:44px}.rockpop .rk{font-size:14px}}
 .bark{position:absolute;left:6px;right:6px;top:6px;z-index:20;display:flex;gap:10px;align-items:center;background:rgba(10,16,24,.94);border:1px solid var(--bot);border-radius:8px;padding:8px 12px;pointer-events:none;opacity:0;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 .bark.show{opacity:1;animation:barkIn .35s ease-out}.bark.out{animation:barkOut .4s ease-in forwards}@keyframes barkIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}@keyframes barkOut{to{opacity:0;transform:translateY(-6px)}}.bark .dr{position:relative;inset:auto;width:40px;height:40px;flex:none;animation:bosspulse 1s ease-out infinite}.bark .bk{display:flex;flex-direction:column;gap:2px;font-size:15px;line-height:1.35}.bark .bk b{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bot)}
 .brief .boss{width:64px;height:64px;position:relative;flex:none}.brief .boss .dr{position:absolute;inset:0;transition:box-shadow .2s}
@@ -400,7 +405,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1441,7 +1446,13 @@ const FR={
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un astéroïde lancé tombe sur une des neuf cases au hasard. Un drone seul y est détruit, une pile perd une puissance, le drone de commandement et un drone protégé l'encaissent. Si la case est libre ensuite, l'astéroïde reste.",
 "{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones.",
 "Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège. À puissance 3 il balaie aussi les pillards, et peut se jeter sur n'importe quel drone ennemi à côté de lui : les deux sont détruits.",
-"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un pillard n'est pas pris par le balayage d'un bouclier de puissance 1 ou 2, mais un pillard empilé perd une puissance chaque fois qu'un tel bouclier vient se placer à côté de lui sur votre terrain. Un bouclier de puissance 3 prend un pillard d'un coup."
+"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un pillard n'est pas pris par le balayage d'un bouclier de puissance 1 ou 2, mais un pillard empilé perd une puissance chaque fois qu'un tel bouclier vient se placer à côté de lui sur votre terrain. Un bouclier de puissance 3 prend un pillard d'un coup.",
+"Asteroid ready": "Astéroïde prêt",
+"Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.": "Utilisez le lance-masse de votre drone de commandement et lancez un astéroïde. Sauvez cette mission de la catastrophe.",
+"Pick a block of nine squares to fire at.": "Choisissez un bloc de neuf cases à viser.",
+"Pick the block": "Choisir le bloc",
+"Later": "Plus tard",
+"Thrown.": "Lancé."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2111,12 +2122,18 @@ const ES={
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un asteroide lanzado cae en una de las nueve casillas al azar. Un dron solo ahí queda destruido, una pila pierde una potencia, el dron de mando y un dron protegido ni se inmutan. Si la casilla queda libre, el asteroide se queda.",
 "{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones.",
 "Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 también barre asaltantes, y puede lanzarse contra cualquier dron enemigo a su lado: los dos quedan destruidos.",
-"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un asaltante no es tomado por el barrido de un guardián de potencia 1 o 2, pero un asaltante apilado pierde una potencia cada vez que ese guardián se pone a su lado en tu terreno. Un guardián a potencia 3 toma al asaltante directamente."
+"A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un asaltante no es tomado por el barrido de un guardián de potencia 1 o 2, pero un asaltante apilado pierde una potencia cada vez que ese guardián se pone a su lado en tu terreno. Un guardián a potencia 3 toma al asaltante directamente.",
+"Asteroid ready": "Asteroide listo",
+"Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.": "Usa el cañón de masa de tu dron de mando y lanza un asteroide. Salva esta misión de la catástrofe.",
+"Pick a block of nine squares to fire at.": "Elige un bloque de nueve casillas al que disparar.",
+"Pick the block": "Elegir el bloque",
+"Later": "Más tarde",
+"Thrown.": "Lanzado."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.71.0';
+const VERSION='1.72.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2320,7 +2337,7 @@ function gravity(g,side){
 // Command drone and a shielded drone shrug it off; if the square is clear afterwards the asteroid stays.
 const ROCK_MIN=7;
 const throwsOf=side=>(S&&S.throws&&S.throws[side])||0;
-function grantRock(side,sp){if(!sp||!sp.cells||sp.cells.length<ROCK_MIN||sp.rockGiven)return;sp.rockGiven=1;S.throws=S.throws||{1:0,2:0};S.throws[side]=(S.throws[side]||0)+1;
+function grantRock(side,sp){if(!sp||!sp.cells||sp.cells.length<ROCK_MIN||sp.rockGiven)return;sp.rockGiven=1;S.throws=S.throws||{1:0,2:0};S.throws[side]=(S.throws[side]||0)+1;if(side===YOU)S.rockNew=(S.rockNew||0)+1; /* v1.72: the player hears about it at once */
   note(t`${who(side)} {v:get|gets} an asteroid to throw: ${sp.cells.length} stars cleared and nothing paid.`,{why:'rock_get'});}
 function rockCells(r0,c0){const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const r=r0+dr,c=c0+dc;if(inb(r,c)&&!isWall(r,c)&&!isCmd(r,c))out.push([r,c]);}return out;}
 function applyRockThrow(side,r0,c0){const cells=rockCells(r0,c0);if(!cells.length||throwsOf(side)<=0)return null;S.throws[side]--;
@@ -2593,6 +2610,7 @@ function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`
 function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);}
 async function afterAction(){const actor=S.turn;
   if(S.over){closeAction(actor);save();renderAll();return;}
+  if(S.rockNew&&S.turn===YOU&&!S.tut&&!(online&&net&&net.role!=='host')){S.rockNew=0;await rockPrompt();} /* v1.72: an asteroid just earned: the alert, and the throw before the turn passes */
   if((S.cleared[S.turn]||0)>=8&&!S.drifted){S.drifted=true;await asteroidDrift(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}}
   sweepSiege();renderBoard();await playFX();if(checkLand()||checkSiegeWin()){closeAction(actor);save();renderAll();return;}
   await tickBombs(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}
@@ -2750,7 +2768,16 @@ async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true
 async function humanWarp(d,r,c){if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanTurret(r,c){if(netSend({type:'turret',r,c}))return;busy=true;sel=null;mode=null;applyTurret(YOU,r,c);renderBoard();await playFX();busy=false;await afterAction();}
-async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(t('Thrown. Now take your turn: swap, move, claim or warp.'));}
+async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(rockWait?t('Thrown.'):t('Thrown. Now take your turn: swap, move, claim or warp.'));rockDone();}
+// ---------- v1.72: the asteroid alert. Earned mid-action, it pops up at once; Pick the block enters the throw, and the turn
+// waits for it (or for Later). A guest on two phones gets the button on its turn instead.
+let rockWait=null;
+function rockPrompt(){return new Promise(res=>{const el=$('rockpop');if(!el||throwsOf(YOU)<=0){res();return;}rockWait=res;el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');$('rockN').textContent=throwsOf(YOU)>1?' ×'+throwsOf(YOU):'';});}
+function rockPopClose(){const el=$('rockpop');el.classList.remove('show');setTimeout(()=>{el.hidden=true;},250);}
+function rockDone(){if(rockWait){const f=rockWait;rockWait=null;f();}}
+$('rockPick').addEventListener('click',()=>{rockPopClose();if(!S||S.over||throwsOf(YOU)<=0){rockDone();return;}mode='rock';sel=null;aimList=[];setStatus(t('Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.'));renderBoard();renderActions();});
+$('rockLater').addEventListener('click',()=>{rockPopClose();rockDone();});
+
 /* the asteroid comes down from above the board onto its square */
 function rockAnim(r,c){return new Promise(res=>{const b=$('board');const [x,y,w]=cellXY(r,c);const g=document.createElement('div');g.className='ghost rockfall';g.style.width=g.style.height=w+'px';g.style.left=x+'px';g.style.top=y+'px';g.innerHTML='<i class="asteroid v'+((r*7+c)%4)+'" style="width:84%;height:84%;margin:8%"></i>';b.appendChild(g);setTimeout(()=>{g.remove();const s=document.createElement('div');s.className='shock';s.style.left=x+'px';s.style.top=y+'px';b.appendChild(s);setTimeout(()=>s.remove(),900);res();},720);});}
 // where the bot throws its asteroid: the 3 × 3 whose nine squares hold the most enemy worth and the least of its own
@@ -2851,7 +2878,7 @@ function renderSide(){
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
 function renderActions(){
   const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy&&!netSpec();
-  if(mine&&throwsOf(YOU)>0)acts.push('<button data-a="rock" class="primary">'+t`Throw an asteroid (${throwsOf(YOU)})`+'</button>'); /* v1.69: a free action, like firing */
+  if(mine&&throwsOf(YOU)>0)acts.push('<button data-a="rock" class="primary callbtn">'+t`Throw an asteroid (${throwsOf(YOU)})`+'</button>'); /* v1.69: a free action, like firing */
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(mine&&sd){
     if(canShoot(sd)&&mode!=='aim')acts.push('<button data-a="aim" class="'+(sd.bombAmmo?'danger':'')+'">'+(sd.bombAmmo?t('Fire the bomb missile'):t`Fire missile${shotsOf(sd)===2?'s':''} (${ammoOf(sd)} loaded)`)+'</button>');
@@ -2870,7 +2897,7 @@ function renderActions(){
   if(S&&S.tut){const c=coach();if(c&&c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}} // the buttons were just rebuilt: put the coach's pulse back
 }
 $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
-  if(a==='cancel'){sel=null;mode=null;pending=null;aimList=[];renderAll();return;}
+  if(a==='cancel'){const wasRock=mode==='rock';sel=null;mode=null;pending=null;aimList=[];renderAll();if(wasRock)rockDone();return;}
   if(!sd)return;
   if(a==='aim'){mode='aim';aimList=[];setStatus(sd.bombAmmo?t`Tap a square within ${range()} squares. The bomb goes off there, a cross as far as you can see.`:shotsOf(sd)===2?t`Aim two targets within ${range()} squares, then they fire together.`:t`Tap a target within ${range()} squares: an enemy drone, an asteroid, or a star.`);renderBoard();renderActions();}
   else if(a==='firenow'){if(aimList.length)humanShots(sd,aimList.slice());}
