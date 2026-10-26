@@ -283,6 +283,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .cvTitle{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:clamp(34px,8vw,86px);line-height:.95;letter-spacing:.06em;margin:8px 0 12px;background:linear-gradient(100deg,#a8641a 0%,#e8a63b 22%,#ffd27a 38%,#fff6dc 50%,#ffd27a 62%,#e8a63b 78%,#a8641a 100%);background-size:220% 100%;background-position:120% 0;-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;animation:cvUp 1s ease-out 1.4s forwards,cvShine 7s linear 2.6s infinite}
 .cvTitle span{display:block}
 .cvTitleWrap{position:relative;filter:drop-shadow(0 4px 0 rgba(0,0,0,.7)) drop-shadow(0 0 26px rgba(232,166,59,.35))}
+/* v1.75: soft rays behind the title, from a star passing behind the words */
+.cvTitleWrap::before{content:'';position:absolute;left:-35%;right:-35%;top:-140%;bottom:-140%;z-index:-1;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,236,190,0) 0deg,rgba(255,236,190,.5) 2.2deg,rgba(255,236,190,0) 6deg,rgba(255,236,190,0) 12deg);-webkit-mask:radial-gradient(ellipse 60% 55% at 50% 50%,rgba(0,0,0,1),rgba(0,0,0,.5) 45%,transparent 75%);mask:radial-gradient(ellipse 60% 55% at 50% 50%,rgba(0,0,0,1),rgba(0,0,0,.5) 45%,transparent 75%);filter:blur(1px);opacity:.75;mix-blend-mode:screen;animation:cvRays 16s ease-in-out infinite alternate}
+@keyframes cvRays{from{transform:translateX(-16%) rotate(-10deg)}to{transform:translateX(16%) rotate(10deg)}}
+@media (prefers-reduced-motion:reduce){.cvTitleWrap::before{animation:none}}
 @keyframes cvShine{from{background-position:120% 0}to{background-position:-120% 0}}
 /* v1.64: the first open spells the title out; the Command drone's emblem turns slowly on the cover */
 .cvTitle.split{opacity:1;animation:none;background:none;color:inherit}.cvTitle.split .cvL{display:inline-block;font-style:normal;background:linear-gradient(180deg,#fff6dc 0,#ffd27a 35%,#e8a63b 62%,#a8641a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;transform:translateY(22px) scale(1.3);filter:blur(6px);animation:cvLetter .55s cubic-bezier(.2,.8,.3,1) forwards}
@@ -2131,7 +2135,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.74.0';
+const VERSION='1.75.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
