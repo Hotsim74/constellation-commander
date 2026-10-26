@@ -263,6 +263,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes cvDraw{to{stroke-dashoffset:0}}
 #cvConst .cvDot{fill:#fff;transform-box:fill-box;transform-origin:center;transform:scale(0);animation:cvPop .5s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes cvPop{to{transform:scale(1)}}
+#cvConst .cvOrbit{transform-box:view-box;animation:cvOrbit 11s linear infinite}#cvConst .cvOrbit.b{animation-duration:19s;animation-direction:reverse}
+@keyframes cvOrbit{to{transform:rotate(360deg)}}
 #cvConst .cvHalo{fill:none;stroke:#e8a63b;stroke-width:1.2;transform-box:fill-box;transform-origin:center;opacity:0;animation:cvHalo 2.6s ease-out infinite}
 @keyframes cvHalo{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.7);opacity:0}}
 #cvFleet{position:absolute;inset:0;pointer-events:none}
@@ -2129,7 +2131,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.73.0';
+const VERSION='1.74.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3746,13 +3748,16 @@ function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getCont
   const pts=[[110,430],[230,250],[380,330],[500,140],[650,260],[790,170],[910,360]];const sv=$('cvConst');let h='';
   for(let i=1;i<pts.length;i++)h+=`<line x1="${pts[i-1][0]}" y1="${pts[i-1][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" pathLength="1" style="animation-delay:${(.7+i*.3).toFixed(2)}s"/>`;
   pts.forEach(([x,y],i)=>{h+=`<circle cx="${x}" cy="${y}" r="5" class="cvDot" style="animation-delay:${(.5+i*.3).toFixed(2)}s"/><circle cx="${x}" cy="${y}" r="14" class="cvHalo" style="animation-delay:${(.5+i*.3).toFixed(2)}s"/>`;});
+  /* v1.74: two asteroids circling the fourth star of the constellation */
+  const [ox,oy]=pts[3];const rock=(r,cl)=>`<g class="cvOrbit ${cl}" style="transform-origin:${ox}px ${oy}px"><g transform="translate(${ox+r} ${oy})"><circle r="9" fill="url(#cvRock)"/><circle cx="-3" cy="-2" r="2.2" fill="#2a3037" opacity=".8"/><circle cx="3.5" cy="3" r="1.6" fill="#2a3037" opacity=".8"/></g></g>`;
+  h='<defs><radialGradient id="cvRock" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#9aa3ad"/><stop offset="55%" stop-color="#555d66"/><stop offset="100%" stop-color="#22272d"/></radialGradient></defs>'+h+rock(34,'a')+rock(54,'b');
   sv.innerHTML=h;
   // the fleet flies in: yours from the left, the bot's from the right
   const fl=$('cvFleet');fl.innerHTML='';
   const ship=(side,kind,x,y,sz,delay)=>{const d={id:0,r:0,c:0,side,kind,colors:[side===YOU?1:3],power:1};const w=document.createElement('div');w.className='cvShip '+(side===YOU?'s1':'s2');w.style.cssText=`left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;animation-delay:${delay}s`;w.innerHTML='<i class="flare"></i>'+droneHTML(d);fl.appendChild(w);};
   const ph=window.matchMedia('(max-width:720px)').matches,k=ph?.62:1;
   ship(YOU,'M',50,46,Math.round(100*k),.2);ship(YOU,'C',34,54,Math.round(60*k),.55);ship(YOU,'X',66,56,Math.round(60*k),.75);ship(YOU,'H',40,34,Math.round(54*k),.95);ship(YOU,'S',61,32,Math.round(54*k),1.15);
-  ship(BOT,'G',86,16,Math.round(56*k),1.7);ship(BOT,'S',12,14,Math.round(46*k),2.0);
+  ship(BOT,'G',86,16,Math.round(56*k),1.7);ship(BOT,'W',12,14,Math.round(52*k),2.0); /* v1.74: a warp drone top left, where the raider was */
 }
 </script>
 </body>
