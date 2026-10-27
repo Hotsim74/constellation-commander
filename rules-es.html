@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121820">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>⭐</text></svg>">
+</head>
+<body>
+<title>Reglamento de Constellation Commander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#121820;--panel:#1a222d;--panel2:#212b38;--line:#2d3a49;--text:#e4e9ef;--mute:#8d99a8;--you:#e8a63b;--bot:#4ea8dc;
+  --display:'Chakra Petch',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding:24px 20px 60px}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px;line-height:1}
+.sub{color:var(--mute);margin:0 0 22px}
+h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--you);margin:34px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
+p{margin:8px 0;max-width:70ch}
+ul{margin:6px 0;padding-left:20px;max-width:70ch}
+li{margin:5px 0}
+table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:15px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--panel2)}
+.tw{overflow-x:auto}
+.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:0 0 6px}
+.toc a{color:var(--mute);text-decoration:none;border-bottom:1px dotted var(--line)}
+a{color:var(--you)}
+@media (max-width:600px){body{padding:16px 12px 40px;font-size:15px}h1{font-size:24px}}
+</style>
+<div class="wrap">
+<h1>Constellation Commander</h1>
+<p class="sub">El reglamento, un solo tablero. Cada regla de aquí es lo que el juego hace ahora mismo. Nada es definitivo.</p>
+<p><strong>El juego en cuatro líneas.</strong> Intentas reclamar más cielo que el bot. Alinea estrellas: más de 3 en línea te dan un dron. Un dron es como una ficha de damas o de ajedrez que mueves para reclamar espacio y luchar. Solo los exploradores reclaman estrellas para ti; 69 casillas ganan, o un dron de asedio junto al dron de mando del bot.</p>
+<nav class="toc"><a href="#board">El tablero</a><a href="#fog">La niebla</a><a href="#start">Inicio y turnos</a><a href="#shapes">Formas</a><a href="#drones">Los drones</a><a href="#moving">Mover y apilar</a><a href="#missiles">Misiles</a><a href="#turret">Torretas</a><a href="#win">Ganar</a><a href="#first">Tu primera partida</a><a href="#friend">Jugar con un amigo</a><a href="#skill">El nivel del bot</a><a href="#ratings">Puntuación y hándicap</a></nav>
+
+<h2 id="board">El tablero</h2>
+<p>Un tablero de 11 × 11. Cada casilla tiene una estrella de uno de cinco colores, o un asteroide. Bajo las estrellas hay un damero rojo y blanco. La fila del medio es la costura, la línea entre tu mitad y la del bot. <strong>Las estrellas caen hacia quien mueve.</strong> En tu turno cada columna baja hacia tu fila del fondo y entran estrellas nuevas por el borde de arriba; en el turno del bot todo sube hacia su fila del fondo y las estrellas nuevas entran por abajo. Los asteroides parten una columna, así que nada cae a través de uno; despéjalo con un misil y la columna se abre.</p>
+<p>No hay muros. Empiezas con un bloque de nueve casillas, tres por tres, en el medio de tu fila del fondo, con tu dron de mando, un explorador, un dron de asedio y un guardián dentro. Cada lado empieza con asteroides en su propia mitad; el número viene de la puntuación.</p>
+<h2 id="asteroids">Asteroides</h2>
+<p>Los asteroides no se intercambian, no se alinean ni se pisan, y parten una columna de modo que nada cae a través de ellos. Un misil despeja uno. Se desplazan: despeja <strong>8 o más estrellas de tu lado en un turno</strong>, cascadas incluidas, y cada asteroide del tablero se mueve una casilla hacia ti, en el sentido en que caen las estrellas. Un asteroide que choca con un dron solo lo destruye y ocupa su casilla. Contra una pila, le quita una potencia y salta a la casilla siguiente; un dron en esa casilla queda destruido. Dos casillas es lo máximo que se mueve un asteroide en un turno. El borde del tablero u otro asteroide lo detienen. Un asteroide que va directo contra el dron de mando solo le quita una potencia a su pila y lo salta. Pero si salta a otro dron y cae sobre el dron de mando, la partida termina.</p>
+
+<h2 id="fog">La niebla</h2>
+<p>Desactivada por defecto: se ve todo el tablero. En Ajustes está la <strong>Niebla de guerra</strong>, con dos formas de jugar a oscuras. <em>Desde la costura</em>: ves tu propia mitad y, más allá, solo una casilla alrededor de cada uno de tus drones (los guardianes no ven nada) y las casillas que un explorador ha reclamado, que quedan iluminadas toda la partida. <em>Todo a oscuras</em>: incluso tu mitad empieza a oscuras. A oscuras no puedes intercambiar, atravesar ni disparar a una casilla que no ves, los guardianes solo pueden estar en casillas tuyas o despejadas, y el bot vive bajo la misma niebla.</p>
+
+<h2 id="start">Inicio y turnos</h2>
+<p>Empiezas con un bloque de nueve casillas en el medio de tu fila del fondo: tu dron de mando atrás en el centro, un explorador a su izquierda, un dron de asedio a su derecha, un guardián en el borde delantero, ya apilado a potencia 2, y un misil, que tu explorador carga de inmediato. Mueves primero.</p>
+<p><strong>Sonido.</strong> Cada jugada tiene su propio sonido corto: un toque, un intercambio, estrellas que se despejan, un dron que nace, un misil, un impacto, dos notas cuando te toca, y una alarma grave la primera vez que un asedio enemigo se pone a dos casillas de tu dron de mando. Ajustes → Sonido los apaga junto con las voces de la historia. La música tiene su propio interruptor y sigue la partida: tranquila al empezar, tensa cuando un asedio se acerca a un dron de mando, más grande hacia el final, un tictac encima cuando un reloj baja de dos minutos, y una melodía corta al terminar.</p>
+<p>Contra el bot la partida es <strong>relajada</strong> salvo que actives los Relojes en Ajustes: sin tiempo por jugada, sin reloj. Con los Relojes es un reloj de ajedrez de 20 minutos y 60 segundos por jugada.</p>
+<p>Un turno: primero los misiles, si quieres. Luego una acción: intercambiar dos estrellas contiguas para hacer una línea, mover un dron, reclamar con un explorador, saltar, disparar un dron de asedio o embestir. Un intercambio que no hace línea vuelve a su sitio sin coste.</p>
+<p><strong>Tu terreno es tuyo.</strong> Ninguna de las dos estrellas de un intercambio puede estar en una casilla del otro lado; intercambias en terreno libre o tuyo. Cada casilla que reclama un explorador es una en la que el otro lado ya no puede jugar. Una línea que se forma sola por completo en su terreno, tras una cascada, se despeja pero no paga nada.</p>
+
+<h2 id="shapes">Formas</h2>
+<p>Las líneas cuentan en horizontal, en vertical y en diagonal, donde necesitan 4 o más. Un 3 despeja estrellas y no paga nada. Una forma solo paga si parte de ella está de tu lado de la costura, y el dron aparece en esa parte, del color de la estrella que lo hizo. Tras una combinación las estrellas fluyen, y las líneas que se formen solas también son tuyas.</p>
+<p>Puedes tener 9 drones; cada dos torretas cuentan como uno. Con 9, una forma paga lo que dice la columna derecha, o se apila en tu propio dron si se hizo debajo de uno.</p>
+<div class="tw"><table>
+<tr><th>Forma</th><th>Obtienes</th><th>Con 9 drones</th></tr>
+<tr><td>4 en línea</td><td>Explorador</td><td>nada</td></tr>
+<tr><td>Bloque de 2 × 2</td><td>Guardián</td><td>nada</td></tr>
+<tr><td>5 en línea</td><td>Asaltante, blanco</td><td>1 misil</td></tr>
+<tr><td>L de 4: una línea de 3 con una estrella enganchada en ángulo recto en cualquiera de sus extremos, en cualquier orientación</td><td>Asaltante, rojo</td><td>1 misil</td></tr>
+<tr><td>6 en línea</td><td>Cazador</td><td>1 asteroide sobre el terreno del otro lado</td></tr>
+<tr><td>L de dos líneas de 3</td><td>Bomba</td><td>Bomba, siempre</td></tr>
+<tr><td>T de dos líneas de 3</td><td>Asaltante, rojo</td><td>1 misil</td></tr>
+<tr><td>Cruz de dos líneas de 3, o X de 5 en diagonal</td><td>Cazador</td><td>nada</td></tr>
+<tr><td>V de dos diagonales: dos brazos diagonales de 2 que se unen en una esquina, la L de la bomba girada 45°, en cualquier orientación</td><td>Cazador</td><td>nada</td></tr>
+<tr><td>L de 4 y 3</td><td>Asedio</td><td>nada</td></tr>
+<tr><td>7 en línea, 4 cruzando 4, o 5 cruzando 3</td><td>Salto</td><td>nada</td></tr>
+<tr><td>5 cruzando 4 o mayor, o bloque de 2 × 3</td><td>Salto y asedio</td><td>nada</td></tr>
+<tr><td>Bloque de 3 × 3</td><td>Salto, asedio y cazador</td><td>nada</td></tr>
+</table></div>
+
+<h2 id="drones">Los drones</h2>
+<p>Cada dron lleva su letra: C mando, S explorador, G guardián, R asaltante, H cazador, W salto, X asedio, B bomba. Los tuyos son letras rojas sobre borde dorado, los del bot blancas sobre azul. El cuadradito abajo a la izquierda de un dron es el color de estrella por el que viaja gratis; una pila muestra un cuadradito por color, el de un cazador es de todos los colores, el de un asaltante es el rojo o el blanco de sus casillas, y los guardianes y asedios no tienen.</p>
+<p><strong>Quién toma a quién.</strong> Los asaltantes toman cualquier dron sobre el que aterrizan, salvo un asedio. Los cazadores luchan solo con misiles. Los guardianes toman exploradores, cazadores, drones de salto y guardianes al ponerse a su lado en tu terreno. Los asedios no toman nada y no pueden ser tomados; cuatro drones enemigos alrededor de uno lo destruyen. Nada toma al dron de mando aterrizando. Cada toma gana un misil para tu dron de mando. Toca cualquier dron, tuyo o del otro lado, para ver adónde puede ir y qué puede tomar. Tras cada jugada el juego dice qué pasó y por qué; se apaga en Ajustes, en Explicar jugadas.</p>
+<ul>
+<li><strong>Explorador (S).</strong> Se mueve 1 casilla en cualquier dirección. Dispara un misil por turno. Reclamar: el 3 × 3 a su alrededor, el terreno libre pasa a ser tuyo, el terreno enemigo pasa a disputado, el disputado pasa a ser tuyo, y el 3 × 3 queda sin niebla para siempre. Dos reclamos por explorador; el segundo lo gasta.</li>
+<li><strong>Guardián (G).</strong> Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla y no toma nada ahí. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. A un asaltante no puede tomarlo a potencia 1 o 2, pero un asaltante apilado pierde una potencia cada vez que ese guardián se pone a su lado ahí; a potencia 1 un asaltante está a salvo de esos guardianes. Un guardián apilado a potencia 3 toma asaltantes como cualquier otra cosa, y se conserva. Quieto no toma nada. Junto a un dron de asedio enemigo bloquea el tiro. Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado: los dos quedan destruidos, sea cual sea la potencia del otro, salvo el dron de mando, una torreta o un dron protegido.</li>
+<li><strong>Asaltante (R).</strong> Rojo o blanco, como muestra el cuadradito de su disco: el color de las casillas donde nació y las únicas casillas donde puede estar, ya que quien se desliza en diagonal nunca cambia de color de casilla. Cada casilla muestra su propio rojo o blanco en la esquina superior derecha. Se desliza por toda la diagonal en cualquier dirección hasta chocar con algo o con el borde del tablero, y toma cualquier dron enemigo sobre el que se detenga, salvo un asedio. Puede deslizarse en la oscuridad, y puede deslizarse hasta uno de tus propios drones al final de una diagonal para apilarse con él. Donde se detiene, la niebla se levanta una casilla a su alrededor mientras está ahí. Una vez hecho, el deslizamiento está hecho.</li>
+<li><strong>Cazador (H).</strong> Se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella, girando por el camino: tres casillas de alcance. Dispara dos misiles por turno: primero se apuntan los dos, luego aciertan a la vez y las estrellas caen una sola vez. Carga dos del dron de mando poniéndose a su lado. No puede tomar drones aterrizando; lucha con misiles.</li>
+<li><strong>Salto (W).</strong> Se mueve 1 casilla. O, como tu acción, salta a cualquier casilla despejada de tu lado que no esté sobre un guardián enemigo ni a su lado. Al aterrizar, cada casilla sin reclamar del 3 × 3 pasa a ser tuya, el terreno enemigo sigue siendo enemigo, y toma drones enemigos solo en casillas que ahora son tuyas. Eso lo gasta.</li>
+<li><strong>Dron de mando (M).</strong> Tu Comandante, como pieza. Se mueve 1 casilla y viaja por los colores de estrella de los drones apilados en él. Puede llevar dos drones más (potencia 3). Nada lo toma aterrizando ni con misiles; los misiles y las bombas solo arrancan drones de su pila. Solo un dron de asedio acaba con él: un asedio a su lado, sin guardián junto al asedio ni junto al dron de mando, gana la partida al instante. Un asteroide que se desplaza contra él lo salta (o le quita un dron de la pila); un asteroide que salta a otro dron y cae sobre él lo destruye, y gana el otro lado. Déjalo en casa, o deja un guardián a su lado.</li>
+<li><strong>Asedio (X).</strong> Se mueve exactamente 1 casilla por turno y es el único dron que entra libremente en la oscuridad. No toma nada salvo una torreta enemiga, poniéndose encima, y los drones no pueden tomarlo. Los misiles tampoco pueden destruirlo: un asedio apilado pierde una potencia por misil, un asedio solo aguanta. Llévalo junto al dron de mando enemigo sin guardián enemigo al lado de ninguno de los dos y ganas. Cuatro drones enemigos a su alrededor lo destruyen. Si un guardián le estorba, puede embestirlo, y los dos desaparecen. Dos por lado a la vez.</li>
+<li><strong>Bomba (B).</strong> Se mueve 1 casilla, o viaja gratis por el color de su propia estrella. Estalla al final de tu tercer turno desde que la obtienes. La explosión corre arriba, abajo, izquierda y derecha desde donde está, por cada brazo hasta donde hayas despejado la niebla, y se lleva cada asteroide, estrella y dron en su camino, los tuyos incluidos. El dron de mando aguanta, aunque la explosión le arranca la pila. El otro jugador ve hasta dónde llegó. <strong>Llevar una bomba:</strong> apila una bomba sobre uno de tus drones y ese dron la lleva, conservando su tipo y sus movimientos y luciendo la mecha. Cuando la mecha se agota, la explosión parte de donde esté el portador, y el portador, en medio de ella, se pierde con ella; un dron de mando que lleve una solo pierde la pila. Un asaltante con una bomba a cuestas es un reparto a domicilio. Dos portadores son especiales: un <strong>asedio</strong> convierte la bomba en escudo: toca el asedio, Proteger un dron, y luego uno de tus drones a su lado, no el dron de mando. Durante seis turnos ese dron no puede ser tomado aterrizando, barrido por un guardián, alcanzado, volado ni aplastado por un asteroide; solo cuatro drones enemigos a su alrededor acaban con él, como acaban con un asedio. El asedio se queda donde está; un <strong>cazador</strong> suelta sus misiles por un misil bomba, disparado como un misil hasta 3 casillas, y la explosión estalla donde cae mientras el cazador no se mueve. La cruz corre desde la casilla donde cae hasta donde alcances a ver, tus propios drones incluidos, así que no lo dispares en línea recta sobre tu propia fila.</li>
+</ul>
+
+<h2 id="moving">Mover y apilar</h2>
+<p><strong>Viajes gratis.</strong> Cada paso sobre una estrella del color propio de un dron es gratis, así que puede recorrer un carril de su color hasta donde llegue y gastar su único paso pagado antes o después. Los guardianes y asedios no viajan. Los asaltantes se deslizan en su lugar.</p>
+<p><strong>Pilas.</strong> Mueve uno de tus drones sobre otro tuyo para apilarlos. La pila conserva el tipo sobre el que aterrizaste, suma potencia hasta 3 y gana el color de estrella del otro dron, así que viaja por más carriles. El juego pregunta antes de apilar. La potencia es blindaje contra misiles: una pila de potencia 3 aguanta tres impactos. En una pelea no ayuda: un asaltante toma toda la pila de un solo aterrizaje.</p>
+
+<h2 id="missiles">Misiles</h2>
+<p>Los misiles son existencias de tu dron de mando. Cada toma gana uno ahí, un dron destruido por un misil incluido. Solo los exploradores y cazadores disparan, y antes tienen que cargar: un explorador o cazador junto a tu dron de mando toma misiles de él, uno el explorador, dos el cazador, cuando termina un movimiento ahí y otra vez al principio de cada uno de tus turnos mientras se queda. Un dron lleva sus misiles consigo; la burbuja naranja de su disco es su cuenta, y la burbuja del dron de mando son las existencias. Luego, antes de tu acción, un explorador dispara una vez por turno y un cazador dos. Un misil vuela 3 casillas desde el dron que dispara, en cualquier dirección (5 casillas con la niebla de guerra activada), hacia cualquier cosa que puedas ver. A un dron le quita una potencia. A un asteroide o una estrella los destruye, las estrellas fluyen, y las líneas que se formen son tuyas. No se sacrifica nada para disparar.</p>
+<p><strong>Un asteroide lanzado.</strong> Una forma de siete o más estrellas que no paga nada, porque la hiciste en el otro lado, en terreno del otro lado o cuando ya tenías nueve drones, paga en su lugar un asteroide para lanzar. En tu turno aparece un botón; toca el centro de cualquier 3 × 3 que puedas ver y el asteroide cae en una de sus nueve casillas al azar. Un dron solo ahí queda destruido y paga su misil, una pila pierde una potencia, el dron de mando y un dron protegido ni se inmutan. Si la casilla queda libre, el asteroide se queda ahí. Lanzar no gasta tu turno. El bot lanza los suyos, al 3 × 3 con más drones tuyos dentro.</p>
+<p>Cada dron destruido deja restos en su casilla durante cinco rondas, que encogen con el tiempo, para que veas dónde hubo pelea.</p>
+<p><strong>Recuperación</strong> (una opción de Ajustes, desactivada por defecto). Con ella activada, un dron destruido no paga su misil de inmediato. Deja unos restos en su casilla, brillando, y el misil se queda en los restos hasta que un dron, tuyo o del otro lado, termina su movimiento en esa casilla. Tomar un dron aterrizando sobre él te deja sobre los restos, así que esas tomas siguen pagando al instante; un misil, el barrido de un guardián, una bomba o un asedio rodeado dejan unos restos a los que alguien tiene que ir. Los restos desaparecen tras cinco rondas. Un asteroide que aplasta un dron no deja nada. Las estrellas bajo unos restos siguen intercambiándose y cayendo como siempre. En una partida de dos teléfonos cuenta el ajuste del anfitrión.</p>
+
+<h2 id="turret">Torretas</h2>
+<p>Cuando tu dron de mando tiene <strong>10 misiles</strong>, tócalo y elige Construir una torreta, luego una casilla vacía tuya. Los diez misiles se convierten en una torreta, letra T, con ocho cañones. Nunca se mueve. Al principio de cada uno de tus turnos dispara una vez, por su cuenta, a un dron enemigo en las 8 casillas a su lado, primero a un asedio apilado si lo hay, si no al más débil. Cada disparo quita una potencia, y un dron que destruye paga un misil a tus existencias como cualquier destrucción. Solo tres cosas acaban con una torreta: una bomba, un asteroide o un dron de asedio que se ponga encima. Los misiles rebotan en ella, y los asaltantes y guardianes no pueden tomarla. El asedio es la respuesta a la torreta: los misiles no detienen a un asedio solo, así que se acerca y se pone encima, y la torreta no gasta su disparo en él. Guarda una bomba, o drones para rodearlo, contra los asedios. Cada dos torretas cuentan como un dron para tus 9. El bot también las construye, desde el nivel 40.</p>
+
+<h2 id="win">Ganar</h2>
+<p>Tus casillas iniciales cuentan como tuyas. Los reclamos y los saltos toman más. Ten <strong>69 casillas</strong> de las 121 (un ajuste, de 60 a 100) y ganas, o pon un dron de asedio junto al dron de mando enemigo sin guardián al lado, o deja que un asteroide le caiga encima. Con los Relojes, quedarse sin tiempo pierde.</p>
+
+<h2 id="first">Tu primera partida</h2>
+<p>La primera vez que abres el juego se ofrece a guiarte: un tablero a oscuras, sin reloj, y el juego ilumina la casilla que tocar y espera. Mueve el explorador, reclama y mira cómo se levanta la niebla, haz una combinación y mira aparecer el dron. Está en Ajustes cuando quieras como Primera partida guiada.</p>
+<p>Después, una mano más discreta: con el bot a nivel 50 o menos, si pasas 30 segundos en tu turno, las dos estrellas del mejor intercambio se iluminan en verde.</p>
+
+<h2 id="friend">Jugar con un amigo</h2>
+<p>En Ajustes está <strong>Jugar con un amigo</strong>. Escribe tu nombre y la lista muestra a todos los que esperan para jugar; toca un nombre y la partida empieza para los dos. ¿No hay nadie? Toca Estoy listo para jugar y tu nombre queda en la lista hasta que alguien lo toque. La barra de estado dice entonces Conectado y de quién es el turno. El teléfono que esperaba lleva la partida, y los dos teléfonos muestran el mismo tablero, cada uno con su lado abajo. Tu puntuación viaja contigo: los asteroides se fijan según las dos puntuaciones, como contra el bot, y la partida mueve tu puntuación con todo su peso. Dejar una partida sin terminar cuenta como derrota. Si un teléfono se desconecta, el juego sigue intentando reconectar por su cuenta y lo dice en la barra de estado; Reconectar en Jugar con un amigo lo fuerza, y si la página se cerró, al abrir el juego otra vez retoma la partida, u ofrece Volver a tu última partida cuando la línea falla. En Jugando ahora, en el mismo panel, cualquiera puede tocar una partida en curso y verla en directo, solo lectura, con los nombres de los jugadores y de quién es el turno. (Si la lista dice alguna vez que la sala está apagada, el teléfono que espera recibe un código de 4 letras para leerlo en voz alta.)</p>
+
+<h2 id="skill">El nivel del bot</h2>
+<p>El nivel del bot va de diez en diez, de 0 a 100. Dos cosas cambian con él. A nivel N el bot juega su mejor jugada el N% de las veces y una jugada legal al azar el resto, así que el nivel 10 es casi todo ruido y el nivel 100 nunca es aleatorio. Y lo que su mejor jugada <em>sabe</em> crece un escalón cada diez; cada nivel conserva todo lo de abajo.</p>
+<ul>
+<li><strong>0.</strong> Aleatorio. Intercambia y mueve al azar y nunca dispara.</li>
+<li><strong>10.</strong> Sabe qué líneas pagan un dron y reclama terreno con sus exploradores.</li>
+<li><strong>20.</strong> Dispara misiles a tus drones y toma lo que alcanza.</li>
+<li><strong>30.</strong> Mantiene su dron de mando en casa y barre con sus guardianes en su propio terreno.</li>
+<li><strong>40.</strong> Apila drones como blindaje y despeja asteroides de su lado.</li>
+<li><strong>50.</strong> Sus cazadores disparan los dos misiles, sus asedios avanzan hacia tu dron de mando, y salta para ganar terreno.</li>
+<li><strong>60.</strong> No deja un dron donde tus asaltantes, cazadores o guardianes puedan tomarlo el turno siguiente.</li>
+<li><strong>70.</strong> Elige intercambios también por la cascada: más estrellas despejadas, y mira dónde caerían los asteroides antes de despejar ocho.</li>
+<li><strong>80.</strong> Va a por los restos cuando Recuperación está activada, lleva sus bombas hacia tus drones, y en partida libre mira una jugada por delante: lo que podrías tomar, disparar o ganar tras cada jugada que considera. Los jefes de la historia no miran por delante.</li>
+<li><strong>90.</strong> Mantiene un guardián junto a su dron de mando en todo momento.</li>
+<li><strong>100.</strong> Cada turno es su mejor jugada. Nada es aleatorio.</li>
+</ul>
+<p>El jefe habla durante un sector: una frase cuando toma uno de tus drones, cuando tomas uno de los suyos, cuando su asedio se acerca a tu dron de mando, cuando construye una torreta, cuando a un lado le quedan tres drones, y alguna más. Cada frase sale una vez por partida, con un respiro entre ellas. También están en el registro.</p>
+<p>El modo historia es un punto más suave: el jefe de un sector sabe todo lo que sabe su número, pero juega su mejor jugada solo tres cuartas partes de las veces que el mismo número en partida libre, así que Osa Mayor a 100 todavía adivina un turno de cada cuatro. La partida libre a 100 nunca lo hace.</p>
+
+<h2 id="ratings">Puntuación y hándicap</h2>
+<p>Empiezas en 1000 y el número se mueve al estilo del ajedrez tras cada partida. El bot a nivel N tiene 800 + 8 × N: el nivel 10 es 880, el ajuste de principiante y el que viene por defecto; el 50 es 1200; el 100 es 1600. Un jefe de la historia tiene tres cuartos de su número, ya que juega su mejor jugada esa proporción de veces menos. Una partida contra el bot mueve tu puntuación en proporción a su nivel, una décima parte a nivel 10, la mitad a 50, todo a 100. Empezar una partida nueva con una en curso cuenta como derrota.</p>
+<p>Con <strong>Hándicap: asteroides según la puntuación</strong> activado, el número de asteroides se fija según la diferencia: un asteroide por cada 50 puntos y nunca más de 8, la mitad añadida a la mitad del lado más fuerte, la mitad quitada a la del más débil, partiendo de la base de la casilla Tus asteroides. El cambio de puntuación se calcula después con la diferencia que queda tras las rocas.</p>
+</div>
+</body>
+</html>

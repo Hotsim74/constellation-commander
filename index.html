@@ -2141,7 +2141,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.79.0';
+const VERSION='1.80.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3188,7 +3188,7 @@ $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checke
 if(prof.n)$('inName').value=prof.n;
 translateDOM(document.body);
 $('legend').innerHTML=['M','C','G','S','H','W','X','B','T'].map(k=>'<span class="lg"><b>'+LETTER[k]+'</b> '+(NOUN[LANG]?NOUN[LANG][k][0]:TNAME[k])+'</span>').join(' · ');
-if(LANG==='fr')for(const a of document.querySelectorAll('a[href$="rules.html"]'))a.href=a.href.replace('rules.html','rules-fr.html');
+if(LANG==='fr'||LANG==='es')for(const a of document.querySelectorAll('a[href$="rules.html"]'))a.href=a.href.replace('rules.html','rules-'+LANG+'.html'); /* v1.80: a rulebook per language */
 $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
 $('inLang').addEventListener('change',()=>setLang($('inLang').value));
