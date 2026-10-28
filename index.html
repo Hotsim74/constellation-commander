@@ -1461,7 +1461,8 @@ const FR={
 "Pick a block of nine squares to fire at.": "Choisissez un bloc de neuf cases à viser.",
 "Pick the block": "Choisir le bloc",
 "Later": "Plus tard",
-"Thrown.": "Lancé."
+"Thrown.": "Lancé.",
+"Thrown. Another asteroid is ready.": "Lancé. Un autre astéroïde est prêt."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2137,12 +2138,13 @@ const ES={
 "Pick a block of nine squares to fire at.": "Elige un bloque de nueve casillas al que disparar.",
 "Pick the block": "Elegir el bloque",
 "Later": "Más tarde",
-"Thrown.": "Lanzado."
+"Thrown.": "Lanzado.",
+"Thrown. Another asteroid is ready.": "Lanzado. Otro asteroide está listo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.81.1';
+const VERSION='1.81.2';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2777,7 +2779,7 @@ async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true
 async function humanWarp(d,r,c){if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanTurret(r,c){if(netSend({type:'turret',r,c}))return;busy=true;sel=null;mode=null;applyTurret(YOU,r,c);renderBoard();await playFX();busy=false;await afterAction();}
-async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(rockWait?t('Thrown.'):t('Thrown. Now take your turn: swap, move, claim or warp.'));rockDone();}
+async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(rockWait?t('Thrown.'):t('Thrown. Now take your turn: swap, move, claim or warp.'));if(rockWait&&throwsOf(YOU)>0&&!S.over){const el=$('rockpop');el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');$('rockN').textContent=throwsOf(YOU)>1?' ×'+throwsOf(YOU):'';setStatus(t('Thrown. Another asteroid is ready.'));return;} /* v1.81.2: more than one earned: the alert comes straight back for the next */rockDone();}
 // ---------- v1.72: the asteroid alert. Earned mid-action, it pops up at once; Pick the block enters the throw, and the turn
 // waits for it (or for Later). A guest on two phones gets the button on its turn instead.
 let rockWait=null;
