@@ -331,6 +331,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .bhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 0}
 .brief .bhead h2{margin:0;font-size:22px}
 .rockpop{position:absolute;left:8px;right:8px;top:14%;z-index:22;display:flex;gap:14px;align-items:center;background:rgba(10,16,24,.96);border:2px solid var(--you);border-radius:10px;padding:14px 16px;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 24px rgba(232,166,59,.35)}
+.rockpop[hidden],.bark[hidden]{display:none} /* v1.81.1: display:flex on the class beat the hidden attribute; the invisible alert sat over the board and swallowed every tap on the rows under it */
 .rockpop.show{opacity:1;animation:barkIn .3s ease-out}.rockpop .asteroid{position:relative;display:block;width:56px;height:56px;flex:none;margin:0;animation:rockspin 6s linear infinite}
 @keyframes rockspin{to{transform:rotate(360deg)}}
 .rockpop .rk{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}.rockpop .rk b{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--you)}.rockpop .rk p{margin:0}.rockpop .rq{color:#f1e4c8;font-family:var(--mono);font-size:13px}.rockpop .rb{display:flex;gap:8px;margin-top:4px}
@@ -2141,7 +2142,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.81.0';
+const VERSION='1.81.1';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
