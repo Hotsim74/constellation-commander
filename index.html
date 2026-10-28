@@ -355,6 +355,8 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .tx.them .words{color:#cfe6f5}
 .overbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 .brief .overbtns{padding:0 18px}
+/* v1.84: the gate. Until four sectors are held a new player sees no free play: no Launch, no Play a friend; Again and New game lead to the story. */
+body.gated #coverGo,body.gated #btnNet,body.gated #netbox,body.gated #btnAgain{display:none!important}
 .brief .tx.ship{border-left-color:#7fd1a8;margin-bottom:12px}.brief .shipRow{display:flex;gap:12px;align-items:flex-start;margin-top:6px}.brief .shipArt{width:64px;height:64px;position:relative;flex:none}.brief .shipArt .dr{position:absolute;inset:0}.brief .tx.ship .words{color:#dff5e8;font-size:13px}
 #over .card .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;max-width:320px}
 #newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
@@ -1481,7 +1483,8 @@ const FR={
 "full fleet": "flotte au complet",
 "Drag": "Glisser-déposer",
 "pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "les pièces collent au doigt : glissez une étoile sur sa voisine pour échanger, un drone sur sa case, lâchez pour déposer",
-"Drop a star on the one next to it to swap them.": "Déposez une étoile sur sa voisine pour les échanger."
+"Drop a star on the one next to it to swap them.": "Déposez une étoile sur sa voisine pour les échanger.",
+"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "La partie libre est ouverte : Lancer sur l'écran d'accueil, ou Nouvelle partie. L'histoire continue aussi d'ici."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2171,12 +2174,13 @@ const ES={
 "full fleet": "flota completa",
 "Drag": "Arrastrar",
 "pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "las piezas se pegan al dedo: arrastra una estrella sobre su vecina para intercambiar, un dron a su casilla, suelta para dejarlo",
-"Drop a star on the one next to it to swap them.": "Suelta una estrella sobre la de al lado para intercambiarlas."
+"Drop a star on the one next to it to swap them.": "Suelta una estrella sobre la de al lado para intercambiarlas.",
+"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "El juego libre ya está abierto: Lanzar en la pantalla de inicio, o Partida nueva. La historia también sigue desde aquí."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.83.1';
+const VERSION='1.84.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3244,8 +3248,8 @@ try{if(localStorage.getItem('cc_lastgame'))$('btnCopyLast').hidden=false;}catch(
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
-$('btnNew').addEventListener('click',()=>{if(busy)return;if(online&&net){if(confirm(t('Leave the match? An unfinished match counts as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
-$('btnAgain').addEventListener('click',()=>{if(online&&net)netLeave();else newGame();});
+$('btnNew').addEventListener('click',()=>{if(busy)return;if(storyGate()){openStoryMap();return;} /* v1.84: a new player's New game is the story map */if(online&&net){if(confirm(t('Leave the match? An unfinished match counts as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
+$('btnAgain').addEventListener('click',()=>{if(online&&net)netLeave();else if(storyGate())openStoryMap();else newGame();});
 $('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
 $('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
 $('introGo').addEventListener('click',()=>{$('intro').hidden=true;try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame();});
@@ -3274,13 +3278,14 @@ if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').remo
   if(!resumed&&S&&S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
   if(resumed){if(S)renderAll();return;}
-  if(!seenIntro){try{localStorage.setItem('cc1_intro','1');}catch(_){}if(!S)newGame({tut:true});} // first open: straight into the coached game
+  if(!seenIntro){try{localStorage.setItem('cc1_intro','1');localStorage.setItem('cc_gate','1');}catch(_){}if(!S)newGame({tut:true});} // first open: straight into the coached game; v1.84: and the gate is on (story only until FREE_AFTER sectors)
   else if(!S)newGame();
+  storyGateApply();
 })();
 document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
 
 // ---------- the cover: a sky, the ships, a saying ----------
-function showCover(){const cv=$('cover');$('coverSay').textContent=t(SAYINGS[rnd(SAYINGS.length)]);$('cvVer').textContent='v'+VERSION;cv.hidden=false;coverBuild();} /* shown first: the canvas needs its size */ /* v1.63: the start screen lives in one/cover.js */
+function showCover(){storyGateApply();const cv=$('cover');$('coverSay').textContent=t(SAYINGS[rnd(SAYINGS.length)]);$('cvVer').textContent='v'+VERSION;cv.hidden=false;coverBuild();} /* shown first: the canvas needs its size */ /* v1.63: the start screen lives in one/cover.js */
 
 // ---------- motion: missiles fly, drones glide ----------
 function cellXY(r,c){const el=cellEl(r,c);return [el.offsetLeft+el.offsetWidth/2,el.offsetTop+el.offsetHeight/2,el.offsetWidth];}
@@ -3622,6 +3627,11 @@ function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=k
   else if(k){who=t('New this sector: {0}',(LANG==='en'?'the ':'')+TNAME[k]);art=fake(k);text=t(TIPS[k])+' '+(k==='B'?t('Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.'):t('One is waiting in your block of nine.'));}
   else{who=t('The full fleet');art=fake('M');text=t('Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.');}
   $('briefShipWho').textContent=who;$('briefShipArt').innerHTML=art;$('briefShipText').textContent=text;$('briefShip').hidden=false;}
+// ----- v1.84: the gate. A new player (flag cc_gate, set on a first open from this version on) has only the coached game
+// and the story until FREE_AFTER sectors are held; then Launch, New game and Play a friend open. Players from before keep everything.
+const FREE_AFTER=4;
+function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&Object.keys(story.won).length<FREE_AFTER;}
+function storyGateApply(){document.body.classList.toggle('gated',storyGate());}
 const STORY_KEY='cc_story';
 let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
 function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}catch(_){}}
@@ -3647,7 +3657,7 @@ function renderStoryMap(){const el=$('storyList');const next=storyNext();
   el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
     return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)} · ${introLabel(s.id)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
   $('storyDone').hidden=!!next;}
-function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
+function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;storyGateApply();}
 // ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
 let typeTimer=null,typeDone=null,typeRun=null;
 function typeOut(el,text,done){if(typeTimer)clearInterval(typeTimer);el.textContent='';let i=0;const step=Math.max(14,Math.min(38,2600/Math.max(1,text.length)));
@@ -3695,14 +3705,14 @@ function storyBarkTurn(){const sec=bossSec();if(!sec||S.turn!==YOU)return;const 
 function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?SECTORS.find(s=>s.id===S.story):null;
   for(const id of ['btnStoryNext','btnStoryRetry','btnStoryMap'])$(id).hidden=true;$('btnAgain').hidden=inStory;
   if(!sec)return;
-  const won=S.over.w===YOU;if(won&&!story.won[sec.id]){story.won[sec.id]=Date.now();storySave();}
+  const won=S.over.w===YOU;const wasGated=storyGate();if(won&&!story.won[sec.id]){story.won[sec.id]=Date.now();storySave();}const opened=wasGated&&!storyGate();storyGateApply();
   if(won&&!S.storySaid){S.storySaid=true;storyPlay(sec,'win');}else if(!won&&!S.storySaid){S.storySaid=true;storyPlay(sec,'lose');}
   $('overTitle').textContent=won?t('Sector held'):t('Sector lost');
-  $('overText').innerHTML='<div class="disp">'+t(won?sec.win:sec.lose)+'</div><div class="acthint" style="margin-top:6px">'+S.over.reason+'</div>';
+  $('overText').innerHTML='<div class="disp">'+t(won?sec.win:sec.lose)+'</div><div class="acthint" style="margin-top:6px">'+S.over.reason+'</div>'+(opened?'<div class="disp" style="margin-top:8px">'+t('Free play is open now: Launch on the start screen, or New game. The story goes on from here too.')+'</div>':'');
   const next=storyNext();if(won&&next)$('btnStoryNext').hidden=false;if(!won)$('btnStoryRetry').hidden=false;$('btnStoryMap').hidden=false;}
 function storyAfterRating(){} // (ratings run as for any bot game)
 $('storyList').addEventListener('click',e=>{const b=e.target.closest('button[data-sec]');if(!b||b.disabled)return;openBrief(SECTORS.find(s=>s.id===b.dataset.sec));});
-$('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S)newGame();});
+$('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S){if(storyGate()){const n=storyNext();if(n){openBrief(n);return;}}newGame();}});
 $('btnBriefBack').addEventListener('click',()=>{if(typeDone)typeDone();if(storyAudio){try{storyAudio.pause();}catch(_){}}$('brief').hidden=true;openStoryMap();});
 $('btnBriefGo').addEventListener('click',storyLaunch);
 $('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefBrag').addEventListener('click',()=>{if(typeDone)typeDone();});
