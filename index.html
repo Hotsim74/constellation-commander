@@ -2141,7 +2141,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.80.0';
+const VERSION='1.81.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2800,6 +2800,7 @@ async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;
 let peek=null; // an enemy drone whose reach is being shown
 function onCell(r,c){
   if(Date.now()-swDone<350)return; /* the click that follows a swipe */
+  if(rockWait&&mode!=='rock'){rockPopClose();rockDone();return;} /* v1.81: the asteroid alert is up: a tap anywhere else puts it away (the throw stays in the buttons) and nothing else happens until the turn's own flow has finished */
   if(busy||!S||S.over||S.turn!==YOU||netSpec())return;
   const k=key(r,c),d=droneAt(r,c),sd=sel?S.drones.find(x=>x.id===sel.id):null;
   if(!(d&&d.side===BOT))peek=null;clearExplainCalls();
@@ -2904,7 +2905,7 @@ function renderActions(){
   $('acthint').textContent=hint.join(' ');$('acts').innerHTML=acts.join('');
   if(S&&S.tut){const c=coach();if(c&&c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}} // the buttons were just rebuilt: put the coach's pulse back
 }
-$('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
+$('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||busy)return;const a=b.dataset.a;if(rockWait&&a!=='rock'&&a!=='cancel'){rockPopClose();rockDone();return;}const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   if(a==='cancel'){const wasRock=mode==='rock';sel=null;mode=null;pending=null;aimList=[];renderAll();if(wasRock)rockDone();return;}
   if(!sd)return;
   if(a==='aim'){mode='aim';aimList=[];setStatus(sd.bombAmmo?t`Tap a square within ${range()} squares. The bomb goes off there, a cross as far as you can see.`:shotsOf(sd)===2?t`Aim two targets within ${range()} squares, then they fire together.`:t`Tap a target within ${range()} squares: an enemy drone, an asteroid, or a star.`);renderBoard();renderActions();}
@@ -3092,7 +3093,7 @@ let swipeOn=false;try{swipeOn=localStorage.getItem('cc_swipe')==='1';}catch(_){}
 let swStart=null,swDone=0;
 const DIR8_BY_ANGLE=[[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]];
 function swipeDir8(dx,dy){const k=Math.round(Math.atan2(dy,dx)/(Math.PI/4));return DIR8_BY_ANGLE[(k+8)%8];}
-function doSwipe(r,c,dx,dy,dragged){if(busy||!S||S.over||S.turn!==YOU||netSpec())return;const d=droneAt(r,c);
+function doSwipe(r,c,dx,dy,dragged){if(rockWait){rockPopClose();rockDone();return;}if(busy||!S||S.over||S.turn!==YOU||netSpec())return;const d=droneAt(r,c);
   if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw')return;const [dr,dc]=swipeDir8(dx,dy);const want=Math.max(1,Math.round(dragged));let best=null;
     for(const [k,kind] of targets(d)){if(kind==='dark')continue;const [tr,tc]=rc(k);const vr=tr-r,vc=tc-c;const n=Math.max(Math.abs(vr),Math.abs(vc));if(!n||Math.sign(vr)!==dr||Math.sign(vc)!==dc)continue;const score=Math.abs(n-want);if(!best||score<best.score)best={tr,tc,score};}
     if(!best){setStatus(t('Nothing that way.'));return;}sel={id:d.id};mode=null;aimList=[];pending=null;renderBoard();onCell(best.tr,best.tc);return;}
@@ -3288,11 +3289,11 @@ const lobbyUrl=code=>`${NET_BASE}/lobby${code?'/'+code:''}.json`;
 // a player's card on the wire: rating, story sectors held, bot games played and won (the user: so you know who you are playing)
 const myCard=()=>({r:prof.r,g:prof.g,w:prof.w,st:(typeof story!=='undefined'&&story&&story.won)?Object.keys(story.won).length:0});
 const cardText=x=>t`${x.r||BASE_R} · ${x.st||0} of 9 sectors · ${x.g||0} games, ${x.w||0} won`;
-const netSpec=()=>!!(online&&net&&net.role==='spec'); // watching a game: no input, no saving, no rating
+function netSpec(){return !!(online&&net&&net.role==='spec');} /* v1.81: a function, hoisted: boot's renderAll runs before this file */ // watching a game: no input, no saving, no rating
 let netPending=null; // a match we could not reach at boot (flaky line): offered as Rejoin, never forgotten for that
 const LIVE_MAX_AGE=4*3600e3;
-const netGuest=()=>!!(online&&net&&net.role==='guest');
-const netHostOn=()=>!!(online&&net&&net.role==='host');
+function netGuest(){return !!(online&&net&&net.role==='guest');}
+function netHostOn(){return !!(online&&net&&net.role==='host');}
 const mrow=r=>N-1-r,mkey=k=>mrow(Math.floor(k/N))*N+k%N,mside=x=>x===1?2:x===2?1:x;
 const flipText=s=>typeof s==='string'?s.replace(/\b([a-k])(\d{1,2})\b/g,(m,l,n)=>l+(12-+n)):s;
 function flipState(s){ // host frame <-> guest frame; its own inverse
@@ -3548,8 +3549,16 @@ function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}
 const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||null;
 const soundOn=()=>{try{return localStorage.getItem('cc_sound')!=='0';}catch(_){return true;}};
 let storyAudio=null;
-function storyPlay(sec,kind){if(storyAudio){try{storyAudio.pause();}catch(_){}storyAudio=null;}if(!soundOn())return;
-  try{const a=new Audio('story/'+sec.id+'-'+kind+'.mp3');a.addEventListener('error',()=>{});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{});}catch(_){}}
+const storyCache={};
+function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+sec.id+'-'+kind+'.mp3';if(storyCache[u])return;try{const a=new Audio(u);a.preload='auto';a.addEventListener('error',()=>{a._failed=true;});a.load();storyCache[u]=a;}catch(_){}}
+function storyPlay(sec,kind){if(storyAudio){try{storyAudio.pause();}catch(_){}storyAudio=null;}if(!soundOn())return null;
+  try{const u='story/'+sec.id+'-'+kind+'.mp3';let a=storyCache[u];if(a){delete storyCache[u];if(a._failed)a=null;else{try{a.currentTime=0;}catch(_){}}}if(!a)a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
+// v1.81: the voices are real now. The words keep pace with the clip (the typing stretches to its length once the
+// browser knows it), and the next speaker waits for the clip to end. No clip, or sound off: everything runs as before.
+function storyWait(a,then,cap){let done=false,iv=null;const go=()=>{if(done)return;done=true;clearInterval(iv);then();};
+  if(!a||a._failed||a.ended||a.error){go();return;}a.addEventListener('ended',go);iv=setInterval(()=>{if(a._failed||a.ended||a.error||(a.paused&&a.currentTime>0))go();},150);setTimeout(go,cap||16000);}
+function typePace(a,text){if(!a)return;const fit=()=>{const d=a.duration;if(!isFinite(d)||d<=0||!text.length)return;typeRepace(rem=>Math.max(14,Math.min(110,((d-a.currentTime)*1000-250)/Math.max(1,rem))));};
+  if(a.readyState>=1)fit();else a.addEventListener('loadedmetadata',fit,{once:true});}
 // ----- the sector map
 function renderStoryMap(){const el=$('storyList');const next=storyNext();
   el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
@@ -3557,10 +3566,12 @@ function renderStoryMap(){const el=$('storyList');const next=storyNext();
   $('storyDone').hidden=!!next;}
 function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
 // ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
-let typeTimer=null,typeDone=null;
+let typeTimer=null,typeDone=null,typeRun=null;
 function typeOut(el,text,done){if(typeTimer)clearInterval(typeTimer);el.textContent='';let i=0;const step=Math.max(14,Math.min(38,2600/Math.max(1,text.length)));
-  typeDone=()=>{clearInterval(typeTimer);typeTimer=null;el.textContent=text;typeDone=null;if(done)done();};
-  typeTimer=setInterval(()=>{i++;el.textContent=text.slice(0,i);if(i>=text.length){const d=typeDone;typeDone=null;clearInterval(typeTimer);typeTimer=null;if(d&&done)done();}},step);}
+  typeDone=()=>{clearInterval(typeTimer);typeTimer=null;typeRun=null;el.textContent=text;typeDone=null;if(done)done();};
+  const tick=()=>{i++;el.textContent=text.slice(0,i);if(i>=text.length){const d=typeDone;typeDone=null;clearInterval(typeTimer);typeTimer=null;typeRun=null;if(d&&done)done();}};
+  typeRun=f=>{if(!typeTimer)return;clearInterval(typeTimer);typeTimer=setInterval(tick,f(text.length-i));};typeTimer=setInterval(tick,step);}
+function typeRepace(f){if(typeRun)typeRun(f);}
 function skyFor(sec){let stars='';for(let i=0;i<70;i++){stars+=`<circle cx="${(Math.random()*100).toFixed(1)}" cy="${(Math.random()*100).toFixed(1)}" r="${(Math.random()<.85?.25+Math.random()*.4:.7+Math.random()*.5).toFixed(2)}" fill="#fff" opacity="${(.3+Math.random()*.7).toFixed(2)}"/>`;}
   const lines=sec.lines.map(([a,b])=>`<line x1="${sec.pts[a][0]}" y1="${sec.pts[a][1]}" x2="${sec.pts[b][0]}" y2="${sec.pts[b][1]}" stroke="#e8a63b" stroke-opacity=".55" stroke-width=".6"/>`).join('');
   const pts=sec.pts.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===0?2.2:1.6}" fill="#ffd27a"/><circle cx="${x}" cy="${y}" r="${i===0?4:3}" fill="#ffd27a" opacity=".18"/>`).join('');
@@ -3569,12 +3580,13 @@ function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false
   $('briefSky').innerHTML=skyFor(sec);$('briefName').textContent=t(sec.name);$('briefTitle').textContent=t(sec.title)+' · '+t('Skill {0}',sec.skill);
   $('briefBoss').innerHTML=`<div class="dr s2 talk" style="border-color:${KCOL[3]}">${cmdSVG(BOT)}<b class="lt">${LETTER.M}</b></div>`;
   $('briefBrag').textContent='';$('briefWho').textContent=t('Dispatch');$('briefSpeak').classList.add('on');
-  storyPlay(sec,'brief');
-  typeOut($('briefText'),t(sec.brief),()=>{$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>$('briefBoss').classList.remove('speaking'));});}
+  const va=storyPlay(sec,'brief');storyPrefetch(sec,'brag');const live=()=>!b.hidden&&b.dataset.sec===sec.id;
+  typeOut($('briefText'),t(sec.brief),()=>storyWait(va,()=>{if(!live())return;$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);const vb=storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');
+    typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>storyWait(vb,()=>$('briefBoss').classList.remove('speaking'),10000));typePace(vb,t(sec.brag));}));typePace(va,t(sec.brief));}
 function storyLaunch(){const id=$('brief').dataset.sec;const sec=SECTORS.find(s=>s.id===id);if(!sec)return;if(typeDone)typeDone();
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
-  $('inSkill').value=sec.skill;newGame({story:sec.id});SNAME[BOT]=t(sec.name);S.log.length=0;
+  $('inSkill').value=sec.skill;newGame({story:sec.id});SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
   note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);setTimeout(()=>{if(bossSec()&&S.story===sec.id)showBark('start');},1500);}
 
 // ----- the boss talks during the game (v1.52). One line per event per game, at least two turns apart, shown
@@ -3585,8 +3597,8 @@ function showBark(ev){const sec=bossSec();if(!sec||!sec.b||!sec.b[ev])return;S.b
   if(ev!=='start'&&ev!=='low'&&ev!=='yourlow'&&S.barkT!=null&&S.turnNo-S.barkT<BARK_GAP)return;S.barked[ev]=1;S.barkT=S.turnNo;
   const line=t(sec.b[ev]);note(t`${t(sec.title)}: ${line}`);
   const el=$('bark');$('barkWho').textContent=t(sec.title);$('barkText').textContent='“'+line+'”';el.querySelector('.dr').innerHTML=cmdSVG(BOT)+'<b class="lt">'+LETTER.M+'</b>';
-  el.hidden=false;el.classList.remove('show','out');void el.offsetWidth;el.classList.add('show');clearTimeout(barkTimer);clearTimeout(barkHide);barkTimer=setTimeout(()=>{el.classList.add('out');barkHide=setTimeout(()=>{el.hidden=true;el.classList.remove('show','out');},400);},7000);
-  storyPlay(sec,ev);}
+  el.hidden=false;el.classList.remove('show','out');void el.offsetWidth;el.classList.add('show');clearTimeout(barkTimer);clearTimeout(barkHide);const hold=ms=>{clearTimeout(barkTimer);barkTimer=setTimeout(()=>{el.classList.add('out');barkHide=setTimeout(()=>{el.hidden=true;el.classList.remove('show','out');},400);},ms);};hold(7000);
+  const a=storyPlay(sec,ev);if(a){const fit=()=>{const d=a.duration;if(isFinite(d)&&d*1000+900>7000)hold(Math.min(13000,d*1000+900));};if(a.readyState>=1)fit();else a.addEventListener('loadedmetadata',fit,{once:true});}}
 function storyBark(w){if(!bossSec()||!w||!w.why)return;const why=w.why,actor=S.turn;
   if(why==='take'||why==='sweep'||why==='fire_kill'||why==='surround')showBark(actor===BOT?'took':'lost');
   else if(why==='claim'&&actor===YOU)showBark('claim');
@@ -3732,7 +3744,7 @@ for(const ev of ['pointerdown','keydown','touchend'])document.addEventListener(e
 // ---------- the start screen (v1.63): a parallax starfield on a canvas that follows the pointer or the phone's tilt,
 // a drifting nebula, a planet horizon, a constellation that draws itself, the fleet flying in with engines lit, and the
 // title. Functions and var only: showCover() runs at boot, before this part of the script has executed.
-var cvAnim=null,cvStars=null,cvShoot=[],cvPointer={x:0,y:0},cvT0=0,cvComet=null,cvNextComet=0;
+var cvAnim=cvAnim||null,cvStars=cvStars||null,cvShoot=cvShoot||[],cvPointer=cvPointer||{x:0,y:0},cvT0=cvT0||0,cvComet=cvComet||null,cvNextComet=cvNextComet||0; /* v1.81: keep what showCover already made; a plain =null here wiped the stars under a running frame loop */
 function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getContext('2d');
   const resize=()=>{const dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.max(1,cv.clientWidth*dpr);c.height=Math.max(1,cv.clientHeight*dpr);c.dataset.dpr=dpr;};resize();
   if(!cvStars){cvStars=[];for(let i=0;i<240;i++)cvStars.push({x:Math.random(),y:Math.random(),z:Math.random(),tw:Math.random()*6.28,sp:.4+Math.random()*1.4,col:Math.random()<.12?'#9cc6ff':Math.random()<.1?'#ffd27a':'#ffffff'});}
