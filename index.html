@@ -2176,7 +2176,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.83.0';
+const VERSION='1.83.1';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3628,14 +3628,18 @@ function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}
 const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||null;
 const soundOn=()=>{try{return localStorage.getItem('cc_sound')!=='0';}catch(_){return true;}};
 let storyAudio=null;
-const storyCache={};
-function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+sec.id+'-'+kind+'.mp3';if(storyCache[u])return;try{const a=new Audio(u);a.preload='auto';a.addEventListener('error',()=>{a._failed=true;});a.load();storyCache[u]=a;}catch(_){}}
-function storyPlay(sec,kind){if(storyAudio){try{storyAudio.pause();}catch(_){}storyAudio=null;}if(!soundOn())return null;
-  try{const u='story/'+sec.id+'-'+kind+'.mp3';let a=storyCache[u];if(a){delete storyCache[u];if(a._failed)a=null;else{try{a.currentTime=0;}catch(_){}}}if(!a)a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
+// v1.83.1: a phone browser allows about 75 media players per page, and every clip used to be a new one that lingered
+// until garbage collection; after a full run the voices went silent while the music (WebAudio) played on. Now a clip's
+// player is released the moment it ends or is replaced (src removed, load()), and prefetch only warms the HTTP cache.
+const storyWarm={};
+function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+sec.id+'-'+kind+'.mp3';if(storyWarm[u])return;storyWarm[u]=1;try{fetch(u).catch(()=>{});}catch(_){}}
+function storyRelease(a){if(!a||a._done)return;a._done=true;try{a.pause();}catch(_){}try{a.removeAttribute('src');a.load();}catch(_){}}
+function storyPlay(sec,kind){if(storyAudio){storyRelease(storyAudio);storyAudio=null;}if(!soundOn())return null;
+  try{const u='story/'+sec.id+'-'+kind+'.mp3';const a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});a.addEventListener('ended',()=>{setTimeout(()=>{if(storyAudio===a)storyAudio=null;storyRelease(a);},80);});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
 // v1.81: the voices are real now. The words keep pace with the clip (the typing stretches to its length once the
 // browser knows it), and the next speaker waits for the clip to end. No clip, or sound off: everything runs as before.
 function storyWait(a,then,cap){let done=false,iv=null;const go=()=>{if(done)return;done=true;clearInterval(iv);then();};
-  if(!a||a._failed||a.ended||a.error){go();return;}a.addEventListener('ended',go);iv=setInterval(()=>{if(a._failed||a.ended||a.error||(a.paused&&a.currentTime>0))go();},150);setTimeout(go,cap||16000);}
+  if(!a||a._failed||a._done||a.ended||a.error){go();return;}a.addEventListener('ended',go);iv=setInterval(()=>{if(a._failed||a._done||a.ended||a.error||(a.paused&&a.currentTime>0))go();},150);setTimeout(go,cap||16000);}
 function typePace(a,text){if(!a)return;const fit=()=>{const d=a.duration;if(!isFinite(d)||d<=0||!text.length)return;typeRepace(rem=>Math.max(14,Math.min(110,((d-a.currentTime)*1000-250)/Math.max(1,rem))));};
   if(a.readyState>=1)fit();else a.addEventListener('loadedmetadata',fit,{once:true});}
 // ----- the sector map
