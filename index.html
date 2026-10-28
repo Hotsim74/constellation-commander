@@ -355,6 +355,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .tx.them .words{color:#cfe6f5}
 .overbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 .brief .overbtns{padding:0 18px}
+.storyHead{font-family:var(--display);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--bot);margin:14px 0 6px;padding-top:10px;border-top:1px solid var(--line,rgba(255,255,255,.12))}
 /* v1.84: the gate. Until four sectors are held a new player sees no free play: no Launch, no Play a friend; Again and New game lead to the story. */
 body.gated #coverGo,body.gated #btnNet,body.gated #netbox,body.gated #btnAgain{display:none!important}
 .brief .tx.ship{border-left-color:#7fd1a8;margin-bottom:12px}.brief .shipRow{display:flex;gap:12px;align-items:flex-start;margin-top:6px}.brief .shipArt{width:64px;height:64px;position:relative;flex:none}.brief .shipArt .dr{position:absolute;inset:0}.brief .tx.ship .words{color:#dff5e8;font-size:13px}
@@ -961,7 +962,6 @@ const FR={
 "An asteroid. A missile clears it.": "Un astéroïde. Un missile le dégage.",
 "Now tap a star next to it to swap.": "Touchez maintenant une étoile voisine pour échanger.",
 "slides the diagonals": "glisse en diagonale",
-"rides any color, 2 free steps": "suit toutes les couleurs, 2 pas gratuits",
 "no free rides": "pas de pas gratuits",
 "rides {0}": "suit les étoiles de couleur {0}",
 " and ": " et ",
@@ -1002,14 +1002,12 @@ const FR={
 "4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.": "4 en ligne fait un éclaireur. Les éclaireurs revendiquent du terrain : touchez-en un, puis Revendiquer, et le 3 × 3 autour est à vous. Deux revendications chacun.",
 "A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.": "Un bloc 2 × 2 fait un bouclier. Un bouclier garde : à côté de votre drone de commandement ou d'un siège ennemi il bloque le siège, et sur votre terrain il prend un éclaireur, un chasseur, un drone de saut ou un bouclier ennemi en se plaçant à côté.",
 "A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.": "Un pillard glisse sur toute la diagonale et prend tout drone ennemi sur lequel il s'arrête, sauf un siège.",
-"A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un chasseur se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, et tire deux missiles par tour : visez les deux, ils touchent ensemble. Il ne prend pas en atterrissant ; il se bat au missile.",
 "A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.": "Un drone de saut peut sauter vers n'importe quelle case dégagée de votre côté et y revendiquer le 3 × 3 d'un coup. Un seul usage.",
 "A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.": "Un drone de siège avance d'1 case par tour. Posté à côté du drone de commandement ennemi sans bouclier à côté de l'un ou de l'autre, il gagne la partie.",
 "A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.": "Une bombe explose à la fin de votre troisième tour et efface une croix aussi loin que vous voyez, drones compris, les vôtres aussi.",
 "Scouts move 1 square any way, or ride their own star color for free.": "Les éclaireurs se déplacent d'1 case dans tous les sens, ou suivent gratuitement leur propre couleur d'étoile.",
 "Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.": "Les boucliers se déplacent d'1 case, seulement sur votre terrain ou des cases dégagées. Ils prennent les éclaireurs, chasseurs, drones de saut et boucliers ennemis à côté desquels ils s'arrêtent sur votre terrain.",
 "Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.": "Les pillards glissent sur toute la diagonale jusqu'à ce que quelque chose les arrête, et prennent ce sur quoi ils atterrissent sauf un siège.",
-"Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.": "Les chasseurs se déplacent d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur, en tournant s'ils veulent. Ils tirent deux missiles par tour et ne prennent jamais en atterrissant.",
 "Warp drones walk 1 square, or warp: tap one and choose Warp.": "Les drones de saut marchent d'1 case, ou sautent : touchez-en un et choisissez Sauter.",
 "Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.": "Les sièges avancent d'exactement 1 case par tour. À côté du drone de commandement ennemi sans bouclier à côté, la partie est gagnée.",
 "Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.": "Les bombes se déplacent d'1 case ou suivent leur couleur. Gardez vos propres drones hors de la croix avant qu'elle explose.",
@@ -1090,7 +1088,6 @@ const FR={
 "Draco holds. Your drones were armor for its drones, it seems. Try again.": "Dragon tient. Vos drones ont servi de blindage aux siens, on dirait. Réessayez.",
 "Lyra": "Lyre",
 "The Harp": "La Harpe",
-"Sector Lyra. The Harp's hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.": "Secteur Lyre. Les chasseurs de la Harpe tirent deux missiles à la fois, ses sièges marchent sur votre drone de commandement, et elle saute pour du terrain. Joli nom. Sale secteur.",
 "Two missiles, one breath. My hunters play in chords.": "Deux missiles, un souffle. Mes chasseurs jouent des accords.",
 "Lyra is ours. The Harp is out of tune. Keep moving.": "Lyre est à nous. La Harpe est désaccordée. On continue.",
 "Lyra holds. Two missiles, one Command drone, no music. Again.": "Lyre tient. Deux missiles, un drone de commandement, pas de musique. Encore.",
@@ -1178,7 +1175,6 @@ const FR={
 "swept": "balayé",
 "Tap one of the marked squares: {0}.": "Touchez une des cases marquées : {0}.",
 "a raider slides along a diagonal, as far as you like": "un pillard glisse le long d'une diagonale, aussi loin que vous voulez",
-"a hunter steps one square, plus free steps on any color": "un chasseur avance d'une case, plus des pas gratuits sur n'importe quelle couleur",
 "a warp drone walks one square, or warps with the button": "un drone de saut marche d'une case, ou saute avec le bouton",
 "a siege moves exactly one square": "un siège avance d'exactement une case",
 "a bomb walks one square or rides its color": "une bombe marche d'une case ou suit sa couleur",
@@ -1261,7 +1257,6 @@ const FR={
 "The game was abandoned.": "La partie a été abandonnée.",
 "Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se déplace d'1 case dans tous les sens, et suit gratuitement sa propre couleur d'étoile. Tire un missile par tour, en se chargeant au drone de commandement quand il est à côté. Revendiquer prend le 3 × 3 autour de lui et y dissipe le brouillard pour de bon. Deux revendications, puis il est consommé.",
 "Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.": "Glisse sur toute la diagonale jusqu'à toucher quelque chose, dans le noir aussi, et prend ce sur quoi il s'arrête sauf un drone de siège ou une tourelle. Une glissade dans le brouillard est un engagement.",
-"Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se déplace d'1 case plus jusqu'à 2 pas gratuits sur n'importe quelle couleur d'étoile. Tire deux missiles par tour : visez les deux, ils touchent ensemble. En charge deux au drone de commandement quand il est à côté. Il ne peut pas prendre de drones en atterrissant ; il se bat au missile. Empilez une bombe dessus et il lâche ses missiles pour un missile-bombe : tirez-le à 3 cases et le souffle part là où il tombe.",
 "Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case dégagée de votre côté qui n'est pas à côté d'un bouclier ennemi : les cases libres autour deviennent à vous et les drones ennemis sur vos cases sont retirés. Consommé par le saut.",
 "Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se déplace d'1 case ou suit sa couleur. Explose à la fin de votre troisième tour : le souffle part en haut, en bas, à gauche et à droite aussi loin que vous avez dissipé le brouillard et emporte chaque astéroïde, étoile et drone sur son chemin, les vôtres aussi.",
 "Moves 1 square and rides the star colors of the drones stacked into it, up to two. Nothing takes it by landing or by missile; a missile or bomb only strips its stack. A siege drone standing beside it with no guard near, or an asteroid landing on it, ends the game.": "Se déplace d'1 case et suit les couleurs d'étoile des drones empilés dedans, jusqu'à deux. Rien ne le prend en atterrissant ni par missile ; un missile ou une bombe ne fait que dépouiller sa pile. Un drone de siège posté à côté sans bouclier à proximité, ou un astéroïde qui retombe dessus, termine la partie.",
@@ -1462,7 +1457,6 @@ const FR={
 "A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Une forme de sept étoiles ou plus qui ne paie rien, parce qu'elle a été faite de l'autre côté, sur le terrain de l'autre camp ou au plafond de drones, paie à la place un astéroïde à lancer. Lancez-le avant votre coup ; cela ne coûte pas le tour.",
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un astéroïde lancé tombe sur une des neuf cases au hasard. Un drone seul y est détruit, une pile perd une puissance, le drone de commandement et un drone protégé l'encaissent. Si la case est libre ensuite, l'astéroïde reste.",
 "{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:avez fait|a fait} {1}, mais {v:vous avez|il a} déjà {2} drones.",
-"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se déplace d'1 case, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège. À puissance 3 il balaie aussi les pillards, et peut se jeter sur n'importe quel drone ennemi à côté de lui : les deux sont détruits.",
 "A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un pillard n'est pas pris par le balayage d'un bouclier de puissance 1 ou 2, mais un pillard empilé perd une puissance chaque fois qu'un tel bouclier vient se placer à côté de lui sur votre terrain. Un bouclier de puissance 3 prend un pillard d'un coup.",
 "Asteroid ready": "Astéroïde prêt",
 "Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.": "Utilisez le lance-masse de votre drone de commandement et lancez un astéroïde. Sauvez cette mission de la catastrophe.",
@@ -1484,7 +1478,55 @@ const FR={
 "Drag": "Glisser-déposer",
 "pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "les pièces collent au doigt : glissez une étoile sur sa voisine pour échanger, un drone sur sa case, lâchez pour déposer",
 "Drop a star on the one next to it to swap them.": "Déposez une étoile sur sa voisine pour les échanger.",
-"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "La partie libre est ouverte : Lancer sur l'écran d'accueil, ou Nouvelle partie. L'histoire continue aussi d'ici."
+"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "La partie libre est ouverte : Lancer sur l'écran d'accueil, ou Nouvelle partie. L'histoire continue aussi d'ici.",
+"Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se déplace jusqu'à 3 cases dans n'importe quelle direction, en contournant ce qui gêne. Tire deux missiles par tour : visez les deux, ils touchent ensemble. En charge deux au drone de commandement quand il est à côté. Il ne peut pas prendre de drones en atterrissant ; il se bat au missile. Empilez une bombe dessus et il lâche ses missiles pour un missile-bombe : tirez-le à 3 cases et le souffle part là où il tombe.",
+"Moves 1 square, or rides its own star color for free, only over squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se déplace d'1 case, ou suit gratuitement sa propre couleur d'étoile, seulement sur des cases à vous ou dégagées. Ne voit rien dans le brouillard. Prend un éclaireur, un chasseur, un drone de saut ou un bouclier en se plaçant à côté sur votre terrain. À côté d'un drone de siège ennemi, ou à côté de votre drone de commandement, il bloque le siège. À puissance 3 il balaie aussi les pillards, et peut se jeter sur n'importe quel drone ennemi à côté de lui : les deux sont détruits.",
+"A hunter moves up to 3 squares in any direction, bending as it goes, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un chasseur se déplace jusqu'à 3 cases dans n'importe quelle direction, en tournant s'il veut, et tire deux missiles par tour : visez les deux, ils touchent ensemble. Il ne prend pas en atterrissant ; il se bat au missile.",
+"Hunters move up to 3 squares in any direction, bending as they go. They fire two missiles a turn and never take by landing.": "Les chasseurs se déplacent jusqu'à 3 cases dans n'importe quelle direction, en tournant s'ils veulent. Ils tirent deux missiles par tour et ne prennent jamais en atterrissant.",
+"a hunter moves up to 3 squares, any direction": "un chasseur se déplace jusqu'à 3 cases, dans n'importe quelle direction",
+"moves up to 3 squares": "se déplace jusqu'à 3 cases",
+"All eighteen sectors are held. Replay any of them.": "Les dix-huit secteurs sont tenus. Rejouez celui que vous voulez.",
+"Story 2 · they think ahead": "Histoire 2 · ils anticipent",
+"thinks ahead": "anticipe",
+"Second run": "Deuxième passage",
+"The same fleet on both sides, from the first turn. This boss plays its best move every turn and looks one move ahead before it chooses. Nothing is held back.": "La même flotte des deux côtés, dès le premier tour. Ce chef joue son meilleur coup à chaque tour et regarde un coup plus loin avant de choisir. Rien n'est retenu.",
+"Sector Lyra. The Harp's hunters fire two missiles at once and bend around anything in their way. Pretty name. Mean sector.": "Secteur de la Lyre. Les chasseurs de la Harpe tirent deux missiles à la fois et contournent tout ce qui gêne. Joli nom. Secteur méchant.",
+"Vacation's over, Commander. The nine bosses rebuilt, and this time they read the board before they move. Orion first. The Hunter now waits for your scout to step wrong, then takes it. Don't step wrong.": "Fini les vacances, Commandant. Les neuf chefs ont reconstruit, et cette fois ils lisent le plateau avant de bouger. Orion d'abord. Le Chasseur attend maintenant que votre éclaireur fasse un faux pas, puis le prend. Pas de faux pas.",
+"Last time I shot. This time I wait, then I shoot.": "La dernière fois je tirais. Cette fois j'attends, puis je tire.",
+"Orion is held, again. It thought ahead and you thought further. One down.": "Orion est tenu, encore. Il a anticipé et vous avez vu plus loin. Un de fait.",
+"Orion holds. It saw your move before you made it. Make a different one.": "Orion tient. Il a vu votre coup avant que vous le jouiez. Jouez-en un autre.",
+"Cassiopeia. The Queen's guards don't just sweep now; they ride their colors and arrive where you didn't expect them. Count the squares she can reach, not the ones she's on.": "Cassiopée. Les boucliers de la Reine ne balaient plus seulement ; ils suivent leurs couleurs et arrivent là où vous ne les attendiez pas. Comptez les cases qu'elle peut atteindre, pas celles qu'elle occupe.",
+"My guards ride the stars now. Your land is closer than you think.": "Mes boucliers suivent les étoiles maintenant. Votre terrain est plus proche que vous ne le pensez.",
+"Cassiopeia is ours. The Queen's reach was long and yours was longer.": "Cassiopée est à nous. La portée de la Reine était longue, la vôtre plus encore.",
+"Cassiopeia holds. A guard arrived from three squares away. Measure before you step.": "Cassiopée tient. Un bouclier est arrivé de trois cases plus loin. Mesurez avant d'avancer.",
+"Draco. The Dragon still stacks three deep, and now it knows which stack you'll shoot first. Shoot the other one.": "Dragon. Le Dragon empile toujours sur trois, et maintenant il sait quelle pile vous tirerez en premier. Tirez sur l'autre.",
+"I know which one you want. Take the other.": "Je sais laquelle vous voulez. Prenez l'autre.",
+"Draco is ours. It guessed your target and you changed it. Keep that up.": "Le Dragon est à nous. Il a deviné votre cible et vous en avez changé. Continuez.",
+"Draco holds. It read your missiles like a letter. Write a shorter one.": "Le Dragon tient. Il a lu vos missiles comme une lettre. Écrivez-en une plus courte.",
+"Lyra. The Harp's hunters play two moves ahead now: the first missile to open the lane, the second to close it. Stay out of lanes.": "Lyre. Les chasseurs de la Harpe jouent deux coups d'avance maintenant : le premier missile ouvre le couloir, le second le ferme. Restez hors des couloirs.",
+"Two missiles, two moves ahead. Listen.": "Deux missiles, deux coups d'avance. Écoutez.",
+"Lyra is ours. You cut the chord. Nicely done.": "La Lyre est à nous. Vous avez coupé l'accord. Bien joué.",
+"Lyra holds. The second missile was waiting for you. Hear it next time.": "La Lyre tient. Le second missile vous attendait. Entendez-le la prochaine fois.",
+"Scorpius. The Scorpion already never stood where you could take it. Now it knows where you'll stand next. Stand somewhere it didn't plan for.": "Scorpion. Le Scorpion ne se tenait déjà jamais là où vous pouviez le prendre. Maintenant il sait où vous vous tiendrez ensuite. Tenez-vous là où il n'a rien prévu.",
+"I know your next square. Do you?": "Je connais votre prochaine case. Et vous ?",
+"Scorpius is ours. You stood where it never thought to look.": "Le Scorpion est à nous. Vous vous êtes tenu là où il n'a jamais pensé regarder.",
+"Scorpius holds. It planned your square before you picked it. Pick stranger.": "Le Scorpion tient. Il avait prévu votre case avant que vous la choisissiez. Choisissez plus étrange.",
+"Hydra. The Serpent sets up cascades two swaps deep and lines its sieges up behind them. When its side of the board looks quiet, it isn't.": "Hydre. Le Serpent prépare des cascades à deux échanges de profondeur et aligne ses drones de siège derrière. Quand son côté du plateau a l'air calme, il ne l'est pas.",
+"One swap for you to see. Two you won't.": "Un échange que vous verrez. Deux que vous ne verrez pas.",
+"Hydra is ours. The cascade broke on you and not the other way. Rare.": "L'Hydre est à nous. La cascade s'est brisée sur vous et non l'inverse. Rare.",
+"Hydra holds. The second swap was the one that mattered. Look deeper.": "L'Hydre tient. Le second échange était celui qui comptait. Regardez plus profond.",
+"Cygnus. The Swan walks its bombs to where your drones will be, not where they are. Move like you mean to be somewhere else.": "Cygne. Le Cygne mène ses bombes là où vos drones seront, pas là où ils sont. Bougez comme si vous vouliez être ailleurs.",
+"My bombs are already where you're going.": "Mes bombes sont déjà là où vous allez.",
+"Cygnus is ours. You weren't where it put the bomb. Two left.": "Le Cygne est à nous. Vous n'étiez pas là où il a posé la bombe. Plus que deux.",
+"Cygnus holds. The blast was waiting at your next square. Change your habits.": "Le Cygne tient. L'explosion vous attendait à votre prochaine case. Changez vos habitudes.",
+"Andromeda. The Chained still keeps a guard beside its Command drone, and now a turret beside the guard. The moment it's alone will be short. Be ready before it comes.": "Andromède. L'Enchaîné garde toujours un bouclier près de son drone de commandement, et maintenant une tourelle près du bouclier. Le moment où il sera seul sera court. Soyez prêt avant qu'il arrive.",
+"A guard, a turret, and a plan. Which will you try first?": "Un bouclier, une tourelle et un plan. Lequel essaierez-vous d'abord ?",
+"Andromeda is ours. The chain broke a second time. One left.": "Andromède est à nous. La chaîne a cassé une seconde fois. Plus qu'un.",
+"Andromeda holds. You were a move late to the open moment. Be early.": "Andromède tient. Vous aviez un coup de retard sur le moment ouvert. Soyez en avance.",
+"Ursa Major. The Bear does not guess, and now it looks past your next move to the one after. Nobody back here has beaten it twice. Be the first.": "Grande Ourse. L'Ours ne devine pas, et maintenant il regarde au-delà de votre prochain coup, jusqu'au suivant. Personne ici ne l'a battu deux fois. Soyez le premier.",
+"I see your next move and the one behind it.": "Je vois votre prochain coup et celui derrière.",
+"Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Grande Ourse est à nous, deux fois. Dix-huit secteurs. Plus rien ici ne peut vous toucher. Rentrez, Commandant. Pour de bon cette fois.",
+"Ursa Major holds. It saw two moves. You saw one. See two.": "La Grande Ourse tient. Il a vu deux coups. Vous en avez vu un. Voyez-en deux."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -1666,7 +1708,6 @@ const ES={
 "That star is on the bot's land. You can only swap stars on open land or your own.": "Esa estrella está en terreno del bot. Solo puedes intercambiar estrellas en terreno libre o tuyo.",
 "Now tap a star next to it to swap.": "Ahora toca una estrella contigua para intercambiar.",
 "slides the diagonals": "se desliza por las diagonales",
-"rides any color, 2 free steps": "viaja por cualquier color, 2 pasos libres",
 "no free rides": "sin viajes libres",
 "rides {0}": "viaja por {0}",
 " and ": " y ",
@@ -1820,7 +1861,6 @@ const ES={
 "Sector lost": "Sector perdido",
 "Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.": "Se mueve 1 casilla en cualquier dirección y viaja gratis por el color de su propia estrella. Dispara un misil por turno, cargándolo del dron de mando cuando está a su lado. Reclamar toma el 3 × 3 a su alrededor y despeja la niebla ahí para siempre. Dos reclamos, y luego se gasta.",
 "Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.": "Se desliza por toda la diagonal hasta chocar con algo, también en la oscuridad, y toma lo que haya donde aterriza, salvo un asedio o una torreta. Deslizarse en la niebla es un compromiso.",
-"Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella. Dispara dos misiles por turno: apunta a los dos y aciertan juntos. Carga dos del dron de mando cuando está a su lado. No puede tomar drones aterrizando; lucha con misiles. Apila una bomba sobre él y suelta sus misiles por un misil bomba: dispáralo 3 casillas y la explosión estalla donde cae.",
 "Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.": "Se mueve 1 casilla. O salta a cualquier casilla despejada de tu lado que no esté junto a un guardián enemigo: las casillas sin reclamar a su alrededor pasan a ser tuyas y los drones enemigos en tus casillas se eliminan. El salto lo gasta.",
 "Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone. Stack a bomb onto it and the bomb becomes a shield: tap the siege, Shield a drone, then one of your drones beside it. For six turns that drone cannot be taken, swept, shot or blasted; only four enemy drones around it end it. Not the Command drone. Missiles cannot destroy it: a stacked siege loses a power, a lone one holds.": "Se mueve exactamente 1 casilla, en la oscuridad si quiere. Junto al dron de mando enemigo sin un guardián al lado de ninguno de los dos, gana la partida. No toma nada salvo una torreta enemiga, al ponerse encima, y los drones no pueden tomarlo. Cuatro enemigos a su alrededor lo destruyen. Un guardián en medio: embístelo y los dos desaparecen. Apila una bomba sobre él y la bomba se convierte en escudo: toca el asedio, Proteger un dron, y luego uno de tus drones a su lado. Durante seis turnos ese dron no puede ser tomado, barrido, alcanzado ni volado; solo cuatro drones enemigos a su alrededor acaban con él. No el dron de mando. Los misiles no pueden destruirlo: un asedio apilado pierde una potencia, uno solo aguanta.",
 "Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.": "Se mueve 1 casilla o viaja por su color. Estalla al final de tu tercer turno: la explosión corre arriba, abajo, izquierda y derecha hasta donde hayas despejado la niebla y se lleva cada asteroide, estrella y dron en su camino, los tuyos también.",
@@ -1830,14 +1870,12 @@ const ES={
 "4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.": "4 en línea hacen un explorador. Los exploradores reclaman terreno: toca uno, luego Reclamar, y el 3 × 3 a su alrededor es tuyo. Dos reclamos cada uno.",
 "A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.": "Un bloque de 2 × 2 hace un guardián. Un guardián guarda: junto a tu dron de mando o junto a un asedio enemigo bloquea el asedio, y en tu terreno toma un explorador, cazador, dron de salto o guardián enemigo al ponerse a su lado.",
 "A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.": "Un asaltante se desliza por toda la diagonal y toma cualquier dron enemigo sobre el que se detenga, salvo un asedio.",
-"A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un cazador se mueve 1 casilla más hasta 2 pasos libres por cualquier color de estrella, y dispara dos misiles por turno: apunta a los dos y caen juntos. No puede tomar aterrizando; lucha con misiles.",
 "A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.": "Un dron de salto puede saltar a cualquier casilla despejada de tu lado y reclamar el 3 × 3 de ahí directamente. Un solo uso.",
 "A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.": "Un dron de asedio avanza 1 casilla por turno. Junto al dron de mando enemigo sin un guardián al lado de ninguno de los dos, gana la partida.",
 "A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.": "Una bomba estalla al final de tu tercer turno y despeja una cruz hasta donde alcances a ver, drones incluidos, los tuyos también.",
 "Scouts move 1 square any way, or ride their own star color for free.": "Los exploradores se mueven 1 casilla en cualquier dirección, o viajan gratis por el color de su propia estrella.",
 "Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.": "Los guardianes se mueven 1 casilla, solo a tu terreno o a casillas despejadas. Toman exploradores, cazadores, drones de salto y guardianes enemigos junto a los que se detienen en tu terreno.",
 "Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.": "Los asaltantes se deslizan por toda la diagonal hasta que algo los detiene, y toman lo que haya donde aterrizan, salvo un asedio.",
-"Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.": "Los cazadores se mueven 1 casilla más hasta 2 pasos libres por cualquier color, girando por el camino. Disparan dos misiles por turno y nunca toman aterrizando.",
 "Warp drones walk 1 square, or warp: tap one and choose Warp.": "Los drones de salto caminan 1 casilla, o saltan: toca uno y elige Saltar.",
 "Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.": "Los asedios avanzan exactamente 1 casilla por turno. Junto al dron de mando enemigo sin guardián al lado, la partida está ganada.",
 "Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.": "Las bombas se mueven 1 casilla o viajan por su color. Saca tus propios drones de la cruz antes de que estalle.",
@@ -1937,7 +1975,6 @@ const ES={
 "Twenty turns and my stacks are taller than when we started.": "Veinte turnos y mis pilas son más altas que al empezar.",
 "Lyra": "Lira",
 "The Harp": "El Arpa",
-"Sector Lyra. The Harp's hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.": "Sector Lira. Los cazadores del Arpa disparan dos misiles a la vez, sus asedios van a por tu dron de mando, y salta para ganar terreno. Nombre bonito. Sector cruel.",
 "Two missiles, one breath. My hunters play in chords.": "Dos misiles, un aliento. Mis cazadores tocan acordes.",
 "Lyra is ours. The Harp is out of tune. Keep moving.": "Lira es nuestra. El Arpa está desafinada. Sigue adelante.",
 "Lyra holds. Two missiles, one Command drone, no music. Again.": "Lira resiste. Dos misiles, un dron de mando, sin música. Otra vez.",
@@ -2153,7 +2190,6 @@ const ES={
 "A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side's land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.": "Una forma de siete o más estrellas que no paga nada, porque se hizo en el otro lado, en terreno del otro lado o con el tope de drones, paga en su lugar un asteroide para lanzar. Lánzalo antes de tu jugada; no gasta el turno.",
 "A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.": "Un asteroide lanzado cae en una de las nueve casillas al azar. Un dron solo ahí queda destruido, una pila pierde una potencia, el dron de mando y un dron protegido ni se inmutan. Si la casilla queda libre, el asteroide se queda.",
 "{0} made {1} but already {v:have|has} {2} drones.": "{0} {v:hiciste|hizo} {1} pero ya {v:tienes|tiene} {2} drones.",
-"Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, solo a casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 también barre asaltantes, y puede lanzarse contra cualquier dron enemigo a su lado: los dos quedan destruidos.",
 "A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.": "Un asaltante no es tomado por el barrido de un guardián de potencia 1 o 2, pero un asaltante apilado pierde una potencia cada vez que ese guardián se pone a su lado en tu terreno. Un guardián a potencia 3 toma al asaltante directamente.",
 "Asteroid ready": "Asteroide listo",
 "Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.": "Usa el cañón de masa de tu dron de mando y lanza un asteroide. Salva esta misión de la catástrofe.",
@@ -2175,12 +2211,60 @@ const ES={
 "Drag": "Arrastrar",
 "pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "las piezas se pegan al dedo: arrastra una estrella sobre su vecina para intercambiar, un dron a su casilla, suelta para dejarlo",
 "Drop a star on the one next to it to swap them.": "Suelta una estrella sobre la de al lado para intercambiarlas.",
-"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "El juego libre ya está abierto: Lanzar en la pantalla de inicio, o Partida nueva. La historia también sigue desde aquí."
+"Free play is open now: Launch on the start screen, or New game. The story goes on from here too.": "El juego libre ya está abierto: Lanzar en la pantalla de inicio, o Partida nueva. La historia también sigue desde aquí.",
+"Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se mueve hasta 3 casillas en cualquier dirección, rodeando lo que estorbe. Dispara dos misiles por turno: apunta a los dos y aciertan juntos. Carga dos del dron de mando cuando está a su lado. No puede tomar drones aterrizando; lucha con misiles. Apila una bomba sobre él y suelta sus misiles por un misil bomba: dispáralo 3 casillas y la explosión estalla donde cae.",
+"Moves 1 square, or rides its own star color for free, only over squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.": "Se mueve 1 casilla, o viaja gratis por su propio color de estrella, solo por casillas tuyas o despejadas. No ve nada en la niebla. Toma un explorador, cazador, dron de salto o guardián al ponerse a su lado en tu terreno. Junto a un dron de asedio enemigo, o junto a tu dron de mando, bloquea el asedio. A potencia 3 también barre asaltantes, y puede lanzarse contra cualquier dron enemigo a su lado: los dos quedan destruidos.",
+"A hunter moves up to 3 squares in any direction, bending as it goes, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.": "Un cazador se mueve hasta 3 casillas en cualquier dirección, girando por el camino, y dispara dos misiles por turno: apunta a los dos y caen juntos. No puede tomar aterrizando; lucha con misiles.",
+"Hunters move up to 3 squares in any direction, bending as they go. They fire two missiles a turn and never take by landing.": "Los cazadores se mueven hasta 3 casillas en cualquier dirección, girando por el camino. Disparan dos misiles por turno y nunca toman aterrizando.",
+"moves up to 3 squares": "se mueve hasta 3 casillas",
+"All eighteen sectors are held. Replay any of them.": "Los dieciocho sectores son tuyos. Vuelve a jugar cualquiera.",
+"Story 2 · they think ahead": "Historia 2 · piensan por adelantado",
+"thinks ahead": "piensa por adelantado",
+"Second run": "Segunda vuelta",
+"a hunter moves up to 3 squares, any direction": "un cazador se mueve hasta 3 casillas, en cualquier dirección",
+"The same fleet on both sides, from the first turn. This boss plays its best move every turn and looks one move ahead before it chooses. Nothing is held back.": "La misma flota en ambos bandos desde el primer turno. Este jefe juega su mejor jugada en cada turno y mira una jugada por delante antes de elegir. No se guarda nada.",
+"Sector Lyra. The Harp's hunters fire two missiles at once and bend around anything in their way. Pretty name. Mean sector.": "Sector Lira. Los cazadores del Arpa disparan dos misiles a la vez y rodean todo lo que estorba. Nombre bonito. Sector cruel.",
+"Vacation's over, Commander. The nine bosses rebuilt, and this time they read the board before they move. Orion first. The Hunter now waits for your scout to step wrong, then takes it. Don't step wrong.": "Se acabaron las vacaciones, Comandante. Los nueve jefes se reconstruyeron, y esta vez leen el tablero antes de mover. Orión primero. El Cazador ahora espera a que tu explorador dé un paso en falso, y lo toma. No des pasos en falso.",
+"Last time I shot. This time I wait, then I shoot.": "La última vez disparé. Esta vez espero, y luego disparo.",
+"Orion is held, again. It thought ahead and you thought further. One down.": "Orión es nuestro, otra vez. Pensó por adelantado y tú pensaste más lejos. Uno menos.",
+"Orion holds. It saw your move before you made it. Make a different one.": "Orión resiste. Vio tu jugada antes de que la hicieras. Haz otra distinta.",
+"Cassiopeia. The Queen's guards don't just sweep now; they ride their colors and arrive where you didn't expect them. Count the squares she can reach, not the ones she's on.": "Casiopea. Los guardianes de la Reina ya no solo barren; viajan por sus colores y llegan donde no los esperabas. Cuenta las casillas que puede alcanzar, no las que ocupa.",
+"My guards ride the stars now. Your land is closer than you think.": "Mis guardianes viajan por las estrellas ahora. Tu terreno está más cerca de lo que crees.",
+"Cassiopeia is ours. The Queen's reach was long and yours was longer.": "Casiopea es nuestra. El alcance de la Reina era largo y el tuyo más.",
+"Cassiopeia holds. A guard arrived from three squares away. Measure before you step.": "Casiopea resiste. Un guardián llegó desde tres casillas. Mide antes de pisar.",
+"Draco. The Dragon still stacks three deep, and now it knows which stack you'll shoot first. Shoot the other one.": "Draco. El Dragón sigue apilando de tres en tres, y ahora sabe a qué pila dispararás primero. Dispara a la otra.",
+"I know which one you want. Take the other.": "Sé cuál quieres. Toma la otra.",
+"Draco is ours. It guessed your target and you changed it. Keep that up.": "Draco es nuestro. Adivinó tu objetivo y lo cambiaste. Sigue así.",
+"Draco holds. It read your missiles like a letter. Write a shorter one.": "Draco resiste. Leyó tus misiles como una carta. Escribe una más corta.",
+"Lyra. The Harp's hunters play two moves ahead now: the first missile to open the lane, the second to close it. Stay out of lanes.": "Lira. Los cazadores del Arpa ahora juegan dos jugadas por delante: el primer misil abre el pasillo, el segundo lo cierra. No te metas en pasillos.",
+"Two missiles, two moves ahead. Listen.": "Dos misiles, dos jugadas por delante. Escucha.",
+"Lyra is ours. You cut the chord. Nicely done.": "Lira es nuestra. Cortaste el acorde. Bien hecho.",
+"Lyra holds. The second missile was waiting for you. Hear it next time.": "Lira resiste. El segundo misil te estaba esperando. Óyelo la próxima vez.",
+"Scorpius. The Scorpion already never stood where you could take it. Now it knows where you'll stand next. Stand somewhere it didn't plan for.": "Escorpio. El Escorpión ya nunca se ponía donde pudieras tomarlo. Ahora sabe dónde te pondrás después. Ponte donde no lo tenía planeado.",
+"I know your next square. Do you?": "Sé tu próxima casilla. ¿Y tú?",
+"Scorpius is ours. You stood where it never thought to look.": "Escorpio es nuestro. Te pusiste donde nunca pensó mirar.",
+"Scorpius holds. It planned your square before you picked it. Pick stranger.": "Escorpio resiste. Planeó tu casilla antes de que la eligieras. Elige más raro.",
+"Hydra. The Serpent sets up cascades two swaps deep and lines its sieges up behind them. When its side of the board looks quiet, it isn't.": "Hidra. La Serpiente prepara cascadas de dos intercambios de profundidad y forma sus drones de asedio detrás. Cuando su lado del tablero parece tranquilo, no lo está.",
+"One swap for you to see. Two you won't.": "Un intercambio que verás. Dos que no.",
+"Hydra is ours. The cascade broke on you and not the other way. Rare.": "Hidra es nuestra. La cascada se rompió contra ti y no al revés. Raro.",
+"Hydra holds. The second swap was the one that mattered. Look deeper.": "Hidra resiste. El segundo intercambio era el que importaba. Mira más hondo.",
+"Cygnus. The Swan walks its bombs to where your drones will be, not where they are. Move like you mean to be somewhere else.": "Cisne. El Cisne lleva sus bombas a donde estarán tus drones, no a donde están. Muévete como si quisieras estar en otra parte.",
+"My bombs are already where you're going.": "Mis bombas ya están donde vas.",
+"Cygnus is ours. You weren't where it put the bomb. Two left.": "Cisne es nuestro. No estabas donde puso la bomba. Quedan dos.",
+"Cygnus holds. The blast was waiting at your next square. Change your habits.": "Cisne resiste. La explosión te esperaba en tu próxima casilla. Cambia de costumbres.",
+"Andromeda. The Chained still keeps a guard beside its Command drone, and now a turret beside the guard. The moment it's alone will be short. Be ready before it comes.": "Andrómeda. El Encadenado sigue con un guardián junto a su dron de mando, y ahora una torreta junto al guardián. El momento en que esté solo será corto. Prepárate antes de que llegue.",
+"A guard, a turret, and a plan. Which will you try first?": "Un guardián, una torreta y un plan. ¿Cuál probarás primero?",
+"Andromeda is ours. The chain broke a second time. One left.": "Andrómeda es nuestra. La cadena se rompió por segunda vez. Queda uno.",
+"Andromeda holds. You were a move late to the open moment. Be early.": "Andrómeda resiste. Llegaste una jugada tarde al momento abierto. Llega antes.",
+"Ursa Major. The Bear does not guess, and now it looks past your next move to the one after. Nobody back here has beaten it twice. Be the first.": "Osa Mayor. El Oso no adivina, y ahora mira más allá de tu próxima jugada, hasta la siguiente. Nadie aquí lo ha vencido dos veces. Sé el primero.",
+"I see your next move and the one behind it.": "Veo tu próxima jugada y la que viene detrás.",
+"Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Osa Mayor es nuestra, dos veces. Dieciocho sectores. Ya no queda nada ahí fuera que pueda contigo. Vete a casa, Comandante. Esta vez para siempre.",
+"Ursa Major holds. It saw two moves. You saw one. See two.": "La Osa Mayor resiste. Vio dos jugadas. Tú viste una. Ve dos."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.84.0';
+const VERSION='1.85.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2233,7 +2317,7 @@ function newGame(opts={}){
   for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
   // asteroids: from the ratings, or the boxes
   let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
-  if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill,!!opts.story),+$('inRock1').value||6);}
+  if($('inAuto').checked){[r1,r2]=handicapRocks(prof.r,botRating(skill,!!opts.story&&!storyHard(opts.story)),+$('inRock1').value||6);}
   S.asteroids={1:r1,2:r2};if(!opts.tut)dropRocks(YOU,r1);dropRocks(BOT,r2);
   S.gid=Date.now();S.story=opts.story||null;if(!S.story&&!(online&&net))Object.assign(SNAME,SNAME0);
   if(S.tut){S.skill=0;S.timers=false;S.tutDone=[];layOpening();}
@@ -2459,8 +2543,9 @@ function targets(d){
       T.set(key(r,c),vis(d.side,r,c)?'move':'dark');r+=dr;c+=dc;}}
     return T;}
   if(d.kind==='X'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c))continue;const o=droneAt(r,c);if(o){if(o.side!==d.side&&o.kind==='T'&&!o.shield&&vis(d.side,r,c))T.set(key(r,c),'take');continue;}T.set(key(r,c),vis(d.side,r,c)?'move':'dark');}return T;}
-  if(d.kind==='G'){for(const [dr,dc] of DIR8){const r=d.r+dr,c=d.c+dc;if(!inb(r,c)||solid(r,c)||!cleared(d.side,r,c))continue;const o=droneAt(r,c);if(!o)T.set(key(r,c),'move');else if(o.side===d.side&&o.power+d.power<=MAXP)T.set(key(r,c),'merge');}return T;}
-  const consider=(r,c)=>{if(solid(r,c)||!vis(d.side,r,c))return false;const o=droneAt(r,c);
+  // v1.85: a guard moves like the others now, one paid step or a free ride on its own colors, but only over squares it can stand on (owned or cleared), and it never takes by landing (TAKES.G is empty).
+  const see=d.kind==='G'?(r,c)=>cleared(d.side,r,c):(r,c)=>vis(d.side,r,c);
+  const consider=(r,c)=>{if(solid(r,c)||!see(r,c))return false;const o=droneAt(r,c);
     if(!o){T.set(key(r,c),'move');return true;}
     if(o.side===d.side){if(o.power+d.power<=MAXP)T.set(key(r,c),'merge');return false;}
     if(TAKES[d.kind].includes(o.kind)&&!o.shield)T.set(key(r,c),'take');return false;};
@@ -2732,7 +2817,7 @@ async function botTurn(me){
       if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
         if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
       else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
-  const him=other(me),L=botLevel(),chance=S.story?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!S.story&&L>=10)||rnd(100)<chance; // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
+  const him=other(me),L=botLevel(),soft=!!(S.story&&!S.hard),chance=soft?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!soft&&L>=10)||rnd(100)<chance; /* v1.85: a Story 2 boss is not softened */ // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
   if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
   // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
   if(smart&&L>=2&&dronesOf(me).some(canShoot)){
@@ -2791,7 +2876,7 @@ async function botTurn(me){
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
-  if(smart&&L>=8&&!S.story&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play only: story bosses stay as they are */
+  if(smart&&((L>=8&&!S.story)||S.hard)&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play from level 8; every Story 2 boss; first-run story bosses stay as they are */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
@@ -2876,7 +2961,7 @@ function onCell(r,c){
   if(sel&&sel.star){const a=sel.star;if(Math.abs(a[0]-r)+Math.abs(a[1]-c)===1){humanSwap(a,[r,c]);return;}}
   sel={star:[r,c]};sfx('tap');setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
-function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('rides any color, 2 free steps'):d.kind==='G'||d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
+function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('moves up to 3 squares'):d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
   const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')+(d.charge?t(', holding a shield'):'')+(d.shield?t(', shielded ({0} turns)',Math.min(SHIELD_TURNS,d.shield)):'')+(d.bombAmmo?t(', a bomb missile loaded'):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.fuse!=null)parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
 
 // ---------- render ----------
@@ -2974,7 +3059,7 @@ function renderAll(){if(!S)return;armHint();renderBoard();renderSide();renderAct
 // Every step is two parts: DO this, and WHY. The goal of the game stays pinned under the coach's words
 // the whole game, and a "just now" line names what the player's last tap did. Lessons come once each,
 // in the order they first make sense; between lessons the coach keeps pointing at a good move.
-const MOVEHINT={S:'a raider slides along a diagonal, as far as you like',H:'a hunter steps one square, plus free steps on any color',W:'a warp drone walks one square, or warps with the button',X:'a siege moves exactly one square',B:'a bomb walks one square or rides its color'};
+const MOVEHINT={S:'a raider slides along a diagonal, as far as you like',H:'a hunter moves up to 3 squares, any direction',W:'a warp drone walks one square, or warps with the button',X:'a siege moves exactly one square',B:'a bomb walks one square or rides its color'};
 function tutDone(k){return !!(S&&S.tutDone&&S.tutDone.includes(k));}
 function tutMark(k){if(!S||!S.tut)return;if(!S.tutDone)S.tutDone=[];if(!S.tutDone.includes(k))S.tutDone.push(k);}
 function bestSwap(){return validSwaps(YOU).sort((a,b)=>shapeValue(b.sh,YOU)-shapeValue(a.sh,YOU))[0]||null;}
@@ -3065,14 +3150,14 @@ swap:'Line up 4 or more stars and a drone is born where the line was. 3 in a lin
 born_C:'4 in a line makes a scout. Scouts claim land: tap one, then Claim, and the 3 × 3 around it is yours. Two claims each.',
 born_G:'A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.',
 born_S:'A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.',
-born_H:'A hunter moves 1 square plus up to 2 free steps on any star color, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.',
+born_H:'A hunter moves up to 3 squares in any direction, bending as it goes, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.',
 born_W:'A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.',
 born_X:'A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.',
 born_B:'A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.',
 move_C:'Scouts move 1 square any way, or ride their own star color for free.',
 move_G:'Guards move 1 square, only onto your land or cleared squares. They take enemy scouts, hunters, warps and guards they stop next to on your land.',
 move_S:'Raiders slide the whole diagonal until something stops them, and take what they land on except a siege.',
-move_H:'Hunters move 1 square plus up to 2 free steps on any color, bending as they go. They fire two missiles a turn and never take by landing.',
+move_H:'Hunters move up to 3 squares in any direction, bending as they go. They fire two missiles a turn and never take by landing.',
 move_W:'Warp drones walk 1 square, or warp: tap one and choose Warp.',
 move_X:'Sieges walk exactly 1 square a turn. Next to the enemy Command drone with no guard beside, the game is won.',
 move_B:'Bombs move 1 square or ride their color. Keep your own drones out of the cross before it goes off.',
@@ -3184,9 +3269,9 @@ try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}cat
 
 // ---------- tips ----------
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
-G:'Moves 1 square, only onto squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.',
+G:'Moves 1 square, or rides its own star color for free, only over squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.',
-H:'Moves 1 square plus up to 2 free steps on any star color. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
+H:'Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
 W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
 X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone. Stack a bomb onto it and the bomb becomes a shield: tap the siege, Shield a drone, then one of your drones beside it. For six turns that drone cannot be taken, swept, shot or blasted; only four enemy drones around it end it. Not the Command drone. Missiles cannot destroy it: a stacked siege loses a power, a lone one holds.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
@@ -3205,7 +3290,7 @@ const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.min(8,Math.floor(Math.abs(rA-rB)/ROCK_PTS)); /* at most 8 asteroids of handicap: more wrecks a board */let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
 function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}
-  const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill,!!S.story),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
+  const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill,!!(S.story&&!S.hard)),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
 function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s?'<b style="color:var(--ok)">W</b>':'<b style="color:var(--danger)">L</b>').join(' ');
@@ -3576,7 +3661,7 @@ const SECTORS=[
   b:{start:'Count my stacks. Then count your missiles.',took:'Chewed. Swallowed. Next.',lost:'You scratched a scale. I have more.',claim:'Land. I\'ll stack on it later.',bigclear:'Rocks rolling. I chew rocks.',turret:'A tower on the hoard. Try it.',bomb:'Hot. I like hot.',siege:'My siege, three deep, at your door.',low:'Three drones, but how deep?',yourlow:'Thin. You are so thin.',mid:'Twenty turns and my stacks are taller than when we started.'},
   pts:[[10,80],[25,60],[40,70],[55,50],[70,55],[85,35],[75,15],[90,10]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
  {id:'lyra',skill:50,name:'Lyra',title:'The Harp',
-  brief:'Sector Lyra. The Harp\'s hunters fire two missiles at once, its sieges walk at your Command drone, and it warps for land. Pretty name. Mean sector.',
+  brief:'Sector Lyra. The Harp\'s hunters fire two missiles at once and bend around anything in their way. Pretty name. Mean sector.',
   brag:'Two missiles, one breath. My hunters play in chords.',
   win:'Lyra is ours. The Harp is out of tune. Keep moving.',
   lose:'Lyra holds. Two missiles, one Command drone, no music. Again.',
@@ -3621,8 +3706,9 @@ const SECTORS=[
 const LADDER=['C','G','S','H','W','X','B','T'];
 function storyAllow(id){const i=SECTORS.findIndex(s=>s.id===id);if(i<0)return null;return i>=LADDER.length-1?LADDER.slice():LADDER.slice(0,i+1);}
 function storyIntro(id){const i=SECTORS.findIndex(s=>s.id===id);return i>=0&&i<LADDER.length?LADDER[i]:null;}
-function introLabel(id){const k=storyIntro(id);return k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');}
+function introLabel(id){if(storyHard(id))return t('thinks ahead');const k=storyIntro(id);return k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');}
 function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=kind=>droneHTML({side:YOU,kind,colors:[0],power:1,claims:2});
+  if(sec.hard){$('briefShipWho').textContent=t('Second run');$('briefShipArt').innerHTML=fake('M');$('briefShipText').textContent=t('The same fleet on both sides, from the first turn. This boss plays its best move every turn and looks one move ahead before it chooses. Nothing is held back.');$('briefShip').hidden=false;return;}
   if(k==='C'){who=t('Your fleet');art=fake('C');text=t('Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.')+' '+t(TIPS.C);}
   else if(k){who=t('New this sector: {0}',(LANG==='en'?'the ':'')+TNAME[k]);art=fake(k);text=t(TIPS[k])+' '+(k==='B'?t('Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.'):t('One is waiting in your block of nine.'));}
   else{who=t('The full fleet');art=fake('M');text=t('Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.');}
@@ -3632,20 +3718,37 @@ function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=k
 const FREE_AFTER=4;
 function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&Object.keys(story.won).length<FREE_AFTER;}
 function storyGateApply(){document.body.classList.toggle('gated',storyGate());}
+// ----- v1.85: Story 2. The same nine bosses, the full fleet from the first turn, no softening, and they look a move ahead.
+// Each borrows its first-run boss's name, title, barks, sky and bark voices (bark:); brief, brag, win and lose are its own.
+const SECTORS2=[
+ {id:"orion2",base:"orion",skill:40,brief:"Vacation's over, Commander. The nine bosses rebuilt, and this time they read the board before they move. Orion first. The Hunter now waits for your scout to step wrong, then takes it. Don't step wrong.",brag:"Last time I shot. This time I wait, then I shoot.",win:"Orion is held, again. It thought ahead and you thought further. One down.",lose:"Orion holds. It saw your move before you made it. Make a different one."},
+ {id:"cassiopeia2",base:"cassiopeia",skill:50,brief:"Cassiopeia. The Queen's guards don't just sweep now; they ride their colors and arrive where you didn't expect them. Count the squares she can reach, not the ones she's on.",brag:"My guards ride the stars now. Your land is closer than you think.",win:"Cassiopeia is ours. The Queen's reach was long and yours was longer.",lose:"Cassiopeia holds. A guard arrived from three squares away. Measure before you step."},
+ {id:"draco2",base:"draco",skill:60,brief:"Draco. The Dragon still stacks three deep, and now it knows which stack you'll shoot first. Shoot the other one.",brag:"I know which one you want. Take the other.",win:"Draco is ours. It guessed your target and you changed it. Keep that up.",lose:"Draco holds. It read your missiles like a letter. Write a shorter one."},
+ {id:"lyra2",base:"lyra",skill:70,brief:"Lyra. The Harp's hunters play two moves ahead now: the first missile to open the lane, the second to close it. Stay out of lanes.",brag:"Two missiles, two moves ahead. Listen.",win:"Lyra is ours. You cut the chord. Nicely done.",lose:"Lyra holds. The second missile was waiting for you. Hear it next time."},
+ {id:"scorpius2",base:"scorpius",skill:80,brief:"Scorpius. The Scorpion already never stood where you could take it. Now it knows where you'll stand next. Stand somewhere it didn't plan for.",brag:"I know your next square. Do you?",win:"Scorpius is ours. You stood where it never thought to look.",lose:"Scorpius holds. It planned your square before you picked it. Pick stranger."},
+ {id:"hydra2",base:"hydra",skill:90,brief:"Hydra. The Serpent sets up cascades two swaps deep and lines its sieges up behind them. When its side of the board looks quiet, it isn't.",brag:"One swap for you to see. Two you won't.",win:"Hydra is ours. The cascade broke on you and not the other way. Rare.",lose:"Hydra holds. The second swap was the one that mattered. Look deeper."},
+ {id:"cygnus2",base:"cygnus",skill:100,brief:"Cygnus. The Swan walks its bombs to where your drones will be, not where they are. Move like you mean to be somewhere else.",brag:"My bombs are already where you're going.",win:"Cygnus is ours. You weren't where it put the bomb. Two left.",lose:"Cygnus holds. The blast was waiting at your next square. Change your habits."},
+ {id:"andromeda2",base:"andromeda",skill:100,brief:"Andromeda. The Chained still keeps a guard beside its Command drone, and now a turret beside the guard. The moment it's alone will be short. Be ready before it comes.",brag:"A guard, a turret, and a plan. Which will you try first?",win:"Andromeda is ours. The chain broke a second time. One left.",lose:"Andromeda holds. You were a move late to the open moment. Be early."},
+ {id:"ursa2",base:"ursa",skill:100,brief:"Ursa Major. The Bear does not guess, and now it looks past your next move to the one after. Nobody back here has beaten it twice. Be the first.",brag:"I see your next move and the one behind it.",win:"Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.",lose:"Ursa Major holds. It saw two moves. You saw one. See two."}
+].map(x=>{const b=SECTORS.find(s=>s.id===x.base);return Object.assign({name:b.name,title:b.title,b:b.b,pts:b.pts,lines:b.lines,bark:b.id,hard:1},x);});
+const ALL_SECTORS=[...SECTORS,...SECTORS2];
+const secById=id=>ALL_SECTORS.find(s=>s.id===id)||null;
+const storyHard=id=>{const s=secById(id);return !!(s&&s.hard);};
 const STORY_KEY='cc_story';
 let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
 function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}catch(_){}}
-const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||null;
+const storyNext=()=>SECTORS.find(s=>!story.won[s.id])||(SECTORS.every(s=>story.won[s.id])?SECTORS2.find(s=>!story.won[s.id]):null)||null;
 const soundOn=()=>{try{return localStorage.getItem('cc_sound')!=='0';}catch(_){return true;}};
 let storyAudio=null;
 // v1.83.1: a phone browser allows about 75 media players per page, and every clip used to be a new one that lingered
 // until garbage collection; after a full run the voices went silent while the music (WebAudio) played on. Now a clip's
 // player is released the moment it ends or is replaced (src removed, load()), and prefetch only warms the HTTP cache.
 const storyWarm={};
-function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+sec.id+'-'+kind+'.mp3';if(storyWarm[u])return;storyWarm[u]=1;try{fetch(u).catch(()=>{});}catch(_){}}
+const voiceId=(sec,kind)=>(kind==='brief'||kind==='brag'||kind==='win'||kind==='lose')?sec.id:(sec.bark||sec.id);
+function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+voiceId(sec,kind)+'-'+kind+'.mp3';if(storyWarm[u])return;storyWarm[u]=1;try{fetch(u).catch(()=>{});}catch(_){}}
 function storyRelease(a){if(!a||a._done)return;a._done=true;try{a.pause();}catch(_){}try{a.removeAttribute('src');a.load();}catch(_){}}
 function storyPlay(sec,kind){if(storyAudio){storyRelease(storyAudio);storyAudio=null;}if(!soundOn())return null;
-  try{const u='story/'+sec.id+'-'+kind+'.mp3';const a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});a.addEventListener('ended',()=>{setTimeout(()=>{if(storyAudio===a)storyAudio=null;storyRelease(a);},80);});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
+  try{const u='story/'+voiceId(sec,kind)+'-'+kind+'.mp3';const a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});a.addEventListener('ended',()=>{setTimeout(()=>{if(storyAudio===a)storyAudio=null;storyRelease(a);},80);});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
 // v1.81: the voices are real now. The words keep pace with the clip (the typing stretches to its length once the
 // browser knows it), and the next speaker waits for the clip to end. No clip, or sound off: everything runs as before.
 function storyWait(a,then,cap){let done=false,iv=null;const go=()=>{if(done)return;done=true;clearInterval(iv);then();};
@@ -3654,9 +3757,11 @@ function typePace(a,text){if(!a)return;const fit=()=>{const d=a.duration;if(!isF
   if(a.readyState>=1)fit();else a.addEventListener('loadedmetadata',fit,{once:true});}
 // ----- the sector map
 function renderStoryMap(){const el=$('storyList');const next=storyNext();
-  el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
-    return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)} · ${introLabel(s.id)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
-  $('storyDone').hidden=!!next;}
+  const btn=s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
+    return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)} · ${introLabel(s.id)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;};
+  const done1=SECTORS.every(s=>story.won[s.id]);
+  el.innerHTML=SECTORS.map(btn).join('')+(done1?'<div class="storyHead">'+t('Story 2 · they think ahead')+'</div>'+SECTORS2.map(btn).join(''):'');
+  $('storyDone').textContent=t('All eighteen sectors are held. Replay any of them.');$('storyDone').hidden=!!next;}
 function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;storyGateApply();}
 // ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
 let typeTimer=null,typeDone=null,typeRun=null;
@@ -3676,16 +3781,16 @@ function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false
   const va=storyPlay(sec,'brief');storyPrefetch(sec,'brag');const live=()=>!b.hidden&&b.dataset.sec===sec.id;
   typeOut($('briefText'),t(sec.brief),()=>storyWait(va,()=>{if(!live())return;$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);const vb=storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');
     typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>storyWait(vb,()=>$('briefBoss').classList.remove('speaking'),10000));typePace(vb,t(sec.brag));}));typePace(va,t(sec.brief));}
-function storyLaunch(){const id=$('brief').dataset.sec;const sec=SECTORS.find(s=>s.id===id);if(!sec)return;if(typeDone)typeDone();
+function storyLaunch(){const id=$('brief').dataset.sec;const sec=secById(id);if(!sec)return;if(typeDone)typeDone();
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
-  $('inSkill').value=sec.skill;newGame({story:sec.id});SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
+  $('inSkill').value=sec.skill;newGame({story:sec.id});S.hard=!!sec.hard;SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
   note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);setTimeout(()=>{if(bossSec()&&S.story===sec.id)showBark('start');},1500);}
 
 // ----- the boss talks during the game (v1.52). One line per event per game, at least two turns apart, shown
 // in a bubble over the board for seven seconds and kept in the log. Audio slot: story/<id>-<event>.mp3.
 const BARK_GAP=2;let barkTimer=null,barkHide=null;
-function bossSec(){return S&&S.story&&!S.over?SECTORS.find(s=>s.id===S.story):null;}
+function bossSec(){return S&&S.story&&!S.over?secById(S.story):null;}
 function showBark(ev){const sec=bossSec();if(!sec||!sec.b||!sec.b[ev])return;S.barked=S.barked||{};if(S.barked[ev])return;
   if(ev!=='start'&&ev!=='low'&&ev!=='yourlow'&&S.barkT!=null&&S.turnNo-S.barkT<BARK_GAP)return;S.barked[ev]=1;S.barkT=S.turnNo;
   const line=t(sec.b[ev]);note(t`${t(sec.title)}: ${line}`);
@@ -3702,7 +3807,7 @@ function storyBarkTurn(){const sec=bossSec();if(!sec||S.turn!==YOU)return;const 
   if(m&&dronesOf(BOT).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-m.r),Math.abs(x.c-m.c))<=2))showBark('siege');
   if(droneCount(BOT)<=3)showBark('low');if(droneCount(YOU)<=3)showBark('yourlow');if(S.turnNo>=20)showBark('mid');}
 // ----- the end of a sector: the dispatcher's word, and where to go next
-function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?SECTORS.find(s=>s.id===S.story):null;
+function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?secById(S.story):null;
   for(const id of ['btnStoryNext','btnStoryRetry','btnStoryMap'])$(id).hidden=true;$('btnAgain').hidden=inStory;
   if(!sec)return;
   const won=S.over.w===YOU;const wasGated=storyGate();if(won&&!story.won[sec.id]){story.won[sec.id]=Date.now();storySave();}const opened=wasGated&&!storyGate();storyGateApply();
@@ -3711,13 +3816,13 @@ function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?SECT
   $('overText').innerHTML='<div class="disp">'+t(won?sec.win:sec.lose)+'</div><div class="acthint" style="margin-top:6px">'+S.over.reason+'</div>'+(opened?'<div class="disp" style="margin-top:8px">'+t('Free play is open now: Launch on the start screen, or New game. The story goes on from here too.')+'</div>':'');
   const next=storyNext();if(won&&next)$('btnStoryNext').hidden=false;if(!won)$('btnStoryRetry').hidden=false;$('btnStoryMap').hidden=false;}
 function storyAfterRating(){} // (ratings run as for any bot game)
-$('storyList').addEventListener('click',e=>{const b=e.target.closest('button[data-sec]');if(!b||b.disabled)return;openBrief(SECTORS.find(s=>s.id===b.dataset.sec));});
+$('storyList').addEventListener('click',e=>{const b=e.target.closest('button[data-sec]');if(!b||b.disabled)return;openBrief(secById(b.dataset.sec));});
 $('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S){if(storyGate()){const n=storyNext();if(n){openBrief(n);return;}}newGame();}});
 $('btnBriefBack').addEventListener('click',()=>{if(typeDone)typeDone();if(storyAudio){try{storyAudio.pause();}catch(_){}}$('brief').hidden=true;openStoryMap();});
 $('btnBriefGo').addEventListener('click',storyLaunch);
 $('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefBrag').addEventListener('click',()=>{if(typeDone)typeDone();});
 $('btnStoryNext').addEventListener('click',()=>{const n=storyNext();if(n)openBrief(n);});
-$('btnStoryRetry').addEventListener('click',()=>{const sec=SECTORS.find(s=>s.id===S.story);if(sec)openBrief(sec);});
+$('btnStoryRetry').addEventListener('click',()=>{const sec=secById(S.story);if(sec)openBrief(sec);});
 $('btnStoryMap').addEventListener('click',openStoryMap);
 $('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
