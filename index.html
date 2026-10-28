@@ -351,6 +351,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .tx.them .words{color:#cfe6f5}
 .overbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
 .brief .overbtns{padding:0 18px}
+.brief .tx.ship{border-left-color:#7fd1a8;margin-bottom:12px}.brief .shipRow{display:flex;gap:12px;align-items:flex-start;margin-top:6px}.brief .shipArt{width:64px;height:64px;position:relative;flex:none}.brief .shipArt .dr{position:absolute;inset:0}.brief .tx.ship .words{color:#dff5e8;font-size:13px}
 #over .card .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;max-width:320px}
 #newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
 #newver[hidden]{display:none}
@@ -469,6 +470,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="bhead"><div><div class="lbl">Sector</div><h2 id="briefName"></h2><div class="acthint" id="briefTitle"></div></div><div class="boss" id="briefBoss"></div></div>
   <div class="tx"><div class="who"><span id="briefWho"></span><i class="speak" id="briefSpeak"></i></div><div class="words" id="briefText"></div></div>
   <div class="tx them"><div class="who"><span id="briefWho2"></span></div><div class="words" id="briefBrag"></div></div>
+  <div class="tx ship" id="briefShip" hidden><div class="who"><span id="briefShipWho"></span></div><div class="shipRow"><div class="shipArt" id="briefShipArt"></div><div class="words" id="briefShipText"></div></div></div>
   <div class="overbtns"><button type="button" id="btnBriefGo" class="primary">Launch</button><button type="button" id="btnBriefBack">Back</button></div>
 </div></div>
 <div id="intro" hidden><div class="card">
@@ -1462,7 +1464,17 @@ const FR={
 "Pick the block": "Choisir le bloc",
 "Later": "Plus tard",
 "Thrown.": "Lancé.",
-"Thrown. Another asteroid is ready.": "Lancé. Un autre astéroïde est prêt."
+"Thrown. Another asteroid is ready.": "Lancé. Un autre astéroïde est prêt.",
+"Your fleet": "Votre flotte",
+"New this sector: {0}": "Nouveau dans ce secteur : {0}",
+"The full fleet": "La flotte au complet",
+"Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.": "Des éclaireurs et votre drone de commandement, rien d'autre. Chaque secteur suivant ajoute un vaisseau. Une forme qui construirait un vaisseau encore verrouillé construit un éclaireur à la place.",
+"One is waiting in your block of nine.": "Un exemplaire vous attend dans votre bloc de neuf.",
+"Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.": "Les bombes ne se gardent pas : un L de deux lignes de 3 en construit une. Gardez vos propres drones hors de ses lignes.",
+"Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Tous les vaisseaux sont en jeu, et tout ce que le bot a appris aussi. Rien de nouveau à étudier ; tout à utiliser.",
+"{0} is not in this sector's fleet yet: a scout instead.": "{0} n'est pas encore dans la flotte de ce secteur : un éclaireur à la place.",
+"scouts only": "éclaireurs seulement",
+"full fleet": "flotte au complet"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2139,12 +2151,22 @@ const ES={
 "Pick the block": "Elegir el bloque",
 "Later": "Más tarde",
 "Thrown.": "Lanzado.",
-"Thrown. Another asteroid is ready.": "Lanzado. Otro asteroide está listo."
+"Thrown. Another asteroid is ready.": "Lanzado. Otro asteroide está listo.",
+"Your fleet": "Tu flota",
+"New this sector: {0}": "Nuevo en este sector: {0}",
+"The full fleet": "La flota completa",
+"Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.": "Exploradores y tu dron de mando, nada más. Cada sector siguiente añade una nave. Una forma que construiría una nave aún bloqueada construye un explorador en su lugar.",
+"One is waiting in your block of nine.": "Un ejemplar te espera en tu bloque de nueve.",
+"Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.": "Las bombas no se guardan: una L de dos líneas de 3 construye una. Mantén tus propios drones fuera de sus líneas.",
+"Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Todas las naves están en juego, y también todo lo que el bot ha aprendido. Nada nuevo que estudiar; todo por usar.",
+"{0} is not in this sector's fleet yet: a scout instead.": "{0} aún no está en la flota de este sector: un explorador en su lugar.",
+"scouts only": "solo exploradores",
+"full fleet": "flota completa"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.81.2';
+const VERSION='1.82.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2186,7 +2208,12 @@ function newGame(opts={}){
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
-    S.drones.push(mk(side,b,5,'M',rnd(KINDS)),gstack(side,y,5),mk(side,b,4,'C',rnd(KINDS)),mk(side,b,6,'X',rnd(KINDS))); // v1.30: the command drone in the back middle, a scout on its left, a siege drone on its right, the guard at the front edge: all inside the nine
+    // v1.30: the command drone in the back middle, a scout on its left, a siege drone on its right, the guard at the front edge: all inside the nine.
+    // v1.82: in story mode the fleet grows a ship a sector (S.allow); the start holds only what is unlocked, and the sector's new ship waits in the middle of the block.
+    const allow=opts.story?storyAllow(opts.story):null,intro=opts.story?storyIntro(opts.story):null;
+    S.drones.push(mk(side,b,5,'M',rnd(KINDS)));if(!allow||allow.includes('G'))S.drones.push(gstack(side,y,5));S.drones.push(mk(side,b,4,'C',rnd(KINDS)));if(!allow||allow.includes('X'))S.drones.push(mk(side,b,6,'X',rnd(KINDS)));
+    if(intro==='S'||intro==='H'||intro==='W'||intro==='T')S.drones.push(mk(side,f,5,intro,rnd(KINDS),(f+5)%2));
+    S.allow=allow;
   }
   for(const side of [YOU,BOT])reload(side); // the starting missile is on the Command drone; the scout beside it loads it
   for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
@@ -2364,7 +2391,7 @@ function spawnFrom(side,sp){
   const at=placeCell(side,sp);
   if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;}
   if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;} // v1.19: a line entirely on their land pays nothing
-  for(const letter of sp.letters){
+  for(const letter0 of sp.letters){let letter=letter0;const locked=!!(S.allow&&!S.allow.includes(letter0));if(locked)letter='C'; /* v1.82: not in this sector's fleet yet */
     let [r,c]=at;let o=droneAt(r,c);
     const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
     if(full&&sp.cap!=='always'){
@@ -2376,7 +2403,7 @@ function spawnFrom(side,sp){
     if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
     const d=mk(side,r,c,letter,sp.color,letter==='S'?(r+c)%2:sp.sq); // a raider is red or white after the square it is born on: a diagonal slider never leaves that color
     if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});}
-    else{S.drones.push(d);loadShooter(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
+    else{S.drones.push(d);loadShooter(d);if(locked)note(t('{0} is not in this sector\'s fleet yet: a scout instead.',cap(aname(letter0))));note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
   }
 }
 function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
@@ -2450,7 +2477,7 @@ const shotsOf=d=>d.kind==='H'?2:d.kind==='C'?1:0;
 const shotsLeft=d=>shotsOf(d)-(d.shots||0);
 // ----- turrets (v1.33): built from the Command drone's stock on an empty square you own; fires once at the start of each of your turns at an enemy drone beside it
 const turretCells=side=>{const out=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(S.own[key(r,c)]===side&&!droneAt(r,c)&&!solid(r,c)&&vis(side,r,c))out.push([r,c]);}return out;};
-const canTurret=side=>S.missiles[side]>=TURRET_COST&&!!cmdOf(side);
+const canTurret=side=>S.missiles[side]>=TURRET_COST&&!!cmdOf(side)&&(!S.allow||S.allow.includes('T'));
 function applyTurret(side,r,c){S.missiles[side]-=TURRET_COST;const d=mk(side,r,c,'T',isStar(S.grid[r][c])?S.grid[r][c]:0);S.drones.push(d);note(t`${who(side)} built a turret at ${sq(r,c)} for ${TURRET_COST} missiles.`,{why:'turret',at:[[r,c]],lab:[t('turret')]});}
 async function turretFire(side){for(const tr of dronesOf(side).filter(d=>d.kind==='T')){if(S.over)return;
   const foes=[];for(const [dr,dc] of DIR8){const e=droneAt(tr.r+dr,tr.c+dc);if(e&&e.side!==side&&e.kind!=='M'&&!e.shield&&!(e.kind==='X'&&e.power<=1))foes.push(e);}if(!foes.length)continue; /* a turret does not waste its shot on a lone siege */
@@ -3546,6 +3573,16 @@ const SECTORS=[
   lose:'Ursa Major holds. The pike was waiting. There is no shame on it; everyone\'s is.',
   b:{start:'Twelve. Begin.',took:'Expected.',lost:'Noted.',claim:'Noted.',bigclear:'I saw it before you swapped.',turret:'Ten missiles, placed.',bomb:'Accounted for.',siege:'My siege is where it was always going to be.',low:'Three is enough.',yourlow:'Three. It ends the way the numbers say.',mid:'Twenty turns. Nothing has surprised me.'},
   pts:[[10,30],[30,35],[48,45],[62,42],[80,45],[78,70],[58,72]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]]}];
+// ----- v1.82: the fleet ladder. One ship joins per sector, in this order; the ninth sector plays with everything.
+const LADDER=['C','G','S','H','W','X','B','T'];
+function storyAllow(id){const i=SECTORS.findIndex(s=>s.id===id);if(i<0)return null;return i>=LADDER.length-1?LADDER.slice():LADDER.slice(0,i+1);}
+function storyIntro(id){const i=SECTORS.findIndex(s=>s.id===id);return i>=0&&i<LADDER.length?LADDER[i]:null;}
+function introLabel(id){const k=storyIntro(id);return k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');}
+function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=kind=>droneHTML({side:YOU,kind,colors:[0],power:1,claims:2});
+  if(k==='C'){who=t('Your fleet');art=fake('C');text=t('Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.')+' '+t(TIPS.C);}
+  else if(k){who=t('New this sector: {0}',(LANG==='en'?'the ':'')+TNAME[k]);art=fake(k);text=t(TIPS[k])+' '+(k==='B'?t('Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.'):t('One is waiting in your block of nine.'));}
+  else{who=t('The full fleet');art=fake('M');text=t('Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.');}
+  $('briefShipWho').textContent=who;$('briefShipArt').innerHTML=art;$('briefShipText').textContent=text;$('briefShip').hidden=false;}
 const STORY_KEY='cc_story';
 let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
 function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}catch(_){}}
@@ -3565,7 +3602,7 @@ function typePace(a,text){if(!a)return;const fit=()=>{const d=a.duration;if(!isF
 // ----- the sector map
 function renderStoryMap(){const el=$('storyList');const next=storyNext();
   el.innerHTML=SECTORS.map(s=>{const held=!!story.won[s.id],isNext=next&&next.id===s.id,locked=!held&&!isNext;
-    return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
+    return `<button type="button" class="sector${held?' held':isNext?' next':' locked'}" data-sec="${s.id}" ${locked?'disabled':''}><span class="sk">${s.skill}</span><span class="nm">${t(s.name)}<small>${t(s.title)} · ${introLabel(s.id)}</small></span><span class="st">${held?t('Held'):isNext?t('Next'):t('Locked')}</span></button>`;}).join('');
   $('storyDone').hidden=!!next;}
 function openStoryMap(){$('cover').hidden=true;$('cvFleet').innerHTML='';$('setup').classList.remove('open');renderStoryMap();$('story').hidden=false;}
 // ----- the briefing: a transmission. Starfield, the constellation drawn, the dispatcher's words typed out, then the boss.
@@ -3580,7 +3617,7 @@ function skyFor(sec){let stars='';for(let i=0;i<70;i++){stars+=`<circle cx="${(M
   const pts=sec.pts.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===0?2.2:1.6}" fill="#ffd27a"/><circle cx="${x}" cy="${y}" r="${i===0?4:3}" fill="#ffd27a" opacity=".18"/>`).join('');
   return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="#070a10"/>${stars}<g class="constel">${lines}${pts}</g></svg>`;}
 function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false;b.dataset.sec=sec.id;
-  $('briefSky').innerHTML=skyFor(sec);$('briefName').textContent=t(sec.name);$('briefTitle').textContent=t(sec.title)+' · '+t('Skill {0}',sec.skill);
+  $('briefSky').innerHTML=skyFor(sec);briefShip(sec);$('briefName').textContent=t(sec.name);$('briefTitle').textContent=t(sec.title)+' · '+t('Skill {0}',sec.skill);
   $('briefBoss').innerHTML=`<div class="dr s2 talk" style="border-color:${KCOL[3]}">${cmdSVG(BOT)}<b class="lt">${LETTER.M}</b></div>`;
   $('briefBrag').textContent='';$('briefWho').textContent=t('Dispatch');$('briefSpeak').classList.add('on');
   const va=storyPlay(sec,'brief');storyPrefetch(sec,'brag');const live=()=>!b.hidden&&b.dataset.sec===sec.id;
