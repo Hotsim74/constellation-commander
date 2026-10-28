@@ -120,6 +120,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
 .ghost.fly.lift .shade,.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
 .ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none;transition:transform .16s linear}
+/* v1.83: drag and drop. The ghost rides above the finger; the square it is over gets a white edge; the square it left dims. */
+.dragGhost{position:fixed;left:0;top:0;z-index:80;pointer-events:none;will-change:transform;filter:drop-shadow(0 14px 10px rgba(0,0,0,.65))}
+.dragGhost .dr{position:absolute;inset:-4%;transform:scale(1.12)}.dragGhost .gem{position:absolute;left:11%;top:11%;width:78%;height:78%;transform:scale(1.18)}
+.cell.lifted .dd,.cell.lifted>.gem{opacity:.22}.cell.dover{box-shadow:inset 0 0 0 2px #fff,0 0 10px rgba(255,255,255,.5);z-index:3}
 .gem.pass{animation:gempass .45s ease-out}
 @keyframes gempass{0%{filter:brightness(1)}30%{filter:brightness(2.4) drop-shadow(0 0 6px #fff);transform:scale(1.14)}100%{filter:brightness(1);transform:scale(1)}}
 .ghost.fly .flare{position:absolute;top:50%;left:-26%;width:52%;height:42%;transform:translateY(-50%) scale(.4);border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0,#9be7ff 22%,rgba(80,200,255,.8) 48%,rgba(80,200,255,0) 74%);opacity:0;filter:blur(1px);transition:opacity .18s ease-in,transform .18s ease-in}
@@ -401,7 +405,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
-  <div class="field"><span class="lbl">Swipe</span><label><input type="checkbox" id="inSwipe"> swipe a star to swap it, swipe a drone to move it</label></div>
+  <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
@@ -1474,7 +1478,10 @@ const FR={
 "Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Tous les vaisseaux sont en jeu, et tout ce que le bot a appris aussi. Rien de nouveau à étudier ; tout à utiliser.",
 "{0} is not in this sector's fleet yet: a scout instead.": "{0} n'est pas encore dans la flotte de ce secteur : un éclaireur à la place.",
 "scouts only": "éclaireurs seulement",
-"full fleet": "flotte au complet"
+"full fleet": "flotte au complet",
+"Drag": "Glisser-déposer",
+"pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "les pièces collent au doigt : glissez une étoile sur sa voisine pour échanger, un drone sur sa case, lâchez pour déposer",
+"Drop a star on the one next to it to swap them.": "Déposez une étoile sur sa voisine pour les échanger."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2161,12 +2168,15 @@ const ES={
 "Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Todas las naves están en juego, y también todo lo que el bot ha aprendido. Nada nuevo que estudiar; todo por usar.",
 "{0} is not in this sector's fleet yet: a scout instead.": "{0} aún no está en la flota de este sector: un explorador en su lugar.",
 "scouts only": "solo exploradores",
-"full fleet": "flota completa"
+"full fleet": "flota completa",
+"Drag": "Arrastrar",
+"pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop": "las piezas se pegan al dedo: arrastra una estrella sobre su vecina para intercambiar, un dron a su casilla, suelta para dejarlo",
+"Drop a star on the one next to it to swap them.": "Suelta una estrella sobre la de al lado para intercambiarlas."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.82.0';
+const VERSION='1.83.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3120,7 +3130,7 @@ try{if(localStorage.getItem('cc_explain')==='0')$('inExplain').checked=false;}ca
 // direction, or drag one of your drones to move it that way: a short drag goes one square, a longer one as far as the
 // lane allows in that line. Taps still work. The board stops scrolling under a finger while the option is on.
 let swipeOn=false;try{swipeOn=localStorage.getItem('cc_swipe')==='1';}catch(_){}
-let swStart=null,swDone=0;
+let swDone=0; /* the click that follows a drag is ignored */
 const DIR8_BY_ANGLE=[[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]];
 function swipeDir8(dx,dy){const k=Math.round(Math.atan2(dy,dx)/(Math.PI/4));return DIR8_BY_ANGLE[(k+8)%8];}
 function doSwipe(r,c,dx,dy,dragged){if(rockWait){rockPopClose();rockDone();return;}if(busy||!S||S.over||S.turn!==YOU||netSpec())return;const d=droneAt(r,c);
@@ -3131,9 +3141,38 @@ function doSwipe(r,c,dx,dy,dragged){if(rockWait){rockPopClose();rockDone();retur
   if(!isStar(S.grid[r][c]))return;const [dr,dc]=Math.abs(dx)>Math.abs(dy)?[0,Math.sign(dx)]:[Math.sign(dy),0];const r2=r+dr,c2=c+dc;if(!inb(r2,c2)||!isStar(S.grid[r2][c2])||droneAt(r2,c2))return;
   if(S.own[key(r,c)]===BOT||S.own[key(r2,c2)]===BOT){setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));return;}
   sel=null;mode=null;humanSwap([r,c],[r2,c2]);}
-(()=>{const b=$('board');b.addEventListener('pointerdown',e=>{if(!swipeOn)return;const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;swStart={k:i,x:e.clientX,y:e.clientY,id:e.pointerId};},{passive:true});
-  b.addEventListener('pointerup',e=>{if(!swStart||e.pointerId!==swStart.id)return;const st=swStart;swStart=null;const dx=e.clientX-st.x,dy=e.clientY-st.y;const dist=Math.hypot(dx,dy);const cw=cells[0].offsetWidth||40;if(dist<Math.max(16,cw*.4))return;const [r,c]=rc(st.k);doSwipe(r,c,dx,dy,dist/cw);swDone=Date.now();});
-  b.addEventListener('pointercancel',()=>{swStart=null;});})();
+// ---------- v1.83: drag and drop (the kid's ask). A piece sticks to the finger, rides a little above it so it can be seen,
+// and drops where the finger lets go: a drone onto any marked square (red takes, green asks to stack), a star onto its
+// neighbour to swap. Let go anywhere else and it settles back. A plain tap is still a tap. Same switch as the old swipe (cc_swipe).
+let drag=null;
+(()=>{const b=$('board');
+  const cellAt=(x,y)=>{const el=document.elementFromPoint(x,y);const cell=el&&el.closest&&el.closest('.cell');return cell?cells.indexOf(cell):-1;};
+  b.addEventListener('pointerdown',e=>{if(!swipeOn||rockWait||busy||!S||S.over||S.turn!==YOU||netSpec())return;if(e.pointerType==='mouse'&&e.button!==0)return;
+    const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;const [r,c]=rc(i);const d=droneAt(r,c);let kind=null;
+    if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw'||mode==='rock')return;kind='drone';}
+    else if(!d&&isStar(S.grid[r][c])&&mode!=='rock'&&S.own[key(r,c)]!==BOT&&vis(YOU,r,c))kind='star';else return;
+    drag={k:i,r,c,x:e.clientX,y:e.clientY,id:e.pointerId,kind,d,on:false,ghost:null,over:-1,w:cell.offsetWidth||40};if(e.pointerType==='mouse')e.preventDefault();},{passive:false});
+  const place=(g,x,y,w)=>{g.style.transform=`translate(${x-w/2}px,${y-w*1.05}px)`;};
+  const move=e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(!drag.on){if(Math.hypot(dx,dy)<8)return;drag.on=true;const cell=cells[drag.k];
+      if(drag.kind==='drone'){sel={id:drag.d.id};mode=null;aimList=[];pending=null;renderBoard();renderActions();} /* the targets light up, as on a tap */
+      const g=document.createElement('div');g.className='dragGhost';g.style.width=g.style.height=drag.w+'px';g.innerHTML=drag.kind==='drone'?droneHTML(drag.d):'<i class="'+cell.firstChild.className+'"></i>';document.body.appendChild(g);drag.ghost=g;cell.classList.add('lifted');sfx('tap');}
+    place(drag.ghost,e.clientX,e.clientY,drag.w);
+    const i=cellAt(e.clientX,e.clientY-drag.w*.55);if(i!==drag.over){if(drag.over>=0)cells[drag.over].classList.remove('dover');drag.over=i;if(i>=0&&i!==drag.k)cells[i].classList.add('dover');}
+    e.preventDefault();};
+  const end=e=>{if(!drag||e.pointerId!==drag.id)return;const dg=drag;drag=null;if(!dg.on)return; /* a plain tap: the click does its usual job */
+    if(dg.ghost)dg.ghost.remove();cells[dg.k].classList.remove('lifted');if(dg.over>=0)cells[dg.over].classList.remove('dover');
+    const i=dg.over;
+    if(i<0||i===dg.k){swDone=Date.now();if(dg.kind==='drone')renderBoard();return;} /* let go over nothing: it settles back; a drone stays selected */
+    const [r,c]=rc(i);
+    if(dg.kind==='drone'){onCell(r,c);swDone=Date.now();return;} /* the marked squares decide; anything else explains itself */
+    swDone=Date.now();
+    if(Math.abs(dg.r-r)+Math.abs(dg.c-c)!==1){setStatus(t('Drop a star on the one next to it to swap them.'));return;}
+    if(S.own[key(r,c)]===BOT){setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));return;}
+    if(droneAt(r,c)||!isStar(S.grid[r][c]))return;
+    sel=null;mode=null;humanSwap([dg.r,dg.c],[r,c]);};
+  b.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+  b.addEventListener('dragstart',e=>e.preventDefault());})();
 $('inSwipe').addEventListener('change',()=>{swipeOn=$('inSwipe').checked;try{localStorage.setItem('cc_swipe',swipeOn?'1':'0');}catch(_){}$('board').style.touchAction=swipeOn?'none':'';});
 $('inSwipe').checked=swipeOn;$('board').style.touchAction=swipeOn?'none':'';
 $('inSalvage').addEventListener('change',()=>{try{localStorage.setItem('cc_salvage',$('inSalvage').checked?'1':'0');}catch(_){}});
