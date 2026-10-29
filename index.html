@@ -120,6 +120,17 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .ghost.fly .shade{position:absolute;left:14%;right:14%;bottom:-3%;height:22%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.62),rgba(0,0,0,0) 72%);transition:transform .25s,opacity .25s,filter .25s}
 .ghost.fly.lift .shade,.ghost.fly.go .shade{transform:translateY(45%) scale(1.3,1.1);opacity:.45;filter:blur(2px)}
 .ghost.fly .eng{position:absolute;inset:0;transform:rotate(var(--ang,0deg));pointer-events:none;transition:transform .16s linear}
+/* v1.90: the hunter in 3D (user). At rest: tilted back a little, nose the way it last flew. In flight: the hull turns to the way it goes;
+   a darker copy sits under it for thickness; on a turn right round it flies up, flips end over end, then spins to face the new way. */
+.dr.kH>svg{transform:perspective(220px) rotateX(22deg) rotate(var(--face,0deg))}
+.ghost.fly .hull3d{position:absolute;inset:0;transform-style:preserve-3d;transform:perspective(240px) rotateX(26deg) rotate(var(--face,0deg));transition:transform .3s ease}
+.ghost.fly .flipper{position:absolute;inset:0;transform-style:preserve-3d}
+.ghost.fly .flipper .top,.ghost.fly .flipper .under{position:absolute;inset:0}
+.ghost.fly .flipper .under{transform:translateZ(-7px);filter:brightness(.38) saturate(.6)}
+.ghost.fly .flipper svg{width:100%;height:100%;display:block}
+.ghost.fly.flip .flipper{animation:h180 .56s cubic-bezier(.4,0,.3,1) both}
+@keyframes h180{0%{transform:translateZ(0) rotateX(0)}45%{transform:translateZ(70px) rotateX(200deg)}100%{transform:translateZ(0) rotateX(360deg)}}
+@media (prefers-reduced-motion:reduce){.ghost.fly.flip .flipper{animation:none}}
 /* v1.83: drag and drop. The ghost rides above the finger; the square it is over gets a white edge; the square it left dims. */
 .dragGhost{position:fixed;left:0;top:0;z-index:80;pointer-events:none;will-change:transform;filter:drop-shadow(0 14px 10px rgba(0,0,0,.65))}
 .dragGhost .dr{position:absolute;inset:-4%;transform:scale(1.12)}.dragGhost .gem{position:absolute;left:11%;top:11%;width:78%;height:78%;transform:scale(1.18)}
@@ -176,7 +187,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 /* v1.68: the hunter is a roadster a little bigger than its square: barrels out the front, thrust out of every side, a flip now and then */
 .dr.kH{inset:-6%;padding:2%;background:transparent;border-color:transparent}.dr.kH svg{overflow:visible}
 .board .dr.kH svg,.cvShip .dr.kH svg{animation:hflip 9s ease-in-out infinite}
-@keyframes hflip{0%,80%{transform:perspective(160px) rotateY(0)}90%{transform:perspective(160px) rotateY(180deg)}100%{transform:perspective(160px) rotateY(360deg)}}
+@keyframes hflip{0%,80%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(0)}90%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(180deg)}100%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(360deg)}} /* v1.90: the slow roll keeps the tilt and the facing */
 /* v1.73: the warp drone is a green cloud: the cloud breathes, pink lightning flickers, grey pieces of a ship fade in and out */
 .wcloud{transform-box:fill-box;transform-origin:50% 50%;animation:wdrift 7s ease-in-out infinite alternate}
 @keyframes wdrift{from{transform:scale(.92) rotate(-6deg)}to{transform:scale(1.08) rotate(6deg)}}
@@ -2297,7 +2308,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.89.0';
+const VERSION='1.90.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3019,8 +3030,9 @@ function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==
 const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
+function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
+  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
@@ -3434,25 +3446,32 @@ function shootAnim(from,to){return new Promise(res=>{const b=$('board');const [x
   setTimeout(()=>{m.remove();const f=document.createElement('div');f.className='flash';f.style.left=x1+'px';f.style.top=y1+'px';b.appendChild(f);const im=document.createElement('div');im.className='impact';im.style.left=x1+'px';im.style.top=y1+'px';b.appendChild(im);setTimeout(()=>{f.remove();im.remove();},520);res();},ms);});}
 // ---------- a drone in flight (v1.58): engines spool up for a beat, the drone lifts off its shadow, turns its engine to
 // face the way it is going, leaves a streak in its side's color, and settles back down on landing. The letter stays upright.
-const SPOOL=180,LIFT=240,LAND=220,HOP_MS=190; /* v1.65: a ride is flown star by star, HOP_MS a square */
-function flyDrone(from,to,html,path){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');
+const SPOOL=180,LIFT=240,LAND=220,HOP_MS=190,FLIP_MS=560,SPIN_MS=300; /* v1.65: a ride is flown star by star, HOP_MS a square */
+function flyDrone(from,to,html,path,opt){return new Promise(res=>{if(from[0]===to[0]&&from[1]===to[1]){res();return;}const b=$('board');
   const hops=(path&&path.length>2)?path:[from,to];const pts=hops.map(([r,c])=>cellXY(r,c));const w=pts[0][2];const side=/class="dr s1/.test(html)?'s1':'s2';
   const angOf=i=>Math.atan2(pts[i+1][1]-pts[i][1],pts[i+1][0]-pts[i][0])*180/Math.PI;
   const tag=(html.match(/<b class="lt">[\s\S]*?<\/b>/)||[''])[0],hull=tag?html.replace(tag,''):html;
   const g=document.createElement('div');g.className='ghost fly '+side;g.style.width=g.style.height=(w*0.84)+'px';g.style.left=pts[0][0]+'px';g.style.top=pts[0][1]+'px';g.style.setProperty('--ang',angOf(0)+'deg');
   g.innerHTML='<i class="shade"></i><div class="eng"><i class="flare"></i></div><div class="body">'+hull+'</div>'+(tag?tag.replace('class="lt"','class="tag"'):'');b.appendChild(g);
+  // v1.90: a hunter flies in 3D: hull tilted, nose turned the way it goes, and a fly-up flip then a spin when it turns right round
+  const H=!!(opt&&opt.face1!=null);let faceCur=H?opt.face0:0;const turnTo=a=>{faceCur+=((a-faceCur)%360+540)%360-180;g.style.setProperty('--face',faceCur+'deg');};
+  if(H){g.classList.add('h3d');const svg=g.querySelector('.dr>svg');if(svg){const hull=document.createElement('div');hull.className='hull3d';const fl=document.createElement('div');fl.className='flipper';fl.innerHTML='<div class="under">'+svg.outerHTML+'</div>';svg.replaceWith(hull);hull.appendChild(fl);const top=document.createElement('div');top.className='top';top.appendChild(svg);fl.appendChild(top);}g.style.setProperty('--face',faceCur+'deg');}
+  const legAng=i=>Math.round(angOf(i))+90;const flip=H&&Math.abs(((legAng(0)-faceCur)%360+540)%360-180)>=179;
   const dest=cellEl(to[0],to[1]).lastChild;dest.style.visibility='hidden';
   const streaks=[];const streak=(i,ms)=>{const [x0,y0]=pts[i],[x1,y1]=pts[i+1];const st=document.createElement('div');st.className='streak '+side;st.style.left=x0+'px';st.style.top=y0+'px';st.style.width='0px';st.style.transform=`translate(0,-50%) rotate(${angOf(i)}deg)`;b.appendChild(st);streaks.push(st);
     st.style.transition=`width ${ms}ms linear,opacity ${Math.round(ms*1.6)}ms ease-in ${Math.round(ms*0.6)}ms`;requestAnimationFrame(()=>requestAnimationFrame(()=>{st.style.width=Math.hypot(x1-x0,y1-y0)+'px';st.style.opacity='0';}));};
   const many=hops.length>2;const hopMs=many?HOP_MS:Math.max(260,Math.min(700,Math.hypot(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1])*1.2));
   let t=0;requestAnimationFrame(()=>g.classList.add('spool'));
   t+=SPOOL;setTimeout(()=>{g.classList.remove('spool');g.classList.add('lift');},t);
-  t+=LIFT;for(let i=0;i<hops.length-1;i++){const at=t,ii=i;setTimeout(()=>{if(ii===0)g.classList.remove('lift'),g.classList.add('go');g.style.setProperty('--ang',angOf(ii)+'deg');g.style.transition=`left ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'},top ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'}`;streak(ii,hopMs);
+  if(flip){const at=t;setTimeout(()=>g.classList.add('flip'),at+60);t+=LIFT+FLIP_MS;setTimeout(()=>turnTo(legAng(0)),t);t+=SPIN_MS;}else t+=LIFT;
+  for(let i=0;i<hops.length-1;i++){const at=t,ii=i;setTimeout(()=>{if(ii===0)g.classList.remove('lift'),g.classList.add('go');g.style.setProperty('--ang',angOf(ii)+'deg');if(H&&!(flip&&ii===0))turnTo(legAng(ii));g.style.transition=`left ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'},top ${hopMs}ms ${many?'linear':'cubic-bezier(.45,0,.2,1)'}`;streak(ii,hopMs);
       if(ii>0){const [r,c]=hops[ii];const gem=cellEl(r,c).firstChild;gem.classList.remove('pass');void gem.offsetWidth;gem.classList.add('pass');setTimeout(()=>gem.classList.remove('pass'),500);} /* the star it flies over lights up */
       requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.left=pts[ii+1][0]+'px';g.style.top=pts[ii+1][1]+'px';}));},at);t+=hopMs;}
   setTimeout(()=>{g.classList.remove('go');g.classList.add('land');},t); /* and drops back down */
   t+=LAND;setTimeout(()=>{g.remove();for(const st of streaks)st.remove();dest.style.visibility='';const lt=dest.querySelector('.lt');if(lt){lt.classList.add('orbit');setTimeout(()=>lt.classList.remove('orbit'),450);}res();},t);});}
-async function movedAnim(d,from){renderBoard();const path=d.lastPath;delete d.lastPath;await flyDrone(from,[d.r,d.c],droneHTML(d),path);await playFX();}
+async function movedAnim(d,from){const to=[d.r,d.c];let face0=null,face1=null;
+  if(d.kind==='H'&&(from[0]!==to[0]||from[1]!==to[1])){const hops=(d.lastPath&&d.lastPath.length>2)?d.lastPath:[from,to];const [a,b]=hops.slice(-2);face0=hFace(d);d.face=Math.round(Math.atan2(b[0]-a[0],b[1]-a[1])*180/Math.PI)+90;face1=hFace(d);} /* v1.90: a hunter keeps the way it last flew */
+  renderBoard();const path=d.lastPath;delete d.lastPath;await flyDrone(from,to,droneHTML(d),path,{face0,face1});await playFX();}
 
 
 // ---------- destruction: a drone that dies breaks up where it stood; a hit shakes and sparks ----------
