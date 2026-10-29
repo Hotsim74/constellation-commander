@@ -190,6 +190,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 @keyframes hflip{0%,80%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(0)}90%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(180deg)}100%{transform:perspective(160px) rotateX(22deg) rotate(var(--face,0deg)) rotateY(360deg)}} /* v1.90: the slow roll keeps the tilt and the facing */
 /* v1.73: the warp drone is a green cloud: the cloud breathes, pink lightning flickers, grey pieces of a ship fade in and out */
 .wcloud{transform-box:fill-box;transform-origin:50% 50%;animation:wdrift 7s ease-in-out infinite alternate}
+/* v1.91: the warp drone's cloud reaches into the squares around it: a soft green ellipse behind the drone, above the stars (z 2) and under every drone (z 3) */
+.wfog{position:absolute;left:-70%;top:-70%;width:240%;height:240%;border-radius:50%;z-index:2;pointer-events:none;background:radial-gradient(ellipse 60% 52% at 50% 50%,rgba(150,255,180,.62) 0,rgba(70,220,120,.44) 30%,rgba(30,150,75,.26) 58%,rgba(15,90,46,0) 78%);filter:blur(2px);animation:wfog 9s ease-in-out infinite alternate;will-change:transform}
+@keyframes wfog{from{transform:scale(.9) rotate(-8deg)}to{transform:scale(1.14) rotate(34deg)}}
+.legend .wfog,.bark .wfog,#briefShipArt .wfog,.cvShip .wfog,.ghost.fly .wfog{display:none}
+@media (prefers-reduced-motion:reduce){.wfog{animation:none}}
 @keyframes wdrift{from{transform:scale(.92) rotate(-6deg)}to{transform:scale(1.08) rotate(6deg)}}
 .wbolt{opacity:0;animation:wflash 1.6s steps(1,end) infinite}
 @keyframes wflash{0%,100%{opacity:0}6%{opacity:1}9%{opacity:0}12%{opacity:.9}18%{opacity:0}}
@@ -2308,7 +2313,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.90.0';
+const VERSION='1.91.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3032,7 +3037,7 @@ const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>`;}
+  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${d.kind==='W'?'<i class="wfog"></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
