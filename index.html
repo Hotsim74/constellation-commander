@@ -401,6 +401,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 </header>
 <form class="setup" id="setup" onsubmit="return false">
   <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"><span class="acthint" id="skillNote" style="max-width:240px;font-size:12px"></span></div>
+  <div class="field"><span class="lbl">Thinks ahead</span><select id="inAhead"><option value="auto">Auto</option><option value="0">0 moves</option><option value="1">1 move</option><option value="2">2 moves</option><option value="3">3 moves</option><option value="4">4 moves</option><option value="5">5 moves</option></select><span class="acthint" style="max-width:240px;font-size:12px">Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.</span></div>
   <div class="field"><span class="lbl">Timers</span><label><input type="checkbox" id="inTimers"> clock 20 min, 60 s a move</label></div>
   <div class="field"><span class="lbl">Handicap</span><label><input type="checkbox" id="inAuto" checked> asteroids from ratings</label></div>
   <div class="field"><span class="lbl">Your asteroids</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
@@ -1535,7 +1536,16 @@ const FR={
 "From here on the boss looks one move ahead before it chooses.": "À partir d'ici, le boss regarde un coup à l'avance avant de choisir.",
 "Scouts and your Command drone, nothing else. A line of four stars builds a scout, and that is the only way to get more ships here. Bigger shapes just clear their stars until their ship joins the fleet, one new ship each sector.": "Des éclaireurs et votre drone de commandement, rien d'autre. Une ligne de quatre étoiles construit un éclaireur, et c'est la seule façon d'avoir plus de vaisseaux ici. Les formes plus grandes ne font que vider leurs étoiles jusqu'à ce que leur vaisseau rejoigne la flotte, un nouveau vaisseau par secteur.",
 "{0} is not in this sector's fleet yet: stars cleared, nothing built.": "{0} n'est pas encore dans la flotte de ce secteur : étoiles vidées, rien de construit.",
-"It joins the fleet in {0}.": "Il rejoint la flotte dans {0}."
+"It joins the fleet in {0}.": "Il rejoint la flotte dans {0}.",
+"Thinks ahead": "Anticipe",
+"Auto": "Auto",
+"0 moves": "0 coup",
+"1 move": "1 coup",
+"2 moves": "2 coups",
+"3 moves": "3 coups",
+"4 moves": "4 coups",
+"5 moves": "5 coups",
+"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Partie libre seulement. Auto : 1 coup à partir du niveau 80. 4 et 5 prennent quelques secondes par tour."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2273,12 +2283,21 @@ const ES={
 "From here on the boss looks one move ahead before it chooses.": "A partir de aquí, el jefe mira una jugada por adelantado antes de elegir.",
 "Scouts and your Command drone, nothing else. A line of four stars builds a scout, and that is the only way to get more ships here. Bigger shapes just clear their stars until their ship joins the fleet, one new ship each sector.": "Exploradores y tu dron de mando, nada más. Una línea de cuatro estrellas construye un explorador, y es la única forma de tener más naves aquí. Las formas más grandes solo vacían sus estrellas hasta que su nave se une a la flota, una nave nueva por sector.",
 "{0} is not in this sector's fleet yet: stars cleared, nothing built.": "{0} aún no está en la flota de este sector: estrellas vaciadas, nada construido.",
-"It joins the fleet in {0}.": "Se une a la flota en {0}."
+"It joins the fleet in {0}.": "Se une a la flota en {0}.",
+"Thinks ahead": "Piensa por adelantado",
+"Auto": "Auto",
+"0 moves": "0 jugadas",
+"1 move": "1 jugada",
+"2 moves": "2 jugadas",
+"3 moves": "3 jugadas",
+"4 moves": "4 jugadas",
+"5 moves": "5 jugadas",
+"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Solo partida libre. Auto: 1 jugada desde el nivel 80. 4 y 5 tardan unos segundos por turno."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.88.0';
+const VERSION='1.89.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2815,40 +2834,30 @@ function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b
     if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&!v.shield&&v.kind!=='X'&&v.kind!=='T'&&(S.own[key(a,b)]===him||S.own[key(a,b)]===0))s+=val(v);}worst=Math.max(worst,s);}}
   return dmg+worst;}
 // try each of the best options on a copy of the board and charge it what the other side could do back
-function lookAhead(me,opts){const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,8);const base=replyDamage(me);
-  for(const o of top){const saved=S;S=JSON.parse(JSON.stringify(saved));simQuiet=true;let ok=true;
-    try{const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
-      if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
-      else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else if(o.type==='shield')applyShield(d,S.drones.find(x=>x.id===o.o.id));else if(o.type==='throw')applyThrow(d,S.drones.find(x=>x.id===o.o.id));else ok=false;
-      if(ok){reload(him);o.la=replyDamage(me)-base;}}
+const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.6;let aheadT0=0; /* v1.89: options kept per level of the search, the time cap, and how much of the other side's best line counts */
+function simCopy(){const log=S.log;S.log=[];const c=JSON.parse(JSON.stringify(S));S.log=log;return c;}
+function simApply(me,o){const him=other(me);const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
+  if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
+  else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else if(o.type==='shield')applyShield(d,S.drones.find(x=>x.id===o.o.id));else if(o.type==='throw')applyThrow(d,S.drones.find(x=>x.id===o.o.id));else return false;
+  reload(him);return true;}
+// the best line `side` can find on the current (copied) board, `depth` moves deep: its best option less a share of what the other side gets back. Past the time cap it is the best option as it stands.
+function bestLine(side,depth,lvl){const {opts}=botOptions(side,botLevel());if(!opts.length)return 0;opts.sort((a,b)=>b.v-a.v);
+  if(depth<=1||Date.now()-aheadT0>AHEAD_MS)return opts[0].v;
+  const K=AHEAD_K[Math.min(lvl,AHEAD_K.length-1)];let best=-Infinity;
+  for(const o of opts.slice(0,K)){const saved=S;S=simCopy();let ok=true,v=o.v;try{ok=simApply(side,o);if(ok)v-=AHEAD_W*bestLine(other(side),depth-1,lvl+1);}catch(e){ok=false;}S=saved;if(ok)best=Math.max(best,v);}
+  return best===-Infinity?opts[0].v:best;}
+// try each of the best options on a copy of the board and charge it what the other side could do back; from depth 2 the other side's own best line, and so on
+function lookAhead(me,opts,depth){depth=depth||1;const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,AHEAD_K[0]);const base=replyDamage(me);const q=simQuiet;simQuiet=true;aheadT0=Date.now();
+  for(const o of top){const saved=S;S=simCopy();let ok=true;
+    try{ok=simApply(me,o);if(ok){o.la=replyDamage(me)-base;if(depth>1)o.la+=AHEAD_W*bestLine(him,depth-1,1);}}
     catch(e){ok=false;}
-    S=saved;simQuiet=false;fx=[];
-    if(ok&&o.la!=null)o.v-=o.la;}}
-async function botTurn(me){
-  if(S.over)return;
-  // the coached game: until the player has fired, the bot walks its scout into the player's view so there is something to shoot
-  if(S.tut&&!tutDone('fire')){const bsc=dronesOf(BOT).find(d=>d.kind==='C');const shooters=dronesOf(YOU).filter(d=>d.kind==='C'||d.kind==='H');
-    if(bsc&&shooters.length){const inView=vis(YOU,bsc.r,bsc.c)&&shooters.some(p=>inRange(p,bsc.r,bsc.c));
-      if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
-        if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
-      else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
-  const him=other(me),L=botLevel(),soft=!!(S.story&&!S.hard),chance=soft?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!soft&&L>=10)||rnd(100)<chance; /* v1.85: a Story 2 boss is not softened */ // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
-  if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
-  // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
-  if(smart&&L>=2&&dronesOf(me).some(canShoot)){
-    for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
-      for(const sh of dronesOf(me).filter(canShoot)){
-        for(let r=Math.max(0,sh.r-range());r<=Math.min(N-1,sh.r+range());r++)for(let c=Math.max(0,sh.c-range());c<=Math.min(N-1,sh.c+range());c++){
-          if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
-          if(sh.bombAmmo){let n=0,mine=0;for(const [dr,dc] of [[0,0],...DIR4]){let rr=r,cc=c;do{const e=droneAt(rr,cc);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;rr+=dr;cc+=dc;}while(dr+dc!==0&&inb(rr,cc)&&vis(me,rr,cc)&&!solid(rr,cc));}if(mine||n<2)continue;v=6+4*n;if(!best||v>best.v)best={r,c,v,sh};continue;} /* a bomb missile: aim where the cross holds enemies and none of its own */
-          if(o&&o.side===him&&(o.kind==='T'||((o.kind==='M'||o.kind==='X')&&o.power<=1)))continue; // missiles bounce off turrets, a lone Command drone and a lone siege: never waste one there
-          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
-          else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
-          else continue;
-          if(!best||v>best.v)best={r,c,v,sh};}}
-      if(best&&best.v>=6&&shotCap(best.sh)>0){if(!best.sh.bombAmmo)best.sh.ammo--;best.sh.shots=(best.sh.shots||0)+1;await fireShots(me,[best],best.sh);await sleep(200);}else break;}
-  }
-  if(S.over)return;
+    S=saved;fx=[];
+    if(ok&&o.la!=null)o.v-=o.la;}
+  simQuiet=q;}
+// how many moves ahead this turn looks: the Settings choice in free play (Auto: one move from skill 80), one move for a Story 2 boss or the last three of the first story, none in the coached game
+function botDepth(){if(S.tut)return 0;if(S.story)return (S.hard||S.ahead)?1:0;let v='auto';try{v=localStorage.getItem('cc_ahead')||'auto';}catch(_){}if(v==='auto')return botLevel()>=8?1:0;return Math.max(0,Math.min(5,+v||0));}
+// v1.89: every option open to `me` on the board as it stands, scored for level L (was inline in botTurn)
+function botOptions(me,L){const him=other(me);
   const opts=[];
   let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
@@ -2890,8 +2899,35 @@ async function botTurn(me){
       if(trapVia&&(d.id===trapVia.id||d.kind==='M')&&c!==d.c)v+=40; /* step the jumped stack, or the Command drone, out of the asteroid's column */
       opts.push({type:'move',d,r,c,v});}
   }
+  return {opts,myM,sdist};}
+async function botTurn(me){
+  if(S.over)return;
+  // the coached game: until the player has fired, the bot walks its scout into the player's view so there is something to shoot
+  if(S.tut&&!tutDone('fire')){const bsc=dronesOf(BOT).find(d=>d.kind==='C');const shooters=dronesOf(YOU).filter(d=>d.kind==='C'||d.kind==='H');
+    if(bsc&&shooters.length){const inView=vis(YOU,bsc.r,bsc.c)&&shooters.some(p=>inRange(p,bsc.r,bsc.c));
+      if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
+        if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
+      else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
+  const him=other(me),L=botLevel(),soft=!!(S.story&&!S.hard),chance=soft?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!soft&&L>=10)||rnd(100)<chance; /* v1.85: a Story 2 boss is not softened */ // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
+  if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
+  // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
+  if(smart&&L>=2&&dronesOf(me).some(canShoot)){
+    for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
+      for(const sh of dronesOf(me).filter(canShoot)){
+        for(let r=Math.max(0,sh.r-range());r<=Math.min(N-1,sh.r+range());r++)for(let c=Math.max(0,sh.c-range());c<=Math.min(N-1,sh.c+range());c++){
+          if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
+          if(sh.bombAmmo){let n=0,mine=0;for(const [dr,dc] of [[0,0],...DIR4]){let rr=r,cc=c;do{const e=droneAt(rr,cc);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;rr+=dr;cc+=dc;}while(dr+dc!==0&&inb(rr,cc)&&vis(me,rr,cc)&&!solid(rr,cc));}if(mine||n<2)continue;v=6+4*n;if(!best||v>best.v)best={r,c,v,sh};continue;} /* a bomb missile: aim where the cross holds enemies and none of its own */
+          if(o&&o.side===him&&(o.kind==='T'||((o.kind==='M'||o.kind==='X')&&o.power<=1)))continue; // missiles bounce off turrets, a lone Command drone and a lone siege: never waste one there
+          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
+          else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
+          else continue;
+          if(!best||v>best.v)best={r,c,v,sh};}}
+      if(best&&best.v>=6&&shotCap(best.sh)>0){if(!best.sh.bombAmmo)best.sh.ammo--;best.sh.shots=(best.sh.shots||0)+1;await fireShots(me,[best],best.sh);await sleep(200);}else break;}
+  }
+  if(S.over)return;
+  const {opts,myM,sdist}=botOptions(me,L);
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
-  if(smart&&((L>=8&&!S.story)||S.hard||S.ahead)&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play from level 8; every Story 2 boss; v1.87: the last three first-run bosses too */
+  const depth=botDepth();if(smart&&depth>0&&opts.length>1)lookAhead(me,opts,depth); /* v1.89: Settings → Thinks ahead, 0 to 5 moves in free play */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
@@ -3279,6 +3315,8 @@ let drag=null;
   b.addEventListener('dragstart',e=>e.preventDefault());})();
 $('inSwipe').addEventListener('change',()=>{swipeOn=$('inSwipe').checked;try{localStorage.setItem('cc_swipe',swipeOn?'1':'0');}catch(_){}$('board').style.touchAction=swipeOn?'none':'';});
 $('inSwipe').checked=swipeOn;$('board').style.touchAction=swipeOn?'none':'';
+$('inAhead').value=(()=>{try{return localStorage.getItem('cc_ahead')||'auto';}catch(_){return 'auto';}})();if(!$('inAhead').value)$('inAhead').value='auto';
+$('inAhead').addEventListener('change',()=>{try{localStorage.setItem('cc_ahead',$('inAhead').value);}catch(_){}}); /* v1.89 */
 $('inSalvage').addEventListener('change',()=>{try{localStorage.setItem('cc_salvage',$('inSalvage').checked?'1':'0');}catch(_){}});
 try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}catch(_){}
 
@@ -3736,7 +3774,7 @@ const FREE_AFTER=9; /* v1.86: the whole first story (user: Launch stays dark til
 function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&SECTORS.filter(s=>story.won[s.id]).length<FREE_AFTER;}
 // v1.86: the first Launch after the gate opens: Dispatch says hello (story/dispatch-welcome.mp3), once.
 function welcomeDue(){let g=false,w=false;try{g=localStorage.getItem('cc_gate')==='1';w=localStorage.getItem('cc_welcomed')==='1';}catch(_){}return g&&!w&&!storyGate();}
-function welcomeSay(){const due=welcomeDue();if(due){try{localStorage.setItem('cc_welcomed','1');}catch(_){}}storyPlayUrl('story/dispatch-welcome.mp3');return due;} /* v1.88: says hello on every Launch and Story tap from the cover (user); the lit cover text still shows once */
+function welcomeSay(){if(storyGate())return false;const due=welcomeDue();if(due){try{localStorage.setItem('cc_welcomed','1');}catch(_){}}storyPlayUrl('story/dispatch-welcome.mp3');return due;} /* v1.88: says hello on every Launch and Story tap from the cover (user); the lit cover text still shows once */
 function storyGateApply(){document.body.classList.toggle('gated',storyGate());const w=welcomeDue();if(w)$('coverSay').textContent=t('Ah, you know how to play. Welcome back, Commander.');$('cover').classList.toggle('lit',w);}
 // ----- v1.85: Story 2. The same nine bosses, the full fleet from the first turn, no softening, and they look a move ahead.
 // Each borrows its first-run boss's name, title, barks, sky and bark voices (bark:); brief, brag, win and lose are its own.
@@ -3930,7 +3968,7 @@ $('inMusic').addEventListener('change',()=>{try{localStorage.setItem('cc_music',
 var SFX_GAIN={tap:.4,move:.55,swap:.6,'swap-no':.5,clear:.6,cascade:.65,fall:.4,born:.7,'born-big':.8,load:.6,hit:.7,hold:.6,
   destroy:.8,take:.8,bomb:1,'bomb-tick':.6,'your-turn':.55,hint:.5,'siege-near':.7,win:.8,lose:.7,'sector-won':.85,
   'lobby-new':.5,connected:.6,left:.6,asteroid:.7,'asteroid-crush':.8,ride:.5,slide:.6,stack:.7,claim:.7,warp:.8,ram:.9,
-  fire:.7,fire2:.75,'turret-build':.7,'turret-fire':.6,reshuffle:.6,salvage:.6,sweep:.7};
+  fire:.7,fire2:.75,fuse:.7,'turret-build':.7,'turret-fire':.6,reshuffle:.6,salvage:.6,sweep:.7};
 var SFX_ALL=Object.keys(SFX_GAIN);
 var SFX_WHY={swap:'swap',stack:'stack',take:'take',sweep:'sweep',sweep_s:'sweep',claim:'claim',warp:'warp',ram:'ram',
   fire_t:'hold',fire_m:'hold',fire_kill:'destroy',fire_hit:'hit',fire_clear:'clear',bomb:'bomb',bomb_fuse:'bomb-tick',
@@ -3938,6 +3976,7 @@ var SFX_WHY={swap:'swap',stack:'stack',take:'take',sweep:'sweep',sweep_s:'sweep'
 var sfxCtx=null,sfxBuf={},sfxLoading={},sfxLast={},sfxArmed=false,sfxOverGid=null,sfxSiegeSeen={},lobbySeen=null;
 function sfxWhyName(w){const why=w&&w.why;if(!why)return null;
   if(SFX_WHY[why])return SFX_WHY[why];
+  if(why==='born_B')return 'fuse'; /* v1.89: a bomb arrives with its fuse lit (user) */
   if(why.startsWith('born_'))return 'HWX'.includes(why[5])?'born-big':'born';
   if(why==='move_S')return 'slide';
   if(why.startsWith('move_')){const a=w.at;const far=a&&a.length>1&&Math.max(Math.abs(a[0][0]-a[1][0]),Math.abs(a[0][1]-a[1][1]))>1;return far?'ride':'move';}
@@ -3954,7 +3993,7 @@ function sfx(name,delay){if(!sfxArmed||!SFX_GAIN[name])return;try{if(!soundOn())
   const now=Date.now()+(delay||0);if(sfxLast[name]&&now-sfxLast[name]<90)return;sfxLast[name]=now;
   if(sfxBuf[name]){const ctx=sfxCtxGet();if(ctx)sfxPlay(name,ctx.currentTime+(delay||0)/1000);return;}
   if(sfxBuf[name]===null)return;sfxLoad(name);const t0=Date.now();const iv=setInterval(()=>{if(sfxBuf[name]){clearInterval(iv);if(Date.now()-t0<1500)sfxPlay(name,0);}else if(sfxBuf[name]===null||Date.now()-t0>4000)clearInterval(iv);},60);}
-function sfxNote(w){const n=sfxWhyName(w);if(n)sfx(n,n==='born'||n==='born-big'?320:0);}
+function sfxNote(w){const n=sfxWhyName(w);if(n)sfx(n,n==='born'||n==='born-big'||n==='fuse'?320:0);}
 // a guest or spectator: the host's events arrive with the state; replay the ones not heard yet
 function sfxFromState(prev){if(!S||!prev||prev.gid!==S.gid){return;}
   let evs=[];if((S.lastN||0)!==(prev.lastN||0))evs=(S.last&&S.last.ev||[]).concat(S.ev||[]);else evs=(S.ev||[]).slice((prev.ev||[]).length);
