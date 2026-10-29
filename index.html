@@ -411,6 +411,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
+  <div class="field"><span class="lbl">New player</span><label><input type="checkbox" id="inGate"> Launch stays dark until the first story is done. Turn this off to open everything now.</label></div>
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
@@ -1530,7 +1531,9 @@ const FR={
 "I see your next move and the one behind it.": "Je vois votre prochain coup et celui derrière.",
 "Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Grande Ourse est à nous, deux fois. Dix-huit secteurs. Plus rien ici ne peut vous toucher. Rentrez, Commandant. Pour de bon cette fois.",
 "Ursa Major holds. It saw two moves. You saw one. See two.": "La Grande Ourse tient. Il a vu deux coups. Vous en avez vu un. Voyez-en deux.",
-"Ah, you know how to play. Welcome back, Commander.": "Ah, vous savez jouer. Bon retour, Commandant."
+"Ah, you know how to play. Welcome back, Commander.": "Ah, vous savez jouer. Bon retour, Commandant.",
+"Launch stays dark until the first story is done. Turn this off to open everything now.": "Lancer reste éteint jusqu'à la fin de la première histoire. Désactivez pour tout ouvrir maintenant.",
+"New player": "Nouveau joueur"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2264,12 +2267,14 @@ const ES={
 "I see your next move and the one behind it.": "Veo tu próxima jugada y la que viene detrás.",
 "Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Osa Mayor es nuestra, dos veces. Dieciocho sectores. Ya no queda nada ahí fuera que pueda contigo. Vete a casa, Comandante. Esta vez para siempre.",
 "Ursa Major holds. It saw two moves. You saw one. See two.": "La Osa Mayor resiste. Vio dos jugadas. Tú viste una. Ve dos.",
-"Ah, you know how to play. Welcome back, Commander.": "Ah, sabes jugar. Bienvenido de nuevo, Comandante."
+"Ah, you know how to play. Welcome back, Commander.": "Ah, sabes jugar. Bienvenido de nuevo, Comandante.",
+"Launch stays dark until the first story is done. Turn this off to open everything now.": "Lanzar queda apagado hasta terminar la primera historia. Desactívalo para abrirlo todo ahora.",
+"New player": "Jugador nuevo"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.86.0';
+const VERSION='1.86.1';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3836,6 +3841,9 @@ $('btnStoryMap').addEventListener('click',openStoryMap);
 $('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
+// v1.86.1: the gate is a switch in Settings too, so any phone can see it. Off while the story is unfinished: Dispatch's welcome plays as the confirmation.
+$('inGate').checked=(()=>{try{return localStorage.getItem('cc_gate')==='1';}catch(_){return false;}})();
+$('inGate').addEventListener('change',()=>{const on=$('inGate').checked;try{if(on){localStorage.setItem('cc_gate','1');localStorage.removeItem('cc_welcomed');}else{localStorage.removeItem('cc_gate');localStorage.setItem('cc_welcomed','1');}}catch(_){}storyGateApply();if(!on)storyPlayUrl('story/dispatch-welcome.mp3');});
 // ---------- music (v1.50, was the start-screen loop only): one engine for every screen. Fourteen tracks in music/,
 // made from scratch by music/make_music.py; the title loop stays the ACE-Step one the user picked (the generated
 // title_loop_synth.mp3 sits beside it). The crossfading loops share one spine (D minor, 96 BPM, 32 bars = 80 s), so
