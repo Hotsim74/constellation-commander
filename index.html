@@ -2313,7 +2313,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.91.0';
+const VERSION='1.92.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2875,10 +2875,11 @@ function botDepth(){if(S.tut)return 0;if(S.story)return (S.hard||S.ahead)?1:0;le
 // v1.89: every option open to `me` on the board as it stands, scored for level L (was inline in botTurn)
 function botOptions(me,L){const him=other(me);
   const opts=[];
-  let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size);if(L>=7){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
+  let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=3){const n=droneCount(me);v=n>=MAXD?Math.min(v,3):v*Math.max(0.25,1-0.75*n/MAXD);}else if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size); /* v1.92: the more drones it has, the less a swap is worth; at nine a swap is worth only what it pays besides drones (user) */if(L>=5){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
-  const threat=new Set(),fire=new Set();if(L>=6){for(const e of dronesOf(him)){if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(shotsOf(e)&&ammoOf(e)>0)for(let r=e.r-range();r<=e.r+range();r++)for(let c=e.c-range();c<=e.c+range();c++)if(inb(r,c))fire.add(key(r,c));if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
+  const threat=new Set(),fire=new Set();if(L>=4){for(const e of dronesOf(him)){ /* v1.92: from level 4, was 6 */if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(shotsOf(e)&&ammoOf(e)>0)for(let r=e.r-range();r<=e.r+range();r++)for(let c=e.c-range();c<=e.c+range();c++)if(inb(r,c))fire.add(key(r,c));if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
+  const weak=L>=3&&dronesOf(him).filter(x=>x.kind!=='T').length<4; /* v1.92: the other side under four drones: time to end it (user) */
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
   const trap=L>=7?(drift=driftPreview(me)):null;const trapVia=trap&&trap.killM&&trap.killM.side===me?trap.via:null; /* the stack that an asteroid would jump to land on the Command drone */
   const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=3; /* v1.55: at three, not two: a lone siege cannot be shot, so the only answers are a guard beside the Command drone, room to run, a bomb, or four drones around it */
@@ -2898,14 +2899,14 @@ function botOptions(me,L){const him=other(me);
       if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6; // go home to load
       if(kind==='take')v+=L>=2?12*droneAt(r,c).power:0;
       if(kind==='merge')v+=L>=4?(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c)):-1;
-      if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));
+      if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));if(d.kind==='X'&&weak){v+=24*(dist(d.r,d.c)-dist(r,c));const tl=dronesOf(him).filter(x=>x.kind==='T');if(tl.length){const td=(a,b)=>Math.min(...tl.map(x=>Math.max(Math.abs(x.r-a),Math.abs(x.c-b))));v+=5*(td(d.r,d.c)-td(r,c));}} /* v1.92: the siege marches on the Command drone and the turrets */
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
       if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
       if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&S.own[key(e.r,e.c)]===me){if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))v+=12*e.power;else if(e.kind==='S'&&e.power>1)v+=5;}}}
       if((d.kind==='S'||d.kind==='H')&&L>=5)v+=0.75*(dist(d.r,d.c)-dist(r,c));
       if(kind==='dark')v-=1;
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
-      if(L>=6&&d.kind!=='X'&&threat.has(k))v-=8*d.power; // do not park where it can be taken next turn
+      if(L>=4&&d.kind!=='X'&&threat.has(k))v-=8*d.power;else if(L>=4&&d.kind!=='X'&&d.kind!=='M'&&kind!=='merge'&&threat.has(key(d.r,d.c)))v+=6+6*d.power; /* do not park where it can be taken next turn; v1.92: and get out of such a square (user: it let one raider take three drones) */
       if(L>=6&&d.kind!=='X'&&d.kind!=='M'&&fire.has(k))v-=(d.power===1?6:3); // nor in range of a loaded enemy shooter
       if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
       if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60;
