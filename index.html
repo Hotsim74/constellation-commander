@@ -357,7 +357,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .overbtns{padding:0 18px}
 .storyHead{font-family:var(--display);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--bot);margin:14px 0 6px;padding-top:10px;border-top:1px solid var(--line,rgba(255,255,255,.12))}
 /* v1.84: the gate. Until four sectors are held a new player sees no free play: no Launch, no Play a friend; Again and New game lead to the story. */
-body.gated #coverGo,body.gated #btnNet,body.gated #netbox,body.gated #btnAgain{display:none!important}
+body.gated #btnNet,body.gated #netbox,body.gated #btnAgain{display:none!important}
+body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-events:none;box-shadow:none;text-shadow:none} /* v1.86: dark until the first story is played */
+#cover.lit #coverGo{animation:launchLit 2.4s ease-out both}
+@keyframes launchLit{0%{opacity:.28;filter:grayscale(.85) brightness(.7)}40%{opacity:1;filter:grayscale(0) brightness(1.9) drop-shadow(0 0 18px rgba(255,200,90,.9))}100%{opacity:1;filter:none}}
 .brief .tx.ship{border-left-color:#7fd1a8;margin-bottom:12px}.brief .shipRow{display:flex;gap:12px;align-items:flex-start;margin-top:6px}.brief .shipArt{width:64px;height:64px;position:relative;flex:none}.brief .shipArt .dr{position:absolute;inset:0}.brief .tx.ship .words{color:#dff5e8;font-size:13px}
 #over .card .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;max-width:320px}
 #newver{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--you);color:#1a1200;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px}
@@ -1526,7 +1529,8 @@ const FR={
 "Ursa Major. The Bear does not guess, and now it looks past your next move to the one after. Nobody back here has beaten it twice. Be the first.": "Grande Ourse. L'Ours ne devine pas, et maintenant il regarde au-delà de votre prochain coup, jusqu'au suivant. Personne ici ne l'a battu deux fois. Soyez le premier.",
 "I see your next move and the one behind it.": "Je vois votre prochain coup et celui derrière.",
 "Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Grande Ourse est à nous, deux fois. Dix-huit secteurs. Plus rien ici ne peut vous toucher. Rentrez, Commandant. Pour de bon cette fois.",
-"Ursa Major holds. It saw two moves. You saw one. See two.": "La Grande Ourse tient. Il a vu deux coups. Vous en avez vu un. Voyez-en deux."
+"Ursa Major holds. It saw two moves. You saw one. See two.": "La Grande Ourse tient. Il a vu deux coups. Vous en avez vu un. Voyez-en deux.",
+"Ah, you know how to play. Welcome back, Commander.": "Ah, vous savez jouer. Bon retour, Commandant."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2259,12 +2263,13 @@ const ES={
 "Ursa Major. The Bear does not guess, and now it looks past your next move to the one after. Nobody back here has beaten it twice. Be the first.": "Osa Mayor. El Oso no adivina, y ahora mira más allá de tu próxima jugada, hasta la siguiente. Nadie aquí lo ha vencido dos veces. Sé el primero.",
 "I see your next move and the one behind it.": "Veo tu próxima jugada y la que viene detrás.",
 "Ursa Major is ours, twice over. Eighteen sectors. There is nothing left out here that can touch you. Go home, Commander. For good this time.": "La Osa Mayor es nuestra, dos veces. Dieciocho sectores. Ya no queda nada ahí fuera que pueda contigo. Vete a casa, Comandante. Esta vez para siempre.",
-"Ursa Major holds. It saw two moves. You saw one. See two.": "La Osa Mayor resiste. Vio dos jugadas. Tú viste una. Ve dos."
+"Ursa Major holds. It saw two moves. You saw one. See two.": "La Osa Mayor resiste. Vio dos jugadas. Tú viste una. Ve dos.",
+"Ah, you know how to play. Welcome back, Commander.": "Ah, sabes jugar. Bienvenido de nuevo, Comandante."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.85.0';
+const VERSION='1.86.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3352,7 +3357,7 @@ $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
 $('inLang').addEventListener('change',()=>setLang($('inLang').value));
 for(const b of document.querySelectorAll('#cover [data-lang]')){b.classList.toggle('on',b.dataset.lang===LANG);b.addEventListener('click',()=>setLang(b.dataset.lang));}
-$('coverGo').addEventListener('click',()=>{$('cover').hidden=true;$('cvFleet').innerHTML='';}); /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
+$('coverGo').addEventListener('click',()=>{if(storyGate())return;welcomeSay();$('cover').hidden=true;$('cvFleet').innerHTML='';}); /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
 showCover();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
@@ -3370,7 +3375,7 @@ if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').remo
 document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
 
 // ---------- the cover: a sky, the ships, a saying ----------
-function showCover(){storyGateApply();const cv=$('cover');$('coverSay').textContent=t(SAYINGS[rnd(SAYINGS.length)]);$('cvVer').textContent='v'+VERSION;cv.hidden=false;coverBuild();} /* shown first: the canvas needs its size */ /* v1.63: the start screen lives in one/cover.js */
+function showCover(){const cv=$('cover');$('coverSay').textContent=t(SAYINGS[rnd(SAYINGS.length)]);try{storyGateApply();}catch(_){} /* v1.86.0: at boot the story part of the script has not run yet (SECTORS, story are in their dead zone); boot() applies the gate again once everything is loaded */$('cvVer').textContent='v'+VERSION;cv.hidden=false;coverBuild();} /* shown first: the canvas needs its size */ /* v1.63: the start screen lives in one/cover.js */
 
 // ---------- motion: missiles fly, drones glide ----------
 function cellXY(r,c){const el=cellEl(r,c);return [el.offsetLeft+el.offsetWidth/2,el.offsetTop+el.offsetHeight/2,el.offsetWidth];}
@@ -3715,9 +3720,12 @@ function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=k
   $('briefShipWho').textContent=who;$('briefShipArt').innerHTML=art;$('briefShipText').textContent=text;$('briefShip').hidden=false;}
 // ----- v1.84: the gate. A new player (flag cc_gate, set on a first open from this version on) has only the coached game
 // and the story until FREE_AFTER sectors are held; then Launch, New game and Play a friend open. Players from before keep everything.
-const FREE_AFTER=4;
-function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&Object.keys(story.won).length<FREE_AFTER;}
-function storyGateApply(){document.body.classList.toggle('gated',storyGate());}
+const FREE_AFTER=9; /* v1.86: the whole first story (user: Launch stays dark till the first story is played) */
+function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&SECTORS.filter(s=>story.won[s.id]).length<FREE_AFTER;}
+// v1.86: the first Launch after the gate opens: Dispatch says hello (story/dispatch-welcome.mp3), once.
+function welcomeDue(){let g=false,w=false;try{g=localStorage.getItem('cc_gate')==='1';w=localStorage.getItem('cc_welcomed')==='1';}catch(_){}return g&&!w&&!storyGate();}
+function welcomeSay(){if(!welcomeDue())return false;try{localStorage.setItem('cc_welcomed','1');}catch(_){}storyPlayUrl('story/dispatch-welcome.mp3');return true;}
+function storyGateApply(){document.body.classList.toggle('gated',storyGate());const w=welcomeDue();if(w)$('coverSay').textContent=t('Ah, you know how to play. Welcome back, Commander.');$('cover').classList.toggle('lit',w);}
 // ----- v1.85: Story 2. The same nine bosses, the full fleet from the first turn, no softening, and they look a move ahead.
 // Each borrows its first-run boss's name, title, barks, sky and bark voices (bark:); brief, brag, win and lose are its own.
 const SECTORS2=[
@@ -3747,8 +3755,9 @@ const storyWarm={};
 const voiceId=(sec,kind)=>(kind==='brief'||kind==='brag'||kind==='win'||kind==='lose')?sec.id:(sec.bark||sec.id);
 function storyPrefetch(sec,kind){if(!soundOn())return;const u='story/'+voiceId(sec,kind)+'-'+kind+'.mp3';if(storyWarm[u])return;storyWarm[u]=1;try{fetch(u).catch(()=>{});}catch(_){}}
 function storyRelease(a){if(!a||a._done)return;a._done=true;try{a.pause();}catch(_){}try{a.removeAttribute('src');a.load();}catch(_){}}
-function storyPlay(sec,kind){if(storyAudio){storyRelease(storyAudio);storyAudio=null;}if(!soundOn())return null;
-  try{const u='story/'+voiceId(sec,kind)+'-'+kind+'.mp3';const a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});a.addEventListener('ended',()=>{setTimeout(()=>{if(storyAudio===a)storyAudio=null;storyRelease(a);},80);});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
+function storyPlay(sec,kind){return storyPlayUrl('story/'+voiceId(sec,kind)+'-'+kind+'.mp3');}
+function storyPlayUrl(u){if(storyAudio){storyRelease(storyAudio);storyAudio=null;}if(!soundOn())return null;
+  try{const a=new Audio(u);a.addEventListener('error',()=>{a._failed=true;});a.addEventListener('ended',()=>{setTimeout(()=>{if(storyAudio===a)storyAudio=null;storyRelease(a);},80);});storyAudio=a;a.play().then(()=>musicVoice(a)).catch(()=>{a._failed=true;});return a;}catch(_){return null;}}
 // v1.81: the voices are real now. The words keep pace with the clip (the typing stretches to its length once the
 // browser knows it), and the next speaker waits for the clip to end. No clip, or sound off: everything runs as before.
 function storyWait(a,then,cap){let done=false,iv=null;const go=()=>{if(done)return;done=true;clearInterval(iv);then();};
