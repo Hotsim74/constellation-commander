@@ -1472,11 +1472,9 @@ const FR={
 "Your fleet": "Votre flotte",
 "New this sector: {0}": "Nouveau dans ce secteur : {0}",
 "The full fleet": "La flotte au complet",
-"Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.": "Des éclaireurs et votre drone de commandement, rien d'autre. Chaque secteur suivant ajoute un vaisseau. Une forme qui construirait un vaisseau encore verrouillé construit un éclaireur à la place.",
 "One is waiting in your block of nine.": "Un exemplaire vous attend dans votre bloc de neuf.",
 "Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.": "Les bombes ne se gardent pas : un L de deux lignes de 3 en construit une. Gardez vos propres drones hors de ses lignes.",
 "Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Tous les vaisseaux sont en jeu, et tout ce que le bot a appris aussi. Rien de nouveau à étudier ; tout à utiliser.",
-"{0} is not in this sector's fleet yet: a scout instead.": "{0} n'est pas encore dans la flotte de ce secteur : un éclaireur à la place.",
 "scouts only": "éclaireurs seulement",
 "full fleet": "flotte au complet",
 "Drag": "Glisser-déposer",
@@ -1534,7 +1532,10 @@ const FR={
 "Ah, you know how to play. Welcome back, Commander.": "Ah, vous savez jouer. Bon retour, Commandant.",
 "Launch stays dark until the first story is done. Turn this off to open everything now.": "Lancer reste éteint jusqu'à la fin de la première histoire. Désactivez pour tout ouvrir maintenant.",
 "New player": "Nouveau joueur",
-"From here on the boss looks one move ahead before it chooses.": "À partir d'ici, le boss regarde un coup à l'avance avant de choisir."
+"From here on the boss looks one move ahead before it chooses.": "À partir d'ici, le boss regarde un coup à l'avance avant de choisir.",
+"Scouts and your Command drone, nothing else. A line of four stars builds a scout, and that is the only way to get more ships here. Bigger shapes just clear their stars until their ship joins the fleet, one new ship each sector.": "Des éclaireurs et votre drone de commandement, rien d'autre. Une ligne de quatre étoiles construit un éclaireur, et c'est la seule façon d'avoir plus de vaisseaux ici. Les formes plus grandes ne font que vider leurs étoiles jusqu'à ce que leur vaisseau rejoigne la flotte, un nouveau vaisseau par secteur.",
+"{0} is not in this sector's fleet yet: stars cleared, nothing built.": "{0} n'est pas encore dans la flotte de ce secteur : étoiles vidées, rien de construit.",
+"It joins the fleet in {0}.": "Il rejoint la flotte dans {0}."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2209,11 +2210,9 @@ const ES={
 "Your fleet": "Tu flota",
 "New this sector: {0}": "Nuevo en este sector: {0}",
 "The full fleet": "La flota completa",
-"Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.": "Exploradores y tu dron de mando, nada más. Cada sector siguiente añade una nave. Una forma que construiría una nave aún bloqueada construye un explorador en su lugar.",
 "One is waiting in your block of nine.": "Un ejemplar te espera en tu bloque de nueve.",
 "Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.": "Las bombas no se guardan: una L de dos líneas de 3 construye una. Mantén tus propios drones fuera de sus líneas.",
 "Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.": "Todas las naves están en juego, y también todo lo que el bot ha aprendido. Nada nuevo que estudiar; todo por usar.",
-"{0} is not in this sector's fleet yet: a scout instead.": "{0} aún no está en la flota de este sector: un explorador en su lugar.",
 "scouts only": "solo exploradores",
 "full fleet": "flota completa",
 "Drag": "Arrastrar",
@@ -2271,12 +2270,15 @@ const ES={
 "Ah, you know how to play. Welcome back, Commander.": "Ah, sabes jugar. Bienvenido de nuevo, Comandante.",
 "Launch stays dark until the first story is done. Turn this off to open everything now.": "Lanzar queda apagado hasta terminar la primera historia. Desactívalo para abrirlo todo ahora.",
 "New player": "Jugador nuevo",
-"From here on the boss looks one move ahead before it chooses.": "A partir de aquí, el jefe mira una jugada por adelantado antes de elegir."
+"From here on the boss looks one move ahead before it chooses.": "A partir de aquí, el jefe mira una jugada por adelantado antes de elegir.",
+"Scouts and your Command drone, nothing else. A line of four stars builds a scout, and that is the only way to get more ships here. Bigger shapes just clear their stars until their ship joins the fleet, one new ship each sector.": "Exploradores y tu dron de mando, nada más. Una línea de cuatro estrellas construye un explorador, y es la única forma de tener más naves aquí. Las formas más grandes solo vacían sus estrellas hasta que su nave se une a la flota, una nave nueva por sector.",
+"{0} is not in this sector's fleet yet: stars cleared, nothing built.": "{0} aún no está en la flota de este sector: estrellas vaciadas, nada construido.",
+"It joins the fleet in {0}.": "Se une a la flota en {0}."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.87.0';
+const VERSION='1.88.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2501,7 +2503,8 @@ function spawnFrom(side,sp){
   const at=placeCell(side,sp);
   if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;}
   if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;} // v1.19: a line entirely on their land pays nothing
-  for(const letter0 of sp.letters){let letter=letter0;const locked=!!(S.allow&&!S.allow.includes(letter0));if(locked)letter='C'; /* v1.82: not in this sector's fleet yet */
+  for(const letter0 of sp.letters){const letter=letter0;const locked=!!(S.allow&&!S.allow.includes(letter0));
+    if(locked){const j=storyJoins(letter0);note(t('{0} is not in this sector\'s fleet yet: stars cleared, nothing built.',cap(aname(letter0)))+(j?' '+t('It joins the fleet in {0}.',j):''),{why:'nopay'});grantRock(side,sp);continue;} /* v1.88: a locked ship's shape clears and builds nothing (v1.82 gave a scout; the user's mother: that confuses a new player) */
     let [r,c]=at;let o=droneAt(r,c);
     const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
     if(full&&sp.cap!=='always'){
@@ -2513,7 +2516,7 @@ function spawnFrom(side,sp){
     if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
     const d=mk(side,r,c,letter,sp.color,letter==='S'?(r+c)%2:sp.sq); // a raider is red or white after the square it is born on: a diagonal slider never leaves that color
     if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});}
-    else{S.drones.push(d);loadShooter(d);if(locked)note(t('{0} is not in this sector\'s fleet yet: a scout instead.',cap(aname(letter0))));note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
+    else{S.drones.push(d);loadShooter(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
   }
 }
 function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
@@ -3717,11 +3720,12 @@ const SECTORS=[
 // ----- v1.82: the fleet ladder. One ship joins per sector, in this order; the ninth sector plays with everything.
 const LADDER=['C','G','S','H','W','X','B','T'];
 function storyAllow(id){const i=SECTORS.findIndex(s=>s.id===id);if(i<0)return null;return i>=LADDER.length-1?LADDER.slice():LADDER.slice(0,i+1);}
+function storyJoins(letter){const i=LADDER.indexOf(letter);return i>=0&&SECTORS[i]?t(SECTORS[i].name):'';} /* v1.88: which sector a locked ship joins in */
 function storyIntro(id){const i=SECTORS.findIndex(s=>s.id===id);return i>=0&&i<LADDER.length?LADDER[i]:null;}
 function introLabel(id){if(storyHard(id))return t('thinks ahead');const k=storyIntro(id);const base=k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');return storyAhead(id)?base+', '+t('thinks ahead'):base;}
 function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=kind=>droneHTML({side:YOU,kind,colors:[0],power:1,claims:2});
   if(sec.hard){$('briefShipWho').textContent=t('Second run');$('briefShipArt').innerHTML=fake('M');$('briefShipText').textContent=t('The same fleet on both sides, from the first turn. This boss plays its best move every turn and looks one move ahead before it chooses. Nothing is held back.');$('briefShip').hidden=false;return;}
-  if(k==='C'){who=t('Your fleet');art=fake('C');text=t('Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.')+' '+t(TIPS.C);}
+  if(k==='C'){who=t('Your fleet');art=fake('C');text=t('Scouts and your Command drone, nothing else. A line of four stars builds a scout, and that is the only way to get more ships here. Bigger shapes just clear their stars until their ship joins the fleet, one new ship each sector.')+' '+t(TIPS.C);}
   else if(k){who=t('New this sector: {0}',(LANG==='en'?'the ':'')+TNAME[k]);art=fake(k);text=t(TIPS[k])+' '+(k==='B'?t('Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.'):t('One is waiting in your block of nine.'));}
   else{who=t('The full fleet');art=fake('M');text=t('Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.');}
   if(sec.ahead)text+=' '+t('From here on the boss looks one move ahead before it chooses.');
@@ -3732,7 +3736,7 @@ const FREE_AFTER=9; /* v1.86: the whole first story (user: Launch stays dark til
 function storyGate(){let g=false;try{g=localStorage.getItem('cc_gate')==='1';}catch(_){}return g&&SECTORS.filter(s=>story.won[s.id]).length<FREE_AFTER;}
 // v1.86: the first Launch after the gate opens: Dispatch says hello (story/dispatch-welcome.mp3), once.
 function welcomeDue(){let g=false,w=false;try{g=localStorage.getItem('cc_gate')==='1';w=localStorage.getItem('cc_welcomed')==='1';}catch(_){}return g&&!w&&!storyGate();}
-function welcomeSay(){if(!welcomeDue())return false;try{localStorage.setItem('cc_welcomed','1');}catch(_){}storyPlayUrl('story/dispatch-welcome.mp3');return true;}
+function welcomeSay(){const due=welcomeDue();if(due){try{localStorage.setItem('cc_welcomed','1');}catch(_){}}storyPlayUrl('story/dispatch-welcome.mp3');return due;} /* v1.88: says hello on every Launch and Story tap from the cover (user); the lit cover text still shows once */
 function storyGateApply(){document.body.classList.toggle('gated',storyGate());const w=welcomeDue();if(w)$('coverSay').textContent=t('Ah, you know how to play. Welcome back, Commander.');$('cover').classList.toggle('lit',w);}
 // ----- v1.85: Story 2. The same nine bosses, the full fleet from the first turn, no softening, and they look a move ahead.
 // Each borrows its first-run boss's name, title, barks, sky and bark voices (bark:); brief, brag, win and lose are its own.
@@ -3842,7 +3846,7 @@ $('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefB
 $('btnStoryNext').addEventListener('click',()=>{const n=storyNext();if(n)openBrief(n);});
 $('btnStoryRetry').addEventListener('click',()=>{const sec=secById(S.story);if(sec)openBrief(sec);});
 $('btnStoryMap').addEventListener('click',openStoryMap);
-$('coverStory').addEventListener('click',openStoryMap);$('btnStory').addEventListener('click',openStoryMap);
+$('coverStory').addEventListener('click',()=>{welcomeSay();openStoryMap();});$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
 // v1.86.1: the gate is a switch in Settings too, so any phone can see it. Off while the story is unfinished: Dispatch's welcome plays as the confirmation.
@@ -3906,7 +3910,13 @@ setInterval(musicTick,500);
 // a story voice line: the music drops to 40% while it speaks
 function musicDuck(on){musicDuckN=Math.max(0,musicDuckN+(on?1:-1));if(!musicMaster||!musicCtx)return;const now=musicCtx.currentTime;try{musicMaster.gain.cancelScheduledValues(now);musicMaster.gain.setValueAtTime(musicMaster.gain.value,now);musicMaster.gain.linearRampToValueAtTime(musicDuckN?0.4:1,now+0.4);}catch(_){}}
 function musicVoice(a){musicDuck(true);let done=false;const off=()=>{if(done)return;done=true;musicDuck(false);};a.addEventListener('ended',off);a.addEventListener('pause',off);a.addEventListener('error',off);setTimeout(off,30000);}
-function musicArm(){if(musicArmed)return;const ctx=musicCtxGet();if(!ctx)return;musicArmed=true;if(S&&S.over)musicOverGid=S.gid; /* a finished game on reload does not play its jingle again */
+function musicResume(){if(!musicCtx||document.hidden)return;if(musicCtx.state!=='running'){try{const p=musicCtx.resume();if(p&&p.catch)p.catch(()=>{});}catch(_){}}} /* v1.88: iOS leaves a context made before the first tap suspended, and marks it interrupted after a call or a switch away; any tap brings it back */
+let musicHidVoice=null;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(musicCtx){try{musicCtx.suspend();}catch(_){}}try{if(typeof storyAudio!=='undefined'&&storyAudio&&!storyAudio.paused&&!storyAudio._done){storyAudio.pause();musicHidVoice=storyAudio;}}catch(_){}}
+  else{musicResume();const a=musicHidVoice;musicHidVoice=null;if(a&&!a._done&&!a._failed){try{a.play().catch(()=>{});}catch(_){}}}}); /* v1.88: the music and a voice line stop when the game is left (the user's mother's iPhone kept playing) and pick up on return */
+window.addEventListener('pagehide',()=>{if(musicCtx){try{musicCtx.suspend();}catch(_){}}});
+for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,musicResume,{passive:true});
+function musicArm(){if(musicArmed)return;const ctx=musicCtxGet();if(!ctx)return;musicArmed=true;musicResume();if(S&&S.over)musicOverGid=S.gid; /* a finished game on reload does not play its jingle again */
   musicLoad('play_calm_loop',()=>{});musicTick();}
 for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,musicArm,{passive:true});
 $('inMusic').checked=musicOn();
