@@ -1533,7 +1533,8 @@ const FR={
 "Ursa Major holds. It saw two moves. You saw one. See two.": "La Grande Ourse tient. Il a vu deux coups. Vous en avez vu un. Voyez-en deux.",
 "Ah, you know how to play. Welcome back, Commander.": "Ah, vous savez jouer. Bon retour, Commandant.",
 "Launch stays dark until the first story is done. Turn this off to open everything now.": "Lancer reste éteint jusqu'à la fin de la première histoire. Désactivez pour tout ouvrir maintenant.",
-"New player": "Nouveau joueur"
+"New player": "Nouveau joueur",
+"From here on the boss looks one move ahead before it chooses.": "À partir d'ici, le boss regarde un coup à l'avance avant de choisir."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2269,12 +2270,13 @@ const ES={
 "Ursa Major holds. It saw two moves. You saw one. See two.": "La Osa Mayor resiste. Vio dos jugadas. Tú viste una. Ve dos.",
 "Ah, you know how to play. Welcome back, Commander.": "Ah, sabes jugar. Bienvenido de nuevo, Comandante.",
 "Launch stays dark until the first story is done. Turn this off to open everything now.": "Lanzar queda apagado hasta terminar la primera historia. Desactívalo para abrirlo todo ahora.",
-"New player": "Jugador nuevo"
+"New player": "Jugador nuevo",
+"From here on the boss looks one move ahead before it chooses.": "A partir de aquí, el jefe mira una jugada por adelantado antes de elegir."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.86.1';
+const VERSION='1.87.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2886,7 +2888,7 @@ async function botTurn(me){
       opts.push({type:'move',d,r,c,v});}
   }
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
-  if(smart&&((L>=8&&!S.story)||S.hard)&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play from level 8; every Story 2 boss; first-run story bosses stay as they are */
+  if(smart&&((L>=8&&!S.story)||S.hard||S.ahead)&&!S.tut&&opts.length>1)lookAhead(me,opts); /* free play from level 8; every Story 2 boss; v1.87: the last three first-run bosses too */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
@@ -3691,21 +3693,21 @@ const SECTORS=[
   lose:'Hydra holds. The asteroids did half the work. The Serpent did the rest.',
   b:{start:'One swap. Watch what falls.',took:'That one fell with the rest.',lost:'Cut a head. Count the heads.',claim:'Lines. I\'ll pull them out from under you.',bigclear:'Eight stars? Cute. Now watch mine.',turret:'It fires on its own. Like my cascades.',bomb:'A blast. My cascades are quieter and do more.',siege:'My siege came in on the cascade. It\'s at your door.',low:'Three heads. The old number was nine.',yourlow:'You\'re down to three. The rocks will finish it.',mid:'Twenty turns. The board is tilting my way.'},
   pts:[[5,60],[18,50],[30,58],[45,48],[58,58],[72,50],[85,58],[95,45]],lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]]},
- {id:'cygnus',skill:80,name:'Cygnus',title:'The Swan',
+ {id:'cygnus',skill:70,ahead:1,name:'Cygnus',title:'The Swan',
   brief:'Sector Cygnus. The Swan picks the wrecks clean and walks its bombs to where your drones sleep. Nothing you lose stays lost; it just changes hands.',
   brag:'I pick the wrecks clean, and my bombs know where you sleep.',
   win:'Cygnus is ours. The Swan is grounded. Two sectors left. Breathe.',
   lose:'Cygnus holds. Your wrecks fed its missiles. Deny it the field next time.',
   b:{start:'Lose something. I\'ll pick it up.',took:'Mine now. It will pay me a missile.',lost:'Leave it there. I\'ll be back for it.',claim:'Your land. My wrecks on it, soon.',bigclear:'Stars everywhere. Wrecks soon.',turret:'A turret. Built from what you lost.',bomb:'That one was mine. They know where you sleep.',siege:'My siege is at your Command drone. Sleep lightly.',low:'Three left, and a field of wrecks to feed them.',yourlow:'Three left. I\'ll collect them in order.',mid:'Twenty turns. The field is mine to pick.'},
   pts:[[50,10],[50,40],[50,70],[50,90],[20,45],[80,38]],lines:[[0,1],[1,2],[2,3],[4,1],[1,5]]},
- {id:'andromeda',skill:90,name:'Andromeda',title:'The Chained',
+ {id:'andromeda',skill:70,ahead:1,name:'Andromeda',title:'The Chained',
   brief:'Sector Andromeda. The Chained never lets its Command drone stand alone. There is always a guard beside it. Always. Find the moment there isn\'t.',
   brag:'My Command drone has never been alone a day in its life.',
   win:'Andromeda is ours. The chain broke. One left, and it\'s the big one.',
   lose:'Andromeda holds. The guard was there every time. Make it move.',
   b:{start:'My Command drone has a guard. It always will.',took:'The guard did that. The guard does everything.',lost:'Not the guard. Never the guard.',claim:'Claim. My guard stays where it is.',bigclear:'Rocks. The guard doesn\'t move for rocks.',turret:'Another thing that never leaves.',bomb:'A blast. The guard is still beside me.',siege:'My siege is beside your Command drone. Where is your guard?',low:'Three. One is the guard. Do the math.',yourlow:'Three left. Is one a guard? It should be.',mid:'Twenty turns. The guard has not moved. It won\'t.'},
   pts:[[10,70],[30,55],[55,45],[80,30],[95,20],[55,15]],lines:[[0,1],[1,2],[2,3],[3,4],[2,5]]},
- {id:'ursa',skill:100,name:'Ursa Major',title:'The Bear',
+ {id:'ursa',skill:70,ahead:1,name:'Ursa Major',title:'The Bear',
   brief:'Sector Ursa Major. The Bear does not guess. Every move is its best one. We have sent eleven Command drones. Eleven pikes. Yours is twelve.',
   brag:'I do not guess.',
   win:'Ursa Major is ours. All nine sectors. Twelve was the number. Go home, Commander. You\'ve earned a long one.',
@@ -3716,12 +3718,13 @@ const SECTORS=[
 const LADDER=['C','G','S','H','W','X','B','T'];
 function storyAllow(id){const i=SECTORS.findIndex(s=>s.id===id);if(i<0)return null;return i>=LADDER.length-1?LADDER.slice():LADDER.slice(0,i+1);}
 function storyIntro(id){const i=SECTORS.findIndex(s=>s.id===id);return i>=0&&i<LADDER.length?LADDER[i]:null;}
-function introLabel(id){if(storyHard(id))return t('thinks ahead');const k=storyIntro(id);return k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');}
+function introLabel(id){if(storyHard(id))return t('thinks ahead');const k=storyIntro(id);const base=k==='C'?t('scouts only'):k?cap(TNAME[k]):t('full fleet');return storyAhead(id)?base+', '+t('thinks ahead'):base;}
 function briefShip(sec){const k=storyIntro(sec.id);let who,text,art;const fake=kind=>droneHTML({side:YOU,kind,colors:[0],power:1,claims:2});
   if(sec.hard){$('briefShipWho').textContent=t('Second run');$('briefShipArt').innerHTML=fake('M');$('briefShipText').textContent=t('The same fleet on both sides, from the first turn. This boss plays its best move every turn and looks one move ahead before it chooses. Nothing is held back.');$('briefShip').hidden=false;return;}
   if(k==='C'){who=t('Your fleet');art=fake('C');text=t('Scouts and your Command drone, nothing else. Every sector after this one adds a ship. Shapes that would build a locked ship build a scout instead.')+' '+t(TIPS.C);}
   else if(k){who=t('New this sector: {0}',(LANG==='en'?'the ':'')+TNAME[k]);art=fake(k);text=t(TIPS[k])+' '+(k==='B'?t('Bombs are not kept: an L of two 3-lines builds one. Keep your own drones out of its lines.'):t('One is waiting in your block of nine.'));}
   else{who=t('The full fleet');art=fake('M');text=t('Every ship is in play, and so is everything the bot has learned. Nothing new to study; everything to use.');}
+  if(sec.ahead)text+=' '+t('From here on the boss looks one move ahead before it chooses.');
   $('briefShipWho').textContent=who;$('briefShipArt').innerHTML=art;$('briefShipText').textContent=text;$('briefShip').hidden=false;}
 // ----- v1.84: the gate. A new player (flag cc_gate, set on a first open from this version on) has only the coached game
 // and the story until FREE_AFTER sectors are held; then Launch, New game and Play a friend open. Players from before keep everything.
@@ -3747,6 +3750,7 @@ const SECTORS2=[
 const ALL_SECTORS=[...SECTORS,...SECTORS2];
 const secById=id=>ALL_SECTORS.find(s=>s.id===id)||null;
 const storyHard=id=>{const s=secById(id);return !!(s&&s.hard);};
+const storyAhead=id=>{const s=secById(id);return !!(s&&(s.hard||s.ahead));}; /* v1.87: the last three first-run bosses look one move ahead (user: the first bots to think ahead 1 move) */
 const STORY_KEY='cc_story';
 let story=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(STORY_KEY)||'null');}catch(_){}return (s&&s.won)?s:{won:{}};})();
 function storySave(){try{localStorage.setItem(STORY_KEY,JSON.stringify(story));}catch(_){}}
@@ -3798,7 +3802,7 @@ function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false
 function storyLaunch(){const id=$('brief').dataset.sec;const sec=secById(id);if(!sec)return;if(typeDone)typeDone();
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
-  $('inSkill').value=sec.skill;newGame({story:sec.id});S.hard=!!sec.hard;SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
+  $('inSkill').value=sec.skill;newGame({story:sec.id});S.hard=!!sec.hard;S.ahead=!!(sec.hard||sec.ahead);SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
   note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);setTimeout(()=>{if(bossSec()&&S.story===sec.id)showBark('start');},1500);}
 
 // ----- the boss talks during the game (v1.52). One line per event per game, at least two turns apart, shown
