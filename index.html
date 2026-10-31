@@ -1454,7 +1454,6 @@ const FR={
 "Throw at a drone": "Se jeter sur un drone",
 "Tap the enemy drone beside the guard to throw at it. Both are destroyed.": "Touchez le drone ennemi à côté du bouclier pour vous jeter dessus. Les deux sont détruits.",
 "Tap an enemy drone beside the guard.": "Touchez un drone ennemi à côté du bouclier.",
-"A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, une tourelle ou un drone protégé.",
 "presents": "présente",
 "Constellation": "Constellation",
 "Commander": "Commander",
@@ -1561,7 +1560,8 @@ const FR={
 "3 moves": "3 coups",
 "4 moves": "4 coups",
 "5 moves": "5 coups",
-"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Partie libre seulement. Auto : 1 coup à partir du niveau 80. 4 et 5 prennent quelques secondes par tour."
+"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Partie libre seulement. Auto : 1 coup à partir du niveau 80. 4 et 5 prennent quelques secondes par tour.",
+"A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, un drone de siège, une tourelle ou un drone protégé."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -1921,7 +1921,6 @@ const ES={
 "A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.": "Un reclamo toma el 3 × 3 alrededor del explorador. El terreno cuenta para ganar, y el otro lado ya no puede intercambiar estrellas en él. Dos reclamos y el explorador se gasta.",
 "A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.": "Un salto reclama las casillas sin reclamar alrededor de donde aterriza y elimina los drones enemigos en casillas que ahora son tuyas. Se gasta.",
 "A siege can ram the guard in its way. Both are gone.": "Un asedio puede embestir al guardián que le estorba. Los dos desaparecen.",
-"A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, una torreta ni un dron protegido.",
 "A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.": "Un misil quita una potencia a un dron. A potencia 1 el dron queda destruido, y destruir un dron gana un misil para tu dron de mando. Los exploradores y cazadores cargan ahí poniéndose a su lado.",
 "A missile takes one power off a drone. A stack takes one hit per power.": "Un misil quita una potencia a un dron. Una pila aguanta un impacto por potencia.",
 "Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.": "Los misiles no pueden destruir el dron de mando, solo arrancar los drones apilados en él. Solo un asedio a su lado termina la partida.",
@@ -2308,12 +2307,13 @@ const ES={
 "3 moves": "3 jugadas",
 "4 moves": "4 jugadas",
 "5 moves": "5 jugadas",
-"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Solo partida libre. Auto: 1 jugada desde el nivel 80. 4 y 5 tardan unos segundos por turno."
+"Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Solo partida libre. Auto: 1 jugada desde el nivel 80. 4 y 5 tardan unos segundos por turno.",
+"A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, un dron de asedio, una torreta ni un dron protegido."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.92.0';
+const VERSION='1.92.1';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2698,7 +2698,7 @@ function applyFire(d){
   return false;
 }
 // v1.62: a guard stacked to full power can throw itself at an enemy drone beside it: both are destroyed
-const throwCells=g=>{if(!g||g.kind!=='G'||g.power<MAXP)return [];const out=[];for(const [dr,dc] of DIR8){const o=droneAt(g.r+dr,g.c+dc);if(o&&o.side!==g.side&&o.kind!=='M'&&o.kind!=='T'&&!o.shield&&vis(g.side,o.r,o.c))out.push(o);}return out;};
+const throwCells=g=>{if(!g||g.kind!=='G'||g.power<MAXP)return [];const out=[];for(const [dr,dc] of DIR8){const o=droneAt(g.r+dr,g.c+dc);if(o&&o.side!==g.side&&o.kind!=='M'&&o.kind!=='T'&&o.kind!=='X'&&!o.shield&&vis(g.side,o.r,o.c))out.push(o);}return out;}; /* v1.92.1: never a siege: only four drones around it, a bomb or an asteroid end one (user) */
 function applyThrow(g,o){if(!throwCells(g).includes(o))return;queueShatter(o);queueShatter(g);S.drones=S.drones.filter(x=>x!==o&&x!==g);if(!S.salvage)S.missiles[g.side]++;wreckAt(o.r,o.c);wreckAt(g.r,g.c);note(t`${who(g.side)}: the guard threw itself at ${own(o.side,o.kind)}${o.power>1?t(' (power {0})',o.power):''} at ${sq(o.r,o.c)}. Both are gone${earned()}`,{why:'throw',at:[[g.r,g.c],[o.r,o.c]],lab:[t('thrown'),t('destroyed')]});}
 function applyRam(d){const g=shieldedBy(d);if(!g)return;queueShatter(g);queueShatter(d);S.drones=S.drones.filter(x=>x!==g&&x!==d);wreckAt(g.r,g.c);wreckAt(d.r,d.c);note(t`${cap(own(d.side,'X'))} rammed the guard at ${sq(g.r,g.c)}. Both are gone.`,{why:'ram',at:[[g.r,g.c]],lab:[t('rammed')]});}
 async function fireShots(side,list,shooter){
@@ -2889,7 +2889,7 @@ function botOptions(me,L){const him=other(me);
     if(d.kind==='M'&&L<3&&!(myM&&sdist(myM.r,myM.c)<=2)&&!trapVia)continue; /* v1.67: below skill 30 the Command drone stays home too, unless a siege is two away or the asteroid trap stands (a colleague watched it wander down the board in the coached game) */
     if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=3);if(!danger&&!trapVia){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
     if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?(g>=4?8+4*g+(half(me,d.r)?0:3):2*g):1});}
-    if(L>=5&&d.kind==='G'&&d.power>=MAXP)for(const o of throwCells(d)){const v=12*o.power+(o.kind==='X'?12:0)+(o.kind==='X'&&myM&&Math.max(Math.abs(o.r-myM.r),Math.abs(o.c-myM.c))<=3?20:0)+(o.kind==='H'?4:0)+(o.kind==='B'?4:0)-16;if(v>4)opts.push({type:'throw',d,o,v});} /* v1.62: a full guard thrown at something worth more than itself */
+    if(L>=5&&d.kind==='G'&&d.power>=MAXP)for(const o of throwCells(d)){const v=12*o.power+(o.kind==='H'?4:0)+(o.kind==='B'?4:0)-16; /* v1.92.1: a siege is no longer a throw target */if(v>4)opts.push({type:'throw',d,o,v});} /* v1.62: a full guard thrown at something worth more than itself */
     if(L>=5&&d.kind==='X'&&d.charge){let best=null;for(const o of shieldCells(d)){const k=key(o.r,o.c);const v=(o.kind==='X'?14:o.kind==='H'?12:o.kind==='G'?10:o.kind==='T'?8:6)*o.power+(threat.has(k)?10:0)+(fire.has(k)?6:0)+(o.kind==='X'&&dist(o.r,o.c)<=3?10:0);if(!best||v>best.v)best={o,v};}if(best)opts.push({type:'shield',d,o:best.o,v:12+best.v});} /* v1.57: the shield goes to the drone worth the most where it stands */
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
     if(L>=4&&d.kind==='M'&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n+(Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=1?2:0);if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}
@@ -3240,7 +3240,7 @@ warp:'A warp claims the unclaimed squares around where it lands and removes enem
 ram:'A siege can ram the guard in its way. Both are gone.',
 rock_get:'A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side\'s land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.',
 rock:'A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.',
-throw:'A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one\'s power. Not the Command drone, a turret or a shielded drone.',
+throw:'A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one\'s power. Not the Command drone, a siege, a turret or a shielded drone.',
 fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.',
 fire_hit:'A missile takes one power off a drone. A stack takes one hit per power.',
 fire_m:'Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.',
