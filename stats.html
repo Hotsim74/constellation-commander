@@ -15,12 +15,15 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,t
 .bar{height:6px;background:var(--bot);border-radius:3px;min-width:2px}
 .err{background:#3a1a1a;border:1px solid #7a3030;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-family:var(--mono);font-size:13px}
 code{font-family:var(--mono);font-size:13px;background:#0a0e14;padding:1px 5px;border-radius:4px}
+button{font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:#1a1206;background:var(--you);border:0;border-radius:6px;padding:9px 16px;cursor:pointer}button:disabled{opacity:.45;cursor:default}
 </style></head><body>
 <h1>Play notes <small id="when"></small></h1>
 <p class="sub">Anonymous summaries from players who said yes to sharing. One row per install. Nothing here names anyone. The page reads the match database directly; reload for fresh numbers.</p>
 <div id="err" class="err" hidden></div>
+<p><button id="btnXlsx" type="button" disabled>Download Excel</button> <span id="xlsxNote" style="color:var(--mute);font-size:13px">One workbook, six sheets.</span></p>
 <div class="tiles" id="tiles"></div>
 <div class="grid" id="grid"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const BASE='https://constellation-commander-default-rtdb.firebaseio.com/stats';
 const $=id=>document.getElementById(id);const DAY=86400000;
@@ -57,6 +60,18 @@ function sum(list,pick){const m={};for(const x of list){const o=pick(x)||{};for(
   table('Version last seen',count(L,x=>x.v),[{h:'Version',k:'k'},{h:'Installs',k:'n',n:1}],{bar:'n'});
   const inv=Object.entries(invites).map(([from,o])=>({from,n:Object.keys(o||{}).length,shared:(installs[from]||{}).invited||0})).sort((a,b)=>b.n-a.n);
   table('Who brings players',inv,[{h:'Install',k:'from'},{h:'Links copied',k:'shared',n:1},{h:'Installs it brought',k:'n',n:1}]);
+  window.playNotes={installs:L,invites,inv};$('btnXlsx').disabled=!L.length&&!$('err').hidden;$('btnXlsx').onclick=()=>downloadXlsx();
   table('Installs',L.sort((a,b)=>(b.last||0)-(a.last||0)).slice(0,200),[{h:'Install',k:'id'},{h:'First seen',k:'first',f:v=>v?new Date(v).toLocaleDateString():''},{h:'Last seen',k:'last',f:v=>v?ago(v):''},{h:'Opens',k:'opens',n:1},{h:'Time',k:'secs',n:1,f:v=>fmtH(+v||0)},{h:'Games',k:'games',n:1,f:v=>Object.values(v||{}).reduce((a,b)=>a+(+b||0),0)},{h:'Story held',k:'held',n:1},{h:'Platform',k:'plat'},{h:'From',k:'from'}]);
 })();
+// the same numbers as a workbook: Installs (one row each), Summary, Games by mode, Sectors, Settings, Invites
+function buildBook(){const {installs:L,invites,inv}=window.playNotes||{installs:[],invites:{},inv:[]};const wb=XLSX.utils.book_new();const d=t=>t?new Date(t):null;
+  const rows=L.map(x=>({Install:x.id,'First seen':d(x.first),'Last seen':d(x.last),Opens:+x.opens||0,'Minutes in play':Math.round((+x.secs||0)/60),'Free games':+(x.games||{}).free||0,'Story games':+(x.games||{}).story||0,'Coached games':+(x.games||{}).coach||0,'Two-phone games':+(x.games||{}).net||0,'Rated games finished':+x.ends||0,'Won':+x.wins||0,'Story sectors held':+x.held||0,'Story 2 held':+x.held2||0,'Settings changes':Object.values(x.settings||{}).reduce((a,b)=>a+(+b||0),0),'Host taps':+(x.net||{}).host||0,'Join taps':+(x.net||{}).join||0,'Invite links copied':+x.invited||0,'Came from':x.from||'',Platform:x.plat||'',Language:x.lang||'',Version:x.v||'','Served from':x.host||'','New player gate':x.gate?'yes':'no'}));
+  const sh=(name,data,widths)=>{const ws=XLSX.utils.json_to_sheet(data.length?data:[{'Nothing yet':''}]);if(widths)ws['!cols']=widths.map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,name);};
+  const now=Date.now();const summary=[['Installs',L.length],['Active, 7 days',L.filter(x=>now-(x.last||0)<7*DAY).length],['New, 7 days',L.filter(x=>now-(x.first||0)<7*DAY).length],['Hours in play',Math.round(L.reduce((a,x)=>a+(+x.secs||0),0)/360)/10],['Games started',L.reduce((a,x)=>a+Object.values(x.games||{}).reduce((p,q)=>p+(+q||0),0),0)],['Played the story',L.filter(x=>Object.keys(x.story||{}).length).length],['Free play only',L.filter(x=>(x.games||{}).free&&!Object.keys(x.story||{}).length).length],['Finished the first story',L.filter(x=>(x.held||0)>=9).length],['Tried two phones',L.filter(x=>(x.net||{}).host||(x.net||{}).join).length],['Invites that landed',Object.values(invites).reduce((a,o)=>a+Object.keys(o||{}).length,0)],['Made',new Date()]].map(([k,v])=>({What:k,Value:v}));
+  sh('Summary',summary,[28,14]);sh('Installs',rows,[10,12,12,7,10,8,8,8,10,10,6,10,10,10,8,8,10,10,9,9,9,11,10]);
+  sh('Games by mode',sum(L,x=>x.games).map(r=>({Mode:r.k,Started:r.n})),[14,10]);sh('Sectors',sum(L,x=>x.story).map(r=>({Sector:r.k,Launches:r.n})),[14,10]);
+  sh('Settings',sum(L,x=>x.settings).map(r=>({Setting:r.k,Changes:r.n})),[16,10]);sh('Invites',inv.map(r=>({Install:r.from,'Links copied':r.shared,'Installs it brought':r.n})),[10,12,16]);
+  for(const ws of Object.values(wb.Sheets)){const R=XLSX.utils.decode_range(ws['!ref']);for(let r=R.s.r;r<=R.e.r;r++)for(let c=R.s.c;c<=R.e.c;c++){const cell=ws[XLSX.utils.encode_cell({r,c})];if(cell&&cell.v instanceof Date){cell.t='d';cell.z='yyyy-mm-dd hh:mm';}}}
+  return wb;}
+function downloadXlsx(){const wb=buildBook();XLSX.writeFile(wb,'play-notes-'+new Date().toISOString().slice(0,10)+'.xlsx');}
 </script></body></html>
