@@ -2341,7 +2341,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.94.0';
+const VERSION='1.95.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2878,7 +2878,7 @@ function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b
     if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&!v.shield&&v.kind!=='X'&&v.kind!=='T'&&(S.own[key(a,b)]===him||S.own[key(a,b)]===0))s+=val(v);}worst=Math.max(worst,s);}}
   return dmg+worst;}
 // try each of the best options on a copy of the board and charge it what the other side could do back
-const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.6;let aheadT0=0; /* v1.89: options kept per level of the search, the time cap, and how much of the other side's best line counts */
+const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.8,AHEAD_WIN=5000;let aheadT0=0; /* v1.89: options kept per level of the search, the time cap, and how much of the other side's best line counts */
 function simCopy(){const log=S.log;S.log=[];const c=JSON.parse(JSON.stringify(S));S.log=log;return c;}
 function simApply(me,o){const him=other(me);const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
   if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
@@ -2888,12 +2888,12 @@ function simApply(me,o){const him=other(me);const d=o.d?S.drones.find(x=>x.id===
 function bestLine(side,depth,lvl){const {opts}=botOptions(side,botLevel());if(!opts.length)return 0;opts.sort((a,b)=>b.v-a.v);
   if(depth<=1||Date.now()-aheadT0>AHEAD_MS)return opts[0].v;
   const K=AHEAD_K[Math.min(lvl,AHEAD_K.length-1)];let best=-Infinity;
-  for(const o of opts.slice(0,K)){const saved=S;S=simCopy();let ok=true,v=o.v;try{ok=simApply(side,o);if(ok)v-=AHEAD_W*bestLine(other(side),depth-1,lvl+1);}catch(e){ok=false;}S=saved;if(ok)best=Math.max(best,v);}
+  for(const o of opts.slice(0,K)){const saved=S;S=simCopy();let ok=true,v=o.v;try{ok=simApply(side,o);if(ok){if(landOf(side)>=S.win)v+=AHEAD_WIN;else v-=AHEAD_W*bestLine(other(side),depth-1,lvl+1);}}catch(e){ok=false;}S=saved;if(ok)best=Math.max(best,v);}
   return best===-Infinity?opts[0].v:best;}
 // try each of the best options on a copy of the board and charge it what the other side could do back; from depth 2 the other side's own best line, and so on
 function lookAhead(me,opts,depth){depth=depth||1;const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,AHEAD_K[0]);const base=replyDamage(me);const q=simQuiet;simQuiet=true;aheadT0=Date.now();
   for(const o of top){const saved=S;S=simCopy();let ok=true;
-    try{ok=simApply(me,o);if(ok){o.la=replyDamage(me)-base;if(depth>1)o.la+=AHEAD_W*bestLine(him,depth-1,1);}}
+    try{ok=simApply(me,o);if(ok){const rd=replyDamage(me)-base;if(landOf(me)>=S.win)o.la=-AHEAD_WIN;else if(depth>1)o.la=(rd>=5000?rd:0.5*rd)+AHEAD_W*bestLine(him,depth-1,1);else o.la=rd;}} /* v1.95: deeper than one move, the other side's reply is counted once (bestLine), not twice; a move that wins the land count is taken */
     catch(e){ok=false;}
     S=saved;fx=[];
     if(ok&&o.la!=null)o.v-=o.la;}
