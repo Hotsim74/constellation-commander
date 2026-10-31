@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Play notes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#0b1018;--card:#121a26;--ink:#e8ecf2;--mute:#8fa0b4;--you:#e8a63b;--bot:#4ea8dc;--line:#223044;--display:'Chakra Petch',sans-serif;--body:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding:16px}
+h1{font-family:var(--display);font-size:22px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 4px}h1 small{font-size:12px;color:var(--mute);letter-spacing:.1em;margin-left:10px}
+p.sub{color:var(--mute);margin:0 0 16px;max-width:70ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}.tile b{display:block;font-family:var(--display);font-size:26px;color:var(--you);font-variant-numeric:tabular-nums}.tile span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto}h2{font-family:var(--display);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:0 0 8px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,th{text-align:left;padding:3px 8px 3px 0;border-bottom:1px solid var(--line);font-size:14px}th{color:var(--mute);font-weight:500}td.n,th.n{text-align:right;font-family:var(--mono)}
+.bar{height:6px;background:var(--bot);border-radius:3px;min-width:2px}
+.err{background:#3a1a1a;border:1px solid #7a3030;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-family:var(--mono);font-size:13px}
+code{font-family:var(--mono);font-size:13px;background:#0a0e14;padding:1px 5px;border-radius:4px}
+</style></head><body>
+<h1>Play notes <small id="when"></small></h1>
+<p class="sub">Anonymous summaries from players who said yes to sharing. One row per install. Nothing here names anyone. The page reads the match database directly; reload for fresh numbers.</p>
+<div id="err" class="err" hidden></div>
+<div class="tiles" id="tiles"></div>
+<div class="grid" id="grid"></div>
+<script>
+const BASE='https://constellation-commander-default-rtdb.firebaseio.com/stats';
+const $=id=>document.getElementById(id);const DAY=86400000;
+const fmtH=s=>{const h=s/3600;return h>=10?Math.round(h)+' h':h>=1?h.toFixed(1)+' h':Math.round(s/60)+' min';};
+const ago=t=>{const d=(Date.now()-t)/DAY;return d<1?'today':d<2?'yesterday':Math.floor(d)+' days ago';};
+function table(title,rows,cols,opts={}){const sec=document.createElement('section');sec.innerHTML='<h2>'+title+'</h2>';
+  if(!rows.length){sec.innerHTML+='<p style="color:var(--mute);margin:0">Nothing yet.</p>';$('grid').appendChild(sec);return;}
+  const max=opts.bar?Math.max(...rows.map(r=>+r[opts.bar]||0),1):0;
+  let h='<table><tr>'+cols.map(c=>'<th class="'+(c.n?'n':'')+'">'+c.h+'</th>').join('')+'</tr>';
+  for(const r of rows){h+='<tr>'+cols.map(c=>{let v=r[c.k];if(c.f)v=c.f(v,r);if(c.k===opts.bar)v='<div class="bar" style="width:'+Math.round(100*(+r[c.k]||0)/max)+'%"></div>'+v;return '<td class="'+(c.n?'n':'')+'">'+(v==null?'':v)+'</td>';}).join('')+'</tr>';}
+  sec.innerHTML+=h+'</table>';$('grid').appendChild(sec);}
+function count(list,pick){const m={};for(const x of list){const k=pick(x);if(k==null)continue;m[k]=(m[k]||0)+1;}return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,n])=>({k,n}));}
+function sum(list,pick){const m={};for(const x of list){const o=pick(x)||{};for(const k in o)m[k]=(m[k]||0)+(+o[k]||0);}return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([k,n])=>({k,n}));}
+(async()=>{let installs={},invites={};
+  try{const r=await fetch(BASE+'/installs.json');if(!r.ok)throw new Error('HTTP '+r.status+' reading /stats/installs. The database rules must allow reading /stats.');installs=(await r.json())||{};
+    const r2=await fetch(BASE+'/invites.json');if(r2.ok)invites=(await r2.json())||{};}
+  catch(e){$('err').hidden=false;$('err').textContent=String(e.message||e);}
+  const L=Object.values(installs).filter(x=>x&&x.id);$('when').textContent=new Date().toLocaleString();
+  const now=Date.now(),act7=L.filter(x=>now-(x.last||0)<7*DAY).length,new7=L.filter(x=>now-(x.first||0)<7*DAY).length;
+  const secs=L.reduce((a,x)=>a+(+x.secs||0),0),games=L.reduce((a,x)=>a+Object.values(x.games||{}).reduce((p,q)=>p+(+q||0),0),0);
+  const tiles=[['Installs',L.length],['Active, 7 days',act7],['New, 7 days',new7],['Time in play',fmtH(secs)],['Games started',games],['Invites that landed',Object.values(invites).reduce((a,o)=>a+Object.keys(o||{}).length,0)]];
+  $('tiles').innerHTML=tiles.map(([k,v])=>'<div class="tile"><b>'+v+'</b><span>'+k+'</span></div>').join('');
+  table('Games by mode',sum(L,x=>x.games),[{h:'Mode',k:'k'},{h:'Started',k:'n',n:1}],{bar:'n'});
+  const storyPlayers=L.filter(x=>Object.keys(x.story||{}).length).length,freeOnly=L.filter(x=>(x.games||{}).free&&!Object.keys(x.story||{}).length).length;
+  table('Story or skip',[{k:'Played at least one sector',n:storyPlayers},{k:'Free play only, never the story',n:freeOnly},{k:'Finished the first story (9 held)',n:L.filter(x=>(x.held||0)>=9).length},{k:'Into Story 2',n:L.filter(x=>(x.held2||0)>=1).length},{k:'Coached game played',n:L.filter(x=>(x.games||{}).coach).length}],[{h:'',k:'k'},{h:'Installs',k:'n',n:1}]);
+  table('Sectors launched',sum(L,x=>x.story),[{h:'Sector',k:'k'},{h:'Launches',k:'n',n:1}],{bar:'n'});
+  table('Two phones',[{k:'Installs that hosted',n:L.filter(x=>(x.net||{}).host).length},{k:'Installs that joined',n:L.filter(x=>(x.net||{}).join).length},{k:'Host taps',n:L.reduce((a,x)=>a+(+(x.net||{}).host||0),0)},{k:'Join taps',n:L.reduce((a,x)=>a+(+(x.net||{}).join||0),0)},{k:'Two-phone games started',n:L.reduce((a,x)=>a+(+(x.games||{}).net||0),0)}],[{h:'',k:'k'},{h:'',k:'n',n:1}]);
+  table('Settings touched',sum(L,x=>x.settings),[{h:'Setting',k:'k'},{h:'Changes',k:'n',n:1}],{bar:'n'});
+  table('Free-play skill chosen',sum(L,x=>x.skills).sort((a,b)=>+a.k-+b.k),[{h:'Skill',k:'k'},{h:'Games',k:'n',n:1}],{bar:'n'});
+  table('Wins against the bot',[{k:'Rated games finished',n:L.reduce((a,x)=>a+(+x.ends||0),0)},{k:'Won by the player',n:L.reduce((a,x)=>a+(+x.wins||0),0)}],[{h:'',k:'k'},{h:'',k:'n',n:1}]);
+  table('Platform',count(L,x=>x.plat),[{h:'Platform',k:'k'},{h:'Installs',k:'n',n:1}],{bar:'n'});
+  table('Language',count(L,x=>x.lang),[{h:'Language',k:'k'},{h:'Installs',k:'n',n:1}],{bar:'n'});
+  table('Served from',count(L,x=>x.host),[{h:'Site',k:'k'},{h:'Installs',k:'n',n:1}],{bar:'n'});
+  table('Version last seen',count(L,x=>x.v),[{h:'Version',k:'k'},{h:'Installs',k:'n',n:1}],{bar:'n'});
+  const inv=Object.entries(invites).map(([from,o])=>({from,n:Object.keys(o||{}).length,shared:(installs[from]||{}).invited||0})).sort((a,b)=>b.n-a.n);
+  table('Who brings players',inv,[{h:'Install',k:'from'},{h:'Links copied',k:'shared',n:1},{h:'Installs it brought',k:'n',n:1}]);
+  table('Installs',L.sort((a,b)=>(b.last||0)-(a.last||0)).slice(0,200),[{h:'Install',k:'id'},{h:'First seen',k:'first',f:v=>v?new Date(v).toLocaleDateString():''},{h:'Last seen',k:'last',f:v=>v?ago(v):''},{h:'Opens',k:'opens',n:1},{h:'Time',k:'secs',n:1,f:v=>fmtH(+v||0)},{h:'Games',k:'games',n:1,f:v=>Object.values(v||{}).reduce((a,b)=>a+(+b||0),0)},{h:'Story held',k:'held',n:1},{h:'Platform',k:'plat'},{h:'From',k:'from'}]);
+})();
+</script></body></html>

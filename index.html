@@ -351,7 +351,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .brief .bhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 0}
 .brief .bhead h2{margin:0;font-size:22px}
 .rockpop{position:absolute;left:8px;right:8px;top:14%;z-index:22;display:flex;gap:14px;align-items:center;background:rgba(10,16,24,.96);border:2px solid var(--you);border-radius:10px;padding:14px 16px;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 24px rgba(232,166,59,.35)}
-.rockpop[hidden],.bark[hidden]{display:none} /* v1.81.1: display:flex on the class beat the hidden attribute; the invisible alert sat over the board and swallowed every tap on the rows under it */
+.rockpop[hidden],.bark[hidden],.telepop[hidden]{display:none}
+/* v1.94: the play-notes waiver, asked once on the first Launch or Story tap */
+.telepop{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,4,8,.72)}
+.telepop .tp{max-width:460px;background:rgba(10,16,24,.98);border:2px solid var(--you);border-radius:10px;padding:16px 18px;font-size:15px;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 24px rgba(232,166,59,.3)}
+.telepop .tp b{display:block;font-family:var(--display);font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--you);margin-bottom:8px}.telepop .tp p{margin:0 0 10px}.telepop .rb{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px} /* v1.81.1: display:flex on the class beat the hidden attribute; the invisible alert sat over the board and swallowed every tap on the rows under it */
 .rockpop.show{opacity:1;animation:barkIn .3s ease-out}.rockpop .asteroid{position:relative;display:block;width:56px;height:56px;flex:none;margin:0;animation:rockspin 6s linear infinite}
 @keyframes rockspin{to{transform:rotate(360deg)}}
 .rockpop .rk{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}.rockpop .rk b{font-family:var(--display);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--you)}.rockpop .rk p{margin:0}.rockpop .rq{color:#f1e4c8;font-family:var(--mono);font-size:13px}.rockpop .rb{display:flex;gap:8px;margin-top:4px}
@@ -429,6 +433,8 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
   <div class="field"><span class="lbl">New player</span><label><input type="checkbox" id="inGate"> Launch stays dark until the first story is done. Turn this off to open everything now.</label></div>
+  <div class="field"><span class="lbl">Share play notes</span><label><input type="checkbox" id="inTele"> Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.</label></div>
+  <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
@@ -454,7 +460,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>Help us make the game better?</b><p>If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">Yes, send play notes</button><button type="button" id="teleNo">No thanks</button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1561,7 +1567,18 @@ const FR={
 "5 moves": "5 coups",
 "Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Partie libre seulement. Auto : 1 coup à partir du niveau 80. 4 et 5 prennent quelques secondes par tour.",
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, un drone de siège, une tourelle ou un drone protégé.",
-"Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum. Rien ne s'empile sur une bombe ; c'est la bombe qui s'empile sur un porteur, à n'importe quel moment de sa mèche."
+"Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum. Rien ne s'empile sur une bombe ; c'est la bombe qui s'empile sur un porteur, à n'importe quel moment de sa mèche.",
+"Help us make the game better?": "Nous aider à améliorer le jeu ?",
+"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si vous dites oui, le jeu nous envoie de courtes notes de jeu anonymes : combien de temps vous jouez, quels modes vous essayez (histoire, partie libre, deux téléphones, partie guidée), ce que vous changez dans les réglages, si un lien d'invitation vous a amené ici, et la version du jeu. Un numéro d'installation aléatoire distingue les joueurs qui reviennent.",
+"No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Pas de nom, pas d'e-mail, pas de position, rien de ce que vous tapez. Vous pouvez changer d'avis à tout moment dans les réglages, sous Partager les notes de jeu.",
+"Yes, send play notes": "Oui, envoyer les notes",
+"No thanks": "Non merci",
+"Share play notes": "Notes de jeu",
+"Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.": "Envoyer des notes de jeu anonymes aux auteurs : temps de jeu, modes essayés, réglages changés, invitations. Pas de nom, rien de tapé.",
+"Invite a friend": "Inviter un ami",
+"Copy invite link": "Copier le lien d'invitation",
+"Invite link copied.": "Lien d'invitation copié.",
+"Come play Constellation Commander with me.": "Viens jouer à Constellation Commander avec moi."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2308,12 +2325,23 @@ const ES={
 "5 moves": "5 jugadas",
 "Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Solo partida libre. Auto: 1 jugada desde el nivel 80. 4 y 5 tardan unos segundos por turno.",
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, un dron de asedio, una torreta ni un dron protegido.",
-"Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo. Nada se apila sobre una bomba; la bomba se apila sobre un portador, en cualquier punto de su mecha."
+"Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo. Nada se apila sobre una bomba; la bomba se apila sobre un portador, en cualquier punto de su mecha.",
+"Help us make the game better?": "¿Nos ayudas a mejorar el juego?",
+"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si dices que sí, el juego nos envía notas de juego breves y anónimas: cuánto juegas, qué modos pruebas (historia, partida libre, dos teléfonos, partida guiada), qué cambias en Ajustes, si un enlace de invitación te trajo aquí y la versión del juego. Un número de instalación aleatorio distingue a los jugadores que vuelven.",
+"No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Sin nombre, sin correo, sin ubicación, nada de lo que escribes. Puedes cambiar de opinión cuando quieras en Ajustes, en Compartir notas de juego.",
+"Yes, send play notes": "Sí, enviar notas",
+"No thanks": "No, gracias",
+"Share play notes": "Notas de juego",
+"Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.": "Enviar notas de juego anónimas a los autores: tiempo jugado, modos probados, ajustes cambiados, invitaciones. Sin nombre, nada escrito.",
+"Invite a friend": "Invitar a un amigo",
+"Copy invite link": "Copiar enlace de invitación",
+"Invite link copied.": "Enlace de invitación copiado.",
+"Come play Constellation Commander with me.": "Ven a jugar a Constellation Commander conmigo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.93.0';
+const VERSION='1.94.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2348,7 +2376,7 @@ const poss=side=>side===YOU?'Your':SNAME[BOT]+"'s";
 // ---------- state ----------
 function pickSafe(g,r,c){let k,t=0;do{k=rnd(KINDS);t++;}while(t<30&&((c>=2&&g[r][c-1]===k&&g[r][c-2]===k)||(r>=2&&g[r-1][c]===k&&g[r-2][c]===k)));return k;}
 function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push(pickSafe(g,r,c));}return g;}
-function newGame(opts={}){
+function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:$('inSalvage').checked,wrecks:{},
      over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
@@ -3360,7 +3388,7 @@ const botRating=(s,story)=>800+8*Math.round(story?s*STORY_SOFT:s); // v1.43: 10 
 const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.min(8,Math.floor(Math.abs(rA-rB)/ROCK_PTS)); /* at most 8 asteroids of handicap: more wrecks a board */let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
-function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}
+function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}try{teleEv('end',w===YOU);}catch(_){} /* v1.94 */
   const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill,!!(S.story&&!S.hard)),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:0,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score)prof.w++;else prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
@@ -3394,7 +3422,7 @@ setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion
 function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;c++){const d=droneAt(r,c);const k=key(r,c);s+=isCmd(r,c)?'M':isWall(r,c)?'#':d?(d.side===YOU?LETTER[d.kind]:LETTER[d.kind].toLowerCase()):S.grid[r][c]===ROCK?'%':!vis(YOU,r,c)?'?':S.own[k]===YOU?'y':S.own[k]===BOT?'b':S.own[k]===3?'=':'RGEBV'[S.grid[r][c]]||'.';}rows.push(s);}
   return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'}\n\nBOARD (UPPER = yours, lower = bot, M commander, # wall, % asteroid, ? fog, y/b/= land, letters R G E B V = star colors on open squares)\n${rows.join('\n')}\n\nLOG\n${S.log.slice(0,30).join('\n')}`;}
 // copy or share: the phone's share sheet when there is one, else the clipboard, else a box to copy from. A finished game is kept so New game never loses it.
-async function copyText(txt){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
+async function copyText(txt){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt,url:teleInviteUrl()});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
   try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();}
 function keepLastGame(){if(!S||!S.over||netSpec())return;try{localStorage.setItem('cc_lastgame',gameText());}catch(_){}$('btnCopyLast').hidden=false;}
 $('btnCopy').addEventListener('click',()=>copyText(gameText()));
@@ -3423,7 +3451,7 @@ $('inLang').value=LANG;
 function setLang(l){if(l===LANG)return;try{localStorage.setItem('cc_lang',l);}catch(_){}if(S)save();location.reload();}
 $('inLang').addEventListener('change',()=>setLang($('inLang').value));
 for(const b of document.querySelectorAll('#cover [data-lang]')){b.classList.toggle('on',b.dataset.lang===LANG);b.addEventListener('click',()=>setLang(b.dataset.lang));}
-$('coverGo').addEventListener('click',()=>{if(storyGate())return;welcomeSay();$('cover').hidden=true;$('cvFleet').innerHTML='';}); /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
+$('coverGo').addEventListener('click',()=>{if(storyGate())return;teleAsk(()=>{welcomeSay();$('cover').hidden=true;$('cvFleet').innerHTML='';});}); /* v1.94: the play-notes waiver first, once */ /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
 showCover();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
@@ -3559,7 +3587,7 @@ function netRemember(){try{localStorage.setItem(NET_KEY,JSON.stringify({code:net
 function netForget(){try{localStorage.removeItem(NET_KEY);}catch(_){}}
 
 // ----- host: start a match, wait in the lobby, run the game
-async function netHost(){
+async function netHost(){try{teleEv('net','host');}catch(_){}
   if(online)return;if(needName())return;const name=myName();prof.n=name;saveProf();$('inName').value=name;netStatus(t('Setting up the match…'));
   const code=Array.from({length:4},()=>NET_ALPHA[rnd(NET_ALPHA.length)]).join('');
   netStart('host',code,name);
@@ -3604,7 +3632,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
 }
 
 // ----- guest: join, send actions, take the board the host sends
-async function netJoin(code){
+async function netJoin(code){try{teleEv('net','join');}catch(_){}
   if(online)return;if(needName())return;code=(code||$('inCode').value||'').trim().toUpperCase();const name=myName();$('inName').value=name;
   if(!/^[A-Z]{4}$/.test(code)){netStatus(t('Type the 4-letter code from the host.'));return;}
   netStatus(t('Looking for the match…'));let doc=null;
@@ -3866,7 +3894,7 @@ function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false
   const va=storyPlay(sec,'brief');storyPrefetch(sec,'brag');const live=()=>!b.hidden&&b.dataset.sec===sec.id;
   typeOut($('briefText'),t(sec.brief),()=>storyWait(va,()=>{if(!live())return;$('briefSpeak').classList.remove('on');$('briefWho2').textContent=t(sec.title);const vb=storyPlay(sec,'brag');$('briefBoss').classList.add('speaking');
     typeOut($('briefBrag'),'“'+t(sec.brag)+'”',()=>storyWait(vb,()=>$('briefBoss').classList.remove('speaking'),10000));typePace(vb,t(sec.brag));}));typePace(va,t(sec.brief));}
-function storyLaunch(){const id=$('brief').dataset.sec;const sec=secById(id);if(!sec)return;if(typeDone)typeDone();
+function storyLaunch(){const id=$('brief').dataset.sec;const sec=secById(id);if(!sec)return;try{teleEv('story',sec.id);}catch(_){}if(typeDone)typeDone();
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
   $('inSkill').value=sec.skill;newGame({story:sec.id});S.hard=!!sec.hard;S.ahead=!!(sec.hard||sec.ahead);SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
@@ -3909,12 +3937,63 @@ $('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefB
 $('btnStoryNext').addEventListener('click',()=>{const n=storyNext();if(n)openBrief(n);});
 $('btnStoryRetry').addEventListener('click',()=>{const sec=secById(S.story);if(sec)openBrief(sec);});
 $('btnStoryMap').addEventListener('click',openStoryMap);
-$('coverStory').addEventListener('click',()=>{welcomeSay();openStoryMap();});$('btnStory').addEventListener('click',openStoryMap);
+$('coverStory').addEventListener('click',()=>{teleAsk(()=>{welcomeSay();openStoryMap();});});$('btnStory').addEventListener('click',openStoryMap);
 $('inSound').addEventListener('change',()=>{try{localStorage.setItem('cc_sound',$('inSound').checked?'1':'0');}catch(_){}});
 $('inSound').checked=soundOn();
 // v1.86.1: the gate is a switch in Settings too, so any phone can see it. Off while the story is unfinished: Dispatch's welcome plays as the confirmation.
 $('inGate').checked=(()=>{try{return localStorage.getItem('cc_gate')==='1';}catch(_){return false;}})();
 $('inGate').addEventListener('change',()=>{const on=$('inGate').checked;try{if(on){localStorage.setItem('cc_gate','1');localStorage.removeItem('cc_welcomed');}else{localStorage.removeItem('cc_gate');localStorage.setItem('cc_welcomed','1');}}catch(_){}storyGateApply();if(!on)storyPlayUrl('story/dispatch-welcome.mp3');});
+// ---------- play notes (v1.94): anonymous, opt-in. The first Launch or Story tap asks once (the waiver card); the answer
+// lives in cc_tele and in Settings → Share play notes. When on, one summary per install goes to the match database at
+// /stats/installs/<id> (PUT of the whole summary, debounced 4 s; at once when the page is put away). Nothing typed, no
+// name, no location: opens, seconds in play, games by mode, wins, story sectors launched and held, Settings touched,
+// two-phone host/join counts, the version, language, platform, which site served it, and the invite that brought the
+// install (?from=<id>). An invite also writes /stats/invites/<from>/<id>. The database rules must allow /stats (see
+// DESIGN.md v1.94). stats.html on the site reads it all back as tables.
+const TELE_BASE=NET_BASE+'/stats',TELE_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+let tele=null,teleT0=Date.now(),telePushT=null,teleDirty=false;
+const teleOn=()=>{try{return localStorage.getItem('cc_tele')==='1';}catch(_){return false;}};
+const teleAsked=()=>{try{return localStorage.getItem('cc_tele')!=null;}catch(_){return true;}};
+function teleId(){if(tele&&tele.id)return tele.id;let id=null;try{id=localStorage.getItem('cc_iid');}catch(_){}
+  if(!id){const b=new Uint8Array(6);try{crypto.getRandomValues(b);}catch(_){for(let i=0;i<6;i++)b[i]=rnd(256);}id=Array.from(b).map(x=>TELE_ALPHA[x%32]).join('');try{localStorage.setItem('cc_iid',id);}catch(_){}}
+  return id;}
+function telePlat(){const u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Windows/.test(u)?'win':/Mac/.test(u)?'mac':/CrOS/.test(u)?'chromeos':/Linux/.test(u)?'linux':'other';}
+function teleInviteUrl(){return 'https://hotsim74.github.io/constellation-commander/?from='+teleId();}
+function teleLoad(){try{tele=JSON.parse(localStorage.getItem('cc_tele_sum')||'null');}catch(_){tele=null;}
+  let fresh=false;
+  if(!tele||!tele.id){let from=null;try{from=(new URLSearchParams(location.search).get('from')||'').replace(/[^A-Z2-9]/g,'').slice(0,8)||null;}catch(_){}
+    let gate=false;try{gate=localStorage.getItem('cc_gate')==='1';}catch(_){}
+    tele={id:teleId(),first:Date.now(),from,gate:gate?1:0,opens:0,secs:0,games:{},skills:{},ends:0,wins:0,story:{},settings:{},net:{host:0,join:0}};fresh=true;}
+  try{localStorage.setItem('cc_iid',tele.id);}catch(_){}tele.v=VERSION;tele.lang=LANG;tele.plat=telePlat();tele.host=(location.hostname||'file').split('.')[0]||'local';tele.opens=(tele.opens||0)+1;tele.last=Date.now();
+  teleSave();if(fresh&&tele.from&&tele.from!==tele.id)tele._invite=1;}
+function teleSave(){try{localStorage.setItem('cc_tele_sum',JSON.stringify(tele));}catch(_){}}
+function teleHeld(){try{tele.held=SECTORS.filter(s=>story.won[s.id]).length;tele.held2=SECTORS2.filter(s=>story.won[s.id]).length;}catch(_){}}
+function telePush(now){if(!tele||!teleOn())return;teleDirty=true;if(now){clearTimeout(telePushT);telePushT=null;teleSend();return;}if(!telePushT)telePushT=setTimeout(teleSend,4000);}
+function teleSend(){telePushT=null;if(!teleDirty||!tele||!teleOn())return;teleDirty=false;teleHeld();tele.last=Date.now();teleSave();
+  const body=Object.assign({},tele);delete body._invite;
+  try{fetch(`${TELE_BASE}/installs/${tele.id}.json`,{method:'PUT',body:JSON.stringify(body),keepalive:true}).catch(()=>{});}catch(_){}
+  if(tele._invite){delete tele._invite;teleSave();try{fetch(`${TELE_BASE}/invites/${tele.from}/${tele.id}.json`,{method:'PUT',body:JSON.stringify(Date.now()),keepalive:true}).catch(()=>{});}catch(_){}}}
+function teleEv(kind,a,b){if(!tele)return;const bump=(o,k)=>{o[k]=(o[k]||0)+1;};
+  if(kind==='game'){setTimeout(()=>{if(!S)return;const mode=S.story?'story':S.tut?'coach':(online&&net)?'net':'free';bump(tele.games,mode);if(mode==='free')bump(tele.skills,String(S.skill));teleSave();telePush();},0);return;}
+  else if(kind==='end'){tele.ends++;if(a)tele.wins++;}
+  else if(kind==='story')bump(tele.story,a);
+  else if(kind==='setting')bump(tele.settings,a);
+  else if(kind==='net')bump(tele.net,a);
+  else if(kind==='invite')bump(tele,'invited');
+  teleSave();telePush();}
+function teleTick(hide){const now=Date.now();if(hide){if(tele){tele.secs=(tele.secs||0)+Math.max(0,Math.min(3600,Math.round((now-teleT0)/1000)));teleSave();telePush(true);}}teleT0=now;}
+document.addEventListener('visibilitychange',()=>teleTick(document.hidden));
+window.addEventListener('pagehide',()=>teleTick(true));
+// the waiver card: asked once, on the first Launch or Story tap; then() runs after either answer
+function teleAsk(then){if(teleAsked()){then();return;}const el=$('telepop');if(!el){then();return;}
+  const done=yes=>{try{localStorage.setItem('cc_tele',yes?'1':'0');}catch(_){}el.hidden=true;$('inTele').checked=yes;if(yes)telePush(true);then();};
+  $('teleYes').onclick=()=>done(true);$('teleNo').onclick=()=>done(false);el.hidden=false;}
+$('inTele').addEventListener('change',()=>{const on=$('inTele').checked;try{localStorage.setItem('cc_tele',on?'1':'0');}catch(_){}if(on)telePush(true);});
+$('inTele').checked=teleOn();
+$('setup').addEventListener('change',e=>{if(e.target&&e.target.id&&e.target.id!=='inTele')teleEv('setting',e.target.id);});
+$('btnInvite').addEventListener('click',async()=>{teleEv('invite');const u=teleInviteUrl();try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({title:'Constellation Commander',text:t('Come play Constellation Commander with me.'),url:u});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(u);note(t('Invite link copied.'));}catch(_){prompt(t('Copy this:'),u);}});
+teleLoad();if(teleOn())telePush();
 // ---------- music (v1.50, was the start-screen loop only): one engine for every screen. Fourteen tracks in music/,
 // made from scratch by music/make_music.py; the title loop stays the ACE-Step one the user picked (the generated
 // title_loop_synth.mp3 sits beside it). The crossfading loops share one spine (D minor, 96 BPM, 32 bars = 80 s), so
