@@ -233,6 +233,14 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .ghost.fly.s1 .tag{color:#ff5a5a}.ghost.fly.s2 .tag{color:#fff}
 .ghost.fly.go .tag,.ghost.fly.land .tag{opacity:0}
 .ghost.fly.lift .flare{opacity:1;transform:translateY(-50%) scale(1.05)}
+/* v1.96: a stack stands taller (user). The top drone lifts and one plate shows under it for each drone beneath, in that drone's own color. */
+.dr.st2{translate:0 -11%}.dr.st3{translate:0 -18%}
+.plate{position:absolute;inset:3%;border-radius:50%;z-index:2;pointer-events:none;background:radial-gradient(circle,#0e131a 0 54%,var(--pc,#888) 56%);box-shadow:0 0 0 1.5px #05070a,0 2px 3px rgba(0,0,0,.55)}
+.plate.pa{translate:0 8%}.plate.pb{translate:0 -3%}.plate.pc{translate:0 12%}
+.legend .plate,.bark .plate{display:none}
+/* v1.96: the star under a drone: a square frame in the star's color (the round rim is the drone's own color) */
+.cell.under::after{content:'';position:absolute;inset:1px;border:3px solid var(--uc);border-radius:4px;z-index:2;pointer-events:none;box-shadow:inset 0 0 10px var(--uc)}
+.cell.u0{--uc:#e5484d}.cell.u1{--uc:#f0a52b}.cell.u2{--uc:#3ec27a}.cell.u3{--uc:#3f8ff0}.cell.u4{--uc:#b06ce8}
 .dr .pw{position:absolute;right:-6%;bottom:-6%;min-width:38%;height:38%;border-radius:50%;background:#fff;color:#000;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .fuse{position:absolute;left:-6%;top:-6%;min-width:38%;height:38%;border-radius:50%;background:var(--danger);color:#fff;font-family:var(--mono);font-size:clamp(8px,1.6vw,11px);font-weight:700;display:flex;align-items:center;justify-content:center;z-index:4}
 .dr .ammo{position:absolute;right:-8%;top:-12%;display:flex;gap:1px;z-index:4;pointer-events:none}
@@ -887,7 +895,6 @@ const FR={
 "{0} swapped {1} and {2}.": "{0} {v:avez échangé|a échangé} {1} et {2}.",
 "Out of range or in the fog. A missile flies {0} squares at something you can see.": "Hors de portée ou dans le brouillard. Un missile vole {0} cases vers quelque chose que vous voyez.",
 "{0} of {1} aimed. Tap another target, or Fire now.": "{0} sur {1} visé. Touchez une autre cible, ou Tirer maintenant.",
-"Stack the {0} into the {1}? You get a power {2} {3}. Tap it again, or Yes below.": "Empiler {0} dans {1} ? Vous obtenez {3} de puissance {2}. Touchez encore, ou Oui en bas.",
 "The bomb on {0}": "La bombe sur {0}",
 "That is {0}.": "C'est {0}.",
 "{0} of {1} drones · {2} missile{3} on the Command drone": "{0} drones sur {1} · {2} missile{3} sur le drone de commandement",
@@ -1578,7 +1585,12 @@ const FR={
 "Invite a friend": "Inviter un ami",
 "Copy invite link": "Copier le lien d'invitation",
 "Invite link copied.": "Lien d'invitation copié.",
-"Come play Constellation Commander with me.": "Viens jouer à Constellation Commander avec moi."
+"Come play Constellation Commander with me.": "Viens jouer à Constellation Commander avec moi.",
+"Stack your {0} onto this {1}? You lose the {2}: the stack moves and fights as a {3}. It becomes power {4}: {5} hits to bring down, and it rides both colors. Tap it again, or Yes below.": "Empiler {0} sur {1} ? Vous perdez {2} : la pile se déplace et combat comme {3}. Puissance {4} : {5} coups pour la faire tomber, et elle suit les deux couleurs. Touchez encore, ou Oui en bas.",
+"Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.": "Charger la bombe sur ce drone de siège ? Elle devient un bouclier que le siège peut donner à un drone à côté de lui. Touchez encore, ou Oui en bas.",
+"Load the bomb onto this hunter? The hunter drops its missiles for one bomb missile, fired up to 3 squares. Tap it again, or Yes below.": "Charger la bombe sur ce chasseur ? Le chasseur lâche ses missiles pour un missile-bombe, tiré jusqu'à 3 cases. Touchez encore, ou Oui en bas.",
+"Load the bomb onto your Command drone? It carries the bomb, fuse {0}. When it goes off the Command drone only loses its stack. Tap it again, or Yes below.": "Charger la bombe sur votre drone de commandement ? Il porte la bombe, mèche {0}. Quand elle part, le drone de commandement ne perd que sa pile. Touchez encore, ou Oui en bas.",
+"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "Charger la bombe sur {0} ? {1} garde ses déplacements et porte la bombe, mèche {2}. Elle part là où se trouve {3}, et le porteur est perdu avec elle. Touchez encore, ou Oui en bas."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -1688,7 +1700,6 @@ const ES={
 "{0} swapped {1} and {2}.": "{0} {v:intercambiaste|intercambió} {1} y {2}.",
 "Out of range or in the fog. A missile flies {0} squares at something you can see.": "Fuera de alcance o en la niebla. Un misil vuela {0} casillas hacia algo que puedes ver.",
 "{0} of {1} aimed. Tap another target, or Fire now.": "{0} de {1} apuntados. Toca otro objetivo o Dispara ya.",
-"Stack the {0} into the {1}? You get a power {2} {3}. Tap it again, or Yes below.": "¿Apilar {0} en {1}? Obtienes {3} de potencia {2}. Tócalo otra vez, o Sí abajo.",
 "That is {0}. Blue dots: where it can go. Red: what it can take.": "Eso es {0}. Puntos azules: adónde puede ir. Rojos: lo que puede tomar.",
 "That is {0}.": "Eso es {0}.",
 "{0} of {1} drones · {2} missile{3} on the Command drone": "{0} de {1} drones · {2} misil(es) en el dron de mando",
@@ -2336,12 +2347,17 @@ const ES={
 "Invite a friend": "Invitar a un amigo",
 "Copy invite link": "Copiar enlace de invitación",
 "Invite link copied.": "Enlace de invitación copiado.",
-"Come play Constellation Commander with me.": "Ven a jugar a Constellation Commander conmigo."
+"Come play Constellation Commander with me.": "Ven a jugar a Constellation Commander conmigo.",
+"Stack your {0} onto this {1}? You lose the {2}: the stack moves and fights as a {3}. It becomes power {4}: {5} hits to bring down, and it rides both colors. Tap it again, or Yes below.": "¿Apilar {0} sobre {1}? Pierdes {2}: la pila se mueve y lucha como {3}. Potencia {4}: {5} impactos para derribarla, y viaja por ambos colores. Tócalo otra vez, o Sí abajo.",
+"Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.": "¿Cargar la bomba en este dron de asedio? Se convierte en un escudo que el asedio puede dar a un dron a su lado. Tócalo otra vez, o Sí abajo.",
+"Load the bomb onto this hunter? The hunter drops its missiles for one bomb missile, fired up to 3 squares. Tap it again, or Yes below.": "¿Cargar la bomba en este cazador? El cazador suelta sus misiles por un misil bomba, que dispara hasta 3 casillas. Tócalo otra vez, o Sí abajo.",
+"Load the bomb onto your Command drone? It carries the bomb, fuse {0}. When it goes off the Command drone only loses its stack. Tap it again, or Yes below.": "¿Cargar la bomba en tu dron de mando? Lleva la bomba, mecha {0}. Cuando estalle, el dron de mando solo pierde su pila. Tócalo otra vez, o Sí abajo.",
+"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "¿Cargar la bomba en {0}? {1} conserva sus movimientos y lleva la bomba, mecha {2}. Estalla donde esté {3}, y el portador se pierde con ella. Tócalo otra vez, o Sí abajo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.95.0';
+const VERSION='1.96.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2531,9 +2547,8 @@ function gravity(g,side){
     let r=0;
     while(r<N){
       if(isWall(r,c)){g[r][c]=-1;r++;continue;}
-      if(g[r][c]===ROCK){r++;continue;} // asteroids are terrain: they never move and they split the column like a wall
-      let e=r;while(e<N&&!isWall(e,c)&&g[e][c]!==ROCK)e++; // run is rows r..e-1
-      const rows=[];for(let i=r;i<e;i++)rows.push(i);
+      let e=r;while(e<N&&!isWall(e,c))e++; // run is rows r..e-1, wall to wall
+      const rows=[];for(let i=r;i<e;i++)if(g[i][c]!==ROCK)rows.push(i); /* v1.96: asteroids stay where they are and the stars fall past them (user); before, an asteroid split the column like a wall */
       const order=down?rows.slice().reverse():rows; // the end the stars pack toward comes first
       const kept=[];for(const i of order)if(g[i][c]>=0)kept.push([g[i][c],i]);
       for(let j=0;j<order.length;j++){const i=order[j];
@@ -2957,13 +2972,14 @@ async function botTurn(me){
   if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
   // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
   if(smart&&L>=2&&dronesOf(me).some(canShoot)){
+    const fin=o=>{let n=0;for(const s of dronesOf(me))if(canShoot(s)&&!s.bombAmmo&&inRange(s,o.r,o.c))n+=Math.min(shotsLeft(s),shotCap(s));return n>=o.power;}; /* v1.96: enough shots in range to bring the whole stack down this turn (user: destroy power-3 drones when it can) */
     for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
       for(const sh of dronesOf(me).filter(canShoot)){
         for(let r=Math.max(0,sh.r-range());r<=Math.min(N-1,sh.r+range());r++)for(let c=Math.max(0,sh.c-range());c<=Math.min(N-1,sh.c+range());c++){
           if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
           if(sh.bombAmmo){let n=0,mine=0;for(const [dr,dc] of [[0,0],...DIR4]){let rr=r,cc=c;do{const e=droneAt(rr,cc);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;rr+=dr;cc+=dc;}while(dr+dc!==0&&inb(rr,cc)&&vis(me,rr,cc)&&!solid(rr,cc));}if(mine||n<2)continue;v=6+4*n;if(!best||v>best.v)best={r,c,v,sh};continue;} /* a bomb missile: aim where the cross holds enemies and none of its own */
           if(o&&o.side===him&&(o.kind==='T'||((o.kind==='M'||o.kind==='X')&&o.power<=1)))continue; // missiles bounce off turrets, a lone Command drone and a lone siege: never waste one there
-          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:5)+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
+          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:(L>=5&&o.kind!=='X'&&fin(o)?8+4*o.power:5))+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
           else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
           else continue;
           if(!best||v>best.v)best={r,c,v,sh};}}
@@ -3047,7 +3063,7 @@ function onCell(r,c){
   if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus(t('That square is in the fog. Bring a drone next to it, or claim with a scout.'));return;}
   if(sd){const T=targets(sd);
     if(T.has(k)){const tt=T.get(k);
-      if(tt==='merge'){if(wasPending&&wasPending.d===sd&&wasPending.r===r&&wasPending.c===c){humanMove(sd,r,c);return;} /* a second tap on the green square confirms */const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(t`Stack the ${TNAME[sd.kind]} into the ${TNAME[o.kind]}? You get a power ${Math.min(MAXP,o.power+sd.power)} ${TNAME[o.kind]}. Tap it again, or Yes below.`);renderBoard();renderActions();return;}
+      if(tt==='merge'){if(wasPending&&wasPending.d===sd&&wasPending.r===r&&wasPending.c===c){humanMove(sd,r,c);return;} /* a second tap on the green square confirms */const o=droneAt(r,c);pending={d:sd,r,c};mode='confirm';setStatus(stackAsk(sd,o));renderBoard();renderActions();return;}
       humanMove(sd,r,c);return;}}
   if(d&&d.side===YOU){sel={id:d.id};mode=null;aimList=[];sfx('tap');showTip(d);setStatus(describe(d)+t('. Tap a marked square to move, red to take, green to stack.'));renderBoard();renderActions();return;}
   if(d){sel=null;peek=(peek&&peek.id===d.id)?null:{id:d.id};showTip(d);setStatus(peek?t`That is ${own(BOT,d.kind)}. Blue dots: where it can go. Red: what it can take.`:t`That is ${own(BOT,d.kind)}.`);renderBoard();renderActions();return;}
@@ -3064,9 +3080,19 @@ function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==
 const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
 function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
+// v1.96: the stack question says what you give up and what you get (user: "do you want to stack a hunter on this scout" made no sense)
+function stackAsk(sd,o){const a=TNAME[sd.kind],b=TNAME[o.kind],p=Math.min(MAXP,o.power+sd.power);
+  if(sd.kind==='B'){if(o.kind==='X')return t('Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.');
+    if(o.kind==='H')return t('Load the bomb onto this hunter? The hunter drops its missiles for one bomb missile, fired up to 3 squares. Tap it again, or Yes below.');
+    if(o.kind==='M')return t('Load the bomb onto your Command drone? It carries the bomb, fuse {0}. When it goes off the Command drone only loses its stack. Tap it again, or Yes below.',sd.fuse);
+    return t`Load the bomb onto this ${b}? The ${b} keeps its own moves and carries the bomb, fuse ${sd.fuse}. It goes off where the ${b} stands, and the carrier is lost with it. Tap it again, or Yes below.`;}
+  return t`Stack your ${a} onto this ${b}? You lose the ${a}: the stack moves and fights as a ${b}. It becomes power ${p}: ${p} hits to bring down, and it rides both colors. Tap it again, or Yes below.`;}
+// v1.96: a stack stands taller: one plate under the top drone for each drone beneath it, in that drone's own color
+function plates(d){if(!(d.power>1)||d.kind==='T')return '';const col=i=>KCOL[d.colors[i]!=null?d.colors[i]:d.colors[0]];
+  return d.power>=3?`<i class="plate pc" style="--pc:${col(2)}"></i><i class="plate pb" style="--pc:${col(1)}"></i>`:`<i class="plate pa" style="--pc:${col(1)}"></i>`;}
 function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${d.kind==='W'?'<i class="wfog"></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
+  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
@@ -3084,6 +3110,7 @@ function renderBoard(gone,born,mark,fall){
     {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage);}else wk.style.display='none';} /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
     if(seen){if(S.own[k])cls+=' own'+S.own[k];if(isWall(r,c))cls+=' wall'+S.wall[k];if(isCmd(r,c))cls+=(S.cmd[1][0]===r&&S.cmd[1][1]===c)?' cmd1':' cmd2';}
     if(!seen)cls+=' fog';
+    {const du=droneAt(r,c);if(du&&(du.side===YOU||seen)&&isStar(S.grid[r][c]))cls+=' under u'+S.grid[r][c];} /* v1.96: the star under a drone shows as a square frame in its color */
     if(sel&&sel.star&&sel.star[0]===r&&sel.star[1]===c)cls+=' sel';
     if(mark&&mark.some(([a,b])=>a===r&&b===c))cls+=' sel';
     if(T&&T.has(k)){const t=T.get(k);cls+=t==='take'?' tk':t==='merge'?' st':t==='dark'?' mv dark':' mv';}
