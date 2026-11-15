@@ -134,7 +134,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 /* v1.83: drag and drop. The ghost rides above the finger; the square it is over gets a white edge; the square it left dims. */
 .dragGhost{position:fixed;left:0;top:0;z-index:80;pointer-events:none;will-change:transform;filter:drop-shadow(0 14px 10px rgba(0,0,0,.65))}
 .dragGhost .dr{position:absolute;inset:-4%;transform:scale(1.12)}.dragGhost .gem{position:absolute;left:11%;top:11%;width:78%;height:78%;transform:scale(1.18)}
-.cell.lifted .dd,.cell.lifted>.gem{opacity:.22}.cell.dover{box-shadow:inset 0 0 0 2px #fff,0 0 10px rgba(255,255,255,.5);z-index:3}
+.cell.lifted .dd,.cell.lifted>.gem{opacity:.22}
+/* v1.97: while a star is in hand the ships turn to glass, so the star under each one can be read */
+.dd{transition:opacity .16s}.board.seethru .dd:not(.keep){opacity:.45}
+.cell.dover{box-shadow:inset 0 0 0 2px #fff,0 0 10px rgba(255,255,255,.5);z-index:3}
 .gem.pass{animation:gempass .45s ease-out}
 @keyframes gempass{0%{filter:brightness(1)}30%{filter:brightness(2.4) drop-shadow(0 0 6px #fff);transform:scale(1.14)}100%{filter:brightness(1);transform:scale(1)}}
 .ghost.fly .flare{position:absolute;top:50%;left:-26%;width:52%;height:42%;transform:translateY(-50%) scale(.4);border-radius:50%;background:radial-gradient(ellipse at 72% 50%,#fff 0,#9be7ff 22%,rgba(80,200,255,.8) 48%,rgba(80,200,255,0) 74%);opacity:0;filter:blur(1px);transition:opacity .18s ease-in,transform .18s ease-in}
@@ -2357,7 +2360,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.96.0';
+const VERSION='1.97.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3096,7 +3099,9 @@ function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdS
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
-function renderBoard(gone,born,mark,fall){
+/* v1.97: a star in hand (tapped, or under the finger in a drag) fades every ship so the stars beneath show */
+var starDrag=false;function seeThru(){$('board').classList.toggle('seethru',!!((sel&&sel.star)||starDrag));}
+function renderBoard(gone,born,mark,fall){seeThru();
   if(!S)return;if(S.tut)renderGuide();
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;
   const T=sd&&!mode?targets(sd):null;
@@ -3124,7 +3129,7 @@ function renderBoard(gone,born,mark,fall){
     if(gone&&gone.has(k))gem.classList.add('gone');
     if(fall&&fall.has(k)&&isStar(v)){const dy=fall.get(k);const isBorn=born&&born.has(k);const delay=Math.min(330,Math.abs(dy)*90);gem.style.transition='none';gem.style.transform=`translateY(${-dy*128.2}%)`;gem.style.opacity=isBorn?'0':'1';requestAnimationFrame(()=>requestAnimationFrame(()=>{gem.style.transition=`transform .85s cubic-bezier(.25,.7,.3,1.12) ${delay}ms,opacity .5s ease-out ${delay}ms`;gem.style.transform='';gem.style.opacity='';}));}
     else if(!fall){gem.style.transition='';gem.style.transform='';gem.style.opacity='';}
-    if(isCmd(r,c)&&seen){dd.textContent='★';dd.className='dd';dd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2';dd.dataset.did='';continue;}
+    if(isCmd(r,c)&&seen){dd.textContent='★';dd.className='dd keep';dd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2';dd.dataset.did='';continue;}
     const d=droneAt(r,c);const show=d&&(d.side===YOU||seen);
     const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors.join('')}:${d.claims||0}:${d.ammo||0}:${d.kind==='M'?S.missiles[d.side]:0}:${sel&&sel.id===d.id?1:0}:${isStar(v)?v:'-'}:${d.shield||0}:${d.charge||0}:${d.kind==='G'?guardLook(d):''}`:'';
     if(dd.dataset.did!==sig){dd.dataset.did=sig;dd.style.cssText='';dd.className='dd';dd.innerHTML=show?droneHTML(d):'';if(show&&sel&&sel.id===d.id)dd.firstChild.classList.add('sel');if(show&&isStar(v))dd.firstChild.classList.add('on'+v);if(show&&d.shield)dd.firstChild.classList.add('shd');if(show&&d.kind==='G'){const lk=guardLook(d);if(lk!=null){dd.firstChild.classList.add('angry');dd.firstChild.style.setProperty('--look',lk+'deg');}}} /* v1.49: a drone glows in the color of the star under it */
@@ -3364,7 +3369,7 @@ let drag=null;
     const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;const [r,c]=rc(i);const d=droneAt(r,c);let kind=null;
     if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw'||mode==='rock')return;kind='drone';}
     else if(!d&&isStar(S.grid[r][c])&&mode!=='rock'&&S.own[key(r,c)]!==BOT&&vis(YOU,r,c))kind='star';else return;
-    drag={k:i,r,c,x:e.clientX,y:e.clientY,id:e.pointerId,kind,d,on:false,ghost:null,over:-1,w:cell.offsetWidth||40};if(e.pointerType==='mouse')e.preventDefault();},{passive:false});
+    drag={k:i,r,c,x:e.clientX,y:e.clientY,id:e.pointerId,kind,d,on:false,ghost:null,over:-1,w:cell.offsetWidth||40};starDrag=kind==='star';seeThru();if(e.pointerType==='mouse')e.preventDefault();},{passive:false});
   const place=(g,x,y,w)=>{g.style.transform=`translate(${x-w/2}px,${y-w*1.05}px)`;};
   const move=e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
     if(!drag.on){if(Math.hypot(dx,dy)<8)return;drag.on=true;const cell=cells[drag.k];
@@ -3373,7 +3378,7 @@ let drag=null;
     place(drag.ghost,e.clientX,e.clientY,drag.w);
     const i=cellAt(e.clientX,e.clientY-drag.w*.55);if(i!==drag.over){if(drag.over>=0)cells[drag.over].classList.remove('dover');drag.over=i;if(i>=0&&i!==drag.k)cells[i].classList.add('dover');}
     e.preventDefault();};
-  const end=e=>{if(!drag||e.pointerId!==drag.id)return;const dg=drag;drag=null;if(!dg.on)return; /* a plain tap: the click does its usual job */
+  const end=e=>{if(!drag||e.pointerId!==drag.id)return;const dg=drag;drag=null;starDrag=false;seeThru();if(!dg.on)return; /* a plain tap: the click does its usual job */
     if(dg.ghost)dg.ghost.remove();cells[dg.k].classList.remove('lifted');if(dg.over>=0)cells[dg.over].classList.remove('dover');
     const i=dg.over;
     if(i<0||i===dg.k){swDone=Date.now();if(dg.kind==='drone')renderBoard();return;} /* let go over nothing: it settles back; a drone stays selected */
