@@ -1579,6 +1579,7 @@ const FR={
 "3 moves": "3 coups",
 "4 moves": "4 coups",
 "5 moves": "5 coups",
+"The bot is thinking ahead.": "Le bot réfléchit à l'avance.",
 "Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Partie libre seulement. Auto : 1 coup à partir du niveau 80. 4 et 5 prennent quelques secondes par tour.",
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, un drone de siège, une tourelle ou un drone protégé.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum. Rien ne s'empile sur une bombe ; c'est la bombe qui s'empile sur un porteur, à n'importe quel moment de sa mèche.",
@@ -2341,6 +2342,7 @@ const ES={
 "3 moves": "3 jugadas",
 "4 moves": "4 jugadas",
 "5 moves": "5 jugadas",
+"The bot is thinking ahead.": "El bot está pensando por adelantado.",
 "Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.": "Solo partida libre. Auto: 1 jugada desde el nivel 80. 4 y 5 tardan unos segundos por turno.",
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, un dron de asedio, una torreta ni un dron protegido.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo. Nada se apila sobre una bomba; la bomba se apila sobre un portador, en cualquier punto de su mecha.",
@@ -2364,7 +2366,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.98.0';
+const VERSION='1.99.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2920,6 +2922,56 @@ function lookAhead(me,opts,depth){depth=depth||1;const him=other(me);opts.sort((
     S=saved;fx=[];
     if(ok&&o.la!=null)o.v-=o.la;}
   simQuiet=q;}
+// ---------- v1.99: the deep search (Thinks ahead 2 to 5). The old search added up move preferences along a line; this one
+// plays each line out on a copy of the board and judges the POSITION at the end: land, drones, sieges closing on a
+// Command drone, missiles in stock, and what the side to move can take at once. Each simulated turn fires its missiles
+// first, as a real turn does, and turrets shoot. It deepens one move at a time (1, 2, ... up to the setting) and keeps
+// the last depth it finished inside the time cap, so every option is judged to the same depth. The bot's own move
+// preferences still count at the root, as a share: in a quiet position it plays as it always has.
+const DEEP_K=[10,6,4,3,3],DEEP_MS=6000,DEEP_WIN=100000,DEEP_PRIOR=0.5;let deepT0=0,deepStop=false,deepN=0;
+const dval=d=>d.kind==='M'?0:(d.kind==='X'?12:d.kind==='H'?9:d.kind==='G'?8:d.kind==='T'?10:d.kind==='W'?7:6)*Math.max(1,d.power)+2*(d.ammo||0)+(d.kind==='C'?5*(d.claims||0):0);
+function posEval(side){const him=other(side);const lm=landOf(side),lh=landOf(him);
+  let v=2.5*(lm-lh)+50*(Math.pow(lm/S.win,3)-Math.pow(lh/S.win,3))+1.5*((S.missiles[side]||0)-(S.missiles[him]||0));
+  const cm=cmdOf(side),ch=cmdOf(him);const gd=(m,s)=>!!m&&dronesOf(s).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-m.r),Math.abs(g.c-m.c))<=1);const gm=gd(cm,side),gh=gd(ch,him);
+  for(const d of S.drones){const mine=d.side===side,s=mine?1:-1;v+=s*dval(d);
+    if(d.kind==='X'){const m=mine?ch:cm;const tc=m?[m.r,m.c]:S.cmd[mine?him:side];const dist=Math.max(Math.abs(d.r-tc[0]),Math.abs(d.c-tc[1]));v+=s*((mine?gh:gm)?2:4)*(N-1-dist);}}
+  return v;}
+// the end of a line: the position, plus what the side to move can take at once (a win there is a win)
+function deepLeaf(side,ply){const rd=replyDamage(other(side));if(rd>=5000)return DEEP_WIN/2-ply;return posEval(side)+0.6*rd;}
+function simHit(side,o){o.power--;if(o.power<=0){S.drones=S.drones.filter(x=>x!==o);if(!S.salvage)S.missiles[side]=(S.missiles[side]||0)+1;}}
+function simTurret(side){for(const tr of dronesOf(side)){if(tr.kind!=='T')continue;let e=null;for(const [dr,dc] of DIR8){const x=droneAt(tr.r+dr,tr.c+dc);if(x&&x.side!==side&&x.kind!=='M'&&!x.shield&&!(x.kind==='X'&&x.power<=1)&&(!e||x.power<e.power))e=x;}if(e)simHit(side,e);}}
+// the mover's missiles, before its move: only at what it can see and can finish this turn, the most valuable first
+function simFire(side){const him=other(side);
+  for(let i=0;i<6;i++){const sh=dronesOf(side).filter(s=>canShoot(s)&&!s.bombAmmo);if(!sh.length)return;let best=null;
+    for(const o of dronesOf(him)){if(o.shield||o.kind==='T'||o.kind==='M'||(o.kind==='X'&&o.power<=1)||!vis(side,o.r,o.c))continue;const inr=sh.filter(s=>inRange(s,o.r,o.c));if(!inr.length)continue;
+      let n=0;for(const s of inr)n+=Math.min(shotsLeft(s),shotCap(s));if(n<o.power)continue;const v=dval(o)/o.power;if(!best||v>best.v)best={o,s:inr[0],v};}
+    if(!best)return;best.s.ammo--;best.s.shots=(best.s.shots||0)+1;simHit(side,best.o);}}
+// one whole turn on the copy: the action, the wins it may bring, then the turn passes (shots reset, the other side loads, its turrets fire)
+function simStep(me,o){if(!simApply(me,o))return false;const him=other(me);sweepSiege();if(!checkLand())checkSiegeWin();if(S.over)return true;
+  for(const d of S.drones)d.shots=0;S.turn=him;S.turnNo=(S.turnNo||0)+1;simTurret(him);sweepSiege();if(!checkLand())checkSiegeWin();return true;}
+function deepSearch(side,depth,alpha,beta,ply){
+  if(S.over)return S.over.w===side?DEEP_WIN-ply:ply-DEEP_WIN;
+  if(depth<=0)return deepLeaf(side,ply);
+  if((++deepN&31)===0&&Date.now()-deepT0>DEEP_MS)deepStop=true;if(deepStop)return 0;
+  simFire(side);
+  const {opts}=botOptions(side,botLevel());if(!opts.length)return deepLeaf(side,ply);opts.sort((a,b)=>b.v-a.v);
+  const K=DEEP_K[Math.min(ply,DEEP_K.length-1)];let best=-Infinity;
+  for(const o of opts.slice(0,K)){const saved=S;S=simCopy();let v=null;
+    try{if(simStep(side,o))v=-deepSearch(other(side),depth-1,-beta,-alpha,ply+1);}catch(e){v=null;}
+    S=saved;if(deepStop)return 0;if(v==null)continue;if(v>best)best=v;if(v>alpha)alpha=v;if(alpha>=beta)break;}
+  return best===-Infinity?deepLeaf(side,ply):best;}
+// the root: returns the option to play, or null if nothing could be searched (then the plain ranking stands)
+function lookDeep(me,opts,depth){const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,DEEP_K[0]);const q=simQuiet;simQuiet=true;deepT0=Date.now();deepN=0;
+  const pri=o=>DEEP_PRIOR*Math.max(-400,Math.min(150,o.v));let order=top.slice(),pick=null,reached=0,score=0;
+  try{for(let d=1;d<=depth;d++){deepStop=false;let best=-Infinity,bo=null;const sc=new Map();
+      for(const o of order){const saved=S;S=simCopy();let v=null;
+        try{if(simStep(me,o))v=-deepSearch(him,d-1,-Infinity,best===-Infinity?Infinity:pri(o)-best,1);}catch(e){v=null;}
+        S=saved;fx=[];if(deepStop)break;if(v==null)continue;const s=v+pri(o);sc.set(o,s);if(s>best){best=s;bo=o;}}
+      if(deepStop)break;if(!bo)break;pick=bo;reached=d;score=best;
+      order=order.slice().sort((a,b)=>(sc.has(b)?sc.get(b):-Infinity)-(sc.has(a)?sc.get(a):-Infinity));
+      if(best>=DEEP_WIN/4)break;}} /* a win is on the board: no need to look further */
+  finally{simQuiet=q;fx=[];}
+  lookDeep.last={reached,nodes:deepN,ms:Date.now()-deepT0,score};return pick;}
 // how many moves ahead this turn looks: the Settings choice in free play (Auto: one move from skill 80), one move for a Story 2 boss or the last three of the first story, none in the coached game
 function botDepth(){if(S.tut)return 0;if(S.story)return (S.hard||S.ahead)?1:0;let v='auto';try{v=localStorage.getItem('cc_ahead')||'auto';}catch(_){}if(v==='auto')return botLevel()>=8?1:0;return Math.max(0,Math.min(5,+v||0));}
 // v1.89: every option open to `me` on the board as it stands, scored for level L (was inline in botTurn)
@@ -2995,8 +3047,8 @@ async function botTurn(me){
   if(S.over)return;
   const {opts,myM,sdist}=botOptions(me,L);
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
-  const depth=botDepth();if(smart&&depth>0&&opts.length>1)lookAhead(me,opts,depth); /* v1.89: Settings → Thinks ahead, 0 to 5 moves in free play */
-  let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
+  const depth=botDepth();let deep=null;if(smart&&depth>0&&opts.length>1){if(depth>=2&&!(window.ccOldAhead&&window.ccOldAhead[me])){setStatus(t('The bot is thinking ahead.'));await sleep(40);deep=lookDeep(me,opts,depth);}else lookAhead(me,opts,depth);} /* v1.99: from 2 moves ahead the deep search picks; window.ccOldAhead is a test switch back to the old one */ /* v1.89: Settings → Thinks ahead, 0 to 5 moves in free play */
+  let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=deep||opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
   if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
