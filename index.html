@@ -78,10 +78,14 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .cell.fog::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 3px,transparent 3px 7px)}
 .cell.lit{box-shadow:inset 0 0 0 2px var(--ok)}
 .cell.sel{box-shadow:inset 0 0 0 3px var(--you)}
-.cell.mv::before{content:'';position:absolute;width:26%;height:26%;border-radius:50%;background:rgba(232,166,59,.55);z-index:2}
-.cell.mv.dark::before{background:rgba(232,166,59,.25);border:1px dashed var(--you)}
-.cell.tk{box-shadow:inset 0 0 0 3px var(--danger)}
-.cell.st{box-shadow:inset 0 0 0 3px var(--ok)}
+/* v1.98: the squares a touched ship can reach light up whole (was a small amber dot): a bright edge, a glow inside, a warm wash.
+   Red (take) and green (stack) glow the same way. A square in the fog gets a dim dashed edge. */
+.cell.mv{box-shadow:inset 0 0 0 2px rgba(255,196,92,.95),inset 0 0 13px 3px rgba(232,166,59,.7);background-image:linear-gradient(rgba(232,166,59,.26),rgba(232,166,59,.26));animation:mvglow 1.1s ease-in-out infinite alternate}
+@keyframes mvglow{from{box-shadow:inset 0 0 0 2px rgba(255,196,92,.8),inset 0 0 9px 2px rgba(232,166,59,.45)}to{box-shadow:inset 0 0 0 2px rgba(255,206,112,1),inset 0 0 16px 4px rgba(232,166,59,.85)}}
+.cell.mv.dark{box-shadow:none;background-image:none;animation:none;outline:2px dashed rgba(232,166,59,.6);outline-offset:-3px}
+.cell.tk{box-shadow:inset 0 0 0 3px var(--danger),inset 0 0 13px 3px rgba(229,72,77,.6);background-image:linear-gradient(rgba(229,72,77,.2),rgba(229,72,77,.2))}
+.cell.st{box-shadow:inset 0 0 0 3px var(--ok),inset 0 0 13px 3px rgba(62,194,122,.6);background-image:linear-gradient(rgba(62,194,122,.2),rgba(62,194,122,.2))}
+@media (prefers-reduced-motion:reduce){.cell.mv{animation:none}}
 .cell.aim{box-shadow:inset 0 0 0 2px rgba(229,72,77,.6)}
 .cell.aimed{box-shadow:inset 0 0 0 4px var(--danger)}
 .cell.warpto{box-shadow:inset 0 0 0 3px #b06ce8}
@@ -2360,7 +2364,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.97.0';
+const VERSION='1.98.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3391,6 +3395,12 @@ let drag=null;
     sel=null;mode=null;humanSwap([dg.r,dg.c],[r,c]);};
   b.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
   b.addEventListener('dragstart',e=>e.preventDefault());})();
+/* v1.98: the squares light the moment the finger lands on your ship, not when it lifts. Only when nothing else is going on
+   (no aim, warp, throw, stack question), and never on a square the ship already in hand could stack onto: that tap keeps its meaning. */
+$('board').addEventListener('pointerdown',e=>{if(rockWait||busy||!S||S.over||S.turn!==YOU||netSpec()||mode||Date.now()-swDone<350)return;if(e.pointerType==='mouse'&&e.button!==0)return;
+  const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;const [r,c]=rc(i);const d=droneAt(r,c);if(!d||d.side!==YOU)return;
+  if(sel&&sel.id===d.id)return;const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null;if(sd&&targets(sd).has(key(r,c)))return;
+  sel={id:d.id};aimList=[];pending=null;renderBoard();renderActions();});
 $('inSwipe').addEventListener('change',()=>{swipeOn=$('inSwipe').checked;try{localStorage.setItem('cc_swipe',swipeOn?'1':'0');}catch(_){}$('board').style.touchAction=swipeOn?'none':'';});
 $('inSwipe').checked=swipeOn;$('board').style.touchAction=swipeOn?'none':'';
 $('inAhead').value=(()=>{try{return localStorage.getItem('cc_ahead')||'auto';}catch(_){return 'auto';}})();if(!$('inAhead').value)$('inAhead').value='auto';
