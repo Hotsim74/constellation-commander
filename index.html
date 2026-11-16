@@ -2375,7 +2375,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.101.1';
+const VERSION='1.101.2';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3580,11 +3580,19 @@ $('inLang').addEventListener('change',()=>setLang($('inLang').value));
 for(const b of document.querySelectorAll('#cover [data-lang]')){b.classList.toggle('on',b.dataset.lang===LANG);b.addEventListener('click',()=>setLang(b.dataset.lang));}
 $('coverGo').addEventListener('click',()=>{if(storyGate())return;teleAsk(()=>{welcomeSay();$('cover').hidden=true;$('cvFleet').innerHTML='';});}); /* v1.94: the play-notes waiver first, once */ /* v1.70: the hidden cover's drone defs must not shadow the board's (a gradient inside display:none paints black) */
 showCover();
+/* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
+   progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
+   sector no longer leaves its own skill in the Settings box. */
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked']];
+function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
+function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
+for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
+snapSkill();renderSkillNote();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
 (async function boot(){
   const saved=load();
-  if(saved){S=saved;$('inSkill').value=S.skill;$('inTimers').checked=!!S.timers;try{renderAll();}catch(e){console.error(e);S=null;}}
+  if(saved){S=saved;if(!S.story&&!S.tut){if(!S.over||!prefHas('inSkill')){$('inSkill').value=S.skill;if(!prefHas('inSkill'))prefSave('inSkill');}} /* v1.101.2: a free game in progress shows its own skill; a story or coached game leaves the Settings box alone; a finished game only fills it when nothing was kept yet */$('inTimers').checked=!!S.timers;try{renderAll();}catch(e){console.error(e);S=null;}}
   const resumed=await netResume();
   if(!resumed&&S&&S.turn===BOT&&!S.over){busy=true;setTimeout(async()=>{await botSafely();busy=false;},800);}
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
@@ -4024,7 +4032,7 @@ function openBrief(sec){const b=$('brief');$('story').hidden=true;b.hidden=false
 function storyLaunch(){const id=$('brief').dataset.sec;const sec=secById(id);if(!sec)return;try{teleEv('story',sec.id);}catch(_){}if(typeDone)typeDone();
   $('brief').hidden=true;if(storyAudio){try{storyAudio.pause();}catch(_){}}
   if(online&&net)netLeave();
-  $('inSkill').value=sec.skill;newGame({story:sec.id});S.hard=!!sec.hard;S.ahead=!!(sec.hard||sec.ahead);SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
+  {const keep=$('inSkill').value;$('inSkill').value=sec.skill;newGame({story:sec.id});$('inSkill').value=keep;} /* v1.101.2: the sector's skill goes into the game, not into your Settings */S.hard=!!sec.hard;S.ahead=!!(sec.hard||sec.ahead);SNAME[BOT]=t(sec.name);S.log.length=0;storyPrefetch(sec,'start');storyPrefetch(sec,'win');storyPrefetch(sec,'lose');
   note(t`${t(sec.title)}: ${t(sec.brag)}`);note(t`Sector ${t(sec.name)}, skill ${sec.skill}. Take it.`);save();renderAll();setStatus(t`${t(sec.title)}: ${t(sec.brag)}`);setTimeout(()=>{if(bossSec()&&S.story===sec.id)showBark('start');},1500);}
 
 // ----- the boss talks during the game (v1.52). One line per event per game, at least two turns apart, shown
