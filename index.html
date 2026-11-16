@@ -2366,7 +2366,7 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.99.0';
+const VERSION='1.100.0';
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2887,11 +2887,15 @@ async function botSafely(){
 // ---------- v1.53: one move ahead (free play, skill 80+). What the other side could do next turn on this board:
 // a siege step that wins, a claim that reaches the land win (either = 10000), then its missiles plus its one
 // worst action (a take, a guard sweep, a warp landing). Static, no animation; run on a sandbox copy of S.
+/* v1.100: the land a claim at (r,c) really adds for `side`: open and contested squares. A square the other side owns only turns contested. */
+function claimLand(side,r,c){let g=0;for(const [a,b] of claimCells(r,c)){const o=S.own[key(a,b)];if(o===0||o===3)g++;}return g;}
+/* v1.100: a turn that cannot be thrown away: a siege three squares from the Command drone, or the other side within nine squares of the land win with a scout that can still claim */
+function botUrgent(me){const him=other(me),m=cmdOf(me);if(m&&dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-m.r),Math.abs(x.c-m.c))<=3))return true;return S.win-landOf(him)<=9&&dronesOf(him).some(x=>x.kind==='C'&&x.claims>0);}
 function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b,r,c)=>Math.max(Math.abs(a-r),Math.abs(b-c));
   const val=d=>d.kind==='M'?0:(d.kind==='X'?10:d.kind==='H'?9:d.kind==='G'?8:d.kind==='T'?12:6)*Math.max(1,d.power)+2*(d.ammo||0);
   if(myM){for(const x of dronesOf(him)){if(x.kind!=='X')continue;const sqs=[[x.r,x.c]];for(const [k,t] of targets(x))if(t==='move'||t==='dark')sqs.push(rc(k));
     for(const [r,c] of sqs){if(near(r,c,myM.r,myM.c)!==1)continue;const g=dronesOf(me).some(g=>g.kind==='G'&&(near(g.r,g.c,r,c)<=1||near(g.r,g.c,myM.r,myM.c)<=1));if(!g)return 10000;}}}
-  let best=0;for(const d of dronesOf(him))if(d.kind==='C'&&d.claims>0)best=Math.max(best,claimGain(d));if(landOf(him)+best>=S.win)return 10000;
+  let best=0;for(const d of dronesOf(him))if(d.kind==='C'&&d.claims>0)best=Math.max(best,claimLand(him,d.r,d.c));if(landOf(him)+best>=S.win)return 10000;
   const hits=[];for(const e of dronesOf(him)){if(!shotsOf(e)||!ammoOf(e))continue;const n=Math.min(shotsOf(e),ammoOf(e));const cand=[];
     for(const d of dronesOf(me)){if(!inRange(e,d.r,d.c)||!vis(him,d.r,d.c))continue;if(d.shield||d.kind==='T'||((d.kind==='M'||d.kind==='X')&&d.power<=1))continue;cand.push(d.power===1?val(d):0.35*val(d));}
     cand.sort((a,b)=>b-a);for(let i=0;i<n&&i<cand.length;i++)hits.push(cand[i]);}
@@ -2982,15 +2986,22 @@ function botOptions(me,L){const him=other(me);
   const threat=new Set(),fire=new Set();if(L>=4){for(const e of dronesOf(him)){ /* v1.92: from level 4, was 6 */if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(shotsOf(e)&&ammoOf(e)>0)for(let r=e.r-range();r<=e.r+range();r++)for(let c=e.c-range();c<=e.c+range();c++)if(inb(r,c))fire.add(key(r,c));if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
   const weak=L>=3&&dronesOf(him).filter(x=>x.kind!=='T').length<4; /* v1.92: the other side under four drones: time to end it (user) */
+  /* v1.100 (user: the bot's last guard ran from a raider and left the Command drone to a siege; and it ignored two scouts walking to the last open land at 60-odd squares) */
+  const needH=S.win-landOf(him);const closers=L>=4&&needH<=12?dronesOf(him).filter(x=>x.kind==='C'&&x.claims>0):[];const aw=closers.length?(needH<=9?2:1):0;const cdist=(r,c)=>Math.min(...closers.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c))));
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
   const trap=L>=7?(drift=driftPreview(me)):null;const trapVia=trap&&trap.killM&&trap.killM.side===me?trap.via:null; /* the stack that an asteroid would jump to land on the Command drone */
+  const lastG=guarded.length===1?guarded[0]:null;const sNear=!!(myM&&sieges.length&&sdist(myM.r,myM.c)<=4);
+  const gPeril=!!(L>=4&&lastG&&sNear&&(threat.has(key(lastG.r,lastG.c))||(lastG.power<=1&&fire.has(key(lastG.r,lastG.c))))); /* the one guard beside the Command drone can be taken next turn, with a siege near */
   const mDanger=L>=3&&myM&&!guarded.length&&sdist(myM.r,myM.c)<=3; /* v1.55: at three, not two: a lone siege cannot be shot, so the only answers are a guard beside the Command drone, room to run, a bomb, or four drones around it */
   if(L>=5&&sieges.length&&!guarded.length)for(const o of opts)if(o.type==='swap'&&o.sw.sh.spawns.some(sp=>sp.letters.includes('G')))o.v+=20; /* a guard shape is worth a lot with a siege on the board and none beside the Command drone */ // a siege two squares from an unguarded command drone: this turn must deal with it
   for(const d of dronesOf(me)){
     if(S.tut&&d.kind==='X')continue; // the coached game: the bot's siege stays put, so a beginner is never walked into a surprise loss
     if(d.kind==='M'&&L<3&&!(myM&&sdist(myM.r,myM.c)<=2)&&!trapVia)continue; /* v1.67: below skill 30 the Command drone stays home too, unless a siege is two away or the asteroid trap stands (a colleague watched it wander down the board in the coached game) */
     if(d.kind==='M'&&L>=3){const danger=dronesOf(him).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=3);if(!danger&&!trapVia){if(L>=4&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n;if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}continue;}} // from L3 the command drone stays home unless a siege is closing in
-    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g)opts.push({type:'claim',d,v:L>=1?(g>=4?8+4*g+(half(me,d.r)?0:3):2*g):1});}
+    if(d.kind==='C'&&d.claims>0){const g=claimGain(d);if(g){let v=L>=1?(g>=4?8+4*g+(half(me,d.r)?0:3):2*g):1;
+      if(L>=1&&landOf(me)+claimLand(me,d.r,d.c)>=S.win)v+=5000; /* the claim that wins */
+      if(aw){let st=0,dn=0;for(const [a,b] of claimCells(d.r,d.c)){const o=S.own[key(a,b)];if(o===him)st++;else if((o===0||o===3)&&cdist(a,b)<=3)dn++;}v+=aw*(5*st+3*dn);} /* take squares off the other side's count, and the open land its scouts are walking to */
+      opts.push({type:'claim',d,v});}}
     if(L>=5&&d.kind==='G'&&d.power>=MAXP)for(const o of throwCells(d)){const v=12*o.power+(o.kind==='H'?4:0)+(o.kind==='B'?4:0)-16; /* v1.92.1: a siege is no longer a throw target */if(v>4)opts.push({type:'throw',d,o,v});} /* v1.62: a full guard thrown at something worth more than itself */
     if(L>=5&&d.kind==='X'&&d.charge){let best=null;for(const o of shieldCells(d)){const k=key(o.r,o.c);const v=(o.kind==='X'?14:o.kind==='H'?12:o.kind==='G'?10:o.kind==='T'?8:6)*o.power+(threat.has(k)?10:0)+(fire.has(k)?6:0)+(o.kind==='X'&&dist(o.r,o.c)<=3?10:0);if(!best||v>best.v)best={o,v};}if(best)opts.push({type:'shield',d,o:best.o,v:12+best.v});} /* v1.57: the shield goes to the drone worth the most where it stands */
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
@@ -3000,6 +3011,12 @@ function botOptions(me,L){const him=other(me);
       if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
       if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6; // go home to load
       if(kind==='take')v+=L>=2?12*droneAt(r,c).power:0;
+      if(aw&&kind==='take'&&closers.includes(droneAt(r,c)))v+=25*aw; /* a scout about to claim the win */
+      if(aw&&shotsOf(d)&&ammoOf(d)>0)for(const e of closers){if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range()&&Math.max(Math.abs(e.r-d.r),Math.abs(e.c-d.c))>range())v+=10*aw;} /* a loaded shooter walks into range of one */
+      if(L>=3&&d.kind==='C'&&d.claims>0){const need=S.win-landOf(me);if(need<=9&&claimLand(me,r,c)>=need)v+=60;} /* walk to where one claim wins */
+      if(L>=3&&lastG&&sNear&&d===lastG){const near=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1&&!(kind==='merge'&&droneAt(r,c).kind!=='G');if(!near)v-=1000;else if(gPeril&&!threat.has(k))v+=45;} /* the last guard never leaves the Command drone with a siege near; threatened, it steps to a safe square still beside it */
+      if(gPeril&&kind==='take'){const o=droneAt(r,c);if(o&&targets(o).get(key(lastG.r,lastG.c))==='take')v+=60;} /* take what threatens the guard */
+      if(gPeril&&d.kind==='G'&&d!==lastG&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=50; /* or bring a second guard */
       if(kind==='merge')v+=L>=4?(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c)):-1;
       if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));if(d.kind==='X'&&weak){v+=24*(dist(d.r,d.c)-dist(r,c));const tl=dronesOf(him).filter(x=>x.kind==='T');if(tl.length){const td=(a,b)=>Math.min(...tl.map(x=>Math.max(Math.abs(x.r-a),Math.abs(x.c-b))));v+=5*(td(d.r,d.c)-td(r,c));}} /* v1.92: the siege marches on the Command drone and the turrets */
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
@@ -3010,7 +3027,7 @@ function botOptions(me,L){const him=other(me);
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
       if(L>=4&&d.kind!=='X'&&threat.has(k))v-=8*d.power;else if(L>=4&&d.kind!=='X'&&d.kind!=='M'&&kind!=='merge'&&threat.has(key(d.r,d.c)))v+=6+6*d.power; /* do not park where it can be taken next turn; v1.92: and get out of such a square (user: it let one raider take three drones) */
       if(L>=6&&d.kind!=='X'&&d.kind!=='M'&&fire.has(k))v-=(d.power===1?6:3); // nor in range of a loaded enemy shooter
-      if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
+      if(d.kind==='M'&&L>=3){const gAt=dronesOf(me).some(g=>g.kind==='G'&&Math.max(Math.abs(g.r-r),Math.abs(g.c-c))<=1);const dist=sdist(r,c);v-=5;if(dist<=1&&!gAt)v-=1000;else if(dist<=2&&!gAt)v-=40;else v+=2*Math.min(dist,4);if(mDanger&&(dist>=3||gAt))v+=60;else if(gPeril&&dist>=3)v+=45;} // the command drone never flees into a siege; in danger, getting clear or guarded comes first
       if(mDanger&&d.kind==='G'&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=60;
       if(L>=5&&d.kind==='G'&&myM&&!guarded.length&&sieges.length&&sdist(myM.r,myM.c)<=4&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=30; /* a guard heads home while the siege is still four away */
       if(L>=6&&myM&&d.kind!=='M'&&kind!=='merge'&&kind!=='take'){for(const x of sieges){if(Math.max(Math.abs(x.r-myM.r),Math.abs(x.c-myM.c))>2||Math.max(Math.abs(x.r-r),Math.abs(x.c-c))!==1)continue;let n=0;for(const [dr,dc] of DIR8){const e=droneAt(x.r+dr,x.c+dc);if(e&&e.side===me&&e!==d)n++;}v+=n>=3?45:4+3*n;}} /* close the ring on a siege near the Command drone: the fourth drone beside it ends it */ // or a guard steps in beside it // the command drone never flees into a siege: beside one with no guard is the game
@@ -3027,10 +3044,11 @@ async function botTurn(me){
       if(!inView){const tgt=shooters[0];let best=null;for(const [k,t] of targets(bsc)){if(t!=='move'&&t!=='dark')continue;const [r,c]=rc(k);const dd=Math.max(Math.abs(r-tgt.r),Math.abs(c-tgt.c));if(!best||dd<best.dd)best={r,c,dd};}
         if(best){const from=[bsc.r,bsc.c];applyMove(bsc,best.r,best.c);await movedAnim(bsc,from);await sleep(200);await afterAction();return;}}
       else{await sleep(400);await afterAction();return;}}} // in view: the bot waits for the shot
-  const him=other(me),L=botLevel(),soft=!!(S.story&&!S.hard),chance=soft?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!soft&&L>=10)||rnd(100)<chance; /* v1.85: a Story 2 boss is not softened */ // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
+  const him=other(me),L=botLevel(),soft=!!(S.story&&!S.hard),chance=soft?Math.round(S.skill*STORY_SOFT):S.skill,smart=(!soft&&L>=10)||rnd(100)<chance||(L>=5&&!S.tut&&botUrgent(me)); /* v1.100: from skill 50 a turn with a siege at the door or the land win in reach is never a random one */ /* v1.85: a Story 2 boss is not softened */ // L = skill/10 decides what "best" knows (BOT_LADDER); skill% is how often it plays its best; story bosses know the same but play their best only 75% as often
   if(smart&&L>=2&&throwsOf(me)>0){const tg=botRockTarget(me);if(tg){const hit=applyRockThrow(me,tg.r,tg.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();await sleep(200);}} /* v1.69: a thrown asteroid, before anything else */
   // missiles first (L2): at enemy drones; at asteroids on its own half from L4; one shot a turn below L5
   if(smart&&L>=2&&dronesOf(me).some(canShoot)){
+    const needH=S.win-landOf(him);const hot=o=>L>=4&&needH<=12&&o.kind==='C'&&o.claims>0?(needH<=9?20:10):0; /* v1.100: a scout that can claim the win is the first thing to shoot */
     const fin=o=>{let n=0;for(const s of dronesOf(me))if(canShoot(s)&&!s.bombAmmo&&inRange(s,o.r,o.c))n+=Math.min(shotsLeft(s),shotCap(s));return n>=o.power;}; /* v1.96: enough shots in range to bring the whole stack down this turn (user: destroy power-3 drones when it can) */
     for(let guard=0;guard<(L>=5?4:1);guard++){let best=null;
       for(const sh of dronesOf(me).filter(canShoot)){
@@ -3038,7 +3056,7 @@ async function botTurn(me){
           if(!vis(me,r,c))continue;const o=droneAt(r,c);let v;
           if(sh.bombAmmo){let n=0,mine=0;for(const [dr,dc] of [[0,0],...DIR4]){let rr=r,cc=c;do{const e=droneAt(rr,cc);if(e&&e.side===him)n+=e.kind==='M'?0:e.power;if(e&&e.side===me)mine+=e.power;rr+=dr;cc+=dc;}while(dr+dc!==0&&inb(rr,cc)&&vis(me,rr,cc)&&!solid(rr,cc));}if(mine||n<2)continue;v=6+4*n;if(!best||v>best.v)best={r,c,v,sh};continue;} /* a bomb missile: aim where the cross holds enemies and none of its own */
           if(o&&o.side===him&&(o.kind==='T'||((o.kind==='M'||o.kind==='X')&&o.power<=1)))continue; // missiles bounce off turrets, a lone Command drone and a lone siege: never waste one there
-          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:(L>=5&&o.kind!=='X'&&fin(o)?8+4*o.power:5))+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0); // a stacked Command drone is worth a shot only to strip it
+          if(o&&o.side===him)v=o.kind==='M'?6:(o.power===1?8:(L>=5&&o.kind!=='X'&&fin(o)?8+4*o.power:5))+(o.kind==='X'?7:0)+(o.kind==='H'?4:0)+(o.kind==='B'?6:0)+hot(o); // a stacked Command drone is worth a shot only to strip it
           else if(!o&&S.grid[r][c]===ROCK&&half(me,r)&&L>=4)v=4;
           else continue;
           if(!best||v>best.v)best={r,c,v,sh};}}
