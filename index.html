@@ -3577,7 +3577,7 @@ function copyOld(txt,el){let ta=el,made=false;try{if(!ta){ta=document.createElem
   ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);return !!document.execCommand('copy');}catch(_){return false;}finally{if(made&&ta)ta.remove();}}
 async function clipPut(txt,el){try{await navigator.clipboard.writeText(txt);return true;}catch(_){}return copyOld(txt,el);}
 function copiedMark(btn){if(!btn)return;if(btn._lbl==null)btn._lbl=btn.textContent;btn.textContent=t('Copied');clearTimeout(btn._tm);btn._tm=setTimeout(()=>{btn.textContent=btn._lbl;btn._lbl=null;},1600);}
-function copyBox(txt,head){$('copyHead').textContent=head||t('Copy this game');$('copyTx').value=txt;$('copyBox').hidden=false;const ta=$('copyTx');ta.scrollTop=0;try{ta.focus();ta.select();}catch(_){}}
+function copyBox(txt,head){$('copyHead').textContent=head||t('Copy this game');$('copyTx').value=txt;let framed=true;try{framed=window.self!==window.top;}catch(_){}$('copySave').hidden=framed; /* a page inside a frame (the claude.ai artifact) is not allowed to save files, so the button is left out there */$('copyBox').hidden=false;const ta=$('copyTx');ta.scrollTop=0;try{ta.focus();ta.select();}catch(_){}}
 $('copyDo').addEventListener('click',async()=>{const ta=$('copyTx');if(await clipPut(ta.value,ta))copiedMark($('copyDo'));else{try{ta.focus();ta.select();}catch(_){}}});
 $('copySave').addEventListener('click',()=>{try{const u=URL.createObjectURL(new Blob([$('copyTx').value],{type:'text/plain'}));const a=document.createElement('a');a.href=u;a.download='constellation-commander-game.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);}catch(_){}});
 $('copyClose').addEventListener('click',()=>{$('copyBox').hidden=true;});
