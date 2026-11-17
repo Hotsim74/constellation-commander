@@ -355,6 +355,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .ov[hidden]{display:none}
 .ov .card{background:var(--panel);border:2px solid var(--you);border-radius:6px;padding:18px;max-width:480px;width:100%;color:#fff;font-size:16px;line-height:1.5}
 .ov h2{font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 8px;color:var(--you)}
+.copyc{max-width:640px!important}
+#copyBox{z-index:90}
+#copyTx{display:block;width:100%;height:min(46vh,340px);box-sizing:border-box;background:#0a0e14;color:#e8eef6;border:1px solid var(--you);border-radius:4px;padding:8px;font-family:var(--mono);font-size:12px;line-height:1.35;resize:vertical;user-select:text;-webkit-user-select:text}
+.copyRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.copyRow button{flex:1 1 120px;animation:none}
 .ov .disp{font-family:var(--mono);font-size:14px;color:#f1e4c8;margin:0 0 12px}
 .sectors{display:flex;flex-direction:column;gap:6px}
 .sector{display:flex;align-items:center;gap:12px;text-align:left;text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:500;font-size:15px;padding:10px 12px}
@@ -520,6 +525,12 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div id="storyList" class="sectors"></div>
   <p id="storyDone" class="disp" hidden>All nine sectors are held. Replay any of them.</p>
   <button type="button" id="btnStoryClose" style="margin-top:10px;width:100%">Back</button>
+</div></div>
+<div id="copyBox" class="ov" hidden><div class="card copyc">
+  <h2 id="copyHead">Copy this game</h2>
+  <p class="disp">Press Copy, or select the text and press Ctrl+C.</p>
+  <textarea id="copyTx" readonly spellcheck="false" wrap="off" aria-labelledby="copyHead"></textarea>
+  <div class="copyRow"><button type="button" id="copyDo" class="primary">Copy</button><button type="button" id="copySave">Save as a file</button><button type="button" id="copyClose">Close</button></div>
 </div></div>
 <div id="brief" class="ov" hidden><div class="card brief">
   <div class="sky" id="briefSky"></div>
@@ -1606,7 +1617,12 @@ const FR={
 "Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.": "Charger la bombe sur ce drone de siège ? Elle devient un bouclier que le siège peut donner à un drone à côté de lui. Touchez encore, ou Oui en bas.",
 "Load the bomb onto this hunter? The hunter drops its missiles for one bomb missile, fired up to 3 squares. Tap it again, or Yes below.": "Charger la bombe sur ce chasseur ? Le chasseur lâche ses missiles pour un missile-bombe, tiré jusqu'à 3 cases. Touchez encore, ou Oui en bas.",
 "Load the bomb onto your Command drone? It carries the bomb, fuse {0}. When it goes off the Command drone only loses its stack. Tap it again, or Yes below.": "Charger la bombe sur votre drone de commandement ? Il porte la bombe, mèche {0}. Quand elle part, le drone de commandement ne perd que sa pile. Touchez encore, ou Oui en bas.",
-"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "Charger la bombe sur {0} ? {1} garde ses déplacements et porte la bombe, mèche {2}. Elle part là où se trouve {3}, et le porteur est perdu avec elle. Touchez encore, ou Oui en bas."
+"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "Charger la bombe sur {0} ? {1} garde ses déplacements et porte la bombe, mèche {2}. Elle part là où se trouve {3}, et le porteur est perdu avec elle. Touchez encore, ou Oui en bas.",
+"Copied": "Copié",
+"Copy": "Copier",
+"Save as a file": "Enregistrer en fichier",
+"Close": "Fermer",
+"Press Copy, or select the text and press Ctrl+C.": "Appuyez sur Copier, ou sélectionnez le texte et appuyez sur Ctrl+C."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2370,12 +2386,18 @@ const ES={
 "Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.": "¿Cargar la bomba en este dron de asedio? Se convierte en un escudo que el asedio puede dar a un dron a su lado. Tócalo otra vez, o Sí abajo.",
 "Load the bomb onto this hunter? The hunter drops its missiles for one bomb missile, fired up to 3 squares. Tap it again, or Yes below.": "¿Cargar la bomba en este cazador? El cazador suelta sus misiles por un misil bomba, que dispara hasta 3 casillas. Tócalo otra vez, o Sí abajo.",
 "Load the bomb onto your Command drone? It carries the bomb, fuse {0}. When it goes off the Command drone only loses its stack. Tap it again, or Yes below.": "¿Cargar la bomba en tu dron de mando? Lleva la bomba, mecha {0}. Cuando estalle, el dron de mando solo pierde su pila. Tócalo otra vez, o Sí abajo.",
-"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "¿Cargar la bomba en {0}? {1} conserva sus movimientos y lleva la bomba, mecha {2}. Estalla donde esté {3}, y el portador se pierde con ella. Tócalo otra vez, o Sí abajo."
+"Load the bomb onto this {0}? The {1} keeps its own moves and carries the bomb, fuse {2}. It goes off where the {3} stands, and the carrier is lost with it. Tap it again, or Yes below.": "¿Cargar la bomba en {0}? {1} conserva sus movimientos y lleva la bomba, mecha {2}. Estalla donde esté {3}, y el portador se pierde con ella. Tócalo otra vez, o Sí abajo.",
+"Copied": "Copiado",
+"Copy": "Copiar",
+"Save as a file": "Guardar como archivo",
+"Close": "Cerrar",
+"Press Copy, or select the text and press Ctrl+C.": "Pulsa Copiar, o selecciona el texto y pulsa Ctrl+C."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.101.2';
+const VERSION='1.101.3';
+const SAVE_OK=['1.101.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2449,7 +2471,7 @@ function layOpening(){
 }
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
-function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||o.over))return o;}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
+function load(){try{const s=localStorage.getItem('cc1_state');if(s){const o=JSON.parse(s);if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over)o.ver=VERSION;return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 const FALL_MS=1050,CLEAR_MS=420; // v1.62: the stars take their time: a flash as they go, a deliberate drop
@@ -3548,13 +3570,25 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
   let ahead='auto';try{ahead=localStorage.getItem('cc_ahead')||'auto';}catch(_){}
   const mode=S.tut?'coached':S.story?'story '+S.story:(typeof online!=='undefined'&&online)?'friend':'free play';
   return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.turnNo||0}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
-// copy or share: the phone's share sheet when there is one, else the clipboard, else a box to copy from. A finished game is kept so New game never loses it.
-async function copyText(txt){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt,url:teleInviteUrl()});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
-  try{await navigator.clipboard.writeText(txt);note(t('Game copied as text.'));}catch(_){prompt(t('Copy this:'),txt);}renderSide();}
+/* v1.101.3: on a computer the clipboard can be refused (the page sits inside a frame, or is not the focused window). The fallback was prompt(), which
+   browsers block inside frames and which cuts a many-line text down to one line, so the button looked dead. Now three steps: the clipboard, then the older
+   select-and-copy, then a box on the page with the text selected, a Copy button and Save as a file. The button that was pressed says Copied for a moment. */
+function copyOld(txt,el){let ta=el,made=false;try{if(!ta){ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0';document.body.appendChild(ta);made=true;}
+  ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);return !!document.execCommand('copy');}catch(_){return false;}finally{if(made&&ta)ta.remove();}}
+async function clipPut(txt,el){try{await navigator.clipboard.writeText(txt);return true;}catch(_){}return copyOld(txt,el);}
+function copiedMark(btn){if(!btn)return;if(btn._lbl==null)btn._lbl=btn.textContent;btn.textContent=t('Copied');clearTimeout(btn._tm);btn._tm=setTimeout(()=>{btn.textContent=btn._lbl;btn._lbl=null;},1600);}
+function copyBox(txt,head){$('copyHead').textContent=head||t('Copy this game');$('copyTx').value=txt;$('copyBox').hidden=false;const ta=$('copyTx');ta.scrollTop=0;try{ta.focus();ta.select();}catch(_){}}
+$('copyDo').addEventListener('click',async()=>{const ta=$('copyTx');if(await clipPut(ta.value,ta))copiedMark($('copyDo'));else{try{ta.focus();ta.select();}catch(_){}}});
+$('copySave').addEventListener('click',()=>{try{const u=URL.createObjectURL(new Blob([$('copyTx').value],{type:'text/plain'}));const a=document.createElement('a');a.href=u;a.download='constellation-commander-game.txt';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);}catch(_){}});
+$('copyClose').addEventListener('click',()=>{$('copyBox').hidden=true;});
+$('copyBox').addEventListener('click',e=>{if(e.target===$('copyBox'))$('copyBox').hidden=true;});
+// copy or share: the phone's share sheet when there is one, else the clipboard, else the box to copy from. A finished game is kept so New game never loses it.
+async function copyText(txt,btn){if(navigator.share&&matchMedia('(pointer:coarse)').matches){try{await navigator.share({title:'Constellation Commander',text:txt,url:teleInviteUrl()});note(t('Game copied as text.'));renderSide();return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  if(await clipPut(txt)){note(t('Game copied as text.'));copiedMark(btn);}else copyBox(txt);renderSide();}
 function keepLastGame(){if(!S||!S.over||netSpec())return;try{localStorage.setItem('cc_lastgame',gameText());}catch(_){}$('btnCopyLast').hidden=false;}
-$('btnCopy').addEventListener('click',()=>copyText(gameText()));
-$('btnCopyOver').addEventListener('click',e=>{e.stopPropagation();copyText(gameText());});
-$('btnCopyLast').addEventListener('click',()=>{let s='';try{s=localStorage.getItem('cc_lastgame')||'';}catch(_){}if(s)copyText(s);});
+$('btnCopy').addEventListener('click',()=>copyText(gameText(),$('btnCopy')));
+$('btnCopyOver').addEventListener('click',e=>{e.stopPropagation();copyText(gameText(),$('btnCopyOver'));});
+$('btnCopyLast').addEventListener('click',()=>{let s='';try{s=localStorage.getItem('cc_lastgame')||'';}catch(_){}if(s)copyText(s,$('btnCopyLast'));});
 try{if(localStorage.getItem('cc_lastgame'))$('btnCopyLast').hidden=false;}catch(_){}
 
 // ---------- boot ----------
@@ -4127,7 +4161,7 @@ $('inTele').addEventListener('change',()=>{const on=$('inTele').checked;try{loca
 $('inTele').checked=teleOn();
 $('setup').addEventListener('change',e=>{if(e.target&&e.target.id&&e.target.id!=='inTele')teleEv('setting',e.target.id);});
 $('btnInvite').addEventListener('click',async()=>{teleEv('invite');const u=teleInviteUrl();try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({title:'Constellation Commander',text:t('Come play Constellation Commander with me.'),url:u});return;}}catch(e){if(e&&e.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(u);note(t('Invite link copied.'));}catch(_){prompt(t('Copy this:'),u);}});
+  if(await clipPut(u)){note(t('Invite link copied.'));copiedMark($('btnInvite'));}else copyBox(u,t('Copy this:'));});
 teleLoad();if(teleOn())telePush();
 // ---------- music (v1.50, was the start-screen loop only): one engine for every screen. Fourteen tracks in music/,
 // made from scratch by music/make_music.py; the title loop stays the ACE-Step one the user picked (the generated
