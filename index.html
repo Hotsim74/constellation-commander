@@ -287,6 +287,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #intro button{font-size:18px;padding:14px 22px;width:100%}
 #intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
 /* ---------- the start screen (v1.63) ---------- */
+/* v1.102.0: the opening film sits over everything, the Skip button under the picture */
+#film{position:fixed;inset:0;z-index:96;background:#04060a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px}#film[hidden]{display:none}
+#filmV{display:block;width:100%;max-width:960px;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);aspect-ratio:16/10;background:#04060a;border:1px solid var(--line);border-radius:4px}
+.filmRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.filmRow button{padding:12px 30px;font-size:14px;animation:none}
+.cvFilm{pointer-events:auto;margin-top:12px;background:transparent;border:0;color:#cfd8e3;font-size:11px;letter-spacing:.16em;text-decoration:underline;text-underline-offset:4px;opacity:.85;padding:8px 10px}
 #cover{position:fixed;inset:0;z-index:65;background:#04060a;overflow:hidden;display:block;padding:0}
 #cover[hidden]{display:none}
 #cvSky{position:absolute;inset:0;width:100%;height:100%}
@@ -502,6 +507,10 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
     <details class="panel" id="logPanel" open><summary class="lbl">Log ▾</summary><div class="log" id="log"></div></details>
   </div>
 </main>
+<div id="film" hidden>
+  <video id="filmV" playsinline webkit-playsinline preload="auto"></video>
+  <div class="filmRow"><button type="button" id="filmSkip" class="primary">Skip</button><button type="button" id="filmSound" hidden>Tap for sound</button></div>
+</div>
 <div id="cover" hidden>
   <canvas id="cvSky"></canvas>
   <div class="cvNebula"></div>
@@ -515,6 +524,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
     <div class="cvTitleWrap"><h1 class="cvTitle"><span>Constellation</span><span>Commander</span></h1></div>
     <p class="say" id="coverSay"></p>
     <div class="cvBtns"><button type="button" id="coverGo" class="primary go">Launch</button><button type="button" id="coverStory" class="go">Story</button></div>
+    <button type="button" id="coverFilm" class="cvFilm">Watch the film</button>
   </div>
   <div class="cvVer" id="cvVer"></div>
   <div id="cvTap" class="cvTap" role="button" tabindex="0" hidden><span>Tap to begin</span></div>
@@ -1622,7 +1632,10 @@ const FR={
 "Copy": "Copier",
 "Save as a file": "Enregistrer en fichier",
 "Close": "Fermer",
-"Press Copy, or select the text and press Ctrl+C.": "Appuyez sur Copier, ou sélectionnez le texte et appuyez sur Ctrl+C."
+"Press Copy, or select the text and press Ctrl+C.": "Appuyez sur Copier, ou sélectionnez le texte et appuyez sur Ctrl+C.",
+"Skip": "Passer",
+"Tap for sound": "Touchez pour le son",
+"Watch the film": "Voir le film"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2391,13 +2404,16 @@ const ES={
 "Copy": "Copiar",
 "Save as a file": "Guardar como archivo",
 "Close": "Cerrar",
-"Press Copy, or select the text and press Ctrl+C.": "Pulsa Copiar, o selecciona el texto y pulsa Ctrl+C."
+"Press Copy, or select the text and press Ctrl+C.": "Pulsa Copiar, o selecciona el texto y pulsa Ctrl+C.",
+"Skip": "Saltar",
+"Tap for sound": "Toca para el sonido",
+"Watch the film": "Ver la película"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.101.5';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.102.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4245,7 +4261,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){if(musicCt
   else{musicResume();const a=musicHidVoice;musicHidVoice=null;if(a&&!a._done&&!a._failed){try{a.play().catch(()=>{});}catch(_){}}}}); /* v1.88: the music and a voice line stop when the game is left (the user's mother's iPhone kept playing) and pick up on return */
 window.addEventListener('pagehide',()=>{if(musicCtx){try{musicCtx.suspend();}catch(_){}}});
 for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,musicResume,{passive:true});
-function musicArm(){if(musicArmed)return;const ctx=musicCtxGet();if(!ctx)return;musicArmed=true;musicResume();if(S&&S.over)musicOverGid=S.gid; /* a finished game on reload does not play its jingle again */
+function musicArm(){if(window.ccFilm)return; /* v1.102.0: the opening film has its own sound; the title waits for it */if(musicArmed)return;const ctx=musicCtxGet();if(!ctx)return;musicArmed=true;musicResume();if(S&&S.over)musicOverGid=S.gid; /* a finished game on reload does not play its jingle again */
   musicLoad('play_calm_loop',()=>{});musicTick();}
 for(const ev of ['pointerdown','keydown','touchend','click'])document.addEventListener(ev,musicArm,{passive:true});
 $('inMusic').checked=musicOn();
@@ -4351,6 +4367,31 @@ function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getCont
   ship(YOU,'M',50,46,Math.round(100*k),.2);ship(YOU,'C',34,54,Math.round(60*k),.55);ship(YOU,'X',66,56,Math.round(60*k),.75);ship(YOU,'H',40,34,Math.round(54*k),.95);ship(YOU,'S',61,32,Math.round(54*k),1.15);
   ship(BOT,'G',86,16,Math.round(56*k),1.7);ship(BOT,'W',12,14,Math.round(52*k),2.0); /* v1.74: a warp drone top left, where the raider was */
 }
+// ---------- the opening film (v1.102.0). User: "lets have this play right when you click the link to play the game with a skip button under it".
+// The guard film (film/guard_film.mp4, made in blender/) plays before the start screen, a Skip button under it. A browser will not play
+// sound before the first touch, so where it refuses, the film runs silent with a "Tap for sound" button that starts it over with sound.
+// It plays by itself once: when it ends or is skipped, cc_film is set and later visits open on the start screen, where "Watch the film"
+// plays it again. The title music stays quiet while it runs (musicArm checks window.ccFilm). If the file will not load, the game goes on.
+const FILM_SRC='film/guard_film.mp4';
+let filmOn=false;
+function filmSeen(){try{return localStorage.getItem('cc_film')==='1';}catch(_){return true;}}
+function filmClose(){if(!filmOn)return;filmOn=false;window.ccFilm=false;const v=$('filmV');try{v.pause();v.removeAttribute('src');v.load();}catch(_){}
+  $('film').hidden=true;try{localStorage.setItem('cc_film','1');}catch(_){}
+  musicArm();musicResume(); /* a tap on Skip is the first touch: the title music may start. With no touch at all, the start screen keeps its Tap to begin */
+  setTimeout(()=>{const ctx=musicCtxGet(),cv=$('cover'),tp=$('cvTap');if(!ctx||!cv||cv.hidden)return;if(ctx.state==='running')coverLift();
+    else{let snd=true;try{snd=localStorage.getItem('cc_sound')!=='0';}catch(_){}if(tp&&(musicOn()||snd)){cv.classList.add('hold');tp.hidden=false;}}},200);}
+function filmOpen(){const v=$('filmV'),f=$('film');if(!v||!f||filmOn)return;filmOn=true;window.ccFilm=true;
+  try{const c=musicCtxGet();if(c&&c.state==='running'){const p=c.suspend();if(p&&p.catch)p.catch(()=>{});}}catch(_){} /* watched again from the start screen: the title music waits */
+  $('filmSound').hidden=true;f.hidden=false;v.muted=false;v.src=FILM_SRC;
+  let p;try{p=v.play();}catch(_){}
+  if(p&&p.catch)p.catch(()=>{if(!filmOn)return;v.muted=true;$('filmSound').hidden=false;let q;try{q=v.play();}catch(_){}if(q&&q.catch)q.catch(()=>{});});}
+(()=>{const v=$('filmV');if(!v)return;
+  v.addEventListener('ended',filmClose);v.addEventListener('error',()=>{if(filmOn&&v.getAttribute('src'))filmClose();});
+  $('filmSkip').addEventListener('click',filmClose);
+  $('filmSound').addEventListener('click',()=>{$('filmSound').hidden=true;v.muted=false;try{v.currentTime=0;}catch(_){}const p=v.play();if(p&&p.catch)p.catch(()=>{});});
+  document.addEventListener('keydown',e=>{if(filmOn&&e.key==='Escape')filmClose();});
+  const w=$('coverFilm');if(w)w.addEventListener('click',filmOpen);
+  if(!filmSeen())filmOpen();})();
 </script>
 </body>
 </html>
