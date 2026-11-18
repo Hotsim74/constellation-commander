@@ -2396,8 +2396,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.101.4';
-const SAVE_OK=['1.101.2','1.101.3']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.101.5';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2997,7 +2997,7 @@ function deepSearch(side,depth,alpha,beta,ply){
   return best===-Infinity?deepLeaf(side,ply):best;}
 // the root: returns the option to play, or null if nothing could be searched (then the plain ranking stands)
 function lookDeep(me,opts,depth){const him=other(me);opts.sort((a,b)=>b.v-a.v);const top=opts.slice(0,DEEP_K[0]);const q=simQuiet;simQuiet=true;deepT0=Date.now();deepN=0;
-  const pri=o=>DEEP_PRIOR*Math.max(-400,Math.min(150,o.v));let order=top.slice(),pick=null,reached=0,score=0;
+  const pri=o=>DEEP_PRIOR*Math.max(-400,Math.min(150,o.v))-(1-DEEP_PRIOR)*(o.risk||0); /* v1.101.5: the look-ahead does not play a swap's chain or its drift, so the drift risk comes off in full */let order=top.slice(),pick=null,reached=0,score=0;
   try{for(let d=1;d<=depth;d++){deepStop=false;let best=-Infinity,bo=null;const sc=new Map();
       for(const o of order){const saved=S;S=simCopy();let v=null;
         try{if(simStep(me,o))v=-deepSearch(him,d-1,-Infinity,best===-Infinity?Infinity:pri(o)-best,1);}catch(e){v=null;}
@@ -3010,9 +3010,22 @@ function lookDeep(me,opts,depth){const him=other(me);opts.sort((a,b)=>b.v-a.v);c
 // how many moves ahead this turn looks: the Settings choice in free play (Auto: one move from skill 80), one move for a Story 2 boss or the last three of the first story, none in the coached game
 function botDepth(){if(S.tut)return 0;if(S.story)return (S.hard||S.ahead)?1:0;let v='auto';try{v=localStorage.getItem('cc_ahead')||'auto';}catch(_){}if(v==='auto')return botLevel()>=8?1:0;return Math.max(0,Math.min(5,+v||0));}
 // v1.89: every option open to `me` on the board as it stands, scored for level L (was inline in botTurn)
+/* v1.101.5 (user's second skill-90 game: three of the bot's swaps cleared 9, 13 and 11 stars on its own half, and each drift crushed its own drones: two hunters, a raider,
+   and a turret it had just paid 10 missiles for). The bot judged a swap by its first shape only. driftOdds plays the whole chain on a copy of the stars, a few times because
+   the new stars are random, and returns how often 8 or more clear on the mover's half. Only at the root of a turn (driftExact), never inside the look-ahead: it costs time. */
+let driftExact=false;
+function driftOdds(me,sw){const K=6;let hit=0;
+  for(let s=0;s<K;s++){const g=S.grid.map(r=>r.slice());const {a,b}=sw;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];let n=0,anchor=b,chain=0,rnd0=true;
+    while(true){const sh=detectShapes(g,anchor);if(!sh.cells.size)break;chain++;for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;if(half(me,r))n++;}if(n>=8||chain>12)break;gravity(g,me);anchor=null;rnd0=false;}
+    if(n>=8)hit++;if(rnd0){return n>=8?1:0;}} /* no new stars were drawn: every run would be the same */
+  return hit/K;}
 function botOptions(me,L){const him=other(me);
   const opts=[];
-  let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=3){const n=droneCount(me);v=n>=MAXD?Math.min(v,3):v*Math.max(0.25,1-0.75*n/MAXD);}else if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size); /* v1.92: the more drones it has, the less a swap is worth; at nine a swap is worth only what it pays besides drones (user) */if(L>=5){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v});} // in the coached game the bot never touches the stars
+  let drift=null;if(!S.tut)for(const sw of validSwaps(me)){let v=1;if(L>=1)v=shapeValue(sw.sh,me);if(L>=3){const n=droneCount(me);v=n>=MAXD?Math.min(v,3):v*Math.max(0.25,1-0.75*n/MAXD);}else if(L>=1&&droneCount(me)>=MAXD)v=Math.min(v,6+0.5*sw.sh.cells.size); /* v1.92: the more drones it has, the less a swap is worth; at nine a swap is worth only what it pays besides drones (user) */if(L>=5){const mine=[...sw.sh.cells].filter(k=>half(me,rc(k)[0])).length;v+=0.5*mine;const p=drift||(drift=driftPreview(me));const dv=x=>{const d=S.drones.find(y=>y.id===x.id);return d?dval(d)/(x.power<d.power?d.power:1):6;}; /* what a drift would cost each side, in the look-ahead's own measure */
+      const ownV=p.lost.filter(d=>d.side===me).reduce((a,d)=>a+dv(d),0)+p.dent.filter(d=>d.side===me).reduce((a,d)=>a+dv(d),0),theirV=p.lost.filter(d=>d.side!==me).reduce((a,d)=>a+dv(d),0)+p.dent.filter(d=>d.side!==me).reduce((a,d)=>a+dv(d),0);
+      let newV=0;if(driftExact&&droneCount(me)<MAXD){const dr=me===YOU?1:-1;for(const sp of sw.sh.spawns){const [r,c]=sp.cell;if(inb(r-dr,c)&&S.grid[r-dr][c]===ROCK&&!droneAt(r,c))newV+=({C:16,H:9,G:8,X:12,W:7})[sp.letters[0]]||6;}} /* the drone this swap makes would itself stand in an asteroid's way */
+      if(driftExact&&(ownV||theirV||newV||p.killM)){const pd=driftOdds(me,sw);const risk=pd*(1.25*(ownV+newV)-theirV+(p.killM?(p.killM.side===me?1000:-500):0));v-=risk;if(risk>0)sw.risk=risk;}
+      else if(p.killM&&p.killM.side===me)v-=1000*(mine>=8?1:mine>=5?0.5:mine>=3?0.2:0.1); /* a cascade can reach eight from any line: while the trap stands, every swap is a risk */else if(mine>=5){const sure=mine>=8?1:0.35;const own=p.lost.filter(d=>d.side===me).length,theirs=p.lost.length-own;v+=sure*(4+6*theirs-8*own-2*p.dent.filter(d=>d.side===me).length+(p.killM?500:0));}} /* v1.48: a big clear drags the asteroids toward you; look where they land first. On a self-made loss (Ursa Major, 2026-10-23) the bot had prized the drift blindly */opts.push({type:'swap',sw,v,risk:sw.risk||0});} // in the coached game the bot never touches the stars
   const emd=cmdOf(him);const ec=emd?[emd.r,emd.c]:S.cmd[him];const dist=(r,c)=>Math.max(Math.abs(r-ec[0]),Math.abs(c-ec[1]));
   const threat=new Set(),fire=new Set();if(L>=4){for(const e of dronesOf(him)){ /* v1.92: from level 4, was 6 */if(e.kind==='T')for(const [dr,dc] of DIR8){const r=e.r+dr,c=e.c+dc;if(inb(r,c))threat.add(key(r,c));}if(shotsOf(e)&&ammoOf(e)>0)for(let r=e.r-range();r<=e.r+range();r++)for(let c=e.c-range();c<=e.c+range();c++)if(inb(r,c))fire.add(key(r,c));if(e.kind==='S'||e.kind==='H')for(const k of targets(e).keys())threat.add(k);if(e.kind==='G')for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const r=e.r+dr,c=e.c+dc;if(inb(r,c)&&S.own[key(r,c)]===him)threat.add(key(r,c));}}} // squares the enemy's raiders, hunters and guards can hit next turn
   const myM=cmdOf(me);const guarded=myM?dronesOf(me).filter(g=>g.kind==='G'&&Math.max(Math.abs(g.r-myM.r),Math.abs(g.c-myM.c))<=1):[];
@@ -3099,7 +3112,7 @@ async function botTurn(me){
       if(best&&best.v>=6&&shotCap(best.sh)>0){if(!best.sh.bombAmmo)best.sh.ammo--;best.sh.shots=(best.sh.shots||0)+1;await fireShots(me,[best],best.sh);await sleep(200);}else break;}
   }
   if(S.over)return;
-  const {opts,myM,sdist}=botOptions(me,L);
+  driftExact=L>=5;let bo;try{bo=botOptions(me,L);}finally{driftExact=false;}const {opts,myM,sdist}=bo;
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
   const depth=botDepth();let deep=null;if(smart&&depth>0&&opts.length>1){if(depth>=2&&!(window.ccOldAhead&&window.ccOldAhead[me])){setStatus(t('The bot is thinking ahead.'));await sleep(40);deep=lookDeep(me,opts,depth);}else lookAhead(me,opts,depth);} /* v1.99: from 2 moves ahead the deep search picks; window.ccOldAhead is a test switch back to the old one */ /* v1.89: Settings → Thinks ahead, 0 to 5 moves in free play */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=deep||opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
