@@ -2412,8 +2412,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.102.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.102.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
