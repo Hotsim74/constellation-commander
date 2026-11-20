@@ -294,6 +294,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .cvLinks{display:flex;gap:18px;justify-content:center;pointer-events:none}
 /* v1.103.0: while a lesson is showing its moves the board and the buttons under it do not take taps */
 body.lwatch #board,body.lwatch #acts{pointer-events:none}
+/* v1.103.1: a lesson draws its moves as arrows on the board, and keeps its few words off the squares in play */
+.lmarks{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;z-index:12;pointer-events:none}
+.lmarks .ltext{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;fill:#1a1200}
+.lmarks .larrow{animation:lpulse .8s ease-in-out infinite alternate}@keyframes lpulse{from{opacity:.72}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.lmarks .larrow{animation:none}}
 .lessonBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.lessonBtns button{flex:1 1 130px;animation:none}
 .cvFilm{pointer-events:auto;margin-top:12px;background:transparent;border:0;color:#cfd8e3;font-size:11px;letter-spacing:.16em;text-decoration:underline;text-underline-offset:4px;opacity:.85;padding:8px 10px}
 #cover{position:fixed;inset:0;z-index:65;background:#04060a;overflow:hidden;display:block;padding:0}
@@ -2496,8 +2501,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.103.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.103.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3483,7 +3488,7 @@ function coach(){
   return L(note+t('Move a drone forward.'),t('Nothing pays right now; the stars will shift.'),[]);
 }
 function tutLit(){const c=S&&S.lesson?lessonCoach():coach();return c&&c.lit?c.lit:null;}
-function renderCallouts(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
+function renderCallouts(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout,.lmarks')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
   if(!c)return;
   for(const k of c.calls||[]){const [r,cc]=k.at;const [x,y,w]=cellXY(r,cc);const el=document.createElement('div');const below=k.below||r<=1;el.className='callout'+(below?' below':'');el.innerHTML=`<span class="bub">${k.label}</span><span class="arw"></span>`;el.style.left=x+'px';el.style.top=(below?y+w/2:y-w/2)+'px';b.appendChild(el);}
   if(c.btn){const bt=$('acts').querySelector(`button[data-a="${c.btn}"]`);if(bt)bt.classList.add('callbtn');}}
@@ -4501,32 +4506,68 @@ function lessonSwapOk(a,b){if(!S||!S.lesson||S.lesson.phase!=='do')return true;i
   const P=LESSON_SIDE.R,same=(p,q)=>p[0]===q[0]&&p[1]===q[1];return (same(a,P.a)&&same(b,P.b))||(same(a,P.b)&&same(b,P.a));}
 function lessonScout(){if(!S||!S.lesson)return null;return dronesOf(YOU).filter(d=>d.kind==='C'&&d.id!==S.lesson.demoId).sort((a,b)=>b.id-a.id)[0]||null;}
 function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Set();
-  const L=(head,text,why,cells,calls,btn)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn};};
-  if(Ls.phase==='watch'){const P=LESSON_SIDE.L;const W=t('Watch');
-    const ring=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)ring.push([P.up[0]+dr,P.up[1]+dc]);
+  /* cells: squares lit. calls: a few words about one square, drawn well away from it. arrows: the move itself, from one square to another
+     (kind swap, move or fire). btn: the button under the board to press. */
+  const L=(head,text,why,cells,calls,btn,arrows)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[]};};
+  const ringOf=p=>{const o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(inb(p[0]+dr,p[1]+dc))o.push([p[0]+dr,p[1]+dc]);return o;};
+  if(Ls.phase==='watch'){const P=LESSON_SIDE.L;const W=t('Watch');const ds=S.drones.find(d=>d.id===Ls.demoId),at=ds?[ds.r,ds.c]:null;
     switch(Math.min(5,Ls.w)){
-      case 0:return L(W,t('Watch the left side. Two stars swap and four gold stars line up. Four in a line makes a scout.'),'',[P.a,P.b],[{at:P.a,label:t('these two swap')}]);
-      case 1:return L(W,t('The scout steps beside the Command drone and loads a missile from it.'),'',[P.home],[{at:P.home,label:t('to here')}]);
-      case 2:return L(W,t('It fires the missile at the enemy scout. Firing does not use up the turn.'),'',[P.foe],[{at:P.foe,label:t('shoot it')}]);
-      case 3:return L(W,t('It walks up to open land.'),'',[P.up],[{at:P.up,label:t('to here')}]);
-      case 4:return L(W,t('It claims the 3 × 3 around it. That land is yours now.'),'',ring,[]);
+      case 0:return L(W,t('Watch the left side. Two stars swap and four gold stars line up. Four in a line makes a scout.'),'',[P.a,P.b],[{at:P.b,label:t('these two swap')}],null,[{a:P.a,b:P.b,kind:'swap'}]);
+      case 1:return L(W,t('The scout steps beside the Command drone and loads a missile from it.'),'',[P.home],[],null,at?[{a:at,b:P.home,kind:'move'}]:[]);
+      case 2:return L(W,t('It fires the missile at the enemy scout. Firing does not use up the turn.'),'',[P.foe],[],null,at?[{a:at,b:P.foe,kind:'fire'}]:[]);
+      case 3:return L(W,t('It walks up to open land.'),'',[P.up],[],null,at?[{a:at,b:P.up,kind:'move'}]:[]);
+      case 4:return L(W,t('It claims the 3 × 3 around it. That land is yours now.'),'',ringOf(P.up),[]);
       default:return L(W,t('Now you do the same on the right side.'),'',[],[]);}}
   const P=LESSON_SIDE.R,D=t('Do'),sc=lessonScout(),foe=droneAt(P.foe[0],P.foe[1]),foeUp=!!(foe&&foe.side===BOT);
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,mine=sd&&sc&&sd.id===sc.id;
   if(Ls.done||(Ls.made&&!sc)||(sc&&sc.claims<2)){Ls.done=true;return L(t('Done'),t('Lesson complete. You made a scout, loaded a missile, shot an enemy scout and claimed land.'),'',[],[]);}
-  if(!sc)return L(D,t('Your turn, on the right side. Swap the two marked stars so four blue stars line up.'),t('Four in a line makes a scout.'),[P.a,P.b],[{at:P.a,label:t('swap these two')}]);
-  Ls.made=true;
-  if(foeUp&&!ammoOf(sc)){if(besideM(sc))return L(D,t('Your scout is loading a missile.'),t('A scout beside the Command drone loads at the start of your turn.'),[[sc.r,sc.c]],[]);
-    return mine?L(D,t('Now tap the marked square beside your Command drone.'),t('A scout or a hunter beside the Command drone loads a missile from it.'),[P.home],[{at:P.home,label:t('to here')}])
-      :L(D,t('Tap your new scout.'),t('A scout or a hunter beside the Command drone loads a missile from it.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap your scout')}]);}
-  if(foeUp){if(mode==='aim'&&mine)return L(D,t('Tap the enemy scout.'),t('A missile takes one power off a drone. This one has 1, so it is destroyed.'),[P.foe],[{at:P.foe,label:t('shoot it')}]);
-    if(mine)return L(D,t('Tap the Fire missile button under the board.'),t('Missiles come before your move, so firing does not cost your turn.'),[[sc.r,sc.c]],[],'aim');
-    return L(D,t('Your scout is loaded. Tap it.'),t('Scouts and hunters fire missiles. The enemy scout is three squares away, in range.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap, then Fire')},{at:P.foe,label:t('enemy scout'),below:true}]);}
-  if(claimGain(sc)<5&&!(sc.r===P.up[0]&&sc.c===P.up[1]))return mine?L(D,t('Now tap the marked square to walk up to open land.'),t('A claim takes the 3 × 3 around the scout, so stand where most of it is not yours yet.'),[P.up],[{at:P.up,label:t('to here')}])
-    :L(D,t('The enemy scout is gone. Tap your scout.'),t('Next it walks to open land and claims it.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap your scout')}]);
-  return mine?L(D,t('Tap the Claim button under the board.'),t('Land is how you win: hold enough squares and the game is yours.'),[[sc.r,sc.c]],[],'claim')
-    :L(D,t('Tap your scout.'),t('It is standing on open land. Claim it.'),[[sc.r,sc.c]],[{at:[sc.r,sc.c],label:t('tap your scout')}]);}
-function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}renderCallouts(c);g.hidden=false;
+  if(!sc)return L(D,t('Your turn, on the right side. Swap the two marked stars so four blue stars line up.'),t('Four in a line makes a scout.'),[P.a,P.b],[{at:P.b,label:t('swap these two')}],null,[{a:P.a,b:P.b,kind:'swap'}]);
+  Ls.made=true;const at=[sc.r,sc.c],tap=[{at,label:t('tap your scout')}];
+  if(foeUp&&!ammoOf(sc)){if(besideM(sc))return L(D,t('Your scout is loading a missile.'),t('A scout beside the Command drone loads at the start of your turn.'),[at],[]);
+    const go=[{a:at,b:P.home,kind:'move'}];
+    return mine?L(D,t('Now tap the marked square beside your Command drone.'),t('A scout or a hunter beside the Command drone loads a missile from it.'),[P.home],[],null,go)
+      :L(D,t('Tap your new scout.'),t('A scout or a hunter beside the Command drone loads a missile from it.'),[at],tap,null,go);}
+  if(foeUp){const shot=[{a:at,b:P.foe,kind:'fire'}];
+    if(mode==='aim'&&mine)return L(D,t('Tap the enemy scout.'),t('A missile takes one power off a drone. This one has 1, so it is destroyed.'),[P.foe],[],null,shot);
+    if(mine)return L(D,t('Tap the Fire missile button under the board.'),t('Missiles come before your move, so firing does not cost your turn.'),[at],[],'aim',shot);
+    return L(D,t('Your scout is loaded. Tap it.'),t('Scouts and hunters fire missiles. The enemy scout is three squares away, in range.'),[at],[{at,label:t('tap, then Fire')}],null,shot);}
+  if(claimGain(sc)<5&&!(sc.r===P.up[0]&&sc.c===P.up[1])){const go=[{a:at,b:P.up,kind:'move'}];
+    return mine?L(D,t('Now tap the marked square to walk up to open land.'),t('A claim takes the 3 × 3 around the scout, so stand where most of it is not yours yet.'),[P.up],[],null,go)
+      :L(D,t('The enemy scout is gone. Tap your scout.'),t('Next it walks to open land and claims it.'),[at],tap,null,go);}
+  return mine?L(D,t('Tap the Claim button under the board.'),t('Land is how you win: hold enough squares and the game is yours.'),ringOf(at),[],'claim')
+    :L(D,t('Tap your scout.'),t('It is standing on open land. Claim it.'),[at],tap);}
+/* v1.103.1 (user: "the words are on top of the moves, I think you will need to use longer arrows to show moves"). The coached game's word
+   bubbles sit right above the square they name, which in a lesson is the other half of the move. Here a move is an arrow drawn on the board
+   from square to square, and a label stands two or three squares off, in the first spot that covers no marked square, joined by a long arrow. */
+function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout,.lmarks')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
+  if(!c)return;if(c.btn){const bt=$('acts').querySelector('button[data-a="'+c.btn+'"]');if(bt)bt.classList.add('callbtn');}
+  if(!c.arrows.length&&!c.calls.length)return;
+  const NS='http://www.w3.org/2000/svg',el=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
+  const svg=el('svg',{class:'lmarks'});b.appendChild(svg);const W=b.clientWidth,H=b.clientHeight;
+  const rect=(r,cc)=>{const [x,y,w]=cellXY(r,cc);return [x-w/2,y-w/2,x+w/2,y+w/2];};const busy=[];for(const k of c.lit)busy.push(rect(...rc(k)));
+  const tip=(x1,y1,x2,y2,n)=>{const a=Math.atan2(y2-y1,x2-x1);return x2+','+y2+' '+(x2-n*Math.cos(a-0.46))+','+(y2-n*Math.sin(a-0.46))+' '+(x2-n*Math.cos(a+0.46))+','+(y2-n*Math.sin(a+0.46));};
+  const shaft=(g,x1,y1,x2,y2,col,wd,dash)=>{for(const [sw,st] of [[wd+3,'#06090d'],[wd,col]])g.appendChild(el('line',{x1,y1,x2,y2,stroke:st,'stroke-width':sw,'stroke-linecap':'round','stroke-dasharray':dash||'none'}));};
+  for(const ar of c.arrows){const [x1,y1,w]=cellXY(...ar.a),[x2,y2]=cellXY(...ar.b);busy.push(rect(...ar.a),rect(...ar.b));for(let q=0.25;q<1;q+=0.25){const mx=x1+(x2-x1)*q,my=y1+(y2-y1)*q;busy.push([mx-w*0.35,my-w*0.35,mx+w*0.35,my+w*0.35]);} /* a label keeps off the arrow's line too */
+    const d=Math.hypot(x2-x1,y2-y1)||1,ux=(x2-x1)/d,uy=(y2-y1)/d,n=Math.max(10,w*0.36),col=ar.kind==='fire'?'#ff5a4d':'#ffd27a';
+    const p0=ar.kind==='swap'?w*0.10:w*0.30,p1=ar.kind==='fire'?w*0.34:w*0.10,ax=x1+ux*p0,ay=y1+uy*p0,bx=x2-ux*p1,by=y2-uy*p1;
+    const g=el('g',{class:'larrow'});
+    shaft(g,ar.kind==='swap'?ax+ux*n*0.7:ax,ar.kind==='swap'?ay+uy*n*0.7:ay,bx-ux*n*0.7,by-uy*n*0.7,col,4,ar.kind==='fire'?'7 6':'');
+    g.appendChild(el('polygon',{points:tip(ax,ay,bx,by,n),fill:col,stroke:'#06090d','stroke-width':1.5,'stroke-linejoin':'round'}));
+    if(ar.kind==='swap')g.appendChild(el('polygon',{points:tip(bx,by,ax,ay,n),fill:col,stroke:'#06090d','stroke-width':1.5,'stroke-linejoin':'round'}));
+    svg.appendChild(g);}
+  for(const k of c.calls){const [x,y,w]=cellXY(...k.at);const tx=el('text',{class:'ltext','text-anchor':'middle','dominant-baseline':'central'});tx.textContent=k.label;svg.appendChild(tx);
+    let tw=60;try{tw=tx.getComputedTextLength();}catch(_){}tw+=16;const th=22;let best=null;
+    for(const [dx,dy] of [[0,-2.1],[0,2.1],[-2.9,0],[2.9,0],[-2.3,-1.7],[2.3,-1.7],[-2.3,1.7],[2.3,1.7],[0,-3.1],[0,3.1],[-3.6,0],[3.6,0]]){
+      const cx=x+dx*w,cy=y+dy*w,Rr=[cx-tw/2,cy-th/2,cx+tw/2,cy+th/2];if(Rr[0]<2||Rr[1]<2||Rr[2]>W-2||Rr[3]>H-2)continue;
+      let hit=0;for(const q of busy)if(Rr[0]<q[2]&&Rr[2]>q[0]&&Rr[1]<q[3]&&Rr[3]>q[1])hit++;
+      if(!best||hit<best.hit)best={cx,cy,Rr,hit};if(!hit)break;}
+    if(!best){tx.remove();continue;}
+    const px=Math.max(best.Rr[0],Math.min(x,best.Rr[2])),py=Math.max(best.Rr[1],Math.min(y,best.Rr[3])),d=Math.hypot(x-px,y-py)||1,ux=(x-px)/d,uy=(y-py)/d,ex=x-ux*w*0.44,ey=y-uy*w*0.44;
+    const g=el('g',{class:'llabel'});shaft(g,px,py,ex-ux*6,ey-uy*6,'#e8a63b',2.5);
+    g.appendChild(el('polygon',{points:tip(px,py,ex,ey,10),fill:'#e8a63b',stroke:'#06090d','stroke-width':1,'stroke-linejoin':'round'}));
+    g.appendChild(el('rect',{x:best.Rr[0],y:best.Rr[1],width:tw,height:th,rx:4,fill:'#e8a63b',stroke:'#06090d','stroke-width':1}));
+    tx.setAttribute('x',best.cx);tx.setAttribute('y',best.cy+0.5);g.appendChild(tx);svg.appendChild(g);busy.push(best.Rr);}}
+function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}lessonMarks(c);g.hidden=false;
   const more=S.lesson.done?'<div class="lessonBtns"><button type="button" id="lessonAgain">'+t('Do it again')+'</button><button type="button" id="lessonBack" class="primary">'+t('Back to the start')+'</button></div>':'';
   g.innerHTML='<div class="just"><b>'+t('Lesson')+'</b>'+t('The scout: make one, load it, shoot, claim.')+'</div><div class="do"><b>'+c.head+'</b>'+c.text+'</div>'+(c.why?'<div class="why"><b>'+t('Why')+'</b>'+c.why+'</div>':'')+more;
   if(S.lesson.done){$('lessonAgain').addEventListener('click',()=>lessonStart(S.lesson.id));$('lessonBack').addEventListener('click',()=>{lessonLeave();showCover();});}}
