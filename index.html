@@ -299,6 +299,16 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
 .lmarks .ltext{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;fill:#1a1200}
 .lmarks .larrow{animation:lpulse .8s ease-in-out infinite alternate}@keyframes lpulse{from{opacity:.72}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.lmarks .larrow{animation:none}}
+/* v1.103.2 (user: "the fire missiles or claim the land or stack the drone can fall off of the phone screen so you have to scroll around looking
+   for them ... always on screen even if the player is zoomed in"). The bar pinned to the bottom was only for screens up to 720 wide; a folding
+   phone opened out is wider, so its buttons sat under the board again. Now every touch screen and every screen up to 1000 wide gets the bar,
+   and actsPin() in p3.js keeps it inside the part of the page that is showing when the player has zoomed in. */
+@media (pointer:coarse),(max-width:1000px){
+  .acts{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);justify-content:center;max-width:none;box-shadow:0 -4px 14px rgba(0,0,0,.45)}
+  .acts:empty{display:none}
+  .acts button{font-size:13px;padding:10px 12px}
+  body{padding-bottom:84px}
+}
 .lessonBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.lessonBtns button{flex:1 1 130px;animation:none}
 .cvFilm{pointer-events:auto;margin-top:12px;background:transparent;border:0;color:#cfd8e3;font-size:11px;letter-spacing:.16em;text-decoration:underline;text-underline-offset:4px;opacity:.85;padding:8px 10px}
 #cover{position:fixed;inset:0;z-index:65;background:#04060a;overflow:hidden;display:block;padding:0}
@@ -2501,8 +2511,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.103.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.103.2';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3374,6 +3384,19 @@ function renderSide(){
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
 }
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;};
+/* v1.103.2: the pinned button bar follows the visible part of the page. A fixed bar is fixed to the whole page's window; zoom in with two
+   fingers and that window is bigger than the screen, so the bar ends up below what is showing. The browser reports the showing part
+   (visualViewport): the bar is moved to its bottom edge and shrunk by the zoom, so it stays the size it has unzoomed. */
+function actsPin(vvTest){const a=$('acts');if(!a)return;const vv=vvTest||window.visualViewport;
+  const clear=()=>{for(const k of ['left','right','top','bottom','width','transform','transformOrigin'])a.style[k]='';};
+  if(!vv||!a.childElementCount||getComputedStyle(a).position!=='fixed'){clear();return;}
+  const s=vv.scale||1;if(Math.abs(s-1)<0.02&&Math.abs(vv.offsetLeft)<1&&Math.abs(vv.offsetTop)<1){clear();return;}
+  a.style.left='0';a.style.top='0';a.style.right='auto';a.style.bottom='auto';a.style.width=(vv.width*s)+'px';a.style.transformOrigin='0 0';
+  const h=a.offsetHeight;a.style.transform='translate('+vv.offsetLeft+'px,'+(vv.offsetTop+vv.height-h/s)+'px) scale('+(1/s)+')';}
+(()=>{let q=0;const go=()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;actsPin();});};
+  if(window.visualViewport){visualViewport.addEventListener('resize',go);visualViewport.addEventListener('scroll',go);}
+  window.addEventListener('resize',go);window.addEventListener('scroll',go,{passive:true});
+  try{new MutationObserver(()=>actsPin()).observe($('acts'),{childList:true});}catch(_){}})(); /* and whenever its buttons change */
 function renderActions(){
   const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy&&!netSpec();
   if(mine&&throwsOf(YOU)>0)acts.push('<button data-a="rock" class="primary callbtn">'+t`Throw an asteroid (${throwsOf(YOU)})`+'</button>'); /* v1.69: a free action, like firing */
