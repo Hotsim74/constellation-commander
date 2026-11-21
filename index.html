@@ -517,7 +517,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field" hidden><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck" checked> reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.</label></div>
-  <div class="field"><span class="lbl">Wrecks</span><label><input type="checkbox" id="inWClean"> trial rule: any drone that is not a hunter clears a wreck by ending a move on it, so an enemy hunter cannot use it. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">Wrecks</span><label><input type="checkbox" id="inWClean" checked> other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
   <button type="button" id="btnStory" class="primary">Story mode</button>
@@ -1889,7 +1889,10 @@ const FR={
 "An asteroid is in the way. A missile flies straight and cannot go round one.": "Un astéroïde gêne. Un missile vole droit et ne peut pas en contourner un.",
 "{0} cleared the wreck at {1}.": "{0} {v:avez|a} dégagé l'épave en {1}.",
 "Wrecks": "Épaves",
-"trial rule: any drone that is not a hunter clears a wreck by ending a move on it, so an enemy hunter cannot use it. Counts from your next new game.": "règle à l'essai : tout drone qui n'est pas un chasseur dégage une épave en terminant un déplacement dessus, pour qu'un chasseur ennemi ne puisse pas s'en servir. Compte à partir de votre prochaine partie."
+"trial rule: any drone that is not a hunter clears a wreck by ending a move on it, so an enemy hunter cannot use it. Counts from your next new game.": "règle à l'essai : tout drone qui n'est pas un chasseur dégage une épave en terminant un déplacement dessus, pour qu'un chasseur ennemi ne puisse pas s'en servir. Compte à partir de votre prochaine partie.",
+"{0} cleared the wreck at {1}: 1 missile to the Command drone.": "{0} {v:avez|a} dégagé l'épave en {1} : 1 missile pour le drone de commandement.",
+"+1 missile": "+1 missile",
+"other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.": "les autres drones les dégagent : un drone qui n'est pas un chasseur dégage une épave en terminant un déplacement dessus, et le missile va au drone de commandement, pour une tourelle. Décochez pour laisser les épaves aux seuls chasseurs. Compte à partir de votre prochaine partie."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2858,13 +2861,16 @@ const ES={
 "An asteroid is in the way. A missile flies straight and cannot go round one.": "Hay un asteroide en medio. Un misil vuela recto y no puede rodearlo.",
 "{0} cleared the wreck at {1}.": "{0} {v:despejaste|despejó} los restos en {1}.",
 "Wrecks": "Restos",
-"trial rule: any drone that is not a hunter clears a wreck by ending a move on it, so an enemy hunter cannot use it. Counts from your next new game.": "regla de prueba: cualquier dron que no sea un cazador despeja unos restos al terminar un movimiento sobre ellos, para que un cazador enemigo no pueda usarlos. Cuenta desde tu próxima partida."
+"trial rule: any drone that is not a hunter clears a wreck by ending a move on it, so an enemy hunter cannot use it. Counts from your next new game.": "regla de prueba: cualquier dron que no sea un cazador despeja unos restos al terminar un movimiento sobre ellos, para que un cazador enemigo no pueda usarlos. Cuenta desde tu próxima partida.",
+"{0} cleared the wreck at {1}: 1 missile to the Command drone.": "{0} {v:despejaste|despejó} los restos en {1}: 1 misil para el dron de mando.",
+"+1 missile": "+1 misil",
+"other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.": "los otros drones los despejan: un dron que no sea un cazador despeja unos restos al terminar un movimiento sobre ellos, y el misil va al dron de mando, para una torreta. Desmarca para dejar los restos solo a los cazadores. Cuenta desde tu próxima partida."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.113.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.114.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3234,10 +3240,13 @@ function takeDrone(taker,victim,how,by){queueShatter(victim);if(!S.salvage)S.mis
 function landed(d){
   if(!S.drones.includes(d))return;
   hunterFeed(d);salvageAt(d.side,d.r,d.c);
-  /* v1.113.0, an EXPERIMENT (S.wclean, a Settings box, off by default). User: "if one has a hunter and the other doesn't that would give a big swing to one player,
-     but if you can get some wrecks cleaned up with other drones that might stop some craziness". With it on, any drone that is not a hunter clears
-     a wreck by ending a move on it: no missile for anyone, the wreck is just gone. */
-  if(S.wclean&&d.kind!=='H'&&S.wrecks&&S.wrecks[key(d.r,d.c)]){delete S.wrecks[key(d.r,d.c)];note(t`${who(d.side)} cleared the wreck at ${sq(d.r,d.c)}.`,{why:'wreck_clear'});}
+  /* v1.114.0 (user: "wreck should only count as 1 missile ... other drones can clear them and the parts go to the command drone so it can build
+     the turret"). S.wclean, the Settings box "Wrecks", ON by default. A wreck is worth one missile, once, to whoever ends a move on it first: a
+     hunter with room loads it (hunterFeed above); any other drone clears it and the missile goes to its side's Command stock, the same stock
+     that loads scouts and pays for a turret (TURRET_COST). A full hunter leaves the wreck where it is. v1.113.0 had this as a trial where the
+     wreck was just removed and nobody gained. */
+  if(S.wclean&&d.kind!=='H'&&S.wrecks&&S.wrecks[key(d.r,d.c)]){delete S.wrecks[key(d.r,d.c)];S.missiles[d.side]++;
+    note(t`${who(d.side)} cleared the wreck at ${sq(d.r,d.c)}: 1 missile to the Command drone.`,{why:'wreck_clear',at:[[d.r,d.c]],lab:[t('+1 missile')]});}
   if(d.kind==='M')reload(d.side);else loadShooter(d);
   if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(!e||e.side===d.side||S.own[key(e.r,e.c)]!==d.side||e.shield)continue;
     if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))takeDrone(d.side,e,t('by moving beside it'),d); /* v1.70: a guard at full power sweeps raiders too, and keeps itself */
@@ -3568,7 +3577,7 @@ function botOptions(me,L){const him=other(me);
     if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){const w=S.own[key(a,b)];if(w===0||w===3)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&w!==him)prey+=5*o.power+(o.kind==='H'||o.kind==='G'?3:0);}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});} /* v1.106.0: anywhere on the board; contested squares count as land to take */
     for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
       if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
-      if(S.wclean&&L>=3&&d.kind!=='H'&&d.kind!=='M'&&S.wrecks&&S.wrecks[k]&&foeH.length)v+=5+(Math.min(...foeH.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c))))<=3?7:0); /* the experiment: deny a wreck to an enemy hunter, more so one it could reach next move */
+      if(S.wclean&&L>=3&&d.kind!=='H'&&d.kind!=='M'&&S.wrecks&&S.wrecks[k])v+=5+(foeH.length&&Math.min(...foeH.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c))))<=3?7:0); /* v1.114.0: a wreck is a missile for the stock; worth more when an enemy hunter could reach it next move */
       if(hfeed.length&&d.kind==='H'&&ammoOf(d)<shotsOf(d)){const wd=(a,b)=>Math.min(...hfeed.map(x=>Math.max(Math.abs(x[0]-a),Math.abs(x[1]-b))));
         if(S.wrecks[k])v+=12+(ammoOf(d)===0?8:0);else v+=(ammoOf(d)===0?2.5:1.2)*(wd(d.r,d.c)-wd(r,c));} /* v1.110.0, the trial rule: a hunter with room goes to a wreck */
       if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&!(S.hwreck&&d.kind==='H')&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6+(noShot?6+12*aw:0); // go home to load
@@ -3752,7 +3761,7 @@ function renderBoard(gone,born,mark,fall){seeThru();
     const seen=vis(YOU,r,c);
     let cls='cell'+((r+c)%2?' white':' red');if(r===SEAM)cls+=' seam';
     const ter=el.children[1];if(seen&&S.own[k]){const o=S.own[k];ter.className='ter'+(S.own[key(r-1,c)]!==o||r===0?' bt':'')+(S.own[key(r+1,c)]!==o||r===N-1?' bb':'')+(S.own[key(r,c-1)]!==o||c===0?' bl':'')+(S.own[key(r,c+1)]!==o||c===N-1?' br':'');}else ter.className='ter';
-    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck);const wn=el.children[5];if(wn){wn.textContent=Math.max(1,WRECK_TTL-age);wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[5];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
+    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck&&!S.wclean);const wn=el.children[5];if(wn){wn.textContent=Math.max(1,WRECK_TTL-age);wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[5];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
     if(seen){if(S.own[k])cls+=' own'+S.own[k];if(isWall(r,c))cls+=' wall'+S.wall[k];if(isCmd(r,c))cls+=(S.cmd[1][0]===r&&S.cmd[1][1]===c)?' cmd1':' cmd2';}
     if(!seen)cls+=' fog';
     {const du=droneAt(r,c);if(du&&(du.side===YOU||seen)&&isStar(S.grid[r][c]))cls+=' under u'+S.grid[r][c];} /* v1.96: the star under a drone shows as a square frame in its color */
@@ -4945,7 +4954,7 @@ function lessonLayHunter(){S.missiles={1:0,2:0};S.hwreck=true; /* this lesson is
   for(const [r,c] of [[8,9],[9,10],[8,7],[9,6],[6,8]])put(r,c,3);put(7,9,1); /* right: blue */
   S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0)];
   for(const P of [HUNT_SIDE.L,HUNT_SIDE.R])S.drones.push(mk(BOT,P.t1[0],P.t1[1],'C',2),mk(BOT,P.t2[0],P.t2[1],'S',0,0));}
-function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
+function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.wclean=false; /* v1.114.0: the lessons do not teach clearing wrecks */S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
   if(id==='warp'){lessonLayWarp();return;}
   if(id==='hunter'){lessonLayHunter();return;}
   // a board with no line anywhere and no swap that makes one, except the two the lesson is about: three gold and a gap on the left, three blue and a gap on the right
