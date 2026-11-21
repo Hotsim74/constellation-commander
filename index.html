@@ -1759,7 +1759,21 @@ const FR={
 "Your land so far": "Votre terrain jusqu'ici",
 "Finish lesson": "Terminer la leçon",
 "To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.": "Pour tirer : touchez l'éclaireur, appuyez sur Tirer le missile, touchez l'ennemi. Tirer est gratuit : il garde son déplacement.",
-"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Pour revendiquer : touchez l'éclaireur, appuyez sur Revendiquer. Le 3 × 3 autour de lui devient à vous."
+"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Pour revendiquer : touchez l'éclaireur, appuyez sur Revendiquer. Le 3 × 3 autour de lui devient à vous.",
+"One claim used. A scout carries two loads of settlers, one in each half of its hull.": "Une revendication faite. Un éclaireur porte deux groupes de colons, un dans chaque moitié de sa coque.",
+"One half empty. One load of settlers left.": "Une moitié vide. Il reste un groupe de colons.",
+"It walks on, to more land nobody owns.": "Il avance encore, vers d'autres terrains à personne.",
+"More open land beyond": "Encore du terrain libre plus loin",
+"It claims again. That lands the second load.": "Il revendique encore. Le second groupe débarque.",
+"Second claim": "Seconde revendication",
+"Both halves are empty, so the scout is used up. That is how you win: own {0} squares. You own {1} now.": "Les deux moitiés sont vides : l'éclaireur est épuisé. C'est ainsi qu'on gagne : posséder {0} cases. Vous en avez {1}.",
+"Both loads used: the scout is used up": "Les deux groupes utilisés : l'éclaireur est épuisé",
+"Done. Both halves are empty, so the scout is used up. That is the game in small: make drones, shoot, claim land. You own {0} of the {1} squares that win.": "Terminé. Les deux moitiés sont vides : l'éclaireur est épuisé. C'est le jeu en petit : créer des drones, tirer, revendiquer du terrain. Vous avez {0} des {1} cases qui font gagner.",
+"More land nobody owns lies beyond it.": "D'autres terrains à personne se trouvent au-delà.",
+"One claim used, one left. Tap your scout.": "Une revendication faite, il en reste une. Touchez votre éclaireur.",
+"A scout carries two loads of settlers, one in each half of its hull.": "Un éclaireur porte deux groupes de colons, un dans chaque moitié de sa coque.",
+"That lands the second load of settlers.": "Le second groupe de colons débarque ainsi.",
+"One more claim and it has done its work.": "Encore une revendication et son travail est fait."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2624,13 +2638,27 @@ const ES={
 "Your land so far": "Tu terreno hasta ahora",
 "Finish lesson": "Terminar la lección",
 "To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.": "Para disparar: toca el explorador, pulsa Disparar misil, toca al enemigo. Disparar es gratis: aún le queda su movimiento.",
-"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Para reclamar: toca el explorador, pulsa Reclamar. El 3 × 3 a su alrededor pasa a ser tuyo."
+"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Para reclamar: toca el explorador, pulsa Reclamar. El 3 × 3 a su alrededor pasa a ser tuyo.",
+"One claim used. A scout carries two loads of settlers, one in each half of its hull.": "Un reclamo hecho. Un explorador lleva dos grupos de colonos, uno en cada mitad de su casco.",
+"One half empty. One load of settlers left.": "Una mitad vacía. Queda un grupo de colonos.",
+"It walks on, to more land nobody owns.": "Sigue avanzando, hacia más terreno de nadie.",
+"More open land beyond": "Más terreno libre más allá",
+"It claims again. That lands the second load.": "Reclama otra vez. Así desembarca el segundo grupo.",
+"Second claim": "Segundo reclamo",
+"Both halves are empty, so the scout is used up. That is how you win: own {0} squares. You own {1} now.": "Las dos mitades están vacías, así que el explorador se ha agotado. Así se gana: tener {0} casillas. Ahora tienes {1}.",
+"Both loads used: the scout is used up": "Los dos grupos usados: el explorador se ha agotado",
+"Done. Both halves are empty, so the scout is used up. That is the game in small: make drones, shoot, claim land. You own {0} of the {1} squares that win.": "Hecho. Las dos mitades están vacías, así que el explorador se ha agotado. Ese es el juego en pequeño: crear drones, disparar, reclamar terreno. Tienes {0} de las {1} casillas que dan la victoria.",
+"More land nobody owns lies beyond it.": "Más allá hay más terreno de nadie.",
+"One claim used, one left. Tap your scout.": "Un reclamo hecho, queda uno. Toca tu explorador.",
+"A scout carries two loads of settlers, one in each half of its hull.": "Un explorador lleva dos grupos de colonos, uno en cada mitad de su casco.",
+"That lands the second load of settlers.": "Así desembarca el segundo grupo de colonos.",
+"One more claim and it has done its work.": "Un reclamo más y habrá hecho su trabajo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.104.2';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.105.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4632,7 +4660,7 @@ function filmOpen(){const v=$('filmV'),f=$('film');if(!v||!f||filmOn)return;film
 // player's taps run (humanSwap, humanMove, humanShots, humanClaim), so what is shown is exactly what can be done. Then the player does the
 // same on the RIGHT, with the squares lit and one line of Do and Why. The bot only passes. Steps are read from the board, not counted, so a
 // player who goes their own way is still told the next useful thing. A game in progress is put aside (cc1_hold) and comes back afterwards.
-const LESSON_SIDE={L:{a:[9,3],b:[8,3],home:[9,4],foe:[6,3],up:[8,3]},R:{a:[9,7],b:[8,7],home:[9,6],foe:[6,7],up:[8,7]}};
+const LESSON_SIDE={L:{a:[9,3],b:[8,3],home:[9,4],foe:[6,3],up:[8,3],up2:[7,2]},R:{a:[9,7],b:[8,7],home:[9,6],foe:[6,7],up:[8,7],up2:[7,8]}}; /* up2: where it stands for its second claim */
 const LESSON_LIST=['scout'];
 function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
   // a board with no line anywhere and no swap that makes one, except the two the lesson is about: three gold and a gap on the left, three blue and a gap on the right
@@ -4655,7 +4683,7 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
   const ringOf=p=>{const o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(inb(p[0]+dr,p[1]+dc))o.push([p[0]+dr,p[1]+dc]);return o;};
   const CMD=[N-1,5],four=t('4 of one color in a line = a scout'),kept=t('Missiles are kept here');
   if(Ls.phase==='watch'){const P=LESSON_SIDE.L;const W=t('Watch');const ds=S.drones.find(d=>d.id===Ls.demoId),at=ds?[ds.r,ds.c]:P.a;
-    switch(Math.min(8,Ls.w)){
+    switch(Math.min(11,Ls.w)){
       case 0:return L(W,t('Four stars of one color in a line make a scout. Watch the left side.'),'',[P.a,P.b,[9,1],[9,2],[9,4]],[{at:[9,1],label:four},{at:P.b,label:t('These two swap')}],null,[{a:P.a,b:P.b,kind:'swap'}]);
       case 1:return L(W,t('There it is. Scouts are the drones that claim land.'),'',[at],[{at,label:t('A new scout')}]);
       case 2:return L(W,t('Missiles sit on the Command drone. The scout goes next to it to pick one up.'),'',[P.home],[{at:CMD,label:kept},{at:P.home,label:t('Stand next to it to pick one up')}],null,[{a:at,b:P.home,kind:'move'}]);
@@ -4663,12 +4691,18 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
       case 4:return L(W,t('To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.'),'',[P.foe],[{at:P.foe,label:t('Enemy scout: shoot it')}],'aim',[{a:at,b:P.foe,kind:'fire'}]); /* v1.104.2: the demonstration shows the real button, with the arrow coming down onto it */
       case 5:return L(W,t('Next it walks to land nobody owns.'),'',[P.up],[{at:P.up,label:t('Land nobody owns')}],null,[{a:at,b:P.up,kind:'move'}]);
       case 6:return L(W,t('To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.'),'',ringOf(at),[{at,label:t('Claim takes this 3 × 3')}],'claim');
-      case 7:return L(W,t`That is how you win: own ${S.win} squares. You own ${landOf(YOU)} now.`,'',ringOf(at),[{at,label:t('Yours now')}]);
+      /* v1.105.0 (user: "add the scout moves and takes over more land and the science settler drones have been used up in the 2 halves of the scout
+         drone"). The game's scout is drawn as two hull halves with a seam of light between: each half carries one load of settlers, and each claim
+         lands one. So the lesson goes on to the second claim, and the scout is seen to be used up. */
+      case 7:return L(W,t('One claim used. A scout carries two loads of settlers, one in each half of its hull.'),'',ringOf(at),[{at,label:t('One half empty. One load of settlers left.')}]);
+      case 8:return L(W,t('It walks on, to more land nobody owns.'),'',[P.up2],[{at:P.up2,label:t('More open land beyond')}],null,[{a:at,b:P.up2,kind:'move'}]);
+      case 9:return L(W,t('It claims again. That lands the second load.'),'',ringOf(at),[{at,label:t('Second claim')}],'claim');
+      case 10:return L(W,t`Both halves are empty, so the scout is used up. That is how you win: own ${S.win} squares. You own ${landOf(YOU)} now.`,'',ringOf(P.up2),[{at:P.up2,label:t('Both loads used: the scout is used up')}]);
       default:return L(W,t('Your turn. Do the same on the right side.'),'',[],[]);}}
   const P=LESSON_SIDE.R,D=t('Do'),sc=lessonScout(),foe=droneAt(P.foe[0],P.foe[1]),foeUp=!!(foe&&foe.side===BOT);
   const sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,mine=sd&&sc&&sd.id===sc.id;
-  if(Ls.done||(Ls.made&&!sc)||(sc&&sc.claims<2)){Ls.done=true;
-    return L(t('Done'),t`Done. That is the game in small: make drones, shoot, claim land. You own ${landOf(YOU)} of the ${S.win} squares that win.`,'',sc?ringOf([sc.r,sc.c]):[],sc?[{at:[sc.r,sc.c],label:t('Yours now')}]:[]);}
+  if(Ls.done||(Ls.made&&!sc)){Ls.done=true; /* the lesson ends when the scout has made both its claims and is gone */
+    return L(t('Done'),t`Done. Both halves are empty, so the scout is used up. That is the game in small: make drones, shoot, claim land. You own ${landOf(YOU)} of the ${S.win} squares that win.`,'',ringOf(P.up2),[{at:P.up2,label:t('Both loads used: the scout is used up')}]);}
   if(!sc)return L(D,t('Swap the two marked stars.'),t('Four of one color in a line make a scout.'),[P.a,P.b,[9,9],[9,8],[9,6]],[{at:[9,9],label:four},{at:P.b,label:t('Swap these two')}],null,[{a:P.a,b:P.b,kind:'swap'}]);
   Ls.made=true;const at=[sc.r,sc.c],tap={at,label:t('Tap your scout')};
   if(foeUp&&!ammoOf(sc)){if(besideM(sc))return L(D,t('It is picking up a missile.'),'',[at],[{at,label:t('Picking up a missile')}]);
@@ -4679,11 +4713,13 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
     if(mode==='aim'&&mine)return L(D,t('Tap the enemy scout.'),t('One missile, one drone gone.'),[P.foe],[{at:P.foe,label:t('Tap it to shoot')}],null,shot);
     if(mine)return L(D,t('Press Fire missile, at the bottom of the screen.'),t('Shooting is free. You still get your move after.'),[at],[{at,label:t('Now press Fire missile, at the bottom')}],'aim',shot);
     return L(D,t('It is loaded. Tap it.'),t('That enemy scout came to take your land. Shoot it first.'),[at],[{at,label:t('Locked and loaded. Tap it.'),ring:1},{at:P.foe,label:t('Enemy scout')}],null,shot,sc.id);}
-  if(claimGain(sc)<5&&!(sc.r===P.up[0]&&sc.c===P.up[1])){const go=[{a:at,b:P.up,kind:'move'}];
-    return mine?L(D,t('Tap the marked square.'),t('Stand on land nobody owns.'),[P.up],[{at:P.up,label:t('Tap here')}],null,go)
-      :L(D,t('Tap your scout.'),t('Now go take some land.'),[at],[tap,{at:P.up,label:t('Land nobody owns')}],null,go);}
-  return mine?L(D,t('Press Claim, at the bottom of the screen.'),t('The 3 × 3 around the scout becomes yours.'),ringOf(at),[{at,label:t('Now press Claim, at the bottom')}],'claim')
-    :L(D,t('Tap your scout.'),t('Claiming land is how you win.'),ringOf(at),[tap]);}
+  const second=sc.claims<2,T=second?P.up2:P.up; /* first claim from one spot, the second from the next */
+  if(!(sc.r===T[0]&&sc.c===T[1])){const go=[{a:at,b:T,kind:'move'}];
+    if(mine)return L(D,t('Tap the marked square.'),second?t('More land nobody owns lies beyond it.'):t('Stand on land nobody owns.'),[T],[{at:T,label:t('Tap here')}],null,go);
+    return second?L(D,t('One claim used, one left. Tap your scout.'),t('A scout carries two loads of settlers, one in each half of its hull.'),[at],[{at,label:t('One half empty. One load of settlers left.')},{at:T,label:t('More open land beyond')}],null,go)
+      :L(D,t('Tap your scout.'),t('Now go take some land.'),[at],[tap,{at:T,label:t('Land nobody owns')}],null,go);}
+  return mine?L(D,t('Press Claim, at the bottom of the screen.'),second?t('That lands the second load of settlers.'):t('The 3 × 3 around the scout becomes yours.'),ringOf(at),[{at,label:t('Now press Claim, at the bottom')}],'claim')
+    :L(D,t('Tap your scout.'),second?t('One more claim and it has done its work.'):t('Claiming land is how you win.'),ringOf(at),[tap]);}
 /* v1.103.1 (user: "the words are on top of the moves, I think you will need to use longer arrows to show moves"). The coached game's word
    bubbles sit right above the square they name, which in a lesson is the other half of the move. Here a move is an arrow drawn on the board
    from square to square, and a label stands two or three squares off, in the first spot that covers no marked square, joined by a long arrow. */
@@ -4751,8 +4787,11 @@ async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.
     if(canShoot(sc)&&foe){await say(3,3000);if(!here())return;sel={id:sc.id};mode=null;await say(4,3800);if(!here())return;await press('aim');if(!here())return;await humanShots(sc,[{r:P.foe[0],c:P.foe[1]}]);sel=null;if(!here())return;}
     await say(5,2600);if(!here())return;await humanMove(sc,P.up[0],P.up[1]);if(!here())return;
     sel={id:sc.id};mode=null;await say(6,3600);if(!here())return;await press('claim');if(!here())return;await humanClaim(sc);sel=null;if(!here())return;
-    await say(7,3600);if(!here())return;
-    await say(8,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
+    await say(7,3800);if(!here())return;
+    await say(8,2800);if(!here())return;await humanMove(sc,P.up2[0],P.up2[1]);if(!here())return;
+    sel={id:sc.id};mode=null;await say(9,3400);if(!here())return;await press('claim');if(!here())return;await humanClaim(sc);sel=null;if(!here())return;
+    await say(10,4400);if(!here())return;
+    await say(11,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
   finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
 function lessonStart(id){try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold');if(!S.over&&S.turnNo>0)localStorage.setItem('cc1_hold',JSON.stringify(S));}}catch(_){} /* a game in progress waits; it comes back when the lesson is left */
   const cv=$('cover');if(cv&&!cv.hidden){cv.hidden=true;$('cvFleet').innerHTML='';}
