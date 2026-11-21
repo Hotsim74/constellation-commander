@@ -2759,8 +2759,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.107.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.107.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2892,12 +2892,17 @@ function detectShapes(g,anchor){
     let done=false;for(let i=0;i<arms.length&&!done;i++)for(let j=i+1;j<arms.length&&!done;j++){const a=arms[i],b=arms[j];if(a[0]+b[0]===0&&a[1]+b[1]===0)continue; // opposite arms are a straight diagonal, not a V
       const cc=[key(r,c),key(r+a[0],c+a[1]),key(r+2*a[0],c+2*a[1]),key(r+b[0],c+b[1]),key(r+2*b[0],c+2*b[1])];
       for(const k of cc)cells.add(k);spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('a V of two diagonals')});done=true;}}
-  for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
-    if(a.used||b.used||a.di===b.di)continue;
+  /* v1.107.1 (user: "always build the warp drone over a scout or raider even if there are them options"). Two changes. (1) The crossings that make
+     a warp (lengths adding to 8 or more) are paired first, so a run is never spent on a lesser crossing when it could cross into a warp. (2) A
+     3-line that leans on a 2×2 block used to stop a 5 crossing it: the 5 paid a raider and the block a guard. Now a crossing that makes a warp
+     wins there too, and the block it touches is dissolved, as it already was for crossings of two 3-lines. */
+  for(const pass of [0,1])for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
+    if(a.used||b.used||a.di===b.di)continue;if(pass===0&&a.len+b.len<8)continue;
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
     if(a.boxed||b.boxed){ // a T, L or plus of 3s that also touches a 2×2 block: the crossing wins when it reaches 2 cells past the block (so a 2×3 or 3×3 block stays a block)
-      if(a.len!==3||b.len!==3)continue;
-      const un=[...new Set([...a.run,...b.run])];if(un.filter(k=>!box.has(k)).length<2)continue;
+      const un=[...new Set([...a.run,...b.run])];
+      if(a.len!==3||b.len!==3){if(a.len+b.len<8)continue;} /* not a warp: the block and the long line each pay their own, as before */
+      else if(un.filter(k=>!box.has(k)).length<2)continue;
       box.clear();for(const grp of boxes){if(grp.some(k=>un.includes(k)))continue;for(const k of grp)box.add(k);}
       for(const k of un)cells.add(k);}
     a.used=b.used=true;
@@ -3511,7 +3516,7 @@ async function humanSwap(a,b){
 }
 async function humanMove(d,r,c){if(netSend({type:'move',id:d.id,r,c}))return;busy=true;sel=null;const from=[d.r,d.c];const o=droneAt(r,c);const extra=o?(o.side===YOU?'merge':'take'):null;applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move',d,extra);busy=false;await afterAction();}
 async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
-async function humanWarp(d,r,c){if(S.lesson&&!lessonWarpOk(r,c)){setStatus(t('In this lesson, warp to the marked square.'));return;} /* v1.106.0 */if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
+async function humanWarp(d,r,c){if(S.lesson&&!lessonWarpOk(r,c)){setStatus(t('In this lesson, warp to the marked square.'));return;} /* v1.106.0 */try{localStorage.setItem('cc_warped','1');}catch(_){}if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanTurret(r,c){if(netSend({type:'turret',r,c}))return;busy=true;sel=null;mode=null;applyTurret(YOU,r,c);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(rockWait?t('Thrown.'):t('Thrown. Now take your turn: swap, move, claim or warp.'));if(rockWait&&throwsOf(YOU)>0&&!S.over){const el=$('rockpop');el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');$('rockN').textContent=throwsOf(YOU)>1?' ×'+throwsOf(YOU):'';setStatus(t('Thrown. Another asteroid is ready.'));return;} /* v1.81.2: more than one earned: the alert comes straight back for the next */rockDone();}
@@ -3650,6 +3655,7 @@ function actsPin(vvTest){const a=$('acts');if(!a)return;const vv=vvTest||window.
   if(window.visualViewport){visualViewport.addEventListener('resize',go);visualViewport.addEventListener('scroll',go);}
   window.addEventListener('resize',go);window.addEventListener('scroll',go,{passive:true});
   try{new MutationObserver(()=>actsPin()).observe($('acts'),{childList:true});}catch(_){}})(); /* and whenever its buttons change */
+function warpHint(){if(S&&S.lesson)return false;try{return localStorage.getItem('cc_warped')!=='1';}catch(_){return false;}}
 function renderActions(){
   const acts=[],hint=[];const mine=S.turn===YOU&&!S.over&&!busy&&!netSpec();
   if(mine&&throwsOf(YOU)>0)acts.push('<button data-a="rock" class="primary callbtn">'+t`Throw an asteroid (${throwsOf(YOU)})`+'</button>'); /* v1.69: a free action, like firing */
@@ -3660,7 +3666,7 @@ function renderActions(){
     if(sd.kind==='X'&&sd.charge&&shieldCells(sd).length)acts.push('<button data-a="shield" class="primary">'+t('Shield a drone')+'</button>');
     if(mode==='aim'&&aimList.length)acts.push('<button data-a="firenow" class="primary">'+t('Fire now')+'</button>');
     if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>`+t`Claim the 3 × 3 here (${claimGain(sd)} to take)`+'</button>');
-    if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp">'+t('Warp')+'</button>');
+    if(sd.kind==='W'&&mode!=='warp')acts.push('<button data-a="warp"'+(warpHint()?' class="larrowbtn"':'')+'>'+t('Warp')+'</button>'); /* v1.107.1 (user: "like to get arrow pointing down to the warp button also"): in a real game too, until the player has warped once */
     if(sd.kind==='M'&&canTurret(YOU)&&mode!=='turret')acts.push('<button data-a="turret" class="primary">'+t`Build a turret (${TURRET_COST} missiles)`+'</button>');
     if(sd.kind==='X'){const g=shieldedBy(sd);if(g)acts.push('<button data-a="ram" class="danger">'+t`Ram the guard at ${sq(g.r,g.c)} (both lost)`+'</button>');}
     if(mode==='confirm'&&pending)acts.push('<button data-a="ok" class="primary">'+t('Yes, stack them')+'</button>');
