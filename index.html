@@ -2869,8 +2869,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.114.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.114.2';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3245,7 +3245,9 @@ function landed(d){
      hunter with room loads it (hunterFeed above); any other drone clears it and the missile goes to its side's Command stock, the same stock
      that loads scouts and pays for a turret (TURRET_COST). A full hunter leaves the wreck where it is. v1.113.0 had this as a trial where the
      wreck was just removed and nobody gained. */
-  if(S.wclean&&d.kind!=='H'&&S.wrecks&&S.wrecks[key(d.r,d.c)]){delete S.wrecks[key(d.r,d.c)];S.missiles[d.side]++;
+  /* v1.114.2 (user: "my hunter couldn't claim a wreck those should be there for everyone"): no drone is left out now. hunterFeed above has
+     already taken the wreck if the hunter had room; a hunter that is full (a new one is born with 2) sends the missile to the stock like the rest. */
+  if(S.wclean&&S.wrecks&&S.wrecks[key(d.r,d.c)]){delete S.wrecks[key(d.r,d.c)];S.missiles[d.side]++;
     note(t`${who(d.side)} cleared the wreck at ${sq(d.r,d.c)}: 1 missile to the Command drone.`,{why:'wreck_clear',at:[[d.r,d.c]],lab:[t('+1 missile')]});}
   if(d.kind==='M')reload(d.side);else loadShooter(d);
   if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(!e||e.side===d.side||S.own[key(e.r,e.c)]!==d.side||e.shield)continue;
@@ -3577,7 +3579,7 @@ function botOptions(me,L){const him=other(me);
     if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){const w=S.own[key(a,b)];if(w===0||w===3)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&w!==him)prey+=5*o.power+(o.kind==='H'||o.kind==='G'?3:0);}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});} /* v1.106.0: anywhere on the board; contested squares count as land to take */
     for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
       if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
-      if(S.wclean&&L>=3&&d.kind!=='H'&&d.kind!=='M'&&S.wrecks&&S.wrecks[k])v+=5+(foeH.length&&Math.min(...foeH.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c))))<=3?7:0); /* v1.114.0: a wreck is a missile for the stock; worth more when an enemy hunter could reach it next move */
+      if(S.wclean&&L>=3&&(d.kind!=='H'||ammoOf(d)>=shotsOf(d))&&d.kind!=='M'&&S.wrecks&&S.wrecks[k])v+=5+(foeH.length&&Math.min(...foeH.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c))))<=3?7:0); /* v1.114.0: a wreck is a missile for the stock; worth more when an enemy hunter could reach it next move */
       if(hfeed.length&&d.kind==='H'&&ammoOf(d)<shotsOf(d)){const wd=(a,b)=>Math.min(...hfeed.map(x=>Math.max(Math.abs(x[0]-a),Math.abs(x[1]-b))));
         if(S.wrecks[k])v+=12+(ammoOf(d)===0?8:0);else v+=(ammoOf(d)===0?2.5:1.2)*(wd(d.r,d.c)-wd(r,c));} /* v1.110.0, the trial rule: a hunter with room goes to a wreck */
       if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&!(S.hwreck&&d.kind==='H')&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6+(noShot?6+12*aw:0); // go home to load
