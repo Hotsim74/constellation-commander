@@ -315,6 +315,7 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
 .acts button.larrowbtn::before{content:'';position:absolute;left:50%;bottom:calc(100% + 5px);margin-left:-14px;border-left:14px solid transparent;border-right:14px solid transparent;border-top:20px solid var(--you);filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 2px #000);animation:lbtnbob .55s ease-in-out infinite alternate;pointer-events:none}
 .acts button.larrowbtn::after{content:'';position:absolute;left:50%;bottom:calc(100% + 23px);margin-left:-4.5px;width:9px;height:38px;border-radius:4px;background:var(--you);filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 2px #000);animation:lbtnbob .55s ease-in-out infinite alternate;pointer-events:none}
 @keyframes lbtnbob{from{transform:translateY(-7px)}to{transform:translateY(0)}}
+.acts button.lpress{transform:scale(.92);filter:brightness(1.6);transition:transform .15s,filter .15s} /* v1.104.2: the demonstration presses the button */
 .lpoint{position:relative;display:inline-block;outline:2px solid var(--you);outline-offset:5px;border-radius:4px}
 .lpoint::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 22px);background:var(--you);color:#1a1200;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;line-height:1.2;padding:5px 9px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.55)}
 .lpoint::before{content:'';position:absolute;left:16px;bottom:calc(100% + 8px);border-left:9px solid transparent;border-right:9px solid transparent;border-top:14px solid var(--you);animation:lbtnbob .55s ease-in-out infinite alternate}
@@ -1756,7 +1757,9 @@ const FR={
 "Locked and loaded: the missile shows here": "Chargé et prêt : le missile se voit ici",
 "Locked and loaded. Tap it.": "Chargé et prêt. Touchez-le.",
 "Your land so far": "Votre terrain jusqu'ici",
-"Finish lesson": "Terminer la leçon"
+"Finish lesson": "Terminer la leçon",
+"To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.": "Pour tirer : touchez l'éclaireur, appuyez sur Tirer le missile, touchez l'ennemi. Tirer est gratuit : il garde son déplacement.",
+"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Pour revendiquer : touchez l'éclaireur, appuyez sur Revendiquer. Le 3 × 3 autour de lui devient à vous."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2619,13 +2622,15 @@ const ES={
 "Locked and loaded: the missile shows here": "Cargado y listo: el misil se ve aquí",
 "Locked and loaded. Tap it.": "Cargado y listo. Tócalo.",
 "Your land so far": "Tu terreno hasta ahora",
-"Finish lesson": "Terminar la lección"
+"Finish lesson": "Terminar la lección",
+"To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.": "Para disparar: toca el explorador, pulsa Disparar misil, toca al enemigo. Disparar es gratis: aún le queda su movimiento.",
+"To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.": "Para reclamar: toca el explorador, pulsa Reclamar. El 3 × 3 a su alrededor pasa a ser tuyo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.104.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.104.2';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4655,9 +4660,9 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
       case 1:return L(W,t('There it is. Scouts are the drones that claim land.'),'',[at],[{at,label:t('A new scout')}]);
       case 2:return L(W,t('Missiles sit on the Command drone. The scout goes next to it to pick one up.'),'',[P.home],[{at:CMD,label:kept},{at:P.home,label:t('Stand next to it to pick one up')}],null,[{a:at,b:P.home,kind:'move'}]);
       case 3:return L(W,t('Now it carries a missile. Look for the little missile on its corner.'),'',[at],[{at,label:t('Locked and loaded: the missile shows here'),ring:1}],null,null,ds?ds.id:0);
-      case 4:return L(W,t('It shoots the enemy scout. Shooting is free: it still gets its move.'),'',[P.foe],[{at:P.foe,label:t('Enemy scout: shoot it')}],null,[{a:at,b:P.foe,kind:'fire'}]);
+      case 4:return L(W,t('To shoot: tap the scout, press Fire missile, tap the enemy. Shooting is free: it still gets its move.'),'',[P.foe],[{at:P.foe,label:t('Enemy scout: shoot it')}],'aim',[{a:at,b:P.foe,kind:'fire'}]); /* v1.104.2: the demonstration shows the real button, with the arrow coming down onto it */
       case 5:return L(W,t('Next it walks to land nobody owns.'),'',[P.up],[{at:P.up,label:t('Land nobody owns')}],null,[{a:at,b:P.up,kind:'move'}]);
-      case 6:return L(W,t('It claims. The 3 × 3 around it becomes yours.'),'',ringOf(at),[{at,label:t('Claim takes this 3 × 3')}]);
+      case 6:return L(W,t('To claim: tap the scout, press Claim. The 3 × 3 around it becomes yours.'),'',ringOf(at),[{at,label:t('Claim takes this 3 × 3')}],'claim');
       case 7:return L(W,t`That is how you win: own ${S.win} squares. You own ${landOf(YOU)} now.`,'',ringOf(at),[{at,label:t('Yours now')}]);
       default:return L(W,t('Your turn. Do the same on the right side.'),'',[],[]);}}
   const P=LESSON_SIDE.R,D=t('Do'),sc=lessonScout(),foe=droneAt(P.foe[0],P.foe[1]),foeUp=!!(foe&&foe.side===BOT);
@@ -4740,9 +4745,12 @@ async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.
     await say(1,2400);if(!here())return;
     await say(2,3600);if(!here())return;await humanMove(sc,P.home[0],P.home[1]);if(!here())return;
     const foe=droneAt(P.foe[0],P.foe[1]);
-    if(canShoot(sc)&&foe){await say(3,3000);if(!here())return;await say(4,3000);if(!here())return;await humanShots(sc,[{r:P.foe[0],c:P.foe[1]}]);sel=null;if(!here())return;}
+    /* v1.104.2 (user: "this is the very first lesson so lets have an arrow point down to the fire missile button and claim the space button"): the
+       scout is selected, so the real button is in the bar with the arrow on it; a pause; the button is seen to be pressed; then the thing happens. */
+    const press=async a=>{const bt=$('acts').querySelector('button[data-a="'+a+'"]');if(bt){bt.classList.add('lpress');await lessonNap(480);}};
+    if(canShoot(sc)&&foe){await say(3,3000);if(!here())return;sel={id:sc.id};mode=null;await say(4,3800);if(!here())return;await press('aim');if(!here())return;await humanShots(sc,[{r:P.foe[0],c:P.foe[1]}]);sel=null;if(!here())return;}
     await say(5,2600);if(!here())return;await humanMove(sc,P.up[0],P.up[1]);if(!here())return;
-    await say(6,2800);if(!here())return;await humanClaim(sc);if(!here())return;
+    sel={id:sc.id};mode=null;await say(6,3600);if(!here())return;await press('claim');if(!here())return;await humanClaim(sc);sel=null;if(!here())return;
     await say(7,3600);if(!here())return;
     await say(8,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
   finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
