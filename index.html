@@ -2869,8 +2869,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.114.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.114.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3731,7 +3731,7 @@ function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==
 // ---------- render ----------
 const cells=[];
 const cellEl=(r,c)=>cells[key(r,c)];
-function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><span class="dd"></span><i class="wkn"></i>';el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
+function buildBoard(){const b=$('board');for(let r=0;r<N;r++)for(let c=0;c<N;c++){const el=document.createElement('div');el.className='cell';el.innerHTML='<i class="gem"></i><i class="ter"></i><i class="wk"></i><i class="sqm"></i><i class="wkn"></i><span class="dd"></span>'; /* v1.114.1: the ship holder .dd must stay the LAST child; renderBoard, the move animation and the hit flash all find it with lastChild. v1.112.0 put the countdown after it, so ships were drawn into the hidden countdown and did not show. */el.addEventListener('click',()=>onCell(r,c));b.insertBefore(el,$('over'));cells.push(el);}}
 // v1.96: the stack question says what you give up and what you get (user: "do you want to stack a hunter on this scout" made no sense)
 function stackAsk(sd,o){const a=TNAME[sd.kind],b=TNAME[o.kind],p=Math.min(MAXP,o.power+sd.power);
   if(sd.kind==='B'){if(o.kind==='X')return t('Load the bomb onto this siege? It becomes a shield the siege can hand to a drone beside it. Tap it again, or Yes below.');
@@ -3761,7 +3761,7 @@ function renderBoard(gone,born,mark,fall){seeThru();
     const seen=vis(YOU,r,c);
     let cls='cell'+((r+c)%2?' white':' red');if(r===SEAM)cls+=' seam';
     const ter=el.children[1];if(seen&&S.own[k]){const o=S.own[k];ter.className='ter'+(S.own[key(r-1,c)]!==o||r===0?' bt':'')+(S.own[key(r+1,c)]!==o||r===N-1?' bb':'')+(S.own[key(r,c-1)]!==o||c===0?' bl':'')+(S.own[key(r,c+1)]!==o||c===N-1?' br':'');}else ter.className='ter';
-    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck&&!S.wclean);const wn=el.children[5];if(wn){wn.textContent=Math.max(1,WRECK_TTL-age);wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[5];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
+    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck&&!S.wclean);const wn=el.children[4];if(wn){wn.textContent=Math.max(1,WRECK_TTL-age);wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[4];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
     if(seen){if(S.own[k])cls+=' own'+S.own[k];if(isWall(r,c))cls+=' wall'+S.wall[k];if(isCmd(r,c))cls+=(S.cmd[1][0]===r&&S.cmd[1][1]===c)?' cmd1':' cmd2';}
     if(!seen)cls+=' fog';
     {const du=droneAt(r,c);if(du&&(du.side===YOU||seen)&&isStar(S.grid[r][c]))cls+=' under u'+S.grid[r][c];} /* v1.96: the star under a drone shows as a square frame in its color */
