@@ -200,6 +200,19 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 /* v1.91: the warp drone's cloud reaches into the squares around it: a soft green ellipse behind the drone, above the stars (z 2) and under every drone (z 3) */
 .wfog{position:absolute;left:-70%;top:-70%;width:240%;height:240%;border-radius:50%;z-index:2;pointer-events:none;background:radial-gradient(ellipse 60% 52% at 50% 50%,rgba(150,255,180,.62) 0,rgba(70,220,120,.44) 30%,rgba(30,150,75,.26) 58%,rgba(15,90,46,0) 78%);filter:blur(2px);animation:wfog 9s ease-in-out infinite alternate;will-change:transform}
 @keyframes wfog{from{transform:scale(.9) rotate(-8deg)}to{transform:scale(1.14) rotate(34deg)}}
+/* v1.107.0 (user: "make the Warp drone big and have its green gasses leaking out over other squares"). On the board the warp drone is drawn
+   one and a half times the size of the others, so it stands over the edges of the squares beside it; its cloud is wider and stronger; and
+   five wisps of gas keep drifting out of it across the neighbouring squares and fading. The gas stays under every drone (z 2). */
+.board .dr.kW{scale:1.5}
+.board .wfog{left:-115%;top:-115%;width:330%;height:330%;background:radial-gradient(ellipse 62% 56% at 50% 50%,rgba(175,255,200,.85) 0,rgba(84,235,135,.66) 30%,rgba(38,170,88,.46) 58%,rgba(18,100,52,.16) 74%,rgba(15,90,46,0) 86%)}
+.wfog s{position:absolute;left:36%;top:36%;width:28%;height:28%;border-radius:50%;opacity:0;text-decoration:none;background:radial-gradient(circle,rgba(190,255,205,.85) 0,rgba(80,225,125,.5) 45%,rgba(24,130,66,0) 74%);filter:blur(1.5px);animation:wleak 6.5s ease-out infinite;will-change:transform,opacity}
+.wfog s:nth-child(1){--dx:-150%;--dy:-115%}
+.wfog s:nth-child(2){--dx:165%;--dy:-85%;animation-delay:-1.3s}
+.wfog s:nth-child(3){--dx:-125%;--dy:145%;animation-delay:-2.6s}
+.wfog s:nth-child(4){--dx:140%;--dy:150%;animation-delay:-3.9s}
+.wfog s:nth-child(5){--dx:10%;--dy:-185%;animation-delay:-5.2s}
+@keyframes wleak{0%{transform:translate(0,0) scale(.45);opacity:0}14%{opacity:.85}70%{opacity:.45}100%{transform:translate(var(--dx),var(--dy)) scale(2.1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.wfog s{animation:none;opacity:0}}
 .legend .wfog,.bark .wfog,#briefShipArt .wfog,.cvShip .wfog,.ghost.fly .wfog{display:none}
 @media (prefers-reduced-motion:reduce){.wfog{animation:none}}
 @keyframes wdrift{from{transform:scale(.92) rotate(-6deg)}to{transform:scale(1.08) rotate(6deg)}}
@@ -2746,8 +2759,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.106.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.107.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3576,7 +3589,7 @@ function plates(d){if(!(d.power>1)||d.kind==='T')return '';const col=i=>KCOL[d.c
   return d.power>=3?`<i class="plate pc" style="--pc:${col(2)}"></i><i class="plate pb" style="--pc:${col(1)}"></i>`:`<i class="plate pa" style="--pc:${col(1)}"></i>`;}
 function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
+  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"><s></s><s></s><s></s><s></s><s></s></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
