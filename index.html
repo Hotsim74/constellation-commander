@@ -514,7 +514,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
-  <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck"> trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck" checked> reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
   <button type="button" id="btnStory" class="primary">Story mode</button>
@@ -903,7 +903,8 @@ const SAYINGS=[
 'Claim it now. Argue about it later.',
 'Stars fall toward whoever is moving. So does trouble.',
 'Every drone was a lucky swap once.',
-'Nobody ever won by staring at the board. Swap something.'];
+'Nobody ever won by staring at the board. Swap something.',
+'If chess was invented today, this is what it would have been.'];
 const FR={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nouvelle partie. Astéroïdes {0} contre {1}, bot au niveau {2}{3}.",
 "a {0} crossing a {1}": "un {0} croisant un {1}",
@@ -1839,7 +1840,48 @@ const FR={
 "Five of one color in a line with three more crossing them make a warp drone.": "Cinq d'une couleur en ligne avec trois autres qui les croisent font un drone de saut.",
 "{0}: {1} at {2} took a missile from a wreck.": "{0} : {1} en {2} a pris un missile dans une épave.",
 "Hunters": "Chasseurs",
-"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "règle à l'essai : un chasseur naît avec 2 missiles et ne se recharge qu'en se tenant sur une épave, pas au drone de commandement. Compte à partir de votre prochaine partie."
+"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "règle à l'essai : un chasseur naît avec 2 missiles et ne se recharge qu'en se tenant sur une épave, pas au drone de commandement. Compte à partir de votre prochaine partie.",
+"If chess was invented today, this is what it would have been.": "Si les échecs étaient inventés aujourd'hui, voilà ce qu'ils seraient.",
+"reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.": "se rechargent sur les épaves : un chasseur naît avec 2 missiles et en prend un dans chaque épave où il se tient. Décochez pour l'ancienne règle, le chargement au drone de commandement. Compte à partir de votre prochaine partie.",
+"Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Born with two missiles, and takes one more from each wreck it ends a move on; it does not load at the Command drone. Both players can see how many it carries. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se déplace jusqu'à 3 cases dans n'importe quelle direction, en contournant ce qui gêne. Tire deux missiles par tour : visez les deux, ils touchent ensemble. Naît avec deux missiles et en prend un de plus dans chaque épave où il termine un déplacement ; il ne charge pas au drone de commandement. Les deux joueurs voient combien il en porte. Il ne peut pas prendre de drones en atterrissant ; il se bat au missile. Empilez une bombe dessus et il lâche ses missiles pour un missile-bombe : tirez-le à 3 cases et le souffle part là où il tombe.",
+"A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts load there by standing beside it; hunters reload from wrecks.": "Un missile retire une puissance à un drone. À la puissance 1 le drone est détruit, et détruire un drone rapporte un missile à votre drone de commandement. Les éclaireurs s'y chargent en se tenant à côté ; les chasseurs se rechargent sur les épaves.",
+"A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. Missiles come from takes and go to your Command drone; a scout loads by standing beside it, a hunter takes one from each wreck it stands on.": "Un missile dégage une étoile ou un astéroïde et les étoiles tombent. Les éclaireurs en tirent un par tour, les chasseurs deux à la fois. Les missiles viennent des prises et vont à votre drone de commandement ; un éclaireur charge en se tenant à côté, un chasseur en prend un dans chaque épave où il se tient.",
+"Missiles live on the Command drone, and a scout standing beside it loads one. A hunter is born with two and takes one from each wreck it ends a move on.": "Les missiles sont sur le drone de commandement, et un éclaireur qui se tient à côté en charge un. Un chasseur naît avec deux missiles et en prend un dans chaque épave où il termine un déplacement.",
+"The hunter": "Le chasseur",
+"The hunter: two missiles at once, reloaded from wrecks.": "Le chasseur : deux missiles à la fois, rechargés sur les épaves.",
+"A V of 5 stars": "Un V de 5 étoiles",
+"A wreck holds a missile": "Une épave contient un missile",
+"A hunter comes from a V of 5 stars of one color: two slanting arms that meet at a point.": "Un chasseur vient d'un V de 5 étoiles d'une couleur : deux bras en biais qui se rejoignent en une pointe.",
+"There it is, born with two missiles. Both players can always see how many a hunter carries.": "Le voilà, né avec deux missiles. Les deux joueurs voient toujours combien un chasseur en porte.",
+"Born with 2 missiles": "Né avec 2 missiles",
+"To shoot: tap it, press Fire missiles, then tap two targets.": "Pour tirer : touchez-le, appuyez sur Tirer les missiles, puis touchez deux cibles.",
+"Tap it, then press Fire missiles": "Touchez-le, puis appuyez sur Tirer les missiles",
+"It aims at two, and both missiles land together.": "Il vise deux cibles, et les deux missiles arrivent ensemble.",
+"First target": "Première cible",
+"Second target": "Seconde cible",
+"Both destroyed. The hunter is empty now, and it does not reload at the Command drone.": "Les deux sont détruits. Le chasseur est vide, et il ne se recharge pas au drone de commandement.",
+"It reloads by standing on a wreck: one missile from each.": "Il se recharge en se tenant sur une épave : un missile par épave.",
+"One missile back. Now the other wreck.": "Un missile de retour. Maintenant l'autre épave.",
+"1 missile": "1 missile",
+"Full again. A hunter feeds on the fight and never has to go home.": "De nouveau plein. Un chasseur se nourrit du combat et n'a jamais besoin de rentrer.",
+"Locked and loaded": "Chargé et prêt",
+"Done. A hunter is born with two missiles, fires both at once, and takes a fresh one from each wreck it stands on.": "Terminé. Un chasseur naît avec deux missiles, tire les deux à la fois, et en prend un nouveau dans chaque épave où il se tient.",
+"A V of 5 stars of one color makes a hunter.": "Un V de 5 étoiles d'une couleur fait un chasseur.",
+"Tap the second target. Both fire together.": "Touchez la seconde cible. Les deux partent ensemble.",
+"Tap the first target.": "Touchez la première cible.",
+"A hunter aims two missiles and they land at once.": "Un chasseur vise avec deux missiles et ils arrivent en même temps.",
+"Then this one": "Puis celle-ci",
+"Tap it": "Touchez-la",
+"Press Fire missiles, at the bottom of the screen.": "Appuyez sur Tirer les missiles, en bas de l'écran.",
+"Shooting is free. It still gets its move after.": "Tirer est gratuit. Il garde son déplacement ensuite.",
+"Now press Fire missiles, at the bottom": "Appuyez sur Tirer les missiles, en bas",
+"Tap your hunter.": "Touchez votre chasseur.",
+"Tap your hunter": "Touchez votre chasseur",
+"It was born with two missiles. Both players can see them.": "Il est né avec deux missiles. Les deux joueurs les voient.",
+"Tap the marked wreck.": "Touchez l'épave marquée.",
+"A hunter takes one missile from each wreck it stands on.": "Un chasseur prend un missile dans chaque épave où il se tient.",
+"One missile back. The other wreck fills it.": "Un missile de retour. L'autre épave le remplit.",
+"It is empty. It reloads from wrecks, not at the Command drone.": "Il est vide. Il se recharge sur les épaves, pas au drone de commandement."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2762,13 +2804,54 @@ const ES={
 "Five of one color in a line with three more crossing them make a warp drone.": "Cinco de un color en línea con tres más que las crucen hacen un dron de salto.",
 "{0}: {1} at {2} took a missile from a wreck.": "{0}: {1} en {2} tomó un misil de unos restos.",
 "Hunters": "Cazadores",
-"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "regla de prueba: un cazador nace con 2 misiles y solo se recarga poniéndose sobre unos restos, no en el dron de mando. Cuenta desde tu próxima partida."
+"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "regla de prueba: un cazador nace con 2 misiles y solo se recarga poniéndose sobre unos restos, no en el dron de mando. Cuenta desde tu próxima partida.",
+"If chess was invented today, this is what it would have been.": "Si el ajedrez se inventara hoy, sería esto.",
+"reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.": "se recargan en los restos: un cazador nace con 2 misiles y toma uno de cada resto sobre el que se pone. Desmarca para la regla antigua, cargar en el dron de mando. Cuenta desde tu próxima partida.",
+"Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Born with two missiles, and takes one more from each wreck it ends a move on; it does not load at the Command drone. Both players can see how many it carries. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.": "Se mueve hasta 3 casillas en cualquier dirección, rodeando lo que estorbe. Dispara dos misiles por turno: apunta a los dos y aciertan juntos. Nace con dos misiles y toma uno más de cada resto sobre el que termina un movimiento; no carga en el dron de mando. Los dos jugadores ven cuántos lleva. No puede tomar drones aterrizando; lucha con misiles. Apila una bomba sobre él y suelta sus misiles por un misil bomba: dispáralo 3 casillas y la explosión estalla donde cae.",
+"A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts load there by standing beside it; hunters reload from wrecks.": "Un misil quita un punto de poder a un dron. Con poder 1 el dron queda destruido, y destruir un dron da un misil a tu dron de mando. Los exploradores cargan ahí poniéndose a su lado; los cazadores se recargan en los restos.",
+"A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. Missiles come from takes and go to your Command drone; a scout loads by standing beside it, a hunter takes one from each wreck it stands on.": "Un misil despeja una estrella o un asteroide y las estrellas caen. Los exploradores disparan uno por turno, los cazadores dos a la vez. Los misiles vienen de las capturas y van a tu dron de mando; un explorador carga poniéndose a su lado, un cazador toma uno de cada resto sobre el que se pone.",
+"Missiles live on the Command drone, and a scout standing beside it loads one. A hunter is born with two and takes one from each wreck it ends a move on.": "Los misiles están en el dron de mando, y un explorador que se pone a su lado carga uno. Un cazador nace con dos y toma uno de cada resto sobre el que termina un movimiento.",
+"The hunter": "El cazador",
+"The hunter: two missiles at once, reloaded from wrecks.": "El cazador: dos misiles a la vez, recargados en los restos.",
+"A V of 5 stars": "Una V de 5 estrellas",
+"A wreck holds a missile": "Un resto guarda un misil",
+"A hunter comes from a V of 5 stars of one color: two slanting arms that meet at a point.": "Un cazador sale de una V de 5 estrellas de un color: dos brazos inclinados que se unen en una punta.",
+"There it is, born with two missiles. Both players can always see how many a hunter carries.": "Ahí está, nacido con dos misiles. Los dos jugadores ven siempre cuántos lleva un cazador.",
+"Born with 2 missiles": "Nace con 2 misiles",
+"To shoot: tap it, press Fire missiles, then tap two targets.": "Para disparar: tócalo, pulsa Disparar misiles y luego toca dos objetivos.",
+"Tap it, then press Fire missiles": "Tócalo y luego pulsa Disparar misiles",
+"It aims at two, and both missiles land together.": "Apunta a dos, y los dos misiles llegan a la vez.",
+"First target": "Primer objetivo",
+"Second target": "Segundo objetivo",
+"Both destroyed. The hunter is empty now, and it does not reload at the Command drone.": "Los dos destruidos. El cazador está vacío, y no se recarga en el dron de mando.",
+"It reloads by standing on a wreck: one missile from each.": "Se recarga poniéndose sobre un resto: un misil de cada uno.",
+"One missile back. Now the other wreck.": "Un misil de vuelta. Ahora el otro resto.",
+"1 missile": "1 misil",
+"Full again. A hunter feeds on the fight and never has to go home.": "Lleno otra vez. Un cazador se alimenta del combate y nunca tiene que volver a casa.",
+"Locked and loaded": "Cargado y listo",
+"Done. A hunter is born with two missiles, fires both at once, and takes a fresh one from each wreck it stands on.": "Hecho. Un cazador nace con dos misiles, dispara los dos a la vez, y toma uno nuevo de cada resto sobre el que se pone.",
+"A V of 5 stars of one color makes a hunter.": "Una V de 5 estrellas de un color hace un cazador.",
+"Tap the second target. Both fire together.": "Toca el segundo objetivo. Los dos salen a la vez.",
+"Tap the first target.": "Toca el primer objetivo.",
+"A hunter aims two missiles and they land at once.": "Un cazador apunta con dos misiles y llegan a la vez.",
+"Then this one": "Luego este",
+"Tap it": "Tócalo",
+"Press Fire missiles, at the bottom of the screen.": "Pulsa Disparar misiles, en la parte inferior de la pantalla.",
+"Shooting is free. It still gets its move after.": "Disparar es gratis. Después aún le queda su movimiento.",
+"Now press Fire missiles, at the bottom": "Ahora pulsa Disparar misiles, abajo",
+"Tap your hunter.": "Toca tu cazador.",
+"Tap your hunter": "Toca tu cazador",
+"It was born with two missiles. Both players can see them.": "Nació con dos misiles. Los dos jugadores los ven.",
+"Tap the marked wreck.": "Toca el resto marcado.",
+"A hunter takes one missile from each wreck it stands on.": "Un cazador toma un misil de cada resto sobre el que se pone.",
+"One missile back. The other wreck fills it.": "Un misil de vuelta. El otro resto lo llena.",
+"It is empty. It reloads from wrecks, not at the Command drone.": "Está vacío. Se recarga en los restos, no en el dron de mando."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.110.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.111.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2818,6 +2901,7 @@ function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catc
     S.allow=allow;
   }
   for(const side of [YOU,BOT])reload(side); // the starting missile is on the Command drone; the scout beside it loads it
+  if(S.hwreck)for(const d of S.drones)if(d.kind==='H')d.ammo=shotsOf(d); /* v1.111.0: a hunter that starts on the board (a story sector) is loaded like one that is built */
   for(let i=0;i<40;i++){const sh=detectShapes(S.grid);if(!sh.cells.size)break;for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=rnd(KINDS);}} // a fresh board holds no ready-made shape (blocks and Vs can slip past pickSafe)
   // asteroids: from the ratings, or the boxes
   let r1=+$('inRock1').value||0,r2=+$('inRock2').value||0;
@@ -3617,7 +3701,7 @@ function plates(d){if(!(d.power>1)||d.kind==='T')return '';const col=i=>KCOL[d.c
   return d.power>=3?`<i class="plate pc" style="--pc:${col(2)}"></i><i class="plate pb" style="--pc:${col(1)}"></i>`:`<i class="plate pa" style="--pc:${col(1)}"></i>`;}
 function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&d.side===YOU?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"><s></s><s></s><s></s><s></s><s></s></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
+  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&(d.side===YOU||d.kind==='H')?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"><s></s><s></s><s></s><s></s><s></s></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
@@ -3837,10 +3921,10 @@ ram:'A siege can ram the guard in its way. Both are gone.',
 rock_get:'A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side\'s land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.',
 rock:'A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.',
 throw:'A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one\'s power. Not the Command drone, a siege, a turret or a shielded drone.',
-fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts and hunters load there by standing beside it.',
+fire_kill:'A missile takes one power off a drone. At power 1 the drone is destroyed, and destroying a drone earns a missile for your Command drone. Scouts load there by standing beside it; hunters reload from wrecks.',
 fire_hit:'A missile takes one power off a drone. A stack takes one hit per power.',
 fire_m:'Missiles cannot destroy the Command drone, only strip the drones stacked into it. Only a siege standing beside it ends the game.',
-fire_clear:'A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. Missiles come from takes and go to your Command drone; a scout or hunter loads by standing beside it.',
+fire_clear:'A missile clears a star or an asteroid and the stars drop in. Scouts fire one a turn, hunters two at once. Missiles come from takes and go to your Command drone; a scout loads by standing beside it, a hunter takes one from each wreck it stands on.',
 bomb_fuse:'A bomb goes off at the end of its owner\'s third turn.',
 bomb:'The blast runs up, down, left and right as far as the fog is cleared and takes every star, asteroid and drone in its path.',
 drift:'Clear 8 or more stars on your side in one turn and every asteroid drifts a square toward you. A lone drone in the way is destroyed; a stack loses one power and is jumped.',
@@ -3854,7 +3938,7 @@ fire_sh:'Missiles bounce off a shielded drone. Four enemy drones around it is th
 shield_off:'Six turns are up. The drone is an ordinary drone again.',
 fire_x:'Missiles cannot destroy a siege. A stacked siege loses a power to one; a lone siege holds. A bomb, or four enemy drones around it, ends it.',
 turret_fire:'A turret fires by itself at the start of its owner\'s turn, at one enemy drone in the 8 squares beside it, sieges first.',
-load:'Missiles live on the Command drone. A scout or hunter standing beside it loads up: one for a scout, two for a hunter. Walk back to reload.',
+load:'Missiles live on the Command drone, and a scout standing beside it loads one. A hunter is born with two and takes one from each wreck it ends a move on.',
 salvage:'A drone that ends its move on a wreck takes the missile in it, yours or the other side\'s.',
 wreck:'Salvage is on: a destroyed drone leaves a wreck holding its missile. Any drone, yours or the other side\'s, that ends its move on the wreck takes it. Wrecks fade after five rounds.',
 over:''};
@@ -3944,7 +4028,7 @@ try{if(localStorage.getItem('cc_salvage')==='1')$('inSalvage').checked=true;}cat
 const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fires one missile a turn, loading from the Command drone when it stands beside it. Claim takes the 3 × 3 around it and clears the fog there for good. Two claims, then it is used up.',
 G:'Moves 1 square, or rides its own star color for free, only over squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.',
-H:'Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
+H:'Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Born with two missiles, and takes one more from each wreck it ends a move on; it does not load at the Command drone. Both players can see how many it carries. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
 W:'Moves 1 square. Or warps to any empty square on the board not next to an enemy guard: the squares around it that the other side does not fully own become yours, and enemy drones on them are destroyed. Used up by the warp.',
 X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone. Stack a bomb onto it and the bomb becomes a shield: tap the siege, Shield a drone, then one of your drones beside it. For six turns that drone cannot be taken, swept, shot or blasted; only four enemy drones around it end it. Not the Command drone. Missiles cannot destroy it: a stacked siege loses a power, a lone one holds.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
@@ -4800,8 +4884,10 @@ function filmOpen(){const v=$('filmV'),f=$('film');if(!v||!f||filmOn)return;film
 // same on the RIGHT, with the squares lit and one line of Do and Why. The bot only passes. Steps are read from the board, not counted, so a
 // player who goes their own way is still told the next useful thing. A game in progress is put aside (cc1_hold) and comes back afterwards.
 const LESSON_SIDE={L:{a:[9,3],b:[8,3],home:[9,4],foe:[6,3],up:[8,3],up2:[7,2]},R:{a:[9,7],b:[8,7],home:[9,6],foe:[6,7],up:[8,7],up2:[7,8]}}; /* up2: where it stands for its second claim */
-const LESSON_LIST=['scout','warp'];
-const LESSON_INFO={scout:{title:'The scout',line:'The scout: make one, load it, shoot, claim.'},warp:{title:'The warp drone',line:'The warp drone: jump anywhere, take the 3 × 3.'}};
+const LESSON_LIST=['scout','warp','hunter'];
+const LESSON_INFO={scout:{title:'The scout',line:'The scout: make one, load it, shoot, claim.'},warp:{title:'The warp drone',line:'The warp drone: jump anywhere, take the 3 × 3.'},hunter:{title:'The hunter',line:'The hunter: two missiles at once, reloaded from wrecks.'}};
+/* the hunter lesson (v1.111.0). a, b: the swap that closes a V of 5 (v), which makes the hunter at the V's point. t1, t2: two enemy drones in range. */
+const HUNT_SIDE={L:{a:[7,2],b:[6,2],v:[[7,2],[8,1],[9,0],[8,3],[9,4]],t1:[5,1],t2:[5,4]},R:{a:[7,8],b:[6,8],v:[[7,8],[8,9],[9,10],[8,7],[9,6]],t1:[5,9],t2:[5,6]}};
 /* the warp lesson (v1.106.0): w where the warp drone waits, t where it lands. Round t: three squares of enemy land with a hunter on one (safe),
    one contested square with a raider on it and one open square with a scout on it (both destroyed), the rest open. */
 const WARP_SIDE={L:{a:[8,2],b:[9,2],five:[[8,0],[8,1],[8,2],[8,3],[8,4]],three:[[7,2],[6,2]],t:[4,2],foeLand:[[3,1],[3,2],[3,3]],both:[4,1],hunter:[3,2],scout:[5,3],raider:[4,1]},
@@ -4818,8 +4904,16 @@ function lessonLayWarp(){S.missiles={1:0,2:0};
   S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0)];
   for(const P of [WARP_SIDE.L,WARP_SIDE.R]){for(const [r,c] of P.foeLand)S.own[key(r,c)]=BOT;S.own[key(P.both[0],P.both[1])]=3;
     S.drones.push(mk(BOT,P.hunter[0],P.hunter[1],'H',2),mk(BOT,P.scout[0],P.scout[1],'C',3),mk(BOT,P.raider[0],P.raider[1],'S',0,0));}}
+function lessonLayHunter(){S.missiles={1:0,2:0};S.hwreck=true; /* this lesson is about the wreck rule, whatever the Settings box says */
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(isCmd(r,c)||isWall(r,c))continue;S.grid[r][c]=(r*2+c)%5;}
+  const put=(r,c,v)=>{S.grid[r][c]=v;};
+  for(const [r,c] of [[8,1],[9,0],[8,3],[9,4],[6,2]])put(r,c,1);put(7,2,0); /* left: a gold V with its point missing; the star for the point waits just above */
+  for(const [r,c] of [[8,9],[9,10],[8,7],[9,6],[6,8]])put(r,c,3);put(7,9,1); /* right: blue */
+  S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0)];
+  for(const P of [HUNT_SIDE.L,HUNT_SIDE.R])S.drones.push(mk(BOT,P.t1[0],P.t1[1],'C',2),mk(BOT,P.t2[0],P.t2[1],'S',0,0));}
 function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
   if(id==='warp'){lessonLayWarp();return;}
+  if(id==='hunter'){lessonLayHunter();return;}
   // a board with no line anywhere and no swap that makes one, except the two the lesson is about: three gold and a gap on the left, three blue and a gap on the right
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(isCmd(r,c)||isWall(r,c))continue;S.grid[r][c]=(r*2+c)%5;}
   const put=(r,c,v)=>{S.grid[r][c]=v;};
@@ -4829,9 +4923,9 @@ function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.ski
 /* A match-3 board always holds other swaps that pay. In a lesson only the marked one is taken, and once the scout is made the stars stay put,
    so nothing else appears on the board to explain. The game's own demonstration (phase watch) is not held to this. */
 function lessonWarpOk(r,c){if(!S||!S.lesson||S.lesson.id!=='warp'||S.lesson.phase!=='do')return true;const T=WARP_SIDE.R.t;return r===T[0]&&c===T[1];} /* in its lesson the player's warp goes to the marked square */
-function lessonSwapOk(a,b){if(!S||!S.lesson||S.lesson.phase!=='do')return true;const warp=S.lesson.id==='warp';
-  if(S.lesson.made||(warp?dronesOf(YOU).some(x=>x.kind==='W'&&x.id!==S.lesson.demoId):lessonScout()))return false;
-  const P=warp?WARP_SIDE.R:LESSON_SIDE.R,same=(p,q)=>p[0]===q[0]&&p[1]===q[1];return (same(a,P.a)&&same(b,P.b))||(same(a,P.b)&&same(b,P.a));}
+function lessonSwapOk(a,b){if(!S||!S.lesson||S.lesson.phase!=='do')return true;const id=S.lesson.id,kind=id==='warp'?'W':id==='hunter'?'H':'C';
+  if(S.lesson.made||dronesOf(YOU).some(x=>x.kind===kind&&x.id!==S.lesson.demoId))return false;
+  const P=(id==='warp'?WARP_SIDE:id==='hunter'?HUNT_SIDE:LESSON_SIDE).R,same=(p,q)=>p[0]===q[0]&&p[1]===q[1];return (same(a,P.a)&&same(b,P.b))||(same(a,P.b)&&same(b,P.a));}
 function lessonScout(){if(!S||!S.lesson)return null;return dronesOf(YOU).filter(d=>d.kind==='C'&&d.id!==S.lesson.demoId).sort((a,b)=>b.id-a.id)[0]||null;}
 function lessonCoachWarp(){const Ls=S.lesson,lit=new Set();
   const L=(head,text,why,cells,calls,btn,arrows)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[],ring:0};};
@@ -4856,7 +4950,37 @@ function lessonCoachWarp(){const Ls=S.lesson,lit=new Set();
   if(mine&&mode==='warp')return L(D,t('Tap the marked square.'),t('Any empty square works. This one has the most to take.'),[P.t],[{at:P.t,label:t('Tap here')}],null,go);
   if(mine)return L(D,t('Press Warp, at the bottom of the screen.'),t('Warping is its whole job. It gets one.'),[at],[{at,label:t('Now press Warp, at the bottom')}],'warp',go);
   return L(D,t('Tap your warp drone.'),t('It can jump to any empty square on the board.'),[at],[{at,label:t('Tap your warp drone')},{at:P.t,label:t('It will land here')}],null,go);}
-function lessonCoach(){if(!S||!S.lesson)return null;if(S.lesson.id==='warp')return lessonCoachWarp();const Ls=S.lesson,lit=new Set();
+function lessonCoachHunter(){const Ls=S.lesson,lit=new Set();
+  const L=(head,text,why,cells,calls,btn,arrows,ring)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[],ring:ring||0};};
+  const build=(P,swapWord)=>({cells:[...P.v,P.b],calls:[{at:P.v[2],label:t('A V of 5 stars')},{at:P.b,label:swapWord}],arrows:[{a:P.b,b:P.a,kind:'swap'}]});
+  const wk=p=>!!(S.wrecks&&S.wrecks[key(p[0],p[1])]&&!droneAt(p[0],p[1])),holds=t('A wreck holds a missile');
+  if(Ls.phase==='watch'){const P=HUNT_SIDE.L,W=t('Watch'),d=S.drones.find(x=>x.id===Ls.demoId),at=d?[d.r,d.c]:P.a,id=d?d.id:0;
+    switch(Math.min(8,Ls.w)){
+      case 0:{const B=build(P,t('These two swap'));return L(W,t('A hunter comes from a V of 5 stars of one color: two slanting arms that meet at a point.'),'',B.cells,B.calls,null,B.arrows);}
+      case 1:return L(W,t('There it is, born with two missiles. Both players can always see how many a hunter carries.'),'',[at],[{at,label:t('Born with 2 missiles'),ring:1}],null,null,id);
+      case 2:return L(W,t('To shoot: tap it, press Fire missiles, then tap two targets.'),'',[at],[{at,label:t('Tap it, then press Fire missiles')}],'aim');
+      case 3:return L(W,t('It aims at two, and both missiles land together.'),'',[P.t1,P.t2],[{at:P.t1,label:t('First target')},{at:P.t2,label:t('Second target')}],null,[{a:at,b:P.t1,kind:'fire'},{a:at,b:P.t2,kind:'fire'}]);
+      case 4:return L(W,t('Both destroyed. The hunter is empty now, and it does not reload at the Command drone.'),'',[P.t1,P.t2],[{at:P.t1,label:holds},{at:P.t2,label:holds}]);
+      case 5:return L(W,t('It reloads by standing on a wreck: one missile from each.'),'',[P.t1],[],null,[{a:at,b:P.t1,kind:'move'}]);
+      case 6:return L(W,t('One missile back. Now the other wreck.'),'',[P.t2],[{at,label:t('1 missile'),ring:1}],null,[{a:at,b:P.t2,kind:'move'}],id);
+      case 7:return L(W,t('Full again. A hunter feeds on the fight and never has to go home.'),'',[at],[{at,label:t('Locked and loaded'),ring:1}],null,null,id);
+      default:return L(W,t('Your turn. Do the same on the right side.'),'',[],[]);}}
+  const P=HUNT_SIDE.R,D=t('Do'),ph=dronesOf(YOU).find(x=>x.kind==='H'&&x.id!==Ls.demoId);
+  const fin=()=>{Ls.done=true;return L(t('Done'),t('Done. A hunter is born with two missiles, fires both at once, and takes a fresh one from each wreck it stands on.'),'',ph?[[ph.r,ph.c]]:[],ph?[{at:[ph.r,ph.c],label:t('Locked and loaded'),ring:1}]:[],null,null,ph?ph.id:0);};
+  if(Ls.done||(Ls.made&&!ph))return fin();
+  if(!ph){const B=build(P,t('Swap these two'));return L(D,t('Swap the two marked stars.'),t('A V of 5 stars of one color makes a hunter.'),B.cells,B.calls,null,B.arrows);}
+  Ls.made=true;const at=[ph.r,ph.c],sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,mine=sd&&sd.id===ph.id;
+  const alive=[P.t1,P.t2].filter(p=>{const o=droneAt(p[0],p[1]);return o&&o.side===BOT;}),wrecks=[P.t1,P.t2].filter(wk);
+  if(alive.length&&canShoot(ph)){const shots=alive.map(p=>({a:at,b:p,kind:'fire'}));
+    if(mine&&mode==='aim'){const left=alive.filter(p=>!aimList.some(a=>a.r===p[0]&&a.c===p[1]));
+      return L(D,aimList.length?t('Tap the second target. Both fire together.'):t('Tap the first target.'),t('A hunter aims two missiles and they land at once.'),left,left.map((p,n)=>({at:p,label:n?t('Then this one'):t('Tap it')})),null,shots);}
+    if(mine)return L(D,t('Press Fire missiles, at the bottom of the screen.'),t('Shooting is free. It still gets its move after.'),[at],[{at,label:t('Now press Fire missiles, at the bottom')}],'aim',shots);
+    return L(D,t('Tap your hunter.'),t('It was born with two missiles. Both players can see them.'),[at],[{at,label:t('Tap your hunter'),ring:1}],null,shots,ph.id);}
+  if(wrecks.length&&ammoOf(ph)<shotsOf(ph)){const w=wrecks[0],go=[{a:at,b:w,kind:'move'}];
+    if(mine)return L(D,t('Tap the marked wreck.'),t('A hunter takes one missile from each wreck it stands on.'),[w],[{at:w,label:t('Tap here')}],null,go);
+    return L(D,t('Tap your hunter.'),ammoOf(ph)?t('One missile back. The other wreck fills it.'):t('It is empty. It reloads from wrecks, not at the Command drone.'),[at],[{at,label:t('Tap your hunter')},{at:w,label:holds}],null,go);}
+  return fin();}
+function lessonCoach(){if(!S||!S.lesson)return null;if(S.lesson.id==='warp')return lessonCoachWarp();if(S.lesson.id==='hunter')return lessonCoachHunter();const Ls=S.lesson,lit=new Set();
   /* v1.104.0 (user: more explanation, "wrote in blurbs and arrows", "like you are explaining this to a busy adult with stuff going on and half
      paying attention"). The telling is on the board now: one or two short blurbs a step, each with an arrow to the very thing it is about (the
      stars, the Command drone, the missile on the scout's corner, the land). The panel above says the same in one plain sentence.
@@ -4908,7 +5032,7 @@ function lessonCoach(){if(!S||!S.lesson)return null;if(S.lesson.id==='warp')retu
 /* v1.104.1 (user: "a circle around the missile that shows where to see it is locked and loaded ... an arrow pointing down to the claim the 3x3
    button and an arrow at the very end pointing to how much space you have, then a finish lesson button pop up"). */
 function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout,.lmarks')])el.remove();for(const el of [...document.querySelectorAll('.callbtn,.larrowbtn')])el.classList.remove('callbtn','larrowbtn');
-  const land=$('land1');if(land){land.classList.toggle('lpoint',!!(c&&S.lesson&&S.lesson.done));if(c&&S.lesson&&S.lesson.done)land.setAttribute('data-tip',t('Your land so far'));}
+  const land=$('land1');if(land){const on=!!(c&&S.lesson&&S.lesson.done&&S.lesson.id!=='hunter');land.classList.toggle('lpoint',on);if(on)land.setAttribute('data-tip',t('Your land so far'));}
   if(!c)return;if(c.btn){const bt=$('acts').querySelector('button[data-a="'+c.btn+'"]');if(bt)bt.classList.add('callbtn','larrowbtn');} /* larrowbtn: an arrow comes down onto the button (p1.html) */
   if(!c.arrows.length&&!c.calls.length)return;
   const NS='http://www.w3.org/2000/svg',el=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
@@ -4925,8 +5049,8 @@ function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAl
     if(ar.kind==='swap')g.appendChild(el('polygon',{points:tip(bx,by,ax,ay,n),fill:col,stroke:'#06090d','stroke-width':1.5,'stroke-linejoin':'round'}));
     svg.appendChild(g);}
   let ringAt=null; /* the loaded missile sits on the drone's top right corner: a circle round it, and the blurb's arrow goes to the circle */
-  if(c.ring){const d=S.drones.find(q=>q.id===c.ring),ce=d&&cellEl(d.r,d.c),am=ce&&ce.querySelector('.ammo i');
-    if(am){const a=am.getBoundingClientRect(),br=b.getBoundingClientRect(),w=cellXY(d.r,d.c)[2],cx=a.left+a.width/2-br.left-b.clientLeft,cy=a.top+a.height/2-br.top-b.clientTop,rad=Math.max(10,w*0.30);
+  if(c.ring){const d=S.drones.find(q=>q.id===c.ring),ce=d&&cellEl(d.r,d.c),am=ce&&ce.querySelector('.ammo');
+    if(am){const a=am.getBoundingClientRect(),br=b.getBoundingClientRect(),w=cellXY(d.r,d.c)[2],cx=a.left+a.width/2-br.left-b.clientLeft,cy=a.top+a.height/2-br.top-b.clientTop,rad=Math.max(10,w*0.30,a.width/2+3);
       const g=el('g',{class:'lring'});g.appendChild(el('circle',{cx,cy,r:rad,fill:'none',stroke:'#06090d','stroke-width':6}));g.appendChild(el('circle',{cx,cy,r:rad,fill:'none',stroke:'#fff3c4','stroke-width':3}));
       g.style.transformOrigin=cx+'px '+cy+'px';svg.appendChild(g);ringAt=[cx,cy,rad];busy.push([cx-rad-3,cy-rad-3,cx+rad+3,cy+rad+3]);}}
   for(const k of c.calls){let [x,y,w]=cellXY(...k.at);const toRing=k.ring&&ringAt;if(toRing){x=ringAt[0];y=ringAt[1];}
@@ -4973,7 +5097,21 @@ async function lessonDemoWarp(){const gid=S.gid,P=WARP_SIDE.L;const here=()=>S&&
     await say(7,3400);if(!here())return;
     await say(8,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
   finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
-async function lessonDemo(){if(S.lesson.id==='warp')return lessonDemoWarp();const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
+async function lessonDemoHunter(){const gid=S.gid,P=HUNT_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
+  const say=async(w,ms)=>{S.lesson.w=w;renderAll();await lessonNap(ms);};
+  lessonLock(true);
+  try{await say(0,4800);if(!here())return;await humanSwap(P.a,P.b);if(!here())return;
+    const d=dronesOf(YOU).filter(x=>x.kind==='H').sort((a,b)=>b.id-a.id)[0];if(!d){S.lesson.phase='do';return;}S.lesson.demoId=d.id;
+    await say(1,4600);if(!here())return;
+    sel={id:d.id};mode=null;await say(2,3800);if(!here())return;await lessonPress('aim');if(!here())return;
+    mode='aim';aimList=[];await say(3,3800);if(!here())return;mode=null;await humanShots(d,[{r:P.t1[0],c:P.t1[1]},{r:P.t2[0],c:P.t2[1]}]);sel=null;if(!here())return;
+    await say(4,4600);if(!here())return;
+    await say(5,3200);if(!here())return;await humanMove(d,P.t1[0],P.t1[1]);if(!here())return;
+    await say(6,3400);if(!here())return;await humanMove(d,P.t2[0],P.t2[1]);if(!here())return;
+    await say(7,4000);if(!here())return;
+    await say(8,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
+  finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
+async function lessonDemo(){if(S.lesson.id==='warp')return lessonDemoWarp();if(S.lesson.id==='hunter')return lessonDemoHunter();const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
   const say=async(w,ms)=>{S.lesson.w=w;renderAll();await lessonNap(ms);};
   lessonLock(true);
   try{await say(0,3600);if(!here())return;await humanSwap(P.a,P.b);if(!here())return;
