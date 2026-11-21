@@ -321,6 +321,7 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
 .lpoint::before{content:'';position:absolute;left:16px;bottom:calc(100% + 8px);border-left:9px solid transparent;border-right:9px solid transparent;border-top:14px solid var(--you);animation:lbtnbob .55s ease-in-out infinite alternate}
 .acts .lessonFin{font-size:15px;padding:13px 28px;animation:lfinpop .35s ease-out both}@keyframes lfinpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){.lmarks .lring,.acts button.larrowbtn::before,.acts button.larrowbtn::after,.lpoint::before,.acts .lessonFin{animation:none}}
+#lessonPick{z-index:70}.lessonList{display:flex;flex-direction:column;gap:8px}.lessonList button{font-size:15px;padding:12px 14px;text-align:left;animation:none}
 .lessonBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.lessonBtns button{flex:1 1 130px;animation:none}
 .cvFilm{pointer-events:auto;margin-top:12px;background:transparent;border:0;color:#cfd8e3;font-size:11px;letter-spacing:.16em;text-decoration:underline;text-underline-offset:4px;opacity:.85;padding:8px 10px}
 #cover{position:fixed;inset:0;z-index:65;background:#04060a;overflow:hidden;display:block;padding:0}
@@ -566,6 +567,12 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div id="storyList" class="sectors"></div>
   <p id="storyDone" class="disp" hidden>All nine sectors are held. Replay any of them.</p>
   <button type="button" id="btnStoryClose" style="margin-top:10px;width:100%">Back</button>
+</div></div>
+<div id="lessonPick" class="ov" hidden><div class="card">
+  <h2>Training</h2>
+  <p class="disp">Short lessons. Watch the left side, then do the same on the right.</p>
+  <div id="lessonList" class="lessonList"></div>
+  <button type="button" id="lessonPickClose" style="margin-top:12px">Close</button>
 </div></div>
 <div id="copyBox" class="ov" hidden><div class="card copyc">
   <h2 id="copyHead">Copy this game</h2>
@@ -1773,7 +1780,48 @@ const FR={
 "One claim used, one left. Tap your scout.": "Une revendication faite, il en reste une. Touchez votre éclaireur.",
 "A scout carries two loads of settlers, one in each half of its hull.": "Un éclaireur porte deux groupes de colons, un dans chaque moitié de sa coque.",
 "That lands the second load of settlers.": "Le second groupe de colons débarque ainsi.",
-"One more claim and it has done its work.": "Encore une revendication et son travail est fait."
+"One more claim and it has done its work.": "Encore une revendication et son travail est fait.",
+"Warp to any empty square, not on or next to an enemy guard.": "Sautez vers n'importe quelle case vide, ni sur ni à côté d'un bouclier ennemi.",
+"Tap any empty square to warp there. Not on or next to an enemy guard.": "Touchez n'importe quelle case vide pour y sauter. Ni sur ni à côté d'un bouclier ennemi.",
+"A warp drone can jump to any empty square on the board and take the 3 × 3 there. One use.": "Un drone de saut peut sauter vers n'importe quelle case vide du plateau et y prendre le 3 × 3. Un seul usage.",
+"A warp takes every square around where it lands that the other side does not fully own, and destroys enemy drones standing on those squares. It is used up.": "Un saut prend chaque case autour de l'arrivée que l'autre camp ne possède pas entièrement, et détruit les drones ennemis qui s'y trouvent. Il est consommé.",
+"Moves 1 square. Or warps to any empty square on the board not next to an enemy guard: the squares around it that the other side does not fully own become yours, and enemy drones on them are destroyed. Used up by the warp.": "Se déplace d'1 case. Ou saute vers n'importe quelle case vide du plateau qui n'est pas à côté d'un bouclier ennemi : les cases autour que l'autre camp ne possède pas entièrement deviennent à vous, et les drones ennemis qui s'y trouvent sont détruits. Consommé par le saut.",
+"The scout": "L'éclaireur",
+"The warp drone": "Le drone de saut",
+"The warp drone: jump anywhere, take the 3 × 3.": "Le drone de saut : sauter n'importe où, prendre le 3 × 3.",
+"Destroyed": "Détruit",
+"Safe: it stands on its own land": "À l'abri : il est sur son propre terrain",
+"This is a warp drone. It jumps to any empty square on the board.": "Voici un drone de saut. Il saute vers n'importe quelle case vide du plateau.",
+"Warp drone": "Drone de saut",
+"To warp: tap it, then press Warp.": "Pour sauter : touchez-le, puis appuyez sur Sauter.",
+"Tap it, then press Warp": "Touchez-le, puis appuyez sur Sauter",
+"Then tap where it should land. Any empty square will do.": "Puis touchez l'endroit où il doit arriver. N'importe quelle case vide convient.",
+"It lands here": "Il arrive ici",
+"Every square around it that the enemy does not fully own is yours now.": "Chaque case autour de lui que l'ennemi ne possède pas entièrement est à vous.",
+"This 3 × 3 is yours": "Ce 3 × 3 est à vous",
+"Enemy land stays enemy": "Le terrain ennemi reste ennemi",
+"Enemy drones beside it are destroyed, unless they stand on their own land.": "Les drones ennemis à côté de lui sont détruits, sauf s'ils sont sur leur propre terrain.",
+"The warp drone is used up: one warp each. You own {0} squares now.": "Le drone de saut est consommé : un saut chacun. Vous avez {0} cases.",
+"Used up": "Consommé",
+"Done. A warp drone jumps anywhere, takes the 3 × 3 and destroys what stands beside it, except on the enemy's own land. You own {0} of the {1} squares that win.": "Terminé. Un drone de saut saute n'importe où, prend le 3 × 3 et détruit ce qui se trouve à côté, sauf sur le terrain de l'ennemi. Vous avez {0} des {1} cases qui font gagner.",
+"Any empty square works. This one has the most to take.": "N'importe quelle case vide convient. Celle-ci a le plus à prendre.",
+"Press Warp, at the bottom of the screen.": "Appuyez sur Sauter, en bas de l'écran.",
+"Warping is its whole job. It gets one.": "Sauter est tout son travail. Il n'en a qu'un.",
+"Now press Warp, at the bottom": "Appuyez sur Sauter, en bas",
+"Tap your warp drone.": "Touchez votre drone de saut.",
+"It can jump to any empty square on the board.": "Il peut sauter vers n'importe quelle case vide du plateau.",
+"Tap your warp drone": "Touchez votre drone de saut",
+"It will land here": "Il arrivera ici",
+"Next lesson": "Leçon suivante",
+"In this lesson, warp to the marked square.": "Dans cette leçon, sautez vers la case marquée.",
+"Short lessons. Watch the left side, then do the same on the right.": "Des leçons courtes. Regardez le côté gauche, puis faites la même chose à droite.",
+"5 in a line": "5 en ligne",
+"3 more crossing it": "3 de plus qui la croisent",
+"A warp drone is not luck. Line up 5 stars of one color with 3 more crossing them.": "Un drone de saut n'est pas de la chance. Alignez 5 étoiles d'une couleur avec 3 autres qui les croisent.",
+"There it is. Two lines that cross and add up to 8 make a warp drone: 5 and 3, or 4 and 4. So does 7 in a line.": "Le voilà. Deux lignes qui se croisent et totalisent 8 font un drone de saut : 5 et 3, ou 4 et 4. 7 en ligne aussi.",
+"A new warp drone": "Un nouveau drone de saut",
+"A warp drone jumps to any empty square on the board.": "Un drone de saut saute vers n'importe quelle case vide du plateau.",
+"Five of one color in a line with three more crossing them make a warp drone.": "Cinq d'une couleur en ligne avec trois autres qui les croisent font un drone de saut."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2652,13 +2700,54 @@ const ES={
 "One claim used, one left. Tap your scout.": "Un reclamo hecho, queda uno. Toca tu explorador.",
 "A scout carries two loads of settlers, one in each half of its hull.": "Un explorador lleva dos grupos de colonos, uno en cada mitad de su casco.",
 "That lands the second load of settlers.": "Así desembarca el segundo grupo de colonos.",
-"One more claim and it has done its work.": "Un reclamo más y habrá hecho su trabajo."
+"One more claim and it has done its work.": "Un reclamo más y habrá hecho su trabajo.",
+"Warp to any empty square, not on or next to an enemy guard.": "Salta a cualquier casilla vacía, no sobre un guardián enemigo ni a su lado.",
+"Tap any empty square to warp there. Not on or next to an enemy guard.": "Toca cualquier casilla vacía para saltar ahí. No sobre un guardián enemigo ni a su lado.",
+"A warp drone can jump to any empty square on the board and take the 3 × 3 there. One use.": "Un dron de salto puede saltar a cualquier casilla vacía del tablero y tomar el 3 × 3 de ahí. Un solo uso.",
+"A warp takes every square around where it lands that the other side does not fully own, and destroys enemy drones standing on those squares. It is used up.": "Un salto toma cada casilla alrededor de donde aterriza que el otro bando no posea por completo, y destruye los drones enemigos que estén en ellas. Queda gastado.",
+"Moves 1 square. Or warps to any empty square on the board not next to an enemy guard: the squares around it that the other side does not fully own become yours, and enemy drones on them are destroyed. Used up by the warp.": "Se mueve 1 casilla. O salta a cualquier casilla vacía del tablero que no esté junto a un guardián enemigo: las casillas a su alrededor que el otro bando no posea por completo pasan a ser tuyas, y los drones enemigos que estén en ellas quedan destruidos. Se gasta con el salto.",
+"The scout": "El explorador",
+"The warp drone": "El dron de salto",
+"The warp drone: jump anywhere, take the 3 × 3.": "El dron de salto: salta a cualquier parte, toma el 3 × 3.",
+"Destroyed": "Destruido",
+"Safe: it stands on its own land": "A salvo: está en su propio terreno",
+"This is a warp drone. It jumps to any empty square on the board.": "Este es un dron de salto. Salta a cualquier casilla vacía del tablero.",
+"Warp drone": "Dron de salto",
+"To warp: tap it, then press Warp.": "Para saltar: tócalo y luego pulsa Saltar.",
+"Tap it, then press Warp": "Tócalo y luego pulsa Saltar",
+"Then tap where it should land. Any empty square will do.": "Luego toca dónde debe aterrizar. Sirve cualquier casilla vacía.",
+"It lands here": "Aterriza aquí",
+"Every square around it that the enemy does not fully own is yours now.": "Cada casilla a su alrededor que el enemigo no posea por completo ya es tuya.",
+"This 3 × 3 is yours": "Este 3 × 3 es tuyo",
+"Enemy land stays enemy": "El terreno enemigo sigue siendo enemigo",
+"Enemy drones beside it are destroyed, unless they stand on their own land.": "Los drones enemigos a su lado quedan destruidos, salvo que estén en su propio terreno.",
+"The warp drone is used up: one warp each. You own {0} squares now.": "El dron de salto se ha gastado: un salto cada uno. Ahora tienes {0} casillas.",
+"Used up": "Gastado",
+"Done. A warp drone jumps anywhere, takes the 3 × 3 and destroys what stands beside it, except on the enemy's own land. You own {0} of the {1} squares that win.": "Hecho. Un dron de salto salta a cualquier parte, toma el 3 × 3 y destruye lo que tenga al lado, salvo en el terreno del enemigo. Tienes {0} de las {1} casillas que dan la victoria.",
+"Any empty square works. This one has the most to take.": "Sirve cualquier casilla vacía. Esta es la que más da.",
+"Press Warp, at the bottom of the screen.": "Pulsa Saltar, en la parte inferior de la pantalla.",
+"Warping is its whole job. It gets one.": "Saltar es todo su trabajo. Solo tiene uno.",
+"Now press Warp, at the bottom": "Ahora pulsa Saltar, abajo",
+"Tap your warp drone.": "Toca tu dron de salto.",
+"It can jump to any empty square on the board.": "Puede saltar a cualquier casilla vacía del tablero.",
+"Tap your warp drone": "Toca tu dron de salto",
+"It will land here": "Aterrizará aquí",
+"Next lesson": "Siguiente lección",
+"In this lesson, warp to the marked square.": "En esta lección, salta a la casilla marcada.",
+"Short lessons. Watch the left side, then do the same on the right.": "Lecciones cortas. Mira el lado izquierdo y luego haz lo mismo en el derecho.",
+"5 in a line": "5 en línea",
+"3 more crossing it": "3 más que la cruzan",
+"A warp drone is not luck. Line up 5 stars of one color with 3 more crossing them.": "Un dron de salto no es suerte. Alinea 5 estrellas de un color con 3 más que las crucen.",
+"There it is. Two lines that cross and add up to 8 make a warp drone: 5 and 3, or 4 and 4. So does 7 in a line.": "Ahí está. Dos líneas que se cruzan y suman 8 hacen un dron de salto: 5 y 3, o 4 y 4. También 7 en línea.",
+"A new warp drone": "Un dron de salto nuevo",
+"A warp drone jumps to any empty square on the board.": "Un dron de salto salta a cualquier casilla vacía del tablero.",
+"Five of one color in a line with three more crossing them make a warp drone.": "Cinco de un color en línea con tres más que las crucen hacen un dron de salto."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.105.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.106.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2956,7 +3045,12 @@ function targets(d){
       if(consider(r,c))q.push([r,c,nu,ns]);}}
   return T;
 }
-function warpCells(d){const out=[];const e=other(d.side);for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!half(d.side,r)||solid(r,c)||droneAt(r,c)||!vis(d.side,r,c))continue;
+/* v1.106.0 (user: "letting it warp any place on the board that is not being used. And any space that is not fully claimed by the enemy it will
+   claim 3x3 and all enemy drones that are not on fully claimed space will be destroyed that are beside it"). Before: only onto its own half, only
+   open squares became its side's, contested ones were left. Now: any empty square on the board it can see; in the 3 x 3, every square the other
+   side does not fully own (open or contested) becomes its side's; enemy drones standing on those squares are destroyed. Kept: enemy land stays
+   enemy and a drone on it is safe; not on or next to an enemy guard; the Command drone, a siege, a turret and a shielded drone are spared; one use. */
+function warpCells(d){const out=[];const e=other(d.side);for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(solid(r,c)||droneAt(r,c)||!vis(d.side,r,c))continue;
   if([[0,0],...DIR8].some(([dr,dc])=>{const o=droneAt(r+dr,c+dc);return o&&o.side===e&&o.kind==='G';}))continue;out.push([r,c]);}return out;}
 const claimCells=(r,c)=>{const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(inb(a,b)&&!isWall(a,b)&&!isCmd(a,b))out.push([a,b]);}return out;};
 function claimGain(d){let g=0;for(const [a,b] of claimCells(d.r,d.c))if(S.own[key(a,b)]!==d.side)g++;return g;}
@@ -3030,9 +3124,9 @@ function applyClaim(d){
 }
 function applyWarp(d,r,c){
   d.r=r;d.c=c;let took=0,land=0;salvageAt(d.side,r,c);
-  for(const [a,b] of claimCells(r,c)){const k=key(a,b);if(S.own[k]===0){S.own[k]=d.side;land++;}}
+  for(const [a,b] of claimCells(r,c)){const k=key(a,b);if(S.own[k]===0||S.own[k]===3){S.own[k]=d.side;land++;}}
   reveal(d.side,r,c);
-  for(const [a,b] of claimCells(r,c)){const o=droneAt(a,b);if(o&&o.side!==d.side&&o.kind!=='X'&&o.kind!=='T'&&S.own[key(a,b)]===d.side){takeDrone(d.side,o,t('on arrival'),d);took++;}}
+  for(const [a,b] of claimCells(r,c)){const o=droneAt(a,b);if(o&&o.side!==d.side&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&S.own[key(a,b)]===d.side){takeDrone(d.side,o,t('on arrival'),d);took++;}}
   S.drones=S.drones.filter(x=>x!==d);
   note(t`${who(d.side)} warped to ${sq(r,c)}: ${land} square${land===1?'':'s'} taken${took?t(', {0} drone{1} removed',took,took>1?'s':''):''}. The warp drone is used up.`,{why:'warp',at:[[r,c]],lab:[t('warped here')]});
 }
@@ -3196,7 +3290,7 @@ function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b
   for(const e of dronesOf(him)){
     for(const [k,t] of targets(e)){if(t!=='take')continue;const v=droneAt(...rc(k));if(v&&v.side===me)worst=Math.max(worst,val(v));}
     if(e.kind==='G')for(const [k,t] of targets(e)){if(t!=='move')continue;const [r,c]=rc(k);let s=0;for(const [dr,dc] of DIR8){const v=droneAt(r+dr,c+dc);if(v&&v.side===me&&!v.shield&&S.own[key(r+dr,c+dc)]===him){if(SWEEPS.includes(v.kind)||(v.kind==='S'&&e.power>=MAXP))s+=val(v);else if(v.kind==='S'&&v.power>1)s+=4;}}worst=Math.max(worst,s);}
-    if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&!v.shield&&v.kind!=='X'&&v.kind!=='T'&&(S.own[key(a,b)]===him||S.own[key(a,b)]===0))s+=val(v);}worst=Math.max(worst,s);}}
+    if(e.kind==='W')for(const [r,c] of warpCells(e)){let s=0;for(const [a,b] of claimCells(r,c)){const v=droneAt(a,b);if(v&&v.side===me&&!v.shield&&v.kind!=='X'&&v.kind!=='T'&&v.kind!=='M'&&S.own[key(a,b)]!==me)s+=val(v);}worst=Math.max(worst,s);}} /* v1.106.0: only a drone on its own fully claimed land is safe from a warp */
   return dmg+worst;}
 // try each of the best options on a copy of the board and charge it what the other side could do back
 const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.8,AHEAD_WIN=5000;let aheadT0=0; /* v1.89: options kept per level of the search, the time cap, and how much of the other side's best line counts */
@@ -3316,7 +3410,7 @@ function botOptions(me,L){const him=other(me);
     if(L>=5&&d.kind==='X'&&d.charge){let best=null;for(const o of shieldCells(d)){const k=key(o.r,o.c);const v=(o.kind==='X'?14:o.kind==='H'?12:o.kind==='G'?10:o.kind==='T'?8:6)*o.power+(threat.has(k)?10:0)+(fire.has(k)?6:0)+(o.kind==='X'&&dist(o.r,o.c)<=3?10:0);if(!best||v>best.v)best={o,v};}if(best)opts.push({type:'shield',d,o:best.o,v:12+best.v});} /* v1.57: the shield goes to the drone worth the most where it stands */
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
     if(L>=4&&d.kind==='M'&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n+(Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=1?2:0);if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}
-    if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){if(S.own[key(a,b)]===0)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&(S.own[key(a,b)]===me||S.own[key(a,b)]===0))prey+=5*o.power;}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});}
+    if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){const w=S.own[key(a,b)];if(w===0||w===3)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&w!==him)prey+=5*o.power+(o.kind==='H'||o.kind==='G'?3:0);}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});} /* v1.106.0: anywhere on the board; contested squares count as land to take */
     for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
       if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
       if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6+(noShot?6+12*aw:0); // go home to load
@@ -3404,7 +3498,7 @@ async function humanSwap(a,b){
 }
 async function humanMove(d,r,c){if(netSend({type:'move',id:d.id,r,c}))return;busy=true;sel=null;const from=[d.r,d.c];const o=droneAt(r,c);const extra=o?(o.side===YOU?'merge':'take'):null;applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move',d,extra);busy=false;await afterAction();}
 async function humanClaim(d){if(netSend({type:'claim',id:d.id}))return;busy=true;sel=null;applyClaim(d);renderBoard();await sleep(300);tutAdvance('claim');busy=false;await afterAction();}
-async function humanWarp(d,r,c){if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
+async function humanWarp(d,r,c){if(S.lesson&&!lessonWarpOk(r,c)){setStatus(t('In this lesson, warp to the marked square.'));return;} /* v1.106.0 */if(netSend({type:'warp',id:d.id,r,c}))return;busy=true;sel=null;mode=null;const from=[d.r,d.c];const html=droneHTML(d);applyWarp(d,r,c);renderBoard();await flyDrone(from,[r,c],html);await playFX();busy=false;await afterAction();}
 async function humanFireSiege(d){busy=true;sel=null;const w=applyFire(d);renderBoard();await sleep(300);busy=false;if(w){save();renderAll();return;}await afterAction();}
 async function humanTurret(r,c){if(netSend({type:'turret',r,c}))return;busy=true;sel=null;mode=null;applyTurret(YOU,r,c);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanRock(r,c){if(netSend({type:'rock',r,c}))return;busy=true;mode=null;sel=null;const hit=applyRockThrow(YOU,r,c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();busy=false;closeAction(YOU);save();renderAll();setStatus(rockWait?t('Thrown.'):t('Thrown. Now take your turn: swap, move, claim or warp.'));if(rockWait&&throwsOf(YOU)>0&&!S.over){const el=$('rockpop');el.hidden=false;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');$('rockN').textContent=throwsOf(YOU)>1?' ×'+throwsOf(YOU):'';setStatus(t('Thrown. Another asteroid is ready.'));return;} /* v1.81.2: more than one earned: the alert comes straight back for the next */rockDone();}
@@ -3448,7 +3542,7 @@ function onCell(r,c){
   if(mode==='rock'){if(!vis(YOU,r,c)){setStatus(t('That square is in the fog.'));return;}humanRock(r,c);return;}
   if(mode==='throw'&&sd){const o=droneAt(r,c);if(o&&throwCells(sd).includes(o))humanThrow(sd,o);else setStatus(t('Tap an enemy drone beside the guard.'));return;}
   if(mode==='shield'&&sd){const o=droneAt(r,c);if(o&&shieldCells(sd).includes(o))humanShield(sd,o);else setStatus(t('Tap one of your drones beside the siege. Not the Command drone.'));return;}
-  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to a cleared square on your side, not next to an enemy guard.'));return;}
+  if(mode==='warp'&&sd){if(warpCells(sd).some(([a,b])=>a===r&&b===c))humanWarp(sd,r,c);else setStatus(t('Warp to any empty square, not on or next to an enemy guard.'));return;}
   if(mode==='turret'&&sd){if(canTurret(YOU)&&turretCells(YOU).some(([a,b])=>a===r&&b===c))humanTurret(r,c);else setStatus(t('A turret goes on an empty square you own.'));return;}
   if(!vis(YOU,r,c)&&!(sd&&targets(sd).get(k)==='dark')){setStatus(t('That square is in the fog. Bring a drone next to it, or claim with a scout.'));return;}
   if(sd){const T=targets(sd);
@@ -3570,7 +3664,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(a==='firenow'){if(aimList.length)humanShots(sd,aimList.slice());}
   else if(a==='claim'){if(claimGain(sd))humanClaim(sd);}
   else if(a==='turret'){if(canTurret(YOU)){mode='turret';setStatus(t('Tap an empty square you own. The turret fires once a turn at any enemy drone beside it.'));renderBoard();renderActions();}}
-  else if(a==='warp'){mode='warp';setStatus(t('Tap a cleared square on your side to warp there. Not on or next to an enemy guard.'));renderBoard();renderActions();}
+  else if(a==='warp'){mode='warp';setStatus(t('Tap any empty square to warp there. Not on or next to an enemy guard.'));renderBoard();renderActions();}
   else if(a==='fire'){if(canFire(sd))humanFireSiege(sd);}
   else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
   else if(a==='rock'){if(throwsOf(YOU)>0){mode='rock';sel=null;aimList=[];setStatus(t('Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.'));renderBoard();renderActions();}}
@@ -3680,7 +3774,7 @@ born_C:'4 in a line makes a scout. Scouts claim land: tap one, then Claim, and t
 born_G:'A 2 × 2 block makes a guard. A guard guards: next to your Command drone or next to an enemy siege it blocks the siege, and on your land it takes an enemy scout, hunter, warp or guard by moving next to it.',
 born_S:'A raider slides the full diagonal and takes any enemy drone it stops on, except a siege.',
 born_H:'A hunter moves up to 3 squares in any direction, bending as it goes, and fires two missiles a turn: aim both, they land together. It cannot take by landing; it fights with missiles.',
-born_W:'A warp drone can jump to any cleared square on your side and claim the 3 × 3 there outright. One use.',
+born_W:'A warp drone can jump to any empty square on the board and take the 3 × 3 there. One use.',
 born_X:'A siege drone walks 1 square a turn. Standing next to the enemy Command drone with no guard beside either, it wins the game.',
 born_B:'A bomb goes off at the end of your third turn and clears a cross as far as you can see, drones included, yours too.',
 move_C:'Scouts move 1 square any way, or ride their own star color for free.',
@@ -3696,7 +3790,7 @@ sweep:'A guard takes an enemy scout, hunter, warp or guard by moving next to it 
 sweep_s:'A raider is not taken by a sweep from a guard of power 1 or 2, but a stacked raider loses one power each time such a guard moves up beside it on your land. A guard at power 3 takes a raider outright.',
 stack:'Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.',
 claim:'A claim takes the 3 × 3 around the scout. Land counts toward the win, and the other side can no longer swap stars on it. Two claims and the scout is used up.',
-warp:'A warp claims the unclaimed squares around where it lands and removes enemy drones on squares that are now yours. It is used up.',
+warp:'A warp takes every square around where it lands that the other side does not fully own, and destroys enemy drones standing on those squares. It is used up.',
 ram:'A siege can ram the guard in its way. Both are gone.',
 rock_get:'A shape of seven or more stars that pays nothing, because it was made on the other side, on the other side\'s land, or at the drone cap, pays an asteroid to throw instead. Throw it before your move; it does not cost the turn.',
 rock:'A thrown asteroid lands on one of the nine squares at random. A lone drone there is destroyed, a stack loses one power, the Command drone and a shielded drone shrug it off. If the square is clear afterwards the asteroid stays.',
@@ -3809,7 +3903,7 @@ const TIPS={C:'Moves 1 square any way, and rides its own star color for free. Fi
 G:'Moves 1 square, or rides its own star color for free, only over squares you own or have cleared. Sees nothing in the fog. Takes a scout, hunter, warp or guard by moving next to it on your land. Standing next to an enemy siege drone, or next to your Command drone, it blocks the siege. At power 3 it sweeps raiders too, and can throw itself at any enemy drone beside it: both are destroyed.',
 S:'Slides the full diagonal until it hits something, into the dark too, and takes what it lands on except a siege or a turret. A slide into the fog is a commitment.',
 H:'Moves up to 3 squares in any direction, bending around anything in the way. Fires two missiles a turn: aim both, they hit together. Loads two from the Command drone when it stands beside it. It cannot take drones by landing; it fights with missiles. Stack a bomb onto it and it drops its missiles for one bomb missile: fire it 3 squares and the blast goes off where it lands.',
-W:'Moves 1 square. Or warps to any cleared square on your side not next to an enemy guard: the unclaimed squares around it become yours and enemy drones on your squares are removed. Used up by the warp.',
+W:'Moves 1 square. Or warps to any empty square on the board not next to an enemy guard: the squares around it that the other side does not fully own become yours, and enemy drones on them are destroyed. Used up by the warp.',
 X:'Moves exactly 1 square, into the dark if it likes. Standing next to the enemy Command drone with no guard beside either of them, it wins the game. Takes nothing but an enemy turret, by moving onto it, and cannot be taken by drones. Four enemies around it destroy it. A guard in the way: ram it and both are gone. Stack a bomb onto it and the bomb becomes a shield: tap the siege, Shield a drone, then one of your drones beside it. For six turns that drone cannot be taken, swept, shot or blasted; only four enemy drones around it end it. Not the Command drone. Missiles cannot destroy it: a stacked siege loses a power, a lone one holds.',
 B:'Moves 1 square or rides its color. Goes off at the end of your third turn: the blast runs up, down, left and right as far as you have cleared the fog and takes every asteroid, star and drone in its path, yours too.',
 T:'A turret. It never moves. At the start of each of your turns it fires once at an enemy drone in the 8 squares beside it, sieges first. Built by your Command drone for 10 missiles on an empty square you own. Only a bomb, an asteroid or a siege drone can end it; missiles bounce off, raiders and guards cannot take it. Every two turrets count as one drone toward your nine.',
@@ -4661,8 +4755,26 @@ function filmOpen(){const v=$('filmV'),f=$('film');if(!v||!f||filmOn)return;film
 // same on the RIGHT, with the squares lit and one line of Do and Why. The bot only passes. Steps are read from the board, not counted, so a
 // player who goes their own way is still told the next useful thing. A game in progress is put aside (cc1_hold) and comes back afterwards.
 const LESSON_SIDE={L:{a:[9,3],b:[8,3],home:[9,4],foe:[6,3],up:[8,3],up2:[7,2]},R:{a:[9,7],b:[8,7],home:[9,6],foe:[6,7],up:[8,7],up2:[7,8]}}; /* up2: where it stands for its second claim */
-const LESSON_LIST=['scout'];
+const LESSON_LIST=['scout','warp'];
+const LESSON_INFO={scout:{title:'The scout',line:'The scout: make one, load it, shoot, claim.'},warp:{title:'The warp drone',line:'The warp drone: jump anywhere, take the 3 × 3.'}};
+/* the warp lesson (v1.106.0): w where the warp drone waits, t where it lands. Round t: three squares of enemy land with a hunter on one (safe),
+   one contested square with a raider on it and one open square with a scout on it (both destroyed), the rest open. */
+const WARP_SIDE={L:{a:[8,2],b:[9,2],five:[[8,0],[8,1],[8,2],[8,3],[8,4]],three:[[7,2],[6,2]],t:[4,2],foeLand:[[3,1],[3,2],[3,3]],both:[4,1],hunter:[3,2],scout:[5,3],raider:[4,1]},
+  R:{a:[8,8],b:[9,8],five:[[8,6],[8,7],[8,8],[8,9],[8,10]],three:[[7,8],[6,8]],t:[4,8],foeLand:[[3,7],[3,8],[3,9]],both:[4,9],hunter:[3,8],scout:[5,7],raider:[4,9]}};
+/* a, b: the swap that builds the warp drone (user: "I don't even know how to build a warp drone, they just pop up out of luck it seems like").
+   The recipe is 7 in a line, 4 crossing 4, or 5 crossing 3; the lesson lays out 5 crossing 3 with the crossing square one swap away. */
+function lessonDone(){try{return JSON.parse(localStorage.getItem('cc_lessons')||'[]');}catch(_){return [];}}
+function lessonMarkDone(id){try{const a=lessonDone();if(!a.includes(id)){a.push(id);localStorage.setItem('cc_lessons',JSON.stringify(a));}}catch(_){}}
+function lessonLayWarp(){S.missiles={1:0,2:0};
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(isCmd(r,c)||isWall(r,c))continue;S.grid[r][c]=(r*2+c)%5;}
+  const put=(r,c,v)=>{S.grid[r][c]=v;};
+  for(const [r,c] of [[8,0],[8,1],[8,3],[8,4],[7,2],[6,2],[9,2]])put(r,c,1);put(8,5,2); /* left: gold, the crossing square (8,2) is the gap, its star waits just below */
+  for(const [r,c] of [[8,6],[8,7],[8,9],[8,10],[7,8],[6,8],[9,8]])put(r,c,3);put(5,8,0);put(7,9,1); /* right: blue. (7,9) was blue in the pattern: with it the swap made a 2 x 2 block, so a guard and a raider, not a warp */
+  S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0)];
+  for(const P of [WARP_SIDE.L,WARP_SIDE.R]){for(const [r,c] of P.foeLand)S.own[key(r,c)]=BOT;S.own[key(P.both[0],P.both[1])]=3;
+    S.drones.push(mk(BOT,P.hunter[0],P.hunter[1],'H',2),mk(BOT,P.scout[0],P.scout[1],'C',3),mk(BOT,P.raider[0],P.raider[1],'S',0,0));}}
 function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
+  if(id==='warp'){lessonLayWarp();return;}
   // a board with no line anywhere and no swap that makes one, except the two the lesson is about: three gold and a gap on the left, three blue and a gap on the right
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(isCmd(r,c)||isWall(r,c))continue;S.grid[r][c]=(r*2+c)%5;}
   const put=(r,c,v)=>{S.grid[r][c]=v;};
@@ -4671,10 +4783,35 @@ function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.ski
   S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0),mk(BOT,6,3,'C',2),mk(BOT,6,7,'C',2)];}
 /* A match-3 board always holds other swaps that pay. In a lesson only the marked one is taken, and once the scout is made the stars stay put,
    so nothing else appears on the board to explain. The game's own demonstration (phase watch) is not held to this. */
-function lessonSwapOk(a,b){if(!S||!S.lesson||S.lesson.phase!=='do')return true;if(S.lesson.made||lessonScout())return false;
-  const P=LESSON_SIDE.R,same=(p,q)=>p[0]===q[0]&&p[1]===q[1];return (same(a,P.a)&&same(b,P.b))||(same(a,P.b)&&same(b,P.a));}
+function lessonWarpOk(r,c){if(!S||!S.lesson||S.lesson.id!=='warp'||S.lesson.phase!=='do')return true;const T=WARP_SIDE.R.t;return r===T[0]&&c===T[1];} /* in its lesson the player's warp goes to the marked square */
+function lessonSwapOk(a,b){if(!S||!S.lesson||S.lesson.phase!=='do')return true;const warp=S.lesson.id==='warp';
+  if(S.lesson.made||(warp?dronesOf(YOU).some(x=>x.kind==='W'&&x.id!==S.lesson.demoId):lessonScout()))return false;
+  const P=warp?WARP_SIDE.R:LESSON_SIDE.R,same=(p,q)=>p[0]===q[0]&&p[1]===q[1];return (same(a,P.a)&&same(b,P.b))||(same(a,P.b)&&same(b,P.a));}
 function lessonScout(){if(!S||!S.lesson)return null;return dronesOf(YOU).filter(d=>d.kind==='C'&&d.id!==S.lesson.demoId).sort((a,b)=>b.id-a.id)[0]||null;}
-function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Set();
+function lessonCoachWarp(){const Ls=S.lesson,lit=new Set();
+  const L=(head,text,why,cells,calls,btn,arrows)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[],ring:0};};
+  const ringOf=p=>{const o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(inb(p[0]+dr,p[1]+dc))o.push([p[0]+dr,p[1]+dc]);return o;};
+  const after=P=>[{at:P.scout,label:t('Destroyed')},{at:P.raider,label:t('Destroyed')},{at:P.hunter,label:t('Safe: it stands on its own land')}];
+  const build=(P,swapWord)=>({cells:[...P.five,...P.three,P.b],calls:[{at:P.five[0],label:t('5 in a line')},{at:P.three[1],label:t('3 more crossing it')},{at:P.b,label:swapWord}],arrows:[{a:P.b,b:P.a,kind:'swap'}]});
+  if(Ls.phase==='watch'){const P=WARP_SIDE.L,W=t('Watch'),d=S.drones.find(x=>x.id===Ls.demoId),at=d?[d.r,d.c]:P.t;
+    switch(Math.min(8,Ls.w)){
+      case 0:{const B=build(P,t('These two swap'));return L(W,t('A warp drone is not luck. Line up 5 stars of one color with 3 more crossing them.'),'',B.cells,B.calls,null,B.arrows);}
+      case 1:return L(W,t('There it is. Two lines that cross and add up to 8 make a warp drone: 5 and 3, or 4 and 4. So does 7 in a line.'),'',[at],[{at,label:t('A new warp drone')}]);
+      case 2:return L(W,t('A warp drone jumps to any empty square on the board.'),'',[at],[{at,label:t('Warp drone')}]);
+      case 3:return L(W,t('To warp: tap it, then press Warp.'),'',[at],[{at,label:t('Tap it, then press Warp')}],'warp');
+      case 4:return L(W,t('Then tap where it should land. Any empty square will do.'),'',[P.t],[{at:P.t,label:t('It lands here')}],null,[{a:at,b:P.t,kind:'move'}]);
+      case 5:return L(W,t('Every square around it that the enemy does not fully own is yours now.'),'',ringOf(P.t),[{at:P.t,label:t('This 3 × 3 is yours')},{at:P.foeLand[0],label:t('Enemy land stays enemy')}]);
+      case 6:return L(W,t('Enemy drones beside it are destroyed, unless they stand on their own land.'),'',[P.scout,P.raider,P.hunter],after(P));
+      case 7:return L(W,t`The warp drone is used up: one warp each. You own ${landOf(YOU)} squares now.`,'',ringOf(P.t),[{at:P.t,label:t('Used up')}]);
+      default:return L(W,t('Your turn. Do the same on the right side.'),'',[],[]);}}
+  const P=WARP_SIDE.R,D=t('Do'),pw=dronesOf(YOU).find(x=>x.kind==='W'&&x.id!==Ls.demoId);
+  if(Ls.done||(Ls.made&&!pw)){Ls.done=true;return L(t('Done'),t`Done. A warp drone jumps anywhere, takes the 3 × 3 and destroys what stands beside it, except on the enemy's own land. You own ${landOf(YOU)} of the ${S.win} squares that win.`,'',[P.scout,P.raider,P.hunter],after(P));}
+  if(!pw){const B=build(P,t('Swap these two'));return L(D,t('Swap the two marked stars.'),t('Five of one color in a line with three more crossing them make a warp drone.'),B.cells,B.calls,null,B.arrows);}
+  Ls.made=true;const at=[pw.r,pw.c],sd=sel&&sel.id?S.drones.find(x=>x.id===sel.id):null,mine=sd&&sd.id===pw.id,go=[{a:at,b:P.t,kind:'move'}];
+  if(mine&&mode==='warp')return L(D,t('Tap the marked square.'),t('Any empty square works. This one has the most to take.'),[P.t],[{at:P.t,label:t('Tap here')}],null,go);
+  if(mine)return L(D,t('Press Warp, at the bottom of the screen.'),t('Warping is its whole job. It gets one.'),[at],[{at,label:t('Now press Warp, at the bottom')}],'warp',go);
+  return L(D,t('Tap your warp drone.'),t('It can jump to any empty square on the board.'),[at],[{at,label:t('Tap your warp drone')},{at:P.t,label:t('It will land here')}],null,go);}
+function lessonCoach(){if(!S||!S.lesson)return null;if(S.lesson.id==='warp')return lessonCoachWarp();const Ls=S.lesson,lit=new Set();
   /* v1.104.0 (user: more explanation, "wrote in blurbs and arrows", "like you are explaining this to a busy adult with stuff going on and half
      paying attention"). The telling is on the board now: one or two short blurbs a step, each with an arrow to the very thing it is about (the
      stars, the Command drone, the missile on the scout's corner, the land). The panel above says the same in one plain sentence.
@@ -4762,18 +4899,36 @@ function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAl
     g.appendChild(el('polygon',{points:tip(px,py,ex,ey,10),fill:'#e8a63b',stroke:'#06090d','stroke-width':1,'stroke-linejoin':'round'}));
     g.appendChild(el('rect',{x:best.Rr[0],y:best.Rr[1],width:tw,height:th,rx:4,fill:'#e8a63b',stroke:'#06090d','stroke-width':1}));
     sp.forEach((e,n)=>{e.setAttribute('x',best.cx);e.setAttribute('y',best.cy-(lines.length-1)*7.5+n*15+4.3);});g.appendChild(tx);svg.appendChild(g);busy.push([best.Rr[0]-3,best.Rr[1]-3,best.Rr[2]+3,best.Rr[3]+3,10]);}}
-function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}lessonMarks(c);g.hidden=false;const Ls=S.lesson;
+function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}lessonMarks(c);g.hidden=false;const Ls=S.lesson,info=LESSON_INFO[Ls.id]||LESSON_INFO.scout;
   const more=Ls.done?'<div class="lessonBtns"><button type="button" id="lessonAgain">'+t('Do it again')+'</button></div>':'';
-  g.innerHTML='<div class="just"><b>'+t('Lesson')+'</b>'+t('The scout: make one, load it, shoot, claim.')+'</div><div class="do"><b>'+c.head+'</b>'+c.text+'</div>'+(c.why?'<div class="why"><b>'+t('Why')+'</b>'+c.why+'</div>':'')+more;
-  if(!Ls.done)return;$('lessonAgain').addEventListener('click',()=>lessonStart(Ls.id));
-  /* the end: first the land count is pointed at (and brought on screen), a moment later Finish lesson comes up in the button bar, which is always on screen */
+  g.innerHTML='<div class="just"><b>'+t('Lesson')+'</b>'+t(info.line)+'</div><div class="do"><b>'+c.head+'</b>'+c.text+'</div>'+(c.why?'<div class="why"><b>'+t('Why')+'</b>'+c.why+'</div>':'')+more;
+  if(!Ls.done)return;$('lessonAgain').addEventListener('click',()=>lessonStart(Ls.id));lessonMarkDone(Ls.id);
+  /* the end: first the land count is pointed at (and brought on screen), a moment later the buttons come up in the bar, which is always on screen:
+     the next lesson when there is one, and Finish lesson */
   if(!Ls.finAt){Ls.finAt=Date.now()+1800;const gid=S.gid;try{$('land1').scrollIntoView({block:'nearest',behavior:'smooth'});}catch(_){}
     setTimeout(()=>{if(S&&S.lesson&&S.gid===gid)renderAll();},1850);}
-  if(Date.now()>=Ls.finAt&&!$('lessonFin')){const bt=document.createElement('button');bt.type='button';bt.id='lessonFin';bt.className='primary lessonFin';bt.textContent=t('Finish lesson');
-    bt.addEventListener('click',()=>{lessonLeave();showCover();});$('acts').appendChild(bt);}}
+  if(Date.now()>=Ls.finAt&&!$('lessonFin')){const mkb=(id,cls,label,fn)=>{const bt=document.createElement('button');bt.type='button';bt.id=id;bt.className=cls;bt.textContent=label;bt.addEventListener('click',fn);$('acts').appendChild(bt);};
+    const nx=LESSON_LIST[LESSON_LIST.indexOf(Ls.id)+1];
+    if(nx)mkb('lessonNext','primary lessonFin',t('Next lesson')+': '+t(LESSON_INFO[nx].title),()=>lessonStart(nx));
+    mkb('lessonFin',nx?'lessonFin':'primary lessonFin',t('Finish lesson'),()=>{lessonLeave();showCover();});}}
 function lessonLock(on){document.body.classList.toggle('lwatch',!!on);}
 const lessonNap=ms=>new Promise(r=>setTimeout(r,ms));
-async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
+async function lessonPress(a){const bt=$('acts').querySelector('button[data-a="'+a+'"]');if(bt){bt.classList.add('lpress');await lessonNap(480);}}
+async function lessonDemoWarp(){const gid=S.gid,P=WARP_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
+  const say=async(w,ms)=>{S.lesson.w=w;renderAll();await lessonNap(ms);};
+  lessonLock(true);
+  try{await say(0,4600);if(!here())return;await humanSwap(P.a,P.b);if(!here())return;
+    const d=dronesOf(YOU).filter(x=>x.kind==='W').sort((a,b)=>b.id-a.id)[0];if(!d){S.lesson.phase='do';return;}S.lesson.demoId=d.id;
+    await say(1,4400);if(!here())return;
+    await say(2,3000);if(!here())return;
+    sel={id:d.id};mode=null;await say(3,3400);if(!here())return;await lessonPress('warp');if(!here())return;
+    mode='warp';await say(4,3800);if(!here())return;mode=null;await humanWarp(d,P.t[0],P.t[1]);sel=null;if(!here())return;
+    await say(5,4200);if(!here())return;
+    await say(6,4600);if(!here())return;
+    await say(7,3400);if(!here())return;
+    await say(8,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
+  finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
+async function lessonDemo(){if(S.lesson.id==='warp')return lessonDemoWarp();const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
   const say=async(w,ms)=>{S.lesson.w=w;renderAll();await lessonNap(ms);};
   lessonLock(true);
   try{await say(0,3600);if(!here())return;await humanSwap(P.a,P.b);if(!here())return;
@@ -4795,10 +4950,16 @@ async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.
   finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
 function lessonStart(id){try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold');if(!S.over&&S.turnNo>0)localStorage.setItem('cc1_hold',JSON.stringify(S));}}catch(_){} /* a game in progress waits; it comes back when the lesson is left */
   const cv=$('cover');if(cv&&!cv.hidden){cv.hidden=true;$('cvFleet').innerHTML='';}
-  newGame({lesson:id});S.log=[];note(t('Lesson: the scout.'));renderAll();lessonDemo();}
+  {const pk=$('lessonPick');if(pk)pk.hidden=true;}
+  newGame({lesson:id});S.log=[];note(t('Lesson')+': '+t((LESSON_INFO[id]||LESSON_INFO.scout).title)+'.');renderAll();lessonDemo();}
+/* the lesson list: Training on the start screen opens it; a lesson already finished carries a tick */
+function lessonPick(){const pk=$('lessonPick'),ls=$('lessonList');if(!pk||!ls){lessonStart(LESSON_LIST[0]);return;}const done=lessonDone();ls.innerHTML='';
+  LESSON_LIST.forEach((id,n)=>{const bt=document.createElement('button');bt.type='button';bt.className=done.includes(id)?'':'primary';bt.textContent=(n+1)+'. '+t(LESSON_INFO[id].title)+(done.includes(id)?' ✓':'');bt.addEventListener('click',()=>lessonStart(id));ls.appendChild(bt);});
+  pk.hidden=false;}
 function lessonLeave(){lessonLock(false);{const l=$('land1');if(l)l.classList.remove('lpoint');}let held=null;try{const s=localStorage.getItem('cc1_hold');if(s){held=JSON.parse(s);localStorage.removeItem('cc1_hold');}}catch(_){}
   if(held&&held.grid&&held.grid.length===N){S=held;sel=null;mode=null;pending=null;aimList=[];save();renderAll();}else newGame({});}
-(()=>{const b=$('coverTrain');if(b)b.addEventListener('click',()=>lessonStart('scout'));
+(()=>{const b=$('coverTrain');if(b)b.addEventListener('click',lessonPick);
+  const pk=$('lessonPick');if(pk){$('lessonPickClose').addEventListener('click',()=>{pk.hidden=true;});pk.addEventListener('click',e=>{if(e.target===pk)pk.hidden=true;});}
   if(S&&S.lesson)lessonLeave();})(); /* a page reloaded in the middle of a lesson goes back to the game that was put aside, or a fresh one */
 </script>
 </body>
