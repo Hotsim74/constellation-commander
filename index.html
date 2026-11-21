@@ -309,6 +309,17 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
   .acts button{font-size:13px;padding:10px 12px}
   body{padding-bottom:84px}
 }
+/* v1.104.1: a circle on the loaded missile, an arrow down onto the button to press, a pointer at the land count, the Finish lesson button */
+.lmarks .lring{animation:lringp .7s ease-in-out infinite alternate}@keyframes lringp{from{transform:scale(1)}to{transform:scale(1.22)}}
+.acts button.larrowbtn{position:relative}
+.acts button.larrowbtn::before{content:'';position:absolute;left:50%;bottom:calc(100% + 5px);margin-left:-14px;border-left:14px solid transparent;border-right:14px solid transparent;border-top:20px solid var(--you);filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 2px #000);animation:lbtnbob .55s ease-in-out infinite alternate;pointer-events:none}
+.acts button.larrowbtn::after{content:'';position:absolute;left:50%;bottom:calc(100% + 23px);margin-left:-4.5px;width:9px;height:38px;border-radius:4px;background:var(--you);filter:drop-shadow(0 0 2px #000) drop-shadow(0 0 2px #000);animation:lbtnbob .55s ease-in-out infinite alternate;pointer-events:none}
+@keyframes lbtnbob{from{transform:translateY(-7px)}to{transform:translateY(0)}}
+.lpoint{position:relative;display:inline-block;outline:2px solid var(--you);outline-offset:5px;border-radius:4px}
+.lpoint::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 22px);background:var(--you);color:#1a1200;font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.03em;line-height:1.2;padding:5px 9px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.55)}
+.lpoint::before{content:'';position:absolute;left:16px;bottom:calc(100% + 8px);border-left:9px solid transparent;border-right:9px solid transparent;border-top:14px solid var(--you);animation:lbtnbob .55s ease-in-out infinite alternate}
+.acts .lessonFin{font-size:15px;padding:13px 28px;animation:lfinpop .35s ease-out both}@keyframes lfinpop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.lmarks .lring,.acts button.larrowbtn::before,.acts button.larrowbtn::after,.lpoint::before,.acts .lessonFin{animation:none}}
 .lessonBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.lessonBtns button{flex:1 1 130px;animation:none}
 .cvFilm{pointer-events:auto;margin-top:12px;background:transparent;border:0;color:#cfd8e3;font-size:11px;letter-spacing:.16em;text-decoration:underline;text-underline-offset:4px;opacity:.85;padding:8px 10px}
 #cover{position:fixed;inset:0;z-index:65;background:#04060a;overflow:hidden;display:block;padding:0}
@@ -1741,7 +1752,11 @@ const FR={
 "Press Claim, at the bottom of the screen.": "Appuyez sur Revendiquer, en bas de l'écran.",
 "The 3 × 3 around the scout becomes yours.": "Le 3 × 3 autour de l'éclaireur devient à vous.",
 "Now press Claim, at the bottom": "Appuyez sur Revendiquer, en bas",
-"Claiming land is how you win.": "Revendiquer du terrain, c'est ainsi qu'on gagne."
+"Claiming land is how you win.": "Revendiquer du terrain, c'est ainsi qu'on gagne.",
+"Locked and loaded: the missile shows here": "Chargé et prêt : le missile se voit ici",
+"Locked and loaded. Tap it.": "Chargé et prêt. Touchez-le.",
+"Your land so far": "Votre terrain jusqu'ici",
+"Finish lesson": "Terminer la leçon"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2600,13 +2615,17 @@ const ES={
 "Press Claim, at the bottom of the screen.": "Pulsa Reclamar, en la parte inferior de la pantalla.",
 "The 3 × 3 around the scout becomes yours.": "El 3 × 3 alrededor del explorador pasa a ser tuyo.",
 "Now press Claim, at the bottom": "Ahora pulsa Reclamar, abajo",
-"Claiming land is how you win.": "Reclamar terreno es como se gana."
+"Claiming land is how you win.": "Reclamar terreno es como se gana.",
+"Locked and loaded: the missile shows here": "Cargado y listo: el misil se ve aquí",
+"Locked and loaded. Tap it.": "Cargado y listo. Tócalo.",
+"Your land so far": "Tu terreno hasta ahora",
+"Finish lesson": "Terminar la lección"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.104.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.104.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4627,7 +4646,7 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
      paying attention"). The telling is on the board now: one or two short blurbs a step, each with an arrow to the very thing it is about (the
      stars, the Command drone, the missile on the scout's corner, the land). The panel above says the same in one plain sentence.
      cells: squares lit. calls: blurbs, {at, label}. arrows: the move itself (swap, move, fire). btn: the button in the bar to press. */
-  const L=(head,text,why,cells,calls,btn,arrows)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[]};};
+  const L=(head,text,why,cells,calls,btn,arrows,ring)=>{for(const c of cells||[])lit.add(key(c[0],c[1]));return {head,text,why,lit,calls:(calls||[]).map(k=>({...k})),btn,arrows:arrows||[],ring:ring||0};}; /* ring: the id of a drone whose loaded missile gets a circle */
   const ringOf=p=>{const o=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(inb(p[0]+dr,p[1]+dc))o.push([p[0]+dr,p[1]+dc]);return o;};
   const CMD=[N-1,5],four=t('4 of one color in a line = a scout'),kept=t('Missiles are kept here');
   if(Ls.phase==='watch'){const P=LESSON_SIDE.L;const W=t('Watch');const ds=S.drones.find(d=>d.id===Ls.demoId),at=ds?[ds.r,ds.c]:P.a;
@@ -4635,7 +4654,7 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
       case 0:return L(W,t('Four stars of one color in a line make a scout. Watch the left side.'),'',[P.a,P.b,[9,1],[9,2],[9,4]],[{at:[9,1],label:four},{at:P.b,label:t('These two swap')}],null,[{a:P.a,b:P.b,kind:'swap'}]);
       case 1:return L(W,t('There it is. Scouts are the drones that claim land.'),'',[at],[{at,label:t('A new scout')}]);
       case 2:return L(W,t('Missiles sit on the Command drone. The scout goes next to it to pick one up.'),'',[P.home],[{at:CMD,label:kept},{at:P.home,label:t('Stand next to it to pick one up')}],null,[{a:at,b:P.home,kind:'move'}]);
-      case 3:return L(W,t('Now it carries a missile. Look for the little missile on its corner.'),'',[at],[{at,label:t('Loaded: see the missile on its corner')}]);
+      case 3:return L(W,t('Now it carries a missile. Look for the little missile on its corner.'),'',[at],[{at,label:t('Locked and loaded: the missile shows here'),ring:1}],null,null,ds?ds.id:0);
       case 4:return L(W,t('It shoots the enemy scout. Shooting is free: it still gets its move.'),'',[P.foe],[{at:P.foe,label:t('Enemy scout: shoot it')}],null,[{a:at,b:P.foe,kind:'fire'}]);
       case 5:return L(W,t('Next it walks to land nobody owns.'),'',[P.up],[{at:P.up,label:t('Land nobody owns')}],null,[{a:at,b:P.up,kind:'move'}]);
       case 6:return L(W,t('It claims. The 3 × 3 around it becomes yours.'),'',ringOf(at),[{at,label:t('Claim takes this 3 × 3')}]);
@@ -4654,7 +4673,7 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
   if(foeUp){const shot=[{a:at,b:P.foe,kind:'fire'}];
     if(mode==='aim'&&mine)return L(D,t('Tap the enemy scout.'),t('One missile, one drone gone.'),[P.foe],[{at:P.foe,label:t('Tap it to shoot')}],null,shot);
     if(mine)return L(D,t('Press Fire missile, at the bottom of the screen.'),t('Shooting is free. You still get your move after.'),[at],[{at,label:t('Now press Fire missile, at the bottom')}],'aim',shot);
-    return L(D,t('It is loaded. Tap it.'),t('That enemy scout came to take your land. Shoot it first.'),[at],[{at,label:t('Loaded. Tap it.')},{at:P.foe,label:t('Enemy scout')}],null,shot);}
+    return L(D,t('It is loaded. Tap it.'),t('That enemy scout came to take your land. Shoot it first.'),[at],[{at,label:t('Locked and loaded. Tap it.'),ring:1},{at:P.foe,label:t('Enemy scout')}],null,shot,sc.id);}
   if(claimGain(sc)<5&&!(sc.r===P.up[0]&&sc.c===P.up[1])){const go=[{a:at,b:P.up,kind:'move'}];
     return mine?L(D,t('Tap the marked square.'),t('Stand on land nobody owns.'),[P.up],[{at:P.up,label:t('Tap here')}],null,go)
       :L(D,t('Tap your scout.'),t('Now go take some land.'),[at],[tap,{at:P.up,label:t('Land nobody owns')}],null,go);}
@@ -4663,8 +4682,11 @@ function lessonCoach(){if(!S||!S.lesson)return null;const Ls=S.lesson,lit=new Se
 /* v1.103.1 (user: "the words are on top of the moves, I think you will need to use longer arrows to show moves"). The coached game's word
    bubbles sit right above the square they name, which in a lesson is the other half of the move. Here a move is an arrow drawn on the board
    from square to square, and a label stands two or three squares off, in the first spot that covers no marked square, joined by a long arrow. */
-function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout,.lmarks')])el.remove();for(const el of [...document.querySelectorAll('.callbtn')])el.classList.remove('callbtn');
-  if(!c)return;if(c.btn){const bt=$('acts').querySelector('button[data-a="'+c.btn+'"]');if(bt)bt.classList.add('callbtn');}
+/* v1.104.1 (user: "a circle around the missile that shows where to see it is locked and loaded ... an arrow pointing down to the claim the 3x3
+   button and an arrow at the very end pointing to how much space you have, then a finish lesson button pop up"). */
+function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAll('.callout,.lmarks')])el.remove();for(const el of [...document.querySelectorAll('.callbtn,.larrowbtn')])el.classList.remove('callbtn','larrowbtn');
+  const land=$('land1');if(land){land.classList.toggle('lpoint',!!(c&&S.lesson&&S.lesson.done));if(c&&S.lesson&&S.lesson.done)land.setAttribute('data-tip',t('Your land so far'));}
+  if(!c)return;if(c.btn){const bt=$('acts').querySelector('button[data-a="'+c.btn+'"]');if(bt)bt.classList.add('callbtn','larrowbtn');} /* larrowbtn: an arrow comes down onto the button (p1.html) */
   if(!c.arrows.length&&!c.calls.length)return;
   const NS='http://www.w3.org/2000/svg',el=(n,at)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);return e;};
   const svg=el('svg',{class:'lmarks'});b.appendChild(svg);const W=b.clientWidth,H=b.clientHeight;
@@ -4679,7 +4701,12 @@ function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAl
     g.appendChild(el('polygon',{points:tip(ax,ay,bx,by,n),fill:col,stroke:'#06090d','stroke-width':1.5,'stroke-linejoin':'round'}));
     if(ar.kind==='swap')g.appendChild(el('polygon',{points:tip(bx,by,ax,ay,n),fill:col,stroke:'#06090d','stroke-width':1.5,'stroke-linejoin':'round'}));
     svg.appendChild(g);}
-  for(const k of c.calls){const [x,y,w]=cellXY(...k.at);
+  let ringAt=null; /* the loaded missile sits on the drone's top right corner: a circle round it, and the blurb's arrow goes to the circle */
+  if(c.ring){const d=S.drones.find(q=>q.id===c.ring),ce=d&&cellEl(d.r,d.c),am=ce&&ce.querySelector('.ammo i');
+    if(am){const a=am.getBoundingClientRect(),br=b.getBoundingClientRect(),w=cellXY(d.r,d.c)[2],cx=a.left+a.width/2-br.left-b.clientLeft,cy=a.top+a.height/2-br.top-b.clientTop,rad=Math.max(10,w*0.30);
+      const g=el('g',{class:'lring'});g.appendChild(el('circle',{cx,cy,r:rad,fill:'none',stroke:'#06090d','stroke-width':6}));g.appendChild(el('circle',{cx,cy,r:rad,fill:'none',stroke:'#fff3c4','stroke-width':3}));
+      g.style.transformOrigin=cx+'px '+cy+'px';svg.appendChild(g);ringAt=[cx,cy,rad];busy.push([cx-rad-3,cy-rad-3,cx+rad+3,cy+rad+3]);}}
+  for(const k of c.calls){let [x,y,w]=cellXY(...k.at);const toRing=k.ring&&ringAt;if(toRing){x=ringAt[0];y=ringAt[1];}
     let lines=[k.label];if(k.label.length>20){const ws=k.label.split(' ');let bd=1e9,cut=0;for(let i=1;i<ws.length;i++){const dl=Math.abs(ws.slice(0,i).join(' ').length-k.label.length/2);if(dl<bd){bd=dl;cut=i;}}if(cut)lines=[ws.slice(0,cut).join(' '),ws.slice(cut).join(' ')];} /* a long blurb takes two lines */
     const tx=el('text',{class:'ltext','text-anchor':'middle'});const sp=lines.map(l=>{const e=el('tspan',{});e.textContent=l;tx.appendChild(e);return e;});svg.appendChild(tx);
     let tw=60;try{tw=Math.max(...sp.map(e=>e.getComputedTextLength()));}catch(_){}tw+=16;const th=8+15*lines.length;let best=null;
@@ -4689,15 +4716,20 @@ function lessonMarks(c){const b=$('board');for(const el of [...b.querySelectorAl
       let hit=0;for(const q of busy)if(Rr[0]<q[2]&&Rr[2]>q[0]&&Rr[1]<q[3]&&Rr[3]>q[1])hit+=q[4]||1; /* another blurb counts for ten squares: two blurbs never share a spot while any other is free */
       if(!best||hit<best.hit)best={cx,cy,Rr,hit};if(!hit)break;}
     if(!best){tx.remove();continue;}
-    const px=Math.max(best.Rr[0],Math.min(x,best.Rr[2])),py=Math.max(best.Rr[1],Math.min(y,best.Rr[3])),d=Math.hypot(x-px,y-py)||1,ux=(x-px)/d,uy=(y-py)/d,ex=x-ux*w*0.44,ey=y-uy*w*0.44;
+    const px=Math.max(best.Rr[0],Math.min(x,best.Rr[2])),py=Math.max(best.Rr[1],Math.min(y,best.Rr[3])),d=Math.hypot(x-px,y-py)||1,ux=(x-px)/d,uy=(y-py)/d,gap=toRing?ringAt[2]+3:w*0.44,ex=x-ux*gap,ey=y-uy*gap;
     const g=el('g',{class:'llabel'});shaft(g,px,py,ex-ux*6,ey-uy*6,'#e8a63b',2.5);
     g.appendChild(el('polygon',{points:tip(px,py,ex,ey,10),fill:'#e8a63b',stroke:'#06090d','stroke-width':1,'stroke-linejoin':'round'}));
     g.appendChild(el('rect',{x:best.Rr[0],y:best.Rr[1],width:tw,height:th,rx:4,fill:'#e8a63b',stroke:'#06090d','stroke-width':1}));
     sp.forEach((e,n)=>{e.setAttribute('x',best.cx);e.setAttribute('y',best.cy-(lines.length-1)*7.5+n*15+4.3);});g.appendChild(tx);svg.appendChild(g);busy.push([best.Rr[0]-3,best.Rr[1]-3,best.Rr[2]+3,best.Rr[3]+3,10]);}}
-function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}lessonMarks(c);g.hidden=false;
-  const more=S.lesson.done?'<div class="lessonBtns"><button type="button" id="lessonAgain">'+t('Do it again')+'</button><button type="button" id="lessonBack" class="primary">'+t('Back to the start')+'</button></div>':'';
+function lessonGuide(){const g=$('guide'),c=lessonCoach();if(!c){g.hidden=true;return;}lessonMarks(c);g.hidden=false;const Ls=S.lesson;
+  const more=Ls.done?'<div class="lessonBtns"><button type="button" id="lessonAgain">'+t('Do it again')+'</button></div>':'';
   g.innerHTML='<div class="just"><b>'+t('Lesson')+'</b>'+t('The scout: make one, load it, shoot, claim.')+'</div><div class="do"><b>'+c.head+'</b>'+c.text+'</div>'+(c.why?'<div class="why"><b>'+t('Why')+'</b>'+c.why+'</div>':'')+more;
-  if(S.lesson.done){$('lessonAgain').addEventListener('click',()=>lessonStart(S.lesson.id));$('lessonBack').addEventListener('click',()=>{lessonLeave();showCover();});}}
+  if(!Ls.done)return;$('lessonAgain').addEventListener('click',()=>lessonStart(Ls.id));
+  /* the end: first the land count is pointed at (and brought on screen), a moment later Finish lesson comes up in the button bar, which is always on screen */
+  if(!Ls.finAt){Ls.finAt=Date.now()+1800;const gid=S.gid;try{$('land1').scrollIntoView({block:'nearest',behavior:'smooth'});}catch(_){}
+    setTimeout(()=>{if(S&&S.lesson&&S.gid===gid)renderAll();},1850);}
+  if(Date.now()>=Ls.finAt&&!$('lessonFin')){const bt=document.createElement('button');bt.type='button';bt.id='lessonFin';bt.className='primary lessonFin';bt.textContent=t('Finish lesson');
+    bt.addEventListener('click',()=>{lessonLeave();showCover();});$('acts').appendChild(bt);}}
 function lessonLock(on){document.body.classList.toggle('lwatch',!!on);}
 const lessonNap=ms=>new Promise(r=>setTimeout(r,ms));
 async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.lesson&&S.gid===gid&&S.lesson.phase==='watch';
@@ -4717,7 +4749,7 @@ async function lessonDemo(){const gid=S.gid,P=LESSON_SIDE.L;const here=()=>S&&S.
 function lessonStart(id){try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold');if(!S.over&&S.turnNo>0)localStorage.setItem('cc1_hold',JSON.stringify(S));}}catch(_){} /* a game in progress waits; it comes back when the lesson is left */
   const cv=$('cover');if(cv&&!cv.hidden){cv.hidden=true;$('cvFleet').innerHTML='';}
   newGame({lesson:id});S.log=[];note(t('Lesson: the scout.'));renderAll();lessonDemo();}
-function lessonLeave(){lessonLock(false);let held=null;try{const s=localStorage.getItem('cc1_hold');if(s){held=JSON.parse(s);localStorage.removeItem('cc1_hold');}}catch(_){}
+function lessonLeave(){lessonLock(false);{const l=$('land1');if(l)l.classList.remove('lpoint');}let held=null;try{const s=localStorage.getItem('cc1_hold');if(s){held=JSON.parse(s);localStorage.removeItem('cc1_hold');}}catch(_){}
   if(held&&held.grid&&held.grid.length===N){S=held;sel=null;mode=null;pending=null;aimList=[];save();renderAll();}else newGame({});}
 (()=>{const b=$('coverTrain');if(b)b.addEventListener('click',()=>lessonStart('scout'));
   if(S&&S.lesson)lessonLeave();})(); /* a page reloaded in the middle of a lesson goes back to the game that was put aside, or a fresh one */
