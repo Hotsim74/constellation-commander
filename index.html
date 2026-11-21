@@ -2759,8 +2759,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.107.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.108.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2876,7 +2876,10 @@ function detectShapes(g,anchor){
   for(let di=0;di<LINE_DIRS.length;di++){const [dr,dc]=LINE_DIRS[di];
     for(let r=0;r<N;r++)for(let c=0;c<N;c++){const v=g[r][c];if(!isStar(v))continue;if(get(r-dr,c-dc)===v)continue;
       let len=1;while(get(r+len*dr,c+len*dc)===v)len++;
-      if(len===3&&di>=2)continue;
+      /* v1.108.0 (user: "I need that to build a warp at every angle that the pattern can be built on. 0 degrees 45 degree 90 degrees 135 degrees
+         180"). A diagonal line of 3 still clears nothing by itself. But it is kept as a weak run, so a diagonal 5 (or longer) crossed by a diagonal
+         3 makes a warp, the same as the upright and sideways patterns do. A weak run only ever counts in a warp-making crossing of two diagonals. */
+      if(len===3&&di>=2){const run=[];for(let i=0;i<len;i++)run.push(key(r+i*dr,c+i*dc));runs.push({di,len,run,color:v,used:false,boxed:false,weak:true});continue;}
       if(len>=3){const run=[];for(let i=0;i<len;i++)run.push(key(r+i*dr,c+i*dc));
         const boxed=len===3&&run.some(k=>box.has(k)); // a lone 3-line on a 2×2 block is just the block; but see the crossing rule below
         if(!boxed)for(const k of run)cells.add(k);
@@ -2898,7 +2901,10 @@ function detectShapes(g,anchor){
      wins there too, and the block it touches is dissolved, as it already was for crossings of two 3-lines. */
   for(const pass of [0,1])for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const a=runs[i],b=runs[j];
     if(a.used||b.used||a.di===b.di)continue;if(pass===0&&a.len+b.len<8)continue;
+    if(a.weak||b.weak){if(a.len+b.len<8||a.di<2||b.di<2||a.color!==b.color)continue;} /* a diagonal 3 only joins another diagonal, and only for a warp */
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
+    if(a.weak||b.weak){for(const k of a.run)cells.add(k);for(const k of b.run)cells.add(k);
+      for(let n=spawns.length-1;n>=0;n--)if(spawns[n].cell[0]===rc(shared)[0]&&spawns[n].cell[1]===rc(shared)[1]&&spawns[n].letters.join('')==='H')spawns.splice(n,1);} /* an X of 5 at the same crossing gives way: the warp wins */
     if(a.boxed||b.boxed){ // a T, L or plus of 3s that also touches a 2×2 block: the crossing wins when it reaches 2 cells past the block (so a 2×3 or 3×3 block stays a block)
       const un=[...new Set([...a.run,...b.run])];
       if(a.len!==3||b.len!==3){if(a.len+b.len<8)continue;} /* not a warp: the block and the long line each pay their own, as before */
@@ -2914,7 +2920,7 @@ function detectShapes(g,anchor){
       if(am&&bm)spawns.push({letters:['H'],cell,cells:cc,color:a.color,label:t('a plus')});
       else if(am||bm)spawns.push({letters:['S'],sq:0,cap:'missile',cell,cells:cc,color:a.color,label:t('a T of two 3-lines')});
       else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:t('an L of two 3-lines')});}}
-  for(const x of runs){if(x.used||x.len===3)continue;
+  for(const x of runs){if(x.used||x.len===3||x.weak)continue;
     const inRun=anchor&&x.run.includes(key(anchor[0],anchor[1]));
     const k=inRun?key(anchor[0],anchor[1]):x.run[Math.floor(x.len/2)];
     const sp={cell:rc(k),cells:x.run,color:x.color,label:t`${x.len} in a line`};
