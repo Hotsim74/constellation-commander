@@ -514,6 +514,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field"><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
+  <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck"> trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
   <button type="button" id="btnStory" class="primary">Story mode</button>
@@ -1835,7 +1836,10 @@ const FR={
 "There it is. Two lines that cross and add up to 8 make a warp drone: 5 and 3, or 4 and 4. So does 7 in a line.": "Le voilà. Deux lignes qui se croisent et totalisent 8 font un drone de saut : 5 et 3, ou 4 et 4. 7 en ligne aussi.",
 "A new warp drone": "Un nouveau drone de saut",
 "A warp drone jumps to any empty square on the board.": "Un drone de saut saute vers n'importe quelle case vide du plateau.",
-"Five of one color in a line with three more crossing them make a warp drone.": "Cinq d'une couleur en ligne avec trois autres qui les croisent font un drone de saut."
+"Five of one color in a line with three more crossing them make a warp drone.": "Cinq d'une couleur en ligne avec trois autres qui les croisent font un drone de saut.",
+"{0}: {1} at {2} took a missile from a wreck.": "{0} : {1} en {2} a pris un missile dans une épave.",
+"Hunters": "Chasseurs",
+"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "règle à l'essai : un chasseur naît avec 2 missiles et ne se recharge qu'en se tenant sur une épave, pas au drone de commandement. Compte à partir de votre prochaine partie."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2755,13 +2759,16 @@ const ES={
 "There it is. Two lines that cross and add up to 8 make a warp drone: 5 and 3, or 4 and 4. So does 7 in a line.": "Ahí está. Dos líneas que se cruzan y suman 8 hacen un dron de salto: 5 y 3, o 4 y 4. También 7 en línea.",
 "A new warp drone": "Un dron de salto nuevo",
 "A warp drone jumps to any empty square on the board.": "Un dron de salto salta a cualquier casilla vacía del tablero.",
-"Five of one color in a line with three more crossing them make a warp drone.": "Cinco de un color en línea con tres más que las crucen hacen un dron de salto."
+"Five of one color in a line with three more crossing them make a warp drone.": "Cinco de un color en línea con tres más que las crucen hacen un dron de salto.",
+"{0}: {1} at {2} took a missile from a wreck.": "{0}: {1} en {2} tomó un misil de unos restos.",
+"Hunters": "Cazadores",
+"trial rule: a hunter is born with 2 missiles and reloads only by standing on a wreck, not at the Command drone. Counts from your next new game.": "regla de prueba: un cazador nace con 2 misiles y solo se recarga poniéndose sobre unos restos, no en el dron de mando. Cuenta desde tu próxima partida."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.109.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.110.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2799,7 +2806,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:$('inSalvage').checked,wrecks:{},
-     over:null,skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:!!($('inHWreck')&&$('inHWreck').checked),skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
@@ -3010,7 +3017,7 @@ function spawnFrom(side,sp){
     if(isWall(r,c)||isCmd(r,c)){note(t`${who(side)} made ${sp.label} on the wall: nothing paid.`);continue;}
     const d=mk(side,r,c,letter,sp.color,letter==='S'?(r+c)%2:sp.sq); // a raider is red or white after the square it is born on: a diagonal slider never leaves that color
     if(o){mergeInto(o,d);note(t`${who(side)} made ${sp.label} under a drone: stacked to power ${o.power}.`,{why:'stack',at:[[r,c]],lab:[t('stacked')]});}
-    else{S.drones.push(d);loadShooter(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
+    else{S.drones.push(d);if(S.hwreck&&letter==='H')d.ammo=shotsOf(d);loadShooter(d);note(t`${who(side)} made ${sp.label}: ${aname(letter)}${letter==='S'?(d.sq?t(' (white)'):t(' (red)')):''}, ${KNAME[sp.color]}.`,{why:'born_'+letter,at:[[r,c]],lab:[t('born here')]});}
   }
 }
 function rockOnto(side){const c=[];for(let k=0;k<N*N;k++){const [r,cc]=rc(k);if(S.own[k]===side&&!isWall(r,cc)&&!isCmd(r,cc)&&isStar(S.grid[r][cc])&&!droneAt(r,cc))c.push([r,cc]);}if(!c.length)return;const [r,cc]=c[rnd(c.length)];S.grid[r][cc]=ROCK;}
@@ -3100,7 +3107,13 @@ async function turretFire(side){for(const tr of dronesOf(side).filter(d=>d.kind=
 const ammoOf=d=>d.ammo||0;const shotCap=d=>d.bombAmmo?1:ammoOf(d);const canShoot=d=>shotsLeft(d)>0&&shotCap(d)>0;
 const besideM=d=>{const m=cmdOf(d.side);return !!m&&m!==d&&Math.max(Math.abs(m.r-d.r),Math.abs(m.c-d.c))<=1;};
 function gstack(side,r,c){const g=mk(side,r,c,'G',rnd(KINDS));g.power=2;let c2=rnd(KINDS);if(c2===g.colors[0])c2=(c2+1)%KINDS;g.colors.push(c2);return g;} // the starting guard is a 2-stack
-function loadShooter(d){if(!d||!shotsOf(d)||!besideM(d)||d.bombAmmo)return 0;const take=Math.min(shotsOf(d)-ammoOf(d),S.missiles[d.side]);if(take<=0)return 0;d.ammo=ammoOf(d)+take;S.missiles[d.side]-=take;note(t`${who(d.side)}: ${TNAME[d.kind]} at ${sq(d.r,d.c)} loaded ${take} missile${take===1?'':'s'} from the Command drone.`,{why:'load',at:[[d.r,d.c]],lab:[t('loaded')]});return take;}
+/* v1.110.0, a TRIAL RULE behind a Settings switch (S.hwreck, off by default). User: "the hunter has to collect destroyed drones to get missiles and
+   only the scout gets them from the commander. Don't know how much that will change the game." With it on: a hunter is born with its two
+   missiles, never loads at the Command drone, and takes one missile from any wreck it ends a move on (hunterFeed, called from landed). Kills
+   still pay the Command drone's stock as before, so scouts are fed the same; the wreck is an extra, hunter-only source. */
+function hunterFeed(d){if(!S.hwreck||d.kind!=='H'||d.bombAmmo||ammoOf(d)>=shotsOf(d))return;const k=key(d.r,d.c);if(!S.wrecks||!S.wrecks[k])return;delete S.wrecks[k];d.ammo=ammoOf(d)+1;
+  note(t`${who(d.side)}: ${TNAME[d.kind]} at ${sq(d.r,d.c)} took a missile from a wreck.`,{why:'load',at:[[d.r,d.c]],lab:[t('loaded')]});}
+function loadShooter(d){if(!d||!shotsOf(d)||!besideM(d)||d.bombAmmo)return 0;if(S.hwreck&&d.kind==='H')return 0;const take=Math.min(shotsOf(d)-ammoOf(d),S.missiles[d.side]);if(take<=0)return 0;d.ammo=ammoOf(d)+take;S.missiles[d.side]-=take;note(t`${who(d.side)}: ${TNAME[d.kind]} at ${sq(d.r,d.c)} loaded ${take} missile${take===1?'':'s'} from the Command drone.`,{why:'load',at:[[d.r,d.c]],lab:[t('loaded')]});return take;}
 function reload(side){for(const d of dronesOf(side))if(shotsOf(d))loadShooter(d);}
 const range=()=>S.fog?RANGE:3; // with no fog a missile flies 3 squares; in the fog, 5
 const inRange=(d,r,c)=>Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=range();
@@ -3109,7 +3122,7 @@ const inRange=(d,r,c)=>Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=range();
 function takeDrone(taker,victim,how,by){queueShatter(victim);if(!S.salvage)S.missiles[taker]++;S.drones=S.drones.filter(x=>x!==victim);wreckAt(victim.r,victim.c);note(t`${who(taker)} took ${own(victim.side,victim.kind)}${victim.power>1?t(' (power {0})',victim.power):''} at ${sq(victim.r,victim.c)}${how?' '+how:''}${earned()}`,{why:how?'sweep':'take',at:[[victim.r,victim.c]],lab:[by?t`${TNAME[by.kind]} takes ${TNAME[victim.kind]}`:t('taken')]});}
 function landed(d){
   if(!S.drones.includes(d))return;
-  salvageAt(d.side,d.r,d.c);
+  hunterFeed(d);salvageAt(d.side,d.r,d.c);
   if(d.kind==='M')reload(d.side);else loadShooter(d);
   if(d.kind==='G'){for(const [dr,dc] of DIR8){const e=droneAt(d.r+dr,d.c+dc);if(!e||e.side===d.side||S.own[key(e.r,e.c)]!==d.side||e.shield)continue;
     if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))takeDrone(d.side,e,t('by moving beside it'),d); /* v1.70: a guard at full power sweeps raiders too, and keeps itself */
@@ -3417,6 +3430,7 @@ function botOptions(me,L){const him=other(me);
      nothing until a hunter or scout stands beside the Command drone to load them. noShot: no shooter of mine is loaded although there is stock. */
   const noShot=L>=4&&S.missiles[me]>0&&!dronesOf(me).some(x=>shotsOf(x)&&ammoOf(x)>0);
   if(aw&&noShot&&droneCount(me)<MAXD)for(const o of opts)if(o.type==='swap'&&o.sw.sh.spawns.some(sp=>sp.letters.includes('H')||sp.letters.includes('C')))o.v+=12*aw; /* a shape that makes a shooter, when a scout is closing on the win and nothing can shoot it */
+  const hfeed=S.hwreck&&L>=3&&S.wrecks?Object.keys(S.wrecks).map(k=>rc(+k)).filter(([a,b])=>!droneAt(a,b)):[]; /* wrecks a hunter could feed on */
   const sieges=dronesOf(him).filter(x=>x.kind==='X');const sdist=(r,c)=>sieges.length?Math.min(...sieges.map(x=>Math.max(Math.abs(x.r-r),Math.abs(x.c-c)))):9;
   const trap=L>=7?(drift=driftPreview(me)):null;const trapVia=trap&&trap.killM&&trap.killM.side===me?trap.via:null; /* the stack that an asteroid would jump to land on the Command drone */
   const lastG=guarded.length===1?guarded[0]:null;const sNear=!!(myM&&sieges.length&&sdist(myM.r,myM.c)<=4);
@@ -3438,8 +3452,10 @@ function botOptions(me,L){const him=other(me);
     if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){const w=S.own[key(a,b)];if(w===0||w===3)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&w!==him)prey+=5*o.power+(o.kind==='H'||o.kind==='G'?3:0);}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});} /* v1.106.0: anywhere on the board; contested squares count as land to take */
     for(const [k,kind] of targets(d)){const [r,c]=rc(k);let v=1;
       if(L>=8&&S.salvage&&S.wrecks&&S.wrecks[k])v+=7;
-      if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6+(noShot?6+12*aw:0); // go home to load
-      if(L>=4&&d.kind==='H'&&ammoOf(d)===0&&S.missiles[me]>0&&myM){const h0=Math.max(Math.abs(d.r-myM.r),Math.abs(d.c-myM.c)),h1=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c));if(h0>1)v+=(2+(noShot?1+3*aw:0))*(h0-Math.max(1,h1));} /* an empty hunter is no use out front (it fights with missiles only): it heads home, faster when it is the only one that could shoot */
+      if(hfeed.length&&d.kind==='H'&&ammoOf(d)<shotsOf(d)){const wd=(a,b)=>Math.min(...hfeed.map(x=>Math.max(Math.abs(x[0]-a),Math.abs(x[1]-b))));
+        if(S.wrecks[k])v+=12+(ammoOf(d)===0?8:0);else v+=(ammoOf(d)===0?2.5:1.2)*(wd(d.r,d.c)-wd(r,c));} /* v1.110.0, the trial rule: a hunter with room goes to a wreck */
+      if(L>=2&&shotsOf(d)&&ammoOf(d)<shotsOf(d)&&S.missiles[me]>0&&myM&&!(S.hwreck&&d.kind==='H')&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=6+(noShot?6+12*aw:0); // go home to load
+      if(L>=4&&!S.hwreck&&d.kind==='H'&&ammoOf(d)===0&&S.missiles[me]>0&&myM){const h0=Math.max(Math.abs(d.r-myM.r),Math.abs(d.c-myM.c)),h1=Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c));if(h0>1)v+=(2+(noShot?1+3*aw:0))*(h0-Math.max(1,h1));} /* an empty hunter is no use out front (it fights with missiles only): it heads home, faster when it is the only one that could shoot */
       if(kind==='take')v+=L>=2?12*droneAt(r,c).power:0;
       if(aw&&kind==='take'&&closers.includes(droneAt(r,c)))v+=25*aw; /* a scout about to claim the win */
       if(aw&&shotsOf(d)&&ammoOf(d)>0)for(const e of closers){if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range()&&Math.max(Math.abs(e.r-d.r),Math.abs(e.c-d.c))>range())v+=10*aw;} /* a loaded shooter walks into range of one */
@@ -3452,7 +3468,7 @@ function botOptions(me,L){const him=other(me);
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
       if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
       if(d.kind==='G'&&L>=3){for(const [dr,dc] of DIR8){const e=droneAt(r+dr,c+dc);if(e&&e.side===him&&S.own[key(e.r,e.c)]===me){if(SWEEPS.includes(e.kind)||(e.kind==='S'&&d.power>=MAXP))v+=12*e.power;else if(e.kind==='S'&&e.power>1)v+=5;}}}
-      if((d.kind==='S'||d.kind==='H')&&L>=5&&!(L>=4&&d.kind==='H'&&ammoOf(d)===0&&S.missiles[me]>0))v+=0.75*(dist(d.r,d.c)-dist(r,c)); /* v1.101.4: the pull toward the enemy is for a hunter with something to fire */
+      if((d.kind==='S'||d.kind==='H')&&L>=5&&!(L>=4&&d.kind==='H'&&ammoOf(d)===0&&(S.missiles[me]>0||S.hwreck)))v+=0.75*(dist(d.r,d.c)-dist(r,c)); /* v1.101.4: the pull toward the enemy is for a hunter with something to fire */
       if(kind==='dark')v-=1;
       if(d.kind==='B'){v+=1;if(L>=8){let n=0;for(const [dr,dc] of DIR4)for(let s=1;s<=3;s++){const e=droneAt(r+dr*s,c+dc*s);if(e&&e.side===him)n++;}v+=3*n;}}
       if(L>=4&&d.kind!=='X'&&threat.has(k))v-=8*d.power;else if(L>=4&&d.kind!=='X'&&d.kind!=='M'&&kind!=='merge'&&threat.has(key(d.r,d.c)))v+=6+6*d.power; /* do not park where it can be taken next turn; v1.92: and get out of such a square (user: it let one raider take three drones) */
@@ -4032,7 +4048,7 @@ showCover();
 /* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
    progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
    sector no longer leaves its own skill in the Settings box. */
-const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked']];
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inHWreck','cc_hwreck','checked']];
 function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
 function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
 for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
