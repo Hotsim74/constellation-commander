@@ -3238,8 +3238,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.2';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.123.3';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4546,6 +4546,19 @@ $('btnReload').addEventListener('click',async()=>{save();try{localStorage.setIte
 $('newverX').addEventListener('click',()=>{$('newver').hidden=true;});
 try{if(/[?&]fresh=/.test(location.search))history.replaceState(null,'',location.pathname);}catch(_){}
 setTimeout(checkVersion,20000);setInterval(()=>{if(!document.hidden)checkVersion();},5*60000);
+/* v1.123.3 (user's third screenshot: the start screen "went back to the old style"; its corner read v1.123.0 three minutes after v1.123.2 was
+   on the site). A browser keeps the page for ten minutes without asking the site (Cache-Control: max-age=600), and each tab or address can hold
+   its own old copy. The notice above only comes up after 20 seconds, inside the game. So: as the page opens, ask the site for version.txt (a few
+   bytes, written by deploy.sh, never taken from a cache). If it names a newer version and the start screen is still up, refresh the browser's copy
+   and load it, once per version per tab. Not when the address carries anything (an invite link), not in a game with a friend. */
+(async()=>{try{if(!/^https?:/.test(location.protocol)||(location.search&&!/^\?fresh=\d+$/.test(location.search)))return;
+  const r=await fetch('version.txt?'+Date.now(),{cache:'no-store'});if(!r.ok)return;const v=(await r.text()).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||v===VERSION)return;
+  const num=x=>x.split('.').map(Number),a=num(v),b=num(VERSION);if(!(a[0]>b[0]||(a[0]===b[0]&&(a[1]>b[1]||(a[1]===b[1]&&a[2]>b[2])))))return;
+  let tried='';try{tried=sessionStorage.getItem('cc_autoupd')||'';}catch(_){}
+  const cv=$('cover');if(tried===v||!cv||cv.hidden||(typeof online!=='undefined'&&online))return;
+  try{sessionStorage.setItem('cc_autoupd',v);}catch(_){}
+  try{await fetch(location.pathname,{cache:'reload'});}catch(_){}
+  location.replace(location.pathname+'?fresh='+Date.now());}catch(_){}})();
 
 // ---------- copy as text ----------
 function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;c++){const d=droneAt(r,c);const k=key(r,c);s+=isCmd(r,c)?'M':isWall(r,c)?'#':d?(d.side===YOU?LETTER[d.kind]:LETTER[d.kind].toLowerCase()):S.grid[r][c]===ROCK?'%':!vis(YOU,r,c)?'?':S.own[k]===YOU?'+':S.own[k]===BOT?'-':S.own[k]===3?'=':'12345'[S.grid[r][c]]||'.';}rows.push(s);}
