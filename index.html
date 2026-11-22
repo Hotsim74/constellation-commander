@@ -189,6 +189,13 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr{position:absolute;inset:3%;border-radius:50%;background:#0e131a;border:2px solid;z-index:3;display:flex;align-items:center;justify-content:center;padding:3%;pointer-events:none}
 .dr.s1{border-color:var(--you)}.dr.s2{border-color:var(--bot)}
 .dr.shd{box-shadow:0 0 0 3px rgba(80,220,255,.9),0 0 12px 4px rgba(80,220,255,.55)}.fuse.sh{background:#1aa8c8;color:#fff}
+/* v1.118.0, the trial rule: the siege's field covers the 3 x 3 round it; an enemy drone inside it is drawn dull */
+.jfield{position:absolute;left:-100%;top:-100%;width:300%;height:300%;border-radius:12%;z-index:2;pointer-events:none;border:2px dashed #ffb84a;background:radial-gradient(circle,rgba(255,184,74,.20) 0,rgba(255,184,74,.09) 62%,rgba(255,184,74,.03) 100%);animation:jpulse 2.4s ease-in-out infinite alternate}
+.jfield.s2{border-color:#00e5ff;background:radial-gradient(circle,rgba(0,229,255,.20) 0,rgba(0,229,255,.09) 62%,rgba(0,229,255,.03) 100%)}
+@keyframes jpulse{from{opacity:.6}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.jfield{animation:none}}
+.legend .jfield,.bark .jfield,.ghost.fly .jfield{display:none}
+.board .dr.jam{filter:saturate(.35) brightness(.8)}
 .dr.on0{filter:drop-shadow(0 0 3px rgba(229,72,77,1)) drop-shadow(0 0 9px rgba(229,72,77,.85))}.dr.on1{filter:drop-shadow(0 0 3px rgba(240,165,43,1)) drop-shadow(0 0 9px rgba(240,165,43,.85))}.dr.on2{filter:drop-shadow(0 0 3px rgba(62,194,122,1)) drop-shadow(0 0 9px rgba(62,194,122,.85))}.dr.on3{filter:drop-shadow(0 0 3px rgba(63,143,240,1)) drop-shadow(0 0 9px rgba(63,143,240,.85))}.dr.on4{filter:drop-shadow(0 0 3px rgba(176,108,232,1)) drop-shadow(0 0 9px rgba(176,108,232,.85))}
 .dr svg{width:100%;height:100%;display:block;overflow:hidden}
 /* v1.60: the guard is an eye with a searchlight that sweeps its land and pauses to look; the pupil follows the beam */
@@ -522,6 +529,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field" hidden><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
   <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck" checked> reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">Siege field</span><label><input type="checkbox" id="inJam"> trial rule: a bomb stacked onto a siege drone gives it a field in place of the shield. Tap the siege and press Raise the field: for six turns, enemy drones in the 3 × 3 around it move only 1 square a turn and cannot fire. The field moves with the siege. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Wrecks</span><label><input type="checkbox" id="inWClean" checked> other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
@@ -1926,7 +1934,17 @@ const FR={
 "Tap your bomb.": "Touchez votre bombe.",
 "Tap your bomb": "Touchez votre bombe",
 "One turn left. It goes off at the end of this turn.": "Il reste un tour. Elle se déclenche à la fin de ce tour.",
-"Two turns left on the fuse. Walk it to where the cross does the most.": "Il reste deux tours de mèche. Amenez-la là où la croix fera le plus d'effet."
+"Two turns left on the fuse. Walk it to where the cross does the most.": "Il reste deux tours de mèche. Amenez-la là où la croix fera le plus d'effet.",
+"{0}: the siege at {1} raised its field: {2} turns. Enemy drones in the 3 × 3 around it move 1 square and cannot fire.": "{0} : le siège en {1} a levé son champ : {2} tours. Les drones ennemis dans le 3 × 3 autour de lui avancent d'une case et ne peuvent pas tirer.",
+"field up": "champ levé",
+"The field of {0} at {1} wore off.": "Le champ de {0} en {1} s'est dissipé.",
+"field gone": "champ dissipé",
+"Raise the field": "Lever le champ",
+", holding a field": ", porte un champ",
+", field up ({0} turns)": ", champ levé ({0} tours)",
+", inside an enemy field: 1 square a turn, no missiles": ", dans un champ ennemi : 1 case par tour, pas de missiles",
+"Siege field": "Champ du siège",
+"trial rule: a bomb stacked onto a siege drone gives it a field in place of the shield. Tap the siege and press Raise the field: for six turns, enemy drones in the 3 × 3 around it move only 1 square a turn and cannot fire. The field moves with the siege. Counts from your next new game.": "règle à l'essai : une bombe empilée sur un drone de siège lui donne un champ à la place du bouclier. Touchez le siège et appuyez sur Lever le champ : pendant six tours, les drones ennemis dans le 3 × 3 autour de lui n'avancent que d'une case par tour et ne peuvent pas tirer. Le champ se déplace avec le siège. Compte à partir de votre prochaine partie."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -2955,13 +2973,23 @@ const ES={
 "Tap your bomb.": "Toca tu bomba.",
 "Tap your bomb": "Toca tu bomba",
 "One turn left. It goes off at the end of this turn.": "Queda un turno. Se activa al final de este turno.",
-"Two turns left on the fuse. Walk it to where the cross does the most.": "Quedan dos turnos de mecha. Llévala adonde la cruz haga más efecto."
+"Two turns left on the fuse. Walk it to where the cross does the most.": "Quedan dos turnos de mecha. Llévala adonde la cruz haga más efecto.",
+"{0}: the siege at {1} raised its field: {2} turns. Enemy drones in the 3 × 3 around it move 1 square and cannot fire.": "{0}: el asedio en {1} levantó su campo: {2} turnos. Los drones enemigos en el 3 × 3 a su alrededor avanzan 1 casilla y no pueden disparar.",
+"field up": "campo levantado",
+"The field of {0} at {1} wore off.": "El campo de {0} en {1} se ha disipado.",
+"field gone": "campo disipado",
+"Raise the field": "Levantar el campo",
+", holding a field": ", lleva un campo",
+", field up ({0} turns)": ", campo levantado ({0} turnos)",
+", inside an enemy field: 1 square a turn, no missiles": ", dentro de un campo enemigo: 1 casilla por turno, sin misiles",
+"Siege field": "Campo del asedio",
+"trial rule: a bomb stacked onto a siege drone gives it a field in place of the shield. Tap the siege and press Raise the field: for six turns, enemy drones in the 3 × 3 around it move only 1 square a turn and cannot fire. The field moves with the siege. Counts from your next new game.": "regla de prueba: una bomba apilada sobre un dron de asedio le da un campo en lugar del escudo. Toca el asedio y pulsa Levantar el campo: durante seis turnos, los drones enemigos en el 3 × 3 a su alrededor avanzan solo 1 casilla por turno y no pueden disparar. El campo se mueve con el asedio. Cuenta desde tu próxima partida."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.117.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.118.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3004,7 +3032,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:false /* v1.112.0: retired; only a hunter takes a wreck's missile now */,wrecks:{},
-     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:(()=>{try{return localStorage.getItem('cc_jam')==='1';}catch(_){return false;}})(),skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
@@ -3259,7 +3287,19 @@ function validSwaps(side){
 function reshuffle(){for(let t=0;t<200;t++){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(isStar(S.grid[r][c]))S.grid[r][c]=pickSafe(S.grid,r,c);if(!detectShapes(S.grid).cells.size&&validSwaps().length)break;}note(t('No swap left anywhere: the stars were reshuffled.'),{why:'reshuffle'});}
 
 // ---------- reach ----------
-function targets(d){
+/* v1.118.0, a TRIAL RULE behind a Settings switch (S.jam, off by default). User: "a bomb in a siege drone could make a ... shield out on the
+   board that slows down the enemy ships to 1 space per turn if they get in it and no firing missiles"; size after the objection that 9 x 9 is
+   most of the board: "2x2 or 3x3. you never real know till you play the game". Built as 3 x 3, the siege in the middle (a 2 x 2 has no middle).
+   With the rule on, a bomb stacked onto a siege gives it a charge as before, but the charge raises a FIELD instead of shielding one drone:
+   applyField, the siege's whole turn, FIELD_TURNS of its side's turns, and it moves with the siege. An enemy drone standing in the 3 x 3
+   (jammed) moves only to a square beside it, cannot fire, cannot warp, and a turret there does not fire. Missiles from outside still come in,
+   and four drones around the siege still destroy it. shieldCells returns nothing while the rule is on, so the old shield is not offered. */
+const FIELD_TURNS=6;
+function jammed(d){if(!S||!S.jam||!d)return false;for(const x of S.drones)if(x.kind==='X'&&x.field&&x.side!==d.side&&Math.max(Math.abs(x.r-d.r),Math.abs(x.c-d.c))<=1)return true;return false;}
+function applyField(d){if(!S.jam||!d||d.kind!=='X'||!d.charge)return;delete d.charge;d.field=FIELD_TURNS+1;
+  note(t`${who(d.side)}: the siege at ${sq(d.r,d.c)} raised its field: ${FIELD_TURNS} turns. Enemy drones in the 3 × 3 around it move 1 square and cannot fire.`,{why:'field',at:[[d.r,d.c]],lab:[t('field up')]});}
+function targets(d){const T=targets0(d);if(jammed(d))for(const k of [...T.keys()]){const [r,c]=rc(k);if(Math.max(Math.abs(r-d.r),Math.abs(c-d.c))>1)T.delete(k);}return T;}
+function targets0(d){
   const T=new Map();
   if(d.kind==='T')return T; // a turret never moves
   if(d.kind==='S'){ // slides the full diagonal, into the dark too; stops at the first thing it meets
@@ -3291,7 +3331,7 @@ function targets(d){
    open squares became its side's, contested ones were left. Now: any empty square on the board it can see; in the 3 x 3, every square the other
    side does not fully own (open or contested) becomes its side's; enemy drones standing on those squares are destroyed. Kept: enemy land stays
    enemy and a drone on it is safe; not on or next to an enemy guard; the Command drone, a siege, a turret and a shielded drone are spared; one use. */
-function warpCells(d){const out=[];const e=other(d.side);for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(solid(r,c)||droneAt(r,c)||!vis(d.side,r,c))continue;
+function warpCells(d){const out=[];if(jammed(d))return out;const e=other(d.side);for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(solid(r,c)||droneAt(r,c)||!vis(d.side,r,c))continue;
   if([[0,0],...DIR8].some(([dr,dc])=>{const o=droneAt(r+dr,c+dc);return o&&o.side===e&&o.kind==='G';}))continue;out.push([r,c]);}return out;}
 const claimCells=(r,c)=>{const out=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(inb(a,b)&&!isWall(a,b)&&!isCmd(a,b))out.push([a,b]);}return out;};
 function claimGain(d){let g=0;for(const [a,b] of claimCells(d.r,d.c))if(S.own[key(a,b)]!==d.side)g++;return g;}
@@ -3308,12 +3348,12 @@ const shotsLeft=d=>shotsOf(d)-(d.shots||0);
 const turretCells=side=>{const out=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(S.own[key(r,c)]===side&&!droneAt(r,c)&&!solid(r,c)&&vis(side,r,c))out.push([r,c]);}return out;};
 const canTurret=side=>S.missiles[side]>=TURRET_COST&&!!cmdOf(side)&&(!S.allow||S.allow.includes('T'));
 function applyTurret(side,r,c){S.missiles[side]-=TURRET_COST;const d=mk(side,r,c,'T',isStar(S.grid[r][c])?S.grid[r][c]:0);S.drones.push(d);note(t`${who(side)} built a turret at ${sq(r,c)} for ${TURRET_COST} missiles.`,{why:'turret',at:[[r,c]],lab:[t('turret')]});}
-async function turretFire(side){for(const tr of dronesOf(side).filter(d=>d.kind==='T')){if(S.over)return;
+async function turretFire(side){for(const tr of dronesOf(side).filter(d=>d.kind==='T')){if(S.over)return;if(jammed(tr))continue;
   const foes=[];for(const [dr,dc] of DIR8){const e=droneAt(tr.r+dr,tr.c+dc);if(e&&e.side!==side&&e.kind!=='M'&&!e.shield&&!(e.kind==='X'&&e.power<=1))foes.push(e);}if(!foes.length)continue; /* a turret does not waste its shot on a lone siege */
   foes.sort((a,b)=>(a.kind==='X'?-1:0)-(b.kind==='X'?-1:0)||a.power-b.power);const e=foes[0];
   note(t`${cap(own(side,'T'))} at ${sq(tr.r,tr.c)} fires.`,{why:'turret_fire',at:[[tr.r,tr.c]],lab:[t('turret fires')]});await fireShots(side,[{r:e.r,c:e.c}],tr);}}
 // v1.32: missiles are stock on the Command drone (S.missiles[side]); a scout or hunter beside it loads up to what it fires a turn
-const ammoOf=d=>d.ammo||0;const shotCap=d=>d.bombAmmo?1:ammoOf(d);const canShoot=d=>shotsLeft(d)>0&&shotCap(d)>0;
+const ammoOf=d=>d.ammo||0;const shotCap=d=>d.bombAmmo?1:ammoOf(d);const canShoot=d=>shotsLeft(d)>0&&shotCap(d)>0&&!jammed(d);
 const besideM=d=>{const m=cmdOf(d.side);return !!m&&m!==d&&Math.max(Math.abs(m.r-d.r),Math.abs(m.c-d.c))<=1;};
 function gstack(side,r,c){const g=mk(side,r,c,'G',rnd(KINDS));g.power=2;let c2=rnd(KINDS);if(c2===g.colors[0])c2=(c2+1)%KINDS;g.colors.push(c2);return g;} // the starting guard is a 2-stack
 /* v1.110.0, a TRIAL RULE behind a Settings switch (S.hwreck, off by default). User: "the hunter has to collect destroyed drones to get missiles and
@@ -3434,6 +3474,7 @@ async function blastAt(side,r0,c0,what){
   const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(FALL_MS);await resolve(side,null);}
 async function tickBombs(side){
   for(const d of dronesOf(side)){if(!d.shield)continue;d.shield--;if(d.shield<=0){delete d.shield;note(t`The shield on ${own(side,d.kind)} at ${sq(d.r,d.c)} wore off.`,{why:'shield_off',at:[[d.r,d.c]],lab:[t('shield gone')]});}}
+  for(const d of dronesOf(side)){if(!d.field)continue;d.field--;if(d.field<=0){delete d.field;note(t`The field of ${own(side,'X')} at ${sq(d.r,d.c)} wore off.`,{why:'field_off',at:[[d.r,d.c]],lab:[t('field gone')]});}}
   for(const b of dronesOf(side).filter(d=>d.fuse!=null)){b.fuse--; /* bombs, and drones carrying one on a fuse */
     if(b.fuse>0){note(t`${bombName(side,b)} at ${sq(b.r,b.c)}: ${b.fuse} turn${b.fuse===1?'':'s'} to go.`,{why:'bomb_fuse',at:[[b.r,b.c]],lab:[t('{0} to go',b.fuse)]});continue;}
     const what=bombName(side,b);if(b.kind==='B')S.drones=S.drones.filter(x=>x!==b);else delete b.fuse; /* a carrier stands in the middle of its own blast */
@@ -3441,7 +3482,7 @@ async function tickBombs(side){
 }
 // a siege carrying a bomb detonates it when its owner says so; the siege is in the middle of it
 const SHIELD_TURNS=6;
-function shieldCells(d){if(!d||d.kind!=='X'||!d.charge)return [];const out=[];for(const [dr,dc] of DIR8){const o=droneAt(d.r+dr,d.c+dc);if(o&&o.side===d.side&&o.kind!=='M'&&!o.shield)out.push(o);}return out;}
+function shieldCells(d){if(!d||d.kind!=='X'||!d.charge||S.jam)return [];const out=[];for(const [dr,dc] of DIR8){const o=droneAt(d.r+dr,d.c+dc);if(o&&o.side===d.side&&o.kind!=='M'&&!o.shield)out.push(o);}return out;}
 function applyShield(d,o){if(!d||!o||!shieldCells(d).includes(o))return;delete d.charge;o.shield=SHIELD_TURNS+1;note(t`${who(d.side)}: the siege put a shield on ${own(o.side,o.kind)} at ${sq(o.r,o.c)}: ${SHIELD_TURNS} turns. Only four enemy drones around it can end it.`,{why:'shield',at:[[o.r,o.c]],lab:[t('shielded')]});}
 // ---------- asteroids drift. Clear 8+ stars on your side in one turn and every asteroid moves one
 // square toward you (the way the stars fall). Into a lone drone: the drone is destroyed and the asteroid
@@ -3566,7 +3607,7 @@ const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.8,AHEAD_WIN=5000;let aheadT0=0
 function simCopy(){const log=S.log;S.log=[];const c=JSON.parse(JSON.stringify(S));S.log=log;return c;}
 function simApply(me,o){const him=other(me);const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
   if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
-  else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else if(o.type==='shield')applyShield(d,S.drones.find(x=>x.id===o.o.id));else if(o.type==='throw')applyThrow(d,S.drones.find(x=>x.id===o.o.id));else return false;
+  else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else if(o.type==='shield')applyShield(d,S.drones.find(x=>x.id===o.o.id));else if(o.type==='field')applyField(d);else if(o.type==='throw')applyThrow(d,S.drones.find(x=>x.id===o.o.id));else return false;
   reload(him);return true;}
 // the best line `side` can find on the current (copied) board, `depth` moves deep: its best option less a share of what the other side gets back. Past the time cap it is the best option as it stands.
 function bestLine(side,depth,lvl){const {opts}=botOptions(side,botLevel());if(!opts.length)return 0;opts.sort((a,b)=>b.v-a.v);
@@ -3679,6 +3720,7 @@ function botOptions(me,L){const him=other(me);
       opts.push({type:'claim',d,v});}}
     if(L>=5&&d.kind==='G'&&d.power>=MAXP)for(const o of throwCells(d)){const v=12*o.power+(o.kind==='H'?4:0)+(o.kind==='B'?4:0)-16; /* v1.92.1: a siege is no longer a throw target */if(v>4)opts.push({type:'throw',d,o,v});} /* v1.62: a full guard thrown at something worth more than itself */
     if(L>=5&&d.kind==='X'&&d.charge){let best=null;for(const o of shieldCells(d)){const k=key(o.r,o.c);const v=(o.kind==='X'?14:o.kind==='H'?12:o.kind==='G'?10:o.kind==='T'?8:6)*o.power+(threat.has(k)?10:0)+(fire.has(k)?6:0)+(o.kind==='X'&&dist(o.r,o.c)<=3?10:0);if(!best||v>best.v)best={o,v};}if(best)opts.push({type:'shield',d,o:best.o,v:12+best.v});} /* v1.57: the shield goes to the drone worth the most where it stands */
+    if(S.jam&&L>=3&&d.kind==='X'&&d.charge){let n=0,sh=0;for(const [dr,dc] of DIR8){const o=droneAt(d.r+dr,d.c+dc);if(o&&o.side!==me&&o.kind!=='M'&&o.kind!=='T'){n++;if(shotsOf(o)&&ammoOf(o))sh++;}}if(n)opts.push({type:'field',d,v:10+8*n+8*sh});} /* v1.118.0, the trial rule: raise the field when enemy drones stand beside the siege, sooner for loaded shooters */
     if(L>=5&&d.kind==='X'&&shieldedBy(d)&&dronesOf(me).filter(x=>x.kind==='X').length>=2)opts.push({type:'ram',d,v:30});
     if(L>=4&&d.kind==='M'&&canTurret(me)){let best=null;for(const [r,c] of turretCells(me)){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=2)n++;const v=28+4*n+(Math.max(Math.abs(d.r-r),Math.abs(d.c-c))<=1?2:0);if(!best||v>best.v)best={r,c,v};}if(best)opts.push({type:'turret',d,r:best.r,c:best.c,v:best.v});}
     if(L>=5&&d.kind==='W')for(const [r,c] of warpCells(d)){let land=0,prey=0;for(const [a,b] of claimCells(r,c)){const w=S.own[key(a,b)];if(w===0||w===3)land++;const o=droneAt(a,b);if(o&&o.side===him&&o.kind!=='X'&&o.kind!=='T'&&o.kind!=='M'&&!o.shield&&w!==him)prey+=5*o.power+(o.kind==='H'||o.kind==='G'?3:0);}if(land+prey>4)opts.push({type:'warp',d,r,c,v:2*land+prey});} /* v1.106.0: anywhere on the board; contested squares count as land to take */
@@ -3697,6 +3739,7 @@ function botOptions(me,L){const him=other(me);
       if(gPeril&&kind==='take'){const o=droneAt(r,c);if(o&&targets(o).get(key(lastG.r,lastG.c))==='take')v+=60;} /* take what threatens the guard */
       if(gPeril&&d.kind==='G'&&d!==lastG&&Math.max(Math.abs(r-myM.r),Math.abs(c-myM.c))<=1)v+=50; /* or bring a second guard */
       if(kind==='merge')v+=L>=4?(o=>o&&o.kind===d.kind&&o.power<MAXP?1:-6)(droneAt(r,c)):-1;
+      if(S.jam&&L>=4&&kind==='merge'&&d.kind==='B'){const o=droneAt(r,c);if(o&&o.kind==='X'&&!o.charge&&!o.field)v+=20;} /* v1.118.0, the trial rule: a bomb is worth putting into a siege, which then carries a field (before, the bot never stacked the two) */
       if(d.kind==='X'&&L>=5)v+=6*(dist(d.r,d.c)-dist(r,c));if(d.kind==='X'&&weak){v+=24*(dist(d.r,d.c)-dist(r,c));const tl=dronesOf(him).filter(x=>x.kind==='T');if(tl.length){const td=(a,b)=>Math.min(...tl.map(x=>Math.max(Math.abs(x.r-a),Math.abs(x.c-b))));v+=5*(td(d.r,d.c)-td(r,c));}} /* v1.92: the siege marches on the Command drone and the turrets */
       if(d.kind==='C'&&L>=1&&d.claims>0)v+=2*(half(me,r)?0:1)+1.5*Math.max(0,claimGain({r,c,side:me})-claimGain(d)); // walk toward open land to claim
       if(L>=2&&shotsOf(d)&&ammoOf(d)>0){let n=0;for(const e of dronesOf(him))if(Math.max(Math.abs(e.r-r),Math.abs(e.c-c))<=range())n++;v+=3*n;} // a loaded shooter closes to range
@@ -3751,6 +3794,7 @@ async function botTurn(me){
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
   else if(pick.type==='shield'){applyShield(pick.d,pick.o);renderBoard();await playFX();}
+  else if(pick.type==='field'){applyField(pick.d);renderBoard();await playFX();}
   else if(pick.type==='throw'){applyThrow(pick.d,pick.o);renderBoard();await playFX();}
   else if(pick.type==='ram'){applyRam(pick.d);renderBoard();await playFX();}
   else if(pick.type==='turret'){applyTurret(me,pick.r,pick.c);renderBoard();await playFX();}
@@ -3791,6 +3835,7 @@ function rockAnim(r,c){return new Promise(res=>{const b=$('board');const [x,y,w]
 function botRockTarget(me){const him=other(me);let best=null;for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(!vis(me,r,c))continue;let v=0,n=0;for(const [a,b] of rockCells(r,c)){n++;const o=droneAt(a,b);if(o&&o.side===him)v+=o.shield||o.kind==='M'?0:(o.power===1?(o.kind==='X'?14:o.kind==='H'?10:o.kind==='T'?12:7):3);else if(o&&o.side===me)v-=o.power===1?8:3;else if(S.own[key(a,b)]===him&&isStar(S.grid[a][b]))v+=1;}
     if(!n)continue;v=v/n;if(!best||v>best.v)best={r,c,v};}return best&&best.v>0?best:null;}
 async function humanThrow(g,o){if(netSend({type:'throw',id:g.id,tid:o.id}))return;busy=true;sel=null;mode=null;applyThrow(g,o);renderBoard();await playFX();busy=false;await afterAction();}
+async function humanField(d){if(netSend({type:'field',id:d.id}))return;busy=true;sel=null;mode=null;applyField(d);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanShield(d,o){if(netSend({type:'shield',id:d.id,tid:o.id}))return;busy=true;sel=null;mode=null;applyShield(d,o);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanRam(d){if(netSend({type:'ram',id:d.id}))return;busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;busy=true;mode=null;const id=d.id;if(!d.bombAmmo)d.ammo=ammoOf(d)-list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);closeAction(YOU);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&canShoot(still)?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?t('Fired. This drone can fire again, or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
@@ -3833,7 +3878,7 @@ function onCell(r,c){
   sel={star:[r,c]};sfx('tap');setStatus(t('Now tap a star next to it to swap.'));renderBoard();renderActions();
 }
 function describe(d){const rides=d.kind==='S'?t('slides the diagonals'):d.kind==='H'?t('moves up to 3 squares'):d.kind==='X'?t('no free rides'):t('rides {0}',d.colors.map(k=>KNAME[k]).join(t(' and ')));
-  const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')+(d.charge?t(', holding a shield'):'')+(d.shield?t(', shielded ({0} turns)',Math.min(SHIELD_TURNS,d.shield)):'')+(d.bombAmmo?t(', a bomb missile loaded'):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.fuse!=null)parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
+  const parts=[cap(own(d.side,d.kind))+(d.kind==='S'?(d.sq?t(' (white)'):t(' (red)')):'')+(d.charge?(S.jam?t(', holding a field'):t(', holding a shield')):'')+(d.field?t(', field up ({0} turns)',Math.min(FIELD_TURNS,d.field)):'')+(jammed(d)?t(', inside an enemy field: 1 square a turn, no missiles'):'')+(d.shield?t(', shielded ({0} turns)',Math.min(SHIELD_TURNS,d.shield)):'')+(d.bombAmmo?t(', a bomb missile loaded'):'')];if(d.power>1)parts.push(t('power {0}',d.power));if(d.kind==='C')parts.push(t('{0} claim{1}',d.claims,d.claims===1?'':'s'));if(d.fuse!=null)parts.push(t('{0} turn{1} to go',d.fuse,d.fuse===1?'':'s'));parts.push(rides);return parts.join(', ');}
 
 // ---------- render ----------
 const cells=[];
@@ -3851,7 +3896,7 @@ function plates(d){if(!(d.power>1)||d.kind==='T')return '';const col=i=>KCOL[d.c
   return d.power>=3?`<i class="plate pc" style="--pc:${col(2)}"></i><i class="plate pb" style="--pc:${col(1)}"></i>`:`<i class="plate pa" style="--pc:${col(1)}"></i>`;}
 function hFace(d){const f=d.face!=null?d.face:(d.side===YOU?0:180);return ((f%360)+360)%360;} /* v1.90: the way a hunter points, degrees clockwise from nose-up; born facing the other side */
 function droneHTML(d){const art=d.kind==='T'?turretSVG(d.side):d.kind==='M'?cmdSVG(d.side):d.kind==='C'?claimSVG(d.side):d.kind==='G'?guardSVG(d.side):d.kind==='S'?strikeSVG(d.side):d.kind==='H'?hunterSVG(d.side):d.kind==='W'?warpSVG(d.side):d.kind==='X'?siegeSVG(d.side):`<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="#23282f" stroke="${d.side===YOU?'#ffb84a':'#00e5ff'}" stroke-width="1.5"/><path d="M14 5 q3 -3 5 0" stroke="#ff9a3c" stroke-width="1.5" fill="none"/><circle cx="19" cy="4" r="1.6" fill="#ffd27a"/></svg>`;
-  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&(d.side===YOU||d.kind==='H')?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"><s></s><s></s><s></s><s></s><s></s></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
+  return `<div class="dr s${d.side} k${d.kind}${d.power>1&&d.kind!=='T'?' st'+Math.min(3,d.power):''}${jammed(d)?' jam':''}" style="border-color:${KCOL[d.colors[0]]}${d.kind==='H'?';--face:'+hFace(d)+'deg':''}">${art}<b class="lt">${LETTER[d.kind]}</b>${d.power>1?`<span class="pw">${d.power}</span>`:''}${d.fuse!=null?`<span class="fuse">${d.fuse}</span>`:d.charge?`<span class="fuse sh">◆</span>`:d.shield?`<span class="fuse sh">${Math.min(SHIELD_TURNS,d.shield)}</span>`:d.field?`<span class="fuse sh">${Math.min(FIELD_TURNS,d.field)}</span>`:''}${shotsOf(d)&&ammoOf(d)&&(d.side===YOU||d.kind==='H')?'<span class="ammo">'+'<i></i>'.repeat(Math.min(3,ammoOf(d)))+'</span>':''}${d.kind==='M'&&d.side===YOU&&S&&S.missiles&&S.missiles[d.side]?`<span class="am">${S.missiles[d.side]}</span>`:''}${badges(d)}</div>${plates(d)}${d.kind==='W'?'<i class="wfog"><s></s><s></s><s></s><s></s><s></s></i>':''}${d.field?'<i class="jfield s'+d.side+'"></i>':''}`;} /* v1.91: the warp drone's cloud spills into the squares around it (user) */
 // the box at a drone's bottom-left: the color it rides for free. A raider's is the red or white of the squares it slides on; a hunter's is every color; guards and sieges ride nothing.
 function badges(d){if(d.bombAmmo&&d.side===YOU)return '<span class="ammo"><i class="bm"></i></span>'+badgesPlain(d);return badgesPlain(d);}
 function badgesPlain(d){if(d.kind==='S')return `<span class="badge ${d.sq?'w':'r'}"></span>`;if(d.kind==='G'||d.kind==='X')return '';if(d.kind==='H')return '<span class="bdg"><i class="any"></i></span>';return '<span class="bdg">'+d.colors.slice(0,3).map(k=>`<i style="background:${KCOL[k]}"></i>`).join('')+'</span>';}
@@ -3887,7 +3932,7 @@ function renderBoard(gone,born,mark,fall){seeThru();
     else if(!fall){gem.style.transition='';gem.style.transform='';gem.style.opacity='';}
     if(isCmd(r,c)&&seen){dd.textContent='★';dd.className='dd keep';dd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2';dd.dataset.did='';continue;}
     const d=droneAt(r,c);const show=d&&(d.side===YOU||seen);
-    const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors.join('')}:${d.claims||0}:${d.ammo||0}:${d.kind==='M'?S.missiles[d.side]:0}:${sel&&sel.id===d.id?1:0}:${isStar(v)?v:'-'}:${d.shield||0}:${d.charge||0}:${d.kind==='G'?guardLook(d):''}`:'';
+    const sig=show?`${d.id}:${d.kind}:${d.power}:${d.fuse||0}:${d.colors.join('')}:${d.claims||0}:${d.ammo||0}:${d.kind==='M'?S.missiles[d.side]:0}:${sel&&sel.id===d.id?1:0}:${isStar(v)?v:'-'}:${d.shield||0}:${d.charge||0}:${d.field||0}:${jammed(d)?1:0}:${d.kind==='G'?guardLook(d):''}`:'';
     if(dd.dataset.did!==sig){dd.dataset.did=sig;dd.style.cssText='';dd.className='dd';dd.innerHTML=show?droneHTML(d):'';if(show&&sel&&sel.id===d.id)dd.firstChild.classList.add('sel');if(show&&isStar(v))dd.firstChild.classList.add('on'+v);if(show&&d.shield)dd.firstChild.classList.add('shd');if(show&&d.kind==='G'){const lk=guardLook(d);if(lk!=null){dd.firstChild.classList.add('angry');dd.firstChild.style.setProperty('--look',lk+'deg');}}} /* v1.49: a drone glows in the color of the star under it */
   }
 }
@@ -3920,6 +3965,7 @@ function renderActions(){
   if(mine&&sd){
     if(canShoot(sd)&&mode!=='aim')acts.push('<button data-a="aim" class="'+(sd.bombAmmo?'danger':'')+'">'+(sd.bombAmmo?t('Fire the bomb missile'):t`Fire missile${shotsOf(sd)===2?'s':''} (${ammoOf(sd)} loaded)`)+'</button>');
     if(sd.kind==='G'&&sd.power>=MAXP&&throwCells(sd).length)acts.push('<button data-a="throw" class="danger">'+t('Throw at a drone')+'</button>');
+    if(S.jam&&sd.kind==='X'&&sd.charge)acts.push('<button data-a="field" class="primary">'+t('Raise the field')+'</button>');
     if(sd.kind==='X'&&sd.charge&&shieldCells(sd).length)acts.push('<button data-a="shield" class="primary">'+t('Shield a drone')+'</button>');
     if(mode==='aim'&&aimList.length)acts.push('<button data-a="firenow" class="primary">'+t('Fire now')+'</button>');
     if(sd.kind==='C'&&sd.claims>0)acts.push(`<button data-a="claim" class="primary" ${claimGain(sd)?'':'disabled'}>`+t`Claim the 3 × 3 here (${claimGain(sd)} to take)`+'</button>');
@@ -3948,6 +3994,7 @@ $('acts').addEventListener('click',e=>{const b=e.target.closest('button');if(!b|
   else if(a==='ram'){if(shieldedBy(sd))humanRam(sd);}
   else if(a==='rock'){if(throwsOf(YOU)>0){mode='rock';sel=null;aimList=[];setStatus(t('Tap the middle of a 3 × 3 you can see. The asteroid lands on one of its nine squares at random: a lone drone there is destroyed, a stack loses one power.'));renderBoard();renderActions();}}
   else if(a==='throw'){if(sd.power>=MAXP&&throwCells(sd).length){mode='throw';setStatus(t('Tap the enemy drone beside the guard to throw at it. Both are destroyed.'));renderBoard();renderActions();}}
+  else if(a==='field'){if(S.jam&&sd&&sd.charge)humanField(sd);}
   else if(a==='shield'){if(sd.charge&&shieldCells(sd).length){mode='shield';setStatus(t('Tap one of your drones beside the siege to shield it for six turns. Not the Command drone.'));renderBoard();renderActions();}}
   else if(a==='ok'){if(mode==='confirm'&&pending){const p=pending;pending=null;mode=null;if(S.drones.includes(p.d)&&droneAt(p.r,p.c))humanMove(p.d,p.r,p.c);else renderAll();}}
 });
@@ -4237,7 +4284,7 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
   const dl=side=>dronesOf(side).map(d=>LETTER[d.kind]+' '+sq(d.r,d.c)+(d.power>1?' p'+d.power:'')+(d.ammo?' m'+d.ammo:'')+(d.kind==='C'?' c'+(d.claims||0):'')+(d.shield?' shielded':'')+(d.fuse!=null?' fuse'+d.fuse:'')).join(', ')||'none';
   let ahead='auto';try{ahead=localStorage.getItem('cc_ahead')||'auto';}catch(_){}
   const mode=S.tut?'coached':S.story?'story '+S.story:(typeof online!=='undefined'&&online)?'friend':'free play';
-  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.turnNo||0} · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
+  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.turnNo||0} · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'} · siege field ${S.jam?'on':'off'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
 /* v1.101.3: on a computer the clipboard can be refused (the page sits inside a frame, or is not the focused window). The fallback was prompt(), which
    browsers block inside frames and which cuts a many-line text down to one line, so the button looked dead. Now three steps: the clipboard, then the older
    select-and-copy, then a box on the page with the text selected, a Copy button and Save as a file. The button that was pressed says Copied for a moment. */
@@ -4285,7 +4332,7 @@ showCover();
 /* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
    progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
    sector no longer leaves its own skill in the Settings box. */
-const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked']];
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked'],['inJam','cc_jam','checked']];
 function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
 function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
 for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
@@ -4463,6 +4510,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
     else if(a.type==='ram'){const d=byId(a.id);if(!d||d.side!==me||!shieldedBy(d))throw 0;applyRam(d);renderBoard();await playFX();await afterAction();}
     else if(a.type==='rock'){if(throwsOf(me)<=0||!inb(a.r,a.c))throw 0;const hit=applyRockThrow(me,a.r,a.c);if(hit)await rockAnim(hit[0],hit[1]);renderBoard();await playFX();closeAction(me);save();renderAll();}
     else if(a.type==='throw'){const d=byId(a.id),o=byId(a.tid);if(!d||d.side!==me||!o||!throwCells(d).includes(o))throw 0;applyThrow(d,o);renderBoard();await playFX();await afterAction();}
+    else if(a.type==='field'){const d=byId(a.id);if(!d||d.side!==me||!S.jam||!d.charge)throw 0;applyField(d);renderBoard();await playFX();await afterAction();}
     else if(a.type==='shield'){const d=byId(a.id),o=byId(a.tid);if(!d||d.side!==me||!o||!shieldCells(d).includes(o))throw 0;applyShield(d,o);renderBoard();await playFX();await afterAction();}
     else if(a.type==='turret'){if(!canTurret(me)||!turretCells(me).some(([r,c])=>r===a.r&&c===a.c))throw 0;applyTurret(me,a.r,a.c);renderBoard();await playFX();await afterAction();}
   }catch(e){if(e!==0)console.error(e);}
@@ -5095,7 +5143,7 @@ function lessonLayBomb(){S.missiles={1:0,2:0};
   for(let r=0;r<N;r++)for(let c=0;c<N;c++){if(isCmd(r,c)||isWall(r,c))continue;const ch=BOMB_GRID[r][c];S.grid[r][c]=ch==='#'?ROCK:+ch;}
   S.drones=[mk(YOU,N-1,5,'M',0),mk(BOT,0,5,'M',0)];
   for(const P of [BOMB_SIDE.L,BOMB_SIDE.R])S.drones.push(mk(BOT,P.rowFoe[0],P.rowFoe[1],'C',2),mk(BOT,P.colFoe[0],P.colFoe[1],'S',0,0));}
-function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.wclean=false; /* v1.114.0: the lessons do not teach clearing wrecks */S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
+function lessonLay(id){S.lesson={id,phase:'watch',w:0,demoId:0,done:false};S.jam=false;S.wclean=false; /* v1.114.0: the lessons do not teach clearing wrecks */S.skill=0;S.timers=false;S.fog=0;S.story=null;S.asteroids={1:0,2:0};S.missiles={1:2,2:0};S.throws={1:0,2:0};S.tut=false;
   if(id==='warp'){lessonLayWarp();return;}
   if(id==='hunter'){lessonLayHunter();return;}
   if(id==='siege'){lessonLaySiege();return;}
