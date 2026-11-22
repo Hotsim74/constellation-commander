@@ -3242,8 +3242,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.8';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.124.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4468,33 +4468,66 @@ function doSwipe(r,c,dx,dy,dragged){if(rockWait){rockPopClose();rockDone();retur
 // ---------- v1.83: drag and drop (the kid's ask). A piece sticks to the finger, rides a little above it so it can be seen,
 // and drops where the finger lets go: a drone onto any marked square (red takes, green asks to stack), a star onto its
 // neighbour to swap. Let go anywhere else and it settles back. A plain tap is still a tap. Same switch as the old swipe (cc_swipe).
-let drag=null;
+let drag=null,dragDrop=0; /* dragDrop: the id of a drone just dropped by hand; movedAnim does not fly it again */
+/* v1.124.0 (user: "I would like to see where my star is going and the other star I am swapping with is going both move at the same time. let me
+   look around ... before I lift my finger same as the drones I would like the drone to move over the star and drop into place with my finger if
+   my finger doesn't move it all the way it just bounces back ... every once in a while a drone will move one spot when I am just trying to
+   select it").
+   A STAR slides along the line toward the neighbour the finger is heading for, exactly as far as the finger has gone, and that neighbour slides
+   the other way into the star's square at the same time. Nothing happens until the finger lifts: past half way the swap is made, short of it
+   both slide back. A swap that makes no line slides back too and says so.
+   A DRONE moves by as much as the finger has moved, from where it stood (before, it jumped to a spot above the finger, and the square it was
+   "over" was read from a point above the finger: a touch on the top half of a drone that wobbled 8 pixels was already over the next square,
+   and letting go moved it there). It drops only when its middle is well inside a marked square (within 0.4 of a square of that square's
+   middle); anywhere else it slides back and stays selected. */
 (()=>{const b=$('board');
   const cellAt=(x,y)=>{const el=document.elementFromPoint(x,y);const cell=el&&el.closest&&el.closest('.cell');return cell?cells.indexOf(cell):-1;};
-  b.addEventListener('pointerdown',e=>{if(!swipeOn||rockWait||busy||!S||S.over||S.turn!==YOU||netSpec())return;if(e.pointerType==='mouse'&&e.button!==0)return;
+  const mid=el=>{const q=el.getBoundingClientRect();return [q.left+q.width/2,q.top+q.height/2];};
+  const gemSet=(k,x,y,anim)=>{const g=cells[k]&&cells[k].firstChild;if(!g)return;g.style.transition=anim?'transform .15s ease-out':'none';g.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`;g.style.zIndex='4';};
+  const gemClear=k=>{const g=cells[k]&&cells[k].firstChild;if(g){g.style.transition='';g.style.transform='';g.style.zIndex='';}};
+  const starOk=(r,c)=>inb(r,c)&&isStar(S.grid[r][c])&&!droneAt(r,c)&&vis(YOU,r,c)&&S.own[key(r,c)]!==BOT;
+  b.addEventListener('pointerdown',e=>{if(!swipeOn||rockWait||busy||!S||S.over||S.turn!==YOU||netSpec()||drag)return;if(e.pointerType==='mouse'&&e.button!==0)return;
     const cell=e.target.closest('.cell');if(!cell)return;const i=cells.indexOf(cell);if(i<0)return;const [r,c]=rc(i);const d=droneAt(r,c);let kind=null;
-    if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw'||mode==='rock')return;kind='drone';}
-    else if(!d&&isStar(S.grid[r][c])&&mode!=='rock'&&S.own[key(r,c)]!==BOT&&vis(YOU,r,c))kind='star';else return;
-    drag={k:i,r,c,x:e.clientX,y:e.clientY,id:e.pointerId,kind,d,on:false,ghost:null,over:-1,w:cell.offsetWidth||40};starDrag=kind==='star';seeThru();if(e.pointerType==='mouse')e.preventDefault();},{passive:false});
-  const place=(g,x,y,w)=>{g.style.transform=`translate(${x-w/2}px,${y-w*1.05}px)`;};
+    if(d&&d.side===YOU){if(mode==='aim'||mode==='warp'||mode==='turret'||mode==='shield'||mode==='throw'||mode==='rock'||mode==='field')return;kind='drone';}
+    else if(!d&&isStar(S.grid[r][c])&&mode!=='rock'&&mode!=='field'&&S.own[key(r,c)]!==BOT&&vis(YOU,r,c))kind='star';else return;
+    const [cx,cy]=mid(cell);
+    drag={k:i,r,c,x:e.clientX,y:e.clientY,id:e.pointerId,kind,d,on:false,ghost:null,over:-1,w:cell.offsetWidth||40,cx,cy,dir:null,nb:-1,p:0,step:0};starDrag=kind==='star';seeThru();if(e.pointerType==='mouse')e.preventDefault();},{passive:false});
+  const ghostAt=(g,x,y,w)=>{g.style.transform=`translate(${(x-w/2).toFixed(1)}px,${(y-w/2).toFixed(1)}px)`;};
   const move=e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
     if(!drag.on){if(Math.hypot(dx,dy)<8)return;drag.on=true;const cell=cells[drag.k];
-      if(drag.kind==='drone'){sel={id:drag.d.id};mode=null;aimList=[];pending=null;renderBoard();renderActions();} /* the targets light up, as on a tap */
-      const g=document.createElement('div');g.className='dragGhost';g.style.width=g.style.height=drag.w+'px';g.innerHTML=drag.kind==='drone'?droneHTML(drag.d):'<i class="'+cell.firstChild.className+'"></i>';document.body.appendChild(g);drag.ghost=g;cell.classList.add('lifted');sfx('tap');}
-    place(drag.ghost,e.clientX,e.clientY,drag.w);
-    const i=cellAt(e.clientX,e.clientY-drag.w*.55);if(i!==drag.over){if(drag.over>=0)cells[drag.over].classList.remove('dover');drag.over=i;if(i>=0&&i!==drag.k)cells[i].classList.add('dover');}
+      if(drag.kind==='drone'){sel={id:drag.d.id};mode=null;aimList=[];pending=null;renderBoard();renderActions(); /* the targets light up, as on a tap */
+        const g=document.createElement('div');g.className='dragGhost';g.style.width=g.style.height=drag.w+'px';g.innerHTML=droneHTML(drag.d);document.body.appendChild(g);drag.ghost=g;cell.classList.add('lifted');}
+      sfx('tap');}
+    if(drag.kind==='drone'){const gx=drag.cx+dx,gy=drag.cy+dy;ghostAt(drag.ghost,gx,gy,drag.w);
+      let i=cellAt(gx,gy);if(i>=0&&i!==drag.k){const [mx,my]=mid(cells[i]);if(Math.abs(gx-mx)>drag.w*0.4||Math.abs(gy-my)>drag.w*0.4)i=-1;}else i=-1;
+      if(i!==drag.over){if(drag.over>=0)cells[drag.over].classList.remove('dover');drag.over=i;if(i>=0)cells[i].classList.add('dover');}
+      e.preventDefault();return;}
+    /* a star: which neighbour, and how far */
+    const along=q=>dx*q[1]+dy*q[0],cand=Math.abs(dx)>=Math.abs(dy)?[0,Math.sign(dx)||1]:[Math.sign(dy)||1,0];let dir=drag.dir;
+    if(!dir||(along(dir)<drag.w*0.2&&(cand[0]!==dir[0]||cand[1]!==dir[1]))){ /* a new heading: only while the star is still near home */
+      if(drag.nb>=0){gemClear(drag.nb);cells[drag.nb].classList.remove('dover');}
+      dir=drag.dir=cand;const r2=drag.r+dir[0],c2=drag.c+dir[1];drag.nb=starOk(r2,c2)?key(r2,c2):-1;
+      if(drag.nb>=0){const [mx,my]=mid(cells[drag.nb]);drag.step=Math.hypot(mx-drag.cx,my-drag.cy)||drag.w;}else drag.step=drag.w;}
+    let p=Math.max(0,Math.min(1,along(dir)/drag.step));if(drag.nb<0)p*=0.15; /* nothing to swap with that way: it only leans */
+    drag.p=p;gemSet(drag.k,dir[1]*p*drag.step,dir[0]*p*drag.step,false);
+    if(drag.nb>=0){gemSet(drag.nb,-dir[1]*p*drag.step,-dir[0]*p*drag.step,false);cells[drag.nb].classList.toggle('dover',p>=0.5);}
     e.preventDefault();};
   const end=e=>{if(!drag||e.pointerId!==drag.id)return;const dg=drag;drag=null;starDrag=false;seeThru();if(!dg.on)return; /* a plain tap: the click does its usual job */
-    if(dg.ghost)dg.ghost.remove();cells[dg.k].classList.remove('lifted');if(dg.over>=0)cells[dg.over].classList.remove('dover');
-    const i=dg.over;
-    if(i<0||i===dg.k){swDone=Date.now();if(dg.kind==='drone')renderBoard();return;} /* let go over nothing: it settles back; a drone stays selected */
-    const [r,c]=rc(i);
-    if(dg.kind==='drone'){onCell(r,c);swDone=Date.now();return;} /* the marked squares decide; anything else explains itself */
-    swDone=Date.now();
-    if(Math.abs(dg.r-r)+Math.abs(dg.c-c)!==1){setStatus(t('Drop a star on the one next to it to swap them.'));return;}
-    if(S.own[key(r,c)]===BOT){setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));return;}
-    if(droneAt(r,c)||!isStar(S.grid[r][c]))return;
-    sel=null;mode=null;humanSwap([dg.r,dg.c],[r,c]);};
+    const cancel=e.type==='pointercancel';swDone=Date.now();
+    if(dg.kind==='drone'){if(dg.over>=0)cells[dg.over].classList.remove('dover');
+      const i=cancel?-1:dg.over,ok=i>=0&&S.drones.includes(dg.d)&&targets(dg.d).has(i);
+      if(ok){if(dg.ghost)dg.ghost.remove();cells[dg.k].classList.remove('lifted');const [r,c]=rc(i);dragDrop=dg.d.id;swDone=0;onCell(r,c);swDone=Date.now();setTimeout(()=>{dragDrop=0;},1500);return;} /* the marked squares decide */
+      const g=dg.ghost;if(g){g.style.transition='transform .16s ease-out';ghostAt(g,dg.cx,dg.cy,dg.w);setTimeout(()=>{g.remove();if(cells[dg.k])cells[dg.k].classList.remove('lifted');},170);}else cells[dg.k].classList.remove('lifted');
+      return;} /* not far enough, or not a square it can go to: it slides back and stays selected */
+    const dir=dg.dir||[0,0],nb=dg.nb,back=()=>{gemSet(dg.k,0,0,true);if(nb>=0){gemSet(nb,0,0,true);cells[nb].classList.remove('dover');}setTimeout(()=>{gemClear(dg.k);if(nb>=0)gemClear(nb);},170);};
+    if(cancel||nb<0||dg.p<0.5){back();
+      if(!cancel&&nb<0&&dg.dir){const r2=dg.r+dir[0],c2=dg.c+dir[1];if(inb(r2,c2)&&S.own[key(r2,c2)]===BOT&&isStar(S.grid[r2][c2]))setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));}
+      return;}
+    const a=[dg.r,dg.c],q=rc(nb),G=S.grid;[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];const makes=detectShapes(G,q).cells.size>0;[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];
+    if(makes&&!(S.lesson&&!lessonSwapOk(a,q))){ /* finish the slide, then the swap itself */
+      gemSet(dg.k,dir[1]*dg.step,dir[0]*dg.step,true);gemSet(nb,-dir[1]*dg.step,-dir[0]*dg.step,true);cells[nb].classList.remove('dover');busy=true;
+      setTimeout(()=>{gemClear(dg.k);gemClear(nb);busy=false;sel=null;mode=null;humanSwap(a,q);},160);return;}
+    back();setTimeout(()=>{sel=null;mode=null;humanSwap(a,q);},175);}; /* no line, or not this lesson's swap: both slide back, and humanSwap says why */
   b.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
   b.addEventListener('dragstart',e=>e.preventDefault());})();
 /* v1.98: the squares light the moment the finger lands on your ship, not when it lifts. Only when nothing else is going on
@@ -4690,7 +4723,8 @@ function flyDrone(from,to,html,path,opt){return new Promise(res=>{if(from[0]===t
   t+=LAND;setTimeout(()=>{g.remove();for(const st of streaks)st.remove();dest.style.visibility='';const lt=dest.querySelector('.lt');if(lt){lt.classList.add('orbit');setTimeout(()=>lt.classList.remove('orbit'),450);}res();},t);});}
 async function movedAnim(d,from){const to=[d.r,d.c];let face0=null,face1=null;
   if(d.kind==='H'&&(from[0]!==to[0]||from[1]!==to[1])){const hops=(d.lastPath&&d.lastPath.length>2)?d.lastPath:[from,to];const [a,b]=hops.slice(-2);face0=hFace(d);d.face=Math.round(Math.atan2(b[0]-a[0],b[1]-a[1])*180/Math.PI)+90;face1=hFace(d);} /* v1.90: a hunter keeps the way it last flew */
-  renderBoard();const path=d.lastPath;delete d.lastPath;await flyDrone(from,to,droneHTML(d),path,{face0,face1});await playFX();}
+  renderBoard();const path=d.lastPath;delete d.lastPath;if(dragDrop===d.id){dragDrop=0;await playFX();return;} /* v1.124.0: it was carried there by the finger; it does not fly the same way again */
+  await flyDrone(from,to,droneHTML(d),path,{face0,face1});await playFX();}
 
 
 // ---------- destruction: a drone that dies breaks up where it stood; a hit shakes and sparks ----------
