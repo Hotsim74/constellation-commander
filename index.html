@@ -417,6 +417,10 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
 .cvVer{position:absolute;left:14px;bottom:calc(10px + env(safe-area-inset-bottom));font-family:var(--mono);font-size:11px;color:var(--mute)}
 @keyframes cvUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @media (max-width:720px){.cvUI{padding-bottom:calc(18px + env(safe-area-inset-bottom))}.cvBtns{flex-direction:column;width:100%;max-width:360px}.cvBtns .go{width:100%}.cvPlanet{bottom:-72vh}}
+/* v1.123.1: a short screen (a fold opened, a phone on its side): smaller words, and the two buttons side by side when there is room, so the
+   words fit under the fleet */
+@media (max-height:700px){.cvTitle{font-size:clamp(26px,min(8vw,9.5vh),86px);margin:4px 0 8px}.cvUI .say{margin-bottom:10px;font-size:13px}.cvBtns .go{padding:10px 26px;font-size:16px}.cvFilm{margin-top:4px;padding:6px 10px}}
+@media (max-height:700px) and (min-width:480px){.cvBtns{flex-direction:row;width:auto;max-width:none}.cvBtns .go{width:auto}}
 @media (prefers-reduced-motion:reduce){.cvShip,.cvBy,.cvTitle,.cvUI .say,.cvBtns{animation:none;opacity:1;transform:translate(-50%,-50%)}.cvUI>*{transform:none}}
 .ov{position:fixed;inset:0;z-index:66;background:rgba(6,9,13,.92);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 .ov[hidden]{display:none}
@@ -3234,8 +3238,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.123.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -5283,6 +5287,17 @@ for(const ev of ['pointerdown','keydown','touchend'])document.addEventListener(e
 // a drifting nebula, a planet horizon, a constellation that draws itself, the fleet flying in with engines lit, and the
 // title. Functions and var only: showCover() runs at boot, before this part of the script has executed.
 var cvAnim=cvAnim||null,cvStars=cvStars||null,cvShoot=cvShoot||[],cvPointer=cvPointer||{x:0,y:0},cvT0=cvT0||0,cvComet=cvComet||null,cvNextComet=cvNextComet||0; /* v1.81: keep what showCover already made; a plain =null here wiped the stars under a running frame loop */
+/* v1.123.1 (user, with a picture of the start screen on an opened fold phone: "can we get that to look like the computers start screen. see how
+   the words are not in the blue planet and cover over our drones"). The words are stacked up from the bottom and the fleet is placed by
+   percent of the whole screen, so on a wide, short screen the title climbed into the fleet and stood far above the planet's edge. coverFit
+   measures where the title starts and (1) shortens the fleet's box so its lowest ship ends above the title, (2) on phone-sized or short
+   screens moves the planet's edge to just above the title, so the words sit in the planet as they do on a computer. A computer's wide, tall
+   screen is left as it was apart from the fleet rule, which there moves nothing or a few pixels. */
+function coverFit(){const cv=$('cover');if(!cv||cv.hidden)return;const fl=$('cvFleet'),tw=cv.querySelector('.cvTitleWrap'),pl=cv.querySelector('.cvPlanet');if(!fl||!tw)return;
+  const H=cv.clientHeight,tt=tw.offsetTop;if(!H||!tt)return;let h=H;
+  for(const sp of fl.children){const y=parseFloat(sp.style.top)/100,sz=parseFloat(sp.style.height)||0;if(y>0)h=Math.min(h,(tt-6-sz*0.5)/y);}
+  fl.style.bottom='auto';fl.style.height=Math.max(140,Math.round(h))+'px';
+  if(pl){if(window.matchMedia('(max-width:720px),(max-height:700px)').matches)pl.style.bottom=(-(tt-10))+'px';else pl.style.bottom='';}}
 function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getContext('2d');
   const resize=()=>{const dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.max(1,cv.clientWidth*dpr);c.height=Math.max(1,cv.clientHeight*dpr);c.dataset.dpr=dpr;};resize();
   if(!cvStars){cvStars=[];for(let i=0;i<240;i++)cvStars.push({x:Math.random(),y:Math.random(),z:Math.random(),tw:Math.random()*6.28,sp:.4+Math.random()*1.4,col:Math.random()<.12?'#9cc6ff':Math.random()<.1?'#ffd27a':'#ffffff'});}
@@ -5317,12 +5332,14 @@ function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getCont
   // the fleet flies in: yours from the left, the bot's from the right
   const fl=$('cvFleet');fl.innerHTML='';
   const ship=(side,kind,x,y,sz,delay)=>{const d={id:0,r:0,c:0,side,kind,colors:[side===YOU?1:3],power:1};const w=document.createElement('div');w.className='cvShip '+(side===YOU?'s1':'s2');w.style.cssText=`left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;animation-delay:${delay}s`;w.innerHTML='<i class="flare"></i>'+droneHTML(d);fl.appendChild(w);};
-  const ph=window.matchMedia('(max-width:720px)').matches,k=ph?.62:1;
+  const ph=window.matchMedia('(max-width:720px)').matches,k=Math.min(ph?.62:1,Math.max(.4,cv.clientHeight/760)); /* v1.123.1: smaller ships on a short screen too (a phone on its side), not only on a narrow one */
   /* v1.109.0 (user: "switch spots with the raider and the guard and bring in the bigger Warp drone and swap the scout with it, that will be more how a
      player will keep it set up"). Round your Command drone now: the big warp drone with its gas where the scout was, the guard where the raider was,
      the siege and the hunter as before. Out on the wings, flying in from the right: a raider where the guard was, a scout where the warp drone was. */
   ship(YOU,'M',50,46,Math.round(100*k),.2);ship(YOU,'W',34,54,Math.round(88*k),.55);ship(YOU,'X',66,56,Math.round(60*k),.75);ship(YOU,'H',40,34,Math.round(54*k),.95);ship(YOU,'G',61,32,Math.round(54*k),1.15);
   ship(BOT,'S',86,16,Math.round(56*k),1.7);ship(BOT,'C',12,14,Math.round(52*k),2.0);
+  coverFit();setTimeout(coverFit,500);try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(coverFit);}catch(_){}
+  if(!cv.dataset.fit){cv.dataset.fit='1';window.addEventListener('resize',coverFit);try{const ro=new ResizeObserver(coverFit);for(const q of ['.cvTitleWrap','#coverSay','.cvBtns'])ro.observe(cv.querySelector(q));}catch(_){}}
 }
 // ---------- the opening film (v1.102.0). User: "lets have this play right when you click the link to play the game with a skip button under it".
 // The guard film (film/guard_film.mp4, made in blender/) plays before the start screen, a Skip button under it. A browser will not play
