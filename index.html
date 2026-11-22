@@ -2914,8 +2914,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.116.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.116.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -2953,7 +2953,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:false /* v1.112.0: retired; only a hunter takes a wreck's missile now */,wrecks:{},
-     over:null,hwreck:!!($('inHWreck')&&$('inHWreck').checked),wclean:!!($('inWClean')&&$('inWClean').checked),skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
@@ -2990,8 +2990,16 @@ function layOpening(){
   S.asteroids={1:TUT_ROWS.join('').split('R').length-1,2:S.asteroids[2]};S.tutSwap=TUT_SWAP;
 }
 function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors:[color],power:1};if(kind==='C')d.claims=2;if(kind==='C'||kind==='H')d.ammo=0;if(kind==='S')d.sq=sqc||0;if(kind==='B')d.fuse=FUSE;return d;}
+/* v1.116.1 (user, twice: "my hunter couldn't claim a wreck", "hunters seem to not be able to pick up wrecks and need to go to the command drone
+   to resupply"). On a fresh browser the wreck rules are on and work; on the user's they were off. Two ways that happens, both closed here:
+   1. A game left unfinished from before v1.111.0 has no hwreck, and load() carries an unfinished game across every version, so it kept the old
+      rule for as long as it was open. load() now gives an older save the two rules as the Settings boxes stand.
+   2. The two rules were read from the checkboxes, and a checkbox takes a stored value over the page's default. A box ticked and unticked during
+      the v1.110.0 trial left 'off' stored for good. The rules now live under new keys (cc_hwreck2, cc_wclean2), so every device starts from the
+      default, on; newGame reads the key, not the box, and the box is set from the key at start. Unticking still turns a rule off. */
+function ruleOn(k){try{const v=localStorage.getItem(k);return v==null?true:v==='1';}catch(_){return true;}}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
-function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over)o.ver=VERSION;return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
+function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over){if(o.ver!==VERSION){o.hwreck=ruleOn('cc_hwreck2');o.wclean=ruleOn('cc_wclean2');}o.ver=VERSION;}return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
 const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
 const FALL_MS=1050,CLEAR_MS=420; // v1.62: the stars take their time: a flash as they go, a deliberate drop
@@ -4178,7 +4186,7 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
   const dl=side=>dronesOf(side).map(d=>LETTER[d.kind]+' '+sq(d.r,d.c)+(d.power>1?' p'+d.power:'')+(d.ammo?' m'+d.ammo:'')+(d.kind==='C'?' c'+(d.claims||0):'')+(d.shield?' shielded':'')+(d.fuse!=null?' fuse'+d.fuse:'')).join(', ')||'none';
   let ahead='auto';try{ahead=localStorage.getItem('cc_ahead')||'auto';}catch(_){}
   const mode=S.tut?'coached':S.story?'story '+S.story:(typeof online!=='undefined'&&online)?'friend':'free play';
-  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.turnNo||0}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
+  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.turnNo||0} · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
 /* v1.101.3: on a computer the clipboard can be refused (the page sits inside a frame, or is not the focused window). The fallback was prompt(), which
    browsers block inside frames and which cuts a many-line text down to one line, so the button looked dead. Now three steps: the clipboard, then the older
    select-and-copy, then a box on the page with the text selected, a Copy button and Save as a file. The button that was pressed says Copied for a moment. */
@@ -4226,10 +4234,11 @@ showCover();
 /* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
    progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
    sector no longer leaves its own skill in the Settings box. */
-const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inHWreck','cc_hwreck','checked'],['inWClean','cc_wclean','checked']];
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked']];
 function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
 function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
 for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
+{const sync=()=>{for(const [id,k] of [['inHWreck','cc_hwreck2'],['inWClean','cc_wclean2']]){const el=$(id);if(el)el.checked=ruleOn(k);}};sync();window.addEventListener('pageshow',sync);} /* v1.116.1: the two rule boxes show what newGame will use, whatever the browser put back in them */
 snapSkill();renderSkillNote();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
