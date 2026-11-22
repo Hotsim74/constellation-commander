@@ -236,6 +236,11 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .slens{animation:lenspulse 1.6s ease-in-out infinite alternate}
 @keyframes lenspulse{from{opacity:.75}to{opacity:1}}
 .legend .tent,.bark .tent{animation:none}
+/* v1.115.0: the siege drone's jamming field turns slowly; its core, slit and drill tip pulse with .slens */
+.xjam{transform-box:view-box;transform-origin:64px 68px;animation:xjam 18s linear infinite}
+@keyframes xjam{to{transform:rotate(360deg)}}
+.legend .xjam,.bark .xjam{animation:none}
+@media (prefers-reduced-motion:reduce){.xjam{animation:none}}
 .hthr{transform-box:fill-box;transform-origin:0% 50%;animation:hflick .13s ease-in-out infinite alternate}
 @keyframes hflick{from{transform:scaleX(.8) scaleY(.9)}to{transform:scaleX(1.15) scaleY(1.1)}}
 .legend .hthr,.bark .hthr{animation:none}.gsweep{transform-origin:64px 64px;transform-box:view-box;animation:gsweep 7s ease-in-out infinite}
@@ -751,107 +756,79 @@ const STRIKE_SHIP=`<svg viewBox="0 0 128 128" aria-label="raider drone">
   <circle cx="34" cy="48" r="3" fill="LIGHT" opacity=".9"/><circle cx="94" cy="48" r="3" fill="LIGHT" opacity=".9"/>
 </svg>`;
 function strikeSVG(side){const you=side===YOU;return STRIKE_SHIP.replace(/SIDE/g,you?'y':'b').replace(/LIGHT/g,you?'#ffb84a':'#00e5ff').replace(/EN1/g,you?'#ffb84a':'#00e5ff').replace(/EN2/g,you?'#a35a00':'#0077aa');}
-// ---------- the siege drone: the user's jet-powered ram, pushed toward the other ships. SIDE = id suffix; LIGHT = energy color.
+// ---------- the siege drone (v1.115.0, user: "a lot of anti drone warfare things on it ... the only thing that can break through the command
+// drone ... move slow and not afraid of much"). Seen from above, nose up: a wide armored hull between two heavy side pods with spikes against
+// grabbing; a breaching drill on the nose; four point-defense guns on the corners (it takes four to stop it); a caged core in the middle with a
+// jamming field turning slowly round it; launch tubes and a small dish at the back; low, slow engines. Tokens: XSIDE in ids = y or b;
+// LIGHT = the side's color; TURN = rotate(180 64 64) for the bot, so its nose points down the board at you.
 const SIEGE_SHIP=`<svg viewBox="0 0 128 128" aria-label="siege drone">
   <defs>
-    <pattern id="cfXSIDE" width="6" height="6" patternUnits="userSpaceOnUse">
-      <rect width="6" height="6" fill="#0f0f0f"/>
-      <path d="M0 6 L6 0" stroke="#1f1f1f" stroke-width="1.5"/>
-      <path d="M0 3 L3 0 M3 6 L6 3" stroke="#2a2a2a" stroke-width="1.5"/>
-      <path d="M0 0 L6 6" stroke="#050505" stroke-width="1.5"/>
-    </pattern>
-    <linearGradient id="waxXSIDE" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
-      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.08"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
-    </linearGradient>
-    <linearGradient id="steelXSIDE" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#d7dee6"/>
-      <stop offset="45%" stop-color="#8a959e"/>
-      <stop offset="100%" stop-color="#2e353c"/>
-    </linearGradient>
-    <linearGradient id="darkXSIDE" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#4a5560"/>
-      <stop offset="100%" stop-color="#151a20"/>
-    </linearGradient>
-    <linearGradient id="flameXSIDE" x1="1" y1="0" x2="0" y2="0">
-      <stop offset="0%" stop-color="LIGHT"/>
-      <stop offset="100%" stop-color="LIGHT" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="headXSIDE" cx="70%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="40%" stop-color="LIGHT"/>
-      <stop offset="100%" stop-color="#1a1e24"/>
-    </radialGradient>
-    <pattern id="hazXSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="#e8b400"/>
-      <rect width="4" height="8" fill="#111"/>
-    </pattern>
+    <linearGradient id="steelXSIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d7dee6"/><stop offset="45%" stop-color="#8a959e"/><stop offset="100%" stop-color="#2e353c"/></linearGradient>
+    <linearGradient id="darkXSIDE" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#66727e"/><stop offset="100%" stop-color="#1f262d"/></linearGradient>
+    <linearGradient id="hullXSIDE" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a3afbb"/><stop offset="40%" stop-color="#5d6975"/><stop offset="100%" stop-color="#2a323a"/></linearGradient>
+    <radialGradient id="domeXSIDE" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#9aa6b2"/><stop offset="55%" stop-color="#39424b"/><stop offset="100%" stop-color="#0d1115"/></radialGradient>
+    <radialGradient id="coreXSIDE" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="42%" stop-color="LIGHT"/><stop offset="100%" stop-color="LIGHT" stop-opacity="0"/></radialGradient>
+    <pattern id="hazXSIDE" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e8b400"/><rect width="4" height="8" fill="#111"/></pattern>
+    <g id="pdXSIDE">
+      <path d="M 1.2 -1.2 L -8.2 -10.6 M -1.2 1.2 L -10.6 -8.2" stroke="#07090b" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+      <path d="M 1.2 -1.2 L -8.2 -10.6 M -1.2 1.2 L -10.6 -8.2" stroke="#b8c2cc" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <circle r="7.5" fill="url(#darkXSIDE)" stroke="#07090b" stroke-width="1.5"/>
+      <circle r="4.2" fill="LIGHT"/><circle r="1.6" fill="#ffffff" opacity=".85"/>
+    </g>
   </defs>
-
-  <!-- thruster flames, three layers each -->
-  <g>
-    <polygon points="18,54 -14,64 18,74" fill="url(#flameXSIDE)" opacity="0.55"/>
-    <polygon points="18,58 -2,64 18,70" fill="#ffffff" opacity="0.85"/>
-    <polygon points="22,27 -4,33 22,39" fill="url(#flameXSIDE)" opacity="0.6"/>
-    <polygon points="22,30 8,33 22,36" fill="#ffffff" opacity="0.8"/>
-    <polygon points="22,89 -4,95 22,101" fill="url(#flameXSIDE)" opacity="0.6"/>
-    <polygon points="22,92 8,95 22,98" fill="#ffffff" opacity="0.8"/>
+  <g transform="TURN">
+  <!-- low, slow engines -->
+  <ellipse cx="40" cy="118" rx="10" ry="6" fill="LIGHT" opacity=".38"/><ellipse cx="88" cy="118" rx="10" ry="6" fill="LIGHT" opacity=".38"/>
+  <ellipse cx="40" cy="115" rx="5" ry="2.4" fill="#ffffff" opacity=".7"/><ellipse cx="88" cy="115" rx="5" ry="2.4" fill="#ffffff" opacity=".7"/>
+  <rect x="32" y="107" width="16" height="7" rx="2" fill="#0d1115" stroke="#07090b" stroke-width="1.2"/><rect x="80" y="107" width="16" height="7" rx="2" fill="#0d1115" stroke="#07090b" stroke-width="1.2"/>
+  <!-- spikes against grabbing -->
+  <g fill="url(#steelXSIDE)" stroke="#07090b" stroke-width="1" stroke-linejoin="round">
+    <polygon points="11,48 3,52 11,56"/><polygon points="11,63 3,67 11,71"/><polygon points="11,78 3,82 11,86"/>
+    <polygon points="117,48 125,52 117,56"/><polygon points="117,63 125,67 117,71"/><polygon points="117,78 125,82 117,86"/>
   </g>
-
-  <!-- shock rings ahead of the head -->
-  <g fill="none" stroke="LIGHT" stroke-linecap="round">
-    <path d="M 122 44 A 26 26 0 0 1 122 84" stroke-width="2" opacity="0.35"/>
-    <path d="M 124 50 A 18 18 0 0 1 124 78" stroke-width="2.5" opacity="0.6"/>
+  <!-- side pods -->
+  <rect x="10" y="26" width="22" height="82" rx="6" fill="url(#darkXSIDE)" stroke="#07090b" stroke-width="2"/>
+  <rect x="96" y="26" width="22" height="82" rx="6" fill="url(#darkXSIDE)" stroke="#07090b" stroke-width="2"/>
+  <path d="M 13 46 h16 M 13 54 h16 M 13 62 h16 M 13 70 h16 M 13 78 h16 M 13 86 h16 M 99 46 h16 M 99 54 h16 M 99 62 h16 M 99 70 h16 M 99 78 h16 M 99 86 h16" stroke="#07090b" stroke-width="1.6" opacity=".8" fill="none"/>
+  <path d="M 13.5 44 v44 M 99.5 44 v44" stroke="#ffffff" stroke-width="1.4" opacity=".14" fill="none"/>
+  <!-- armored hull -->
+  <path d="M 30 36 L 44 24 L 84 24 L 98 36 L 98 100 L 88 110 L 40 110 L 30 100 Z" fill="url(#hullXSIDE)" stroke="#07090b" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M 31 50 H 97 M 31 90 H 97" stroke="#07090b" stroke-width="1.3" opacity=".7" fill="none"/>
+  <path d="M 32 51.5 H 96" stroke="#ffffff" stroke-width="1" opacity=".12" fill="none"/>
+  <g fill="#b8c2cc" opacity=".6"><circle cx="36" cy="56" r="1.1"/><circle cx="92" cy="56" r="1.1"/><circle cx="36" cy="84" r="1.1"/><circle cx="92" cy="84" r="1.1"/></g>
+  <!-- nose plate with hazard paint -->
+  <path d="M 43 27 L 85 27 L 92 33.5 L 36 33.5 Z" fill="url(#hazXSIDE)" stroke="#07090b" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- the breaching drill -->
+  <rect x="53" y="16" width="22" height="12" rx="2" fill="url(#darkXSIDE)" stroke="#07090b" stroke-width="1.5"/>
+  <path d="M 55 18 L 73 18 L 64 3 Z" fill="url(#steelXSIDE)" stroke="#07090b" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M 57.5 15 L 70 12 M 60 10.5 L 68 8.5 M 62 6.5 L 66 5.5" stroke="#2e353c" stroke-width="1.4" fill="none"/>
+  <circle class="slens" cx="64" cy="6" r="6" fill="url(#coreXSIDE)"/>
+  <path d="M 64 28 V 36" stroke="LIGHT" stroke-width="2.2" opacity=".75" fill="none"/>
+  <!-- sensor slit: a level stare -->
+  <rect x="45" y="36" width="38" height="10" rx="5" fill="LIGHT" opacity=".16"/>
+  <rect x="46.5" y="37.5" width="35" height="7" rx="3.5" fill="#07090b"/>
+  <rect class="slens" x="49" y="39.5" width="30" height="3" rx="1.5" fill="LIGHT"/>
+  <!-- launch tubes and a dish at the back -->
+  <rect x="35" y="93" width="16" height="12" rx="2" fill="#0d1115" stroke="#07090b" stroke-width="1.2"/><rect x="77" y="93" width="16" height="12" rx="2" fill="#0d1115" stroke="#07090b" stroke-width="1.2"/>
+  <g fill="#74808c"><circle cx="39" cy="96.5" r="1.4"/><circle cx="43" cy="96.5" r="1.4"/><circle cx="47" cy="96.5" r="1.4"/><circle cx="39" cy="101.5" r="1.4"/><circle cx="43" cy="101.5" r="1.4"/><circle cx="47" cy="101.5" r="1.4"/>
+    <circle cx="81" cy="96.5" r="1.4"/><circle cx="85" cy="96.5" r="1.4"/><circle cx="89" cy="96.5" r="1.4"/><circle cx="81" cy="101.5" r="1.4"/><circle cx="85" cy="101.5" r="1.4"/><circle cx="89" cy="101.5" r="1.4"/></g>
+  <path d="M 57 97 Q 64 104.5 71 97" fill="none" stroke="#b8c2cc" stroke-width="2.2" stroke-linecap="round"/><circle cx="64" cy="97.5" r="1.7" fill="LIGHT"/>
+  <!-- the core, behind a cage -->
+  <circle cx="64" cy="68" r="21" fill="#0b0e12" stroke="#07090b" stroke-width="2"/>
+  <circle cx="64" cy="68" r="18.5" fill="url(#domeXSIDE)"/>
+  <circle class="slens" cx="64" cy="68" r="17" fill="url(#coreXSIDE)"/><circle cx="64" cy="68" r="8" fill="LIGHT"/>
+  <circle cx="64" cy="68" r="4" fill="#ffffff"/>
+  <path d="M 45.5 58 H 82.5 M 43.6 63 H 84.4 M 43 68 H 85 M 43.6 73 H 84.4 M 45.5 78 H 82.5 M 54 49.5 V 86.5 M 74 49.5 V 86.5" stroke="#07090b" stroke-width="2.8" opacity=".6" fill="none"/>
+  <path d="M 45.5 58 H 82.5 M 43.6 63 H 84.4 M 43 68 H 85 M 43.6 73 H 84.4 M 45.5 78 H 82.5 M 54 49.5 V 86.5 M 74 49.5 V 86.5" stroke="#b8c2cc" stroke-width="1.4" opacity=".9" fill="none"/>
+  <circle cx="64" cy="68" r="21" fill="none" stroke="#8a959e" stroke-width="1.6"/>
+  <!-- the jamming field -->
+  <g class="xjam" fill="none" stroke="LIGHT"><circle cx="64" cy="68" r="27" stroke-width="1.4" stroke-dasharray="4 6" opacity=".75"/><circle cx="64" cy="68" r="34" stroke-width="1.1" stroke-dasharray="2 7" opacity=".5"/></g>
+  <!-- four point-defense guns -->
+  <use href="#pdXSIDE" transform="translate(21 33)"/><use href="#pdXSIDE" transform="translate(107 33) scale(-1 1)"/>
+  <use href="#pdXSIDE" transform="translate(21 101) scale(1 -1)"/><use href="#pdXSIDE" transform="translate(107 101) scale(-1 -1)"/>
   </g>
-
-  <!-- rail channel -->
-  <rect x="24" y="49" width="74" height="30" rx="3" fill="#07090c" stroke="#1c232c" stroke-width="1.5"/>
-  <path d="M 28 52 L 94 52 M 28 76 L 94 76" stroke="#1c232c" stroke-width="1"/>
-
-  <!-- the ram rod, charged -->
-  <rect x="14" y="57" width="106" height="14" rx="2" fill="url(#steelXSIDE)" stroke="#111" stroke-width="1.5"/>
-  <path d="M 34 57 v14 M 54 57 v14 M 74 57 v14 M 94 57 v14" stroke="#2e353c" stroke-width="1.5"/>
-  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="4" opacity="0.35" stroke-linejoin="round"/>
-  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="LIGHT" stroke-width="1.6" opacity="0.95" stroke-linejoin="round"/>
-  <path d="M 20 64 l 8 -3 l 6 5 l 8 -4 l 6 4 l 8 -5 l 8 4 l 8 -3 l 8 4 l 8 -4 l 8 3" fill="none" stroke="#ffffff" stroke-width="0.7" stroke-linejoin="round"/>
-
-  <!-- rod jet nozzle -->
-  <rect x="10" y="51" width="12" height="26" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
-  <rect x="12" y="55" width="8" height="18" rx="1" fill="#0a0d11"/>
-  <rect x="13" y="58" width="6" height="12" fill="LIGHT" opacity="0.5"/>
-
-  <!-- tungsten impact head -->
-  <polygon points="118,50 127,55 127,73 118,78" fill="#2a3037" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
-  <polygon points="119,52 126,56 126,72 119,76" fill="url(#headXSIDE)" opacity="0.9"/>
-  <rect x="126" y="56" width="2" height="16" fill="#ffffff"/>
-
-  <!-- engines -->
-  <rect x="20" y="22" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
-  <rect x="20" y="86" width="24" height="20" rx="4" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
-  <path d="M 26 26 h12 M 26 30 h12 M 26 90 h12 M 26 94 h12" stroke="LIGHT" stroke-width="1.2" opacity="0.7"/>
-
-  <!-- carbon hull, waxed -->
-  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M 30 18 L 92 30 L 96 48 L 30 48 Z" fill="url(#waxXSIDE)"/>
-  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#cfXSIDE)" stroke="#0a0d11" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M 30 110 L 92 98 L 96 80 L 30 80 Z" fill="url(#waxXSIDE)"/>
-  <path d="M 32 20 L 60 25.5 L 60 22 L 32 18 Z" fill="#ffffff" opacity="0.18"/>
-  <path d="M 60 27 v21 M 60 80 v21" stroke="#0a0d11" stroke-width="1.5" opacity="0.7"/>
-
-  <!-- clamps with hazard paint -->
-  <rect x="44" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
-  <rect x="47" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
-  <rect x="74" y="45" width="14" height="38" rx="2" fill="url(#darkXSIDE)" stroke="#0a0d11" stroke-width="1.5"/>
-  <rect x="77" y="48" width="8" height="32" fill="url(#hazXSIDE)" stroke="#0a0d11" stroke-width="1"/>
-
-  <!-- warning lamps -->
-  <circle cx="51" cy="41" r="2.4" fill="#ef4444"/><circle cx="51" cy="87" r="2.4" fill="#ef4444"/>
-  <circle cx="81" cy="41" r="2.4" fill="#eab308"/><circle cx="81" cy="87" r="2.4" fill="#eab308"/>
-  <circle cx="51" cy="41" r="4.5" fill="#ef4444" opacity="0.25"/><circle cx="81" cy="87" r="4.5" fill="#eab308" opacity="0.25"/>
 </svg>`;
-function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff');}
+function siegeSVG(side){return SIEGE_SHIP.replace(/SIDE/g,side===YOU?'y':'b').replace(/LIGHT/g,side===YOU?'#ffb84a':'#00e5ff').replace(/TURN/g,side===YOU?'rotate(0)':'rotate(180 64 64)');}
 // ---------- language: English, French (v1.17) or Spanish (v1.66). Every line the player reads goes through t(): the
 // English text is the key; the French lives in one/fr.json (inlined by the build as FR), the Spanish in one/es.json (ES).
 // Tagged templates keep their slots: t`${who(side)} moved ${x}` looks up "{0} moved {1}". The verb may depend on the
@@ -2869,8 +2846,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.114.2';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.115.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
