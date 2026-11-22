@@ -3238,8 +3238,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.123.2';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -5294,10 +5294,10 @@ var cvAnim=cvAnim||null,cvStars=cvStars||null,cvShoot=cvShoot||[],cvPointer=cvPo
    screens moves the planet's edge to just above the title, so the words sit in the planet as they do on a computer. A computer's wide, tall
    screen is left as it was apart from the fleet rule, which there moves nothing or a few pixels. */
 function coverFit(){const cv=$('cover');if(!cv||cv.hidden)return;const fl=$('cvFleet'),tw=cv.querySelector('.cvTitleWrap'),pl=cv.querySelector('.cvPlanet');if(!fl||!tw)return;
-  const H=cv.clientHeight,tt=tw.offsetTop;if(!H||!tt)return;let h=H;
-  for(const sp of fl.children){const y=parseFloat(sp.style.top)/100,sz=parseFloat(sp.style.height)||0;if(y>0)h=Math.min(h,(tt-6-sz*0.5)/y);}
+  const H=cv.clientHeight,tt=tw.offsetTop;if(!H||!tt)return;let h=H;const by=cv.querySelector('.cvBy'),lim=(by&&by.offsetTop?by.offsetTop:tt)-6; /* v1.123.2: the ships end above the "presents" line, not only above the title */
+  for(const sp of fl.children){const y=parseFloat(sp.style.top)/100,sz=parseFloat(sp.style.height)||0;if(y>0)h=Math.min(h,(lim-sz*0.56)/y);}
   fl.style.bottom='auto';fl.style.height=Math.max(140,Math.round(h))+'px';
-  if(pl){if(window.matchMedia('(max-width:720px),(max-height:700px)').matches)pl.style.bottom=(-(tt-10))+'px';else pl.style.bottom='';}}
+  if(pl){if(window.matchMedia('(max-width:720px),(max-height:700px)').matches)pl.style.bottom=(H-pl.offsetHeight-(tt-10))+'px';else pl.style.bottom=''; /* v1.123.2: from the planet's real height. Its height is 100vh, and on a phone 100vh is the screen with the browser's bars hidden, taller than what shows; v1.123.1 assumed the two were equal and the edge came out that much too high (user's second screenshot) */}}
 function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getContext('2d');
   const resize=()=>{const dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.max(1,cv.clientWidth*dpr);c.height=Math.max(1,cv.clientHeight*dpr);c.dataset.dpr=dpr;};resize();
   if(!cvStars){cvStars=[];for(let i=0;i<240;i++)cvStars.push({x:Math.random(),y:Math.random(),z:Math.random(),tw:Math.random()*6.28,sp:.4+Math.random()*1.4,col:Math.random()<.12?'#9cc6ff':Math.random()<.1?'#ffd27a':'#ffffff'});}
