@@ -2074,7 +2074,8 @@ const FR={
 "Tap the marked square: the middle of the 3 × 3.": "Touchez la case marquée : le milieu du 3 × 3.",
 "It lands on one of the nine squares, by chance.": "Il tombe sur l'une des neuf cases, au hasard.",
 "Press Throw an asteroid, at the bottom of the screen.": "Appuyez sur Lancer un astéroïde, en bas de l'écran.",
-"The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Les astéroïdes ont dérivé, et l'un d'eux a roulé sur l'éclaireur ennemi. Maintenant, lancez-en un."
+"The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Les astéroïdes ont dérivé, et l'un d'eux a roulé sur l'éclaireur ennemi. Maintenant, lancez-en un.",
+"Fired. It can fire again: tap it. Or take your turn.": "Tiré. Il peut encore tirer : touchez-le. Ou jouez votre tour."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3235,13 +3236,14 @@ const ES={
 "Tap the marked square: the middle of the 3 × 3.": "Toca la casilla marcada: el centro del 3 × 3.",
 "It lands on one of the nine squares, by chance.": "Cae en una de las nueve casillas, al azar.",
 "Press Throw an asteroid, at the bottom of the screen.": "Pulsa Lanzar un asteroide, en la parte inferior de la pantalla.",
-"The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Los asteroides derivaron, y uno arrolló al explorador enemigo. Ahora lanza uno."
+"The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Los asteroides derivaron, y uno arrolló al explorador enemigo. Ahora lanza uno.",
+"Fired. It can fire again: tap it. Or take your turn.": "Disparado. Puede volver a disparar: tócalo. O juega tu turno."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.7';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.123.8';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4115,7 +4117,7 @@ async function humanThrow(g,o){if(netSend({type:'throw',id:g.id,tid:o.id}))retur
 async function humanField(d,r,c){if(netSend({type:'field',id:d.id,r,c}))return;busy=true;sel=null;mode=null;applyField(d,r,c);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanShield(d,o){if(netSend({type:'shield',id:d.id,tid:o.id}))return;busy=true;sel=null;mode=null;applyShield(d,o);renderBoard();await playFX();busy=false;await afterAction();}
 async function humanRam(d){if(netSend({type:'ram',id:d.id}))return;busy=true;sel=null;applyRam(d);renderBoard();await playFX();busy=false;await afterAction();}
-async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;busy=true;mode=null;const id=d.id;if(!d.bombAmmo)d.ammo=ammoOf(d)-list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);closeAction(YOU);busy=false;const still=S.drones.find(x=>x.id===id);sel=still&&canShoot(still)?{id}:null;tutAdvance('fire');save();renderAll();setStatus(sel?t('Fired. This drone can fire again, or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
+async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;busy=true;mode=null;const id=d.id;if(!d.bombAmmo)d.ammo=ammoOf(d)-list.length;d.shots=(d.shots||0)+list.length;aimList=[];await fireShots(YOU,list,d);closeAction(YOU);busy=false;const still=S.drones.find(x=>x.id===id),again=!!(still&&canShoot(still));sel=null; /* v1.123.8 (user: "when I fire a missile I would like it to deselect the drone that fires it afterwards so it doesn't move on accident just by touching the screen"). Before, a drone that could fire again (a hunter with a missile left) stayed selected, and the next touch on a marked square moved it. */tutAdvance('fire');save();renderAll();setStatus(again?t('Fired. It can fire again: tap it. Or take your turn.'):t('Fired. Now take your turn: swap, move, claim or warp.'));}
 
 // ---------- input ----------
 let peek=null; // an enemy drone whose reach is being shown
