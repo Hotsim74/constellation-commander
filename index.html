@@ -416,7 +416,8 @@ body.lwatch #board,body.lwatch #acts{pointer-events:none}
 @media (prefers-reduced-motion:reduce){.cvTap span{animation:none}}
 .cvVer{position:absolute;left:14px;bottom:calc(10px + env(safe-area-inset-bottom));font-family:var(--mono);font-size:11px;color:var(--mute)}
 @keyframes cvUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@media (max-width:720px){.cvUI{padding-bottom:calc(18px + env(safe-area-inset-bottom))}.cvBtns{flex-direction:column;width:100%;max-width:360px}.cvBtns .go{width:100%}.cvPlanet{bottom:-72vh}}
+@media (max-width:720px){.cvUI{padding-bottom:calc(34px + env(safe-area-inset-bottom))}} /* v1.123.5: was 18px; on a narrow phone the Training link came down onto the version number in the corner (user's screenshot of the folded screen) */
+@media (max-width:720px){.cvBtns{flex-direction:column;width:100%;max-width:360px}.cvBtns .go{width:100%}.cvPlanet{bottom:-72vh}}
 /* v1.123.1: a short screen (a fold opened, a phone on its side): smaller words, and the two buttons side by side when there is room, so the
    words fit under the fleet */
 @media (max-height:700px){.cvTitle{font-size:clamp(26px,min(8vw,9.5vh),86px);margin:4px 0 8px}.cvUI .say{margin-bottom:10px;font-size:13px}.cvBtns .go{padding:10px 26px;font-size:16px}.cvFilm{margin-top:4px;padding:6px 10px}}
@@ -3238,8 +3239,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.123.4';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.123.5';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
