@@ -319,6 +319,40 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
 /* ---------- the start screen (v1.63) ---------- */
 /* v1.102.0: the opening film sits over everything, the Skip button under the picture */
+/* v1.125.0: the win scene (one/win.js). Steps are classes on #winShow. */
+#winShow{position:fixed;inset:0;z-index:95;background:rgba(4,6,10,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center;transition:opacity .5s}
+#winShow[hidden]{display:none}#winShow.out{opacity:0}
+#wsConf{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wsWords{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;color:#f1e4c8;transition:opacity .5s,transform .5s}
+.wsWords span,.wsWords b{opacity:0;transform:scale(.4)}
+.wsWords span{font-size:clamp(14px,4.4vw,22px)}
+.wsWords b{font-size:clamp(30px,10vw,64px);line-height:1;font-weight:800;background:linear-gradient(180deg,#fff6dc 0,#ffd27a 38%,#e8a63b 66%,#a8641a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 rgba(0,0,0,.6)) drop-shadow(0 0 16px rgba(255,150,40,.5))}
+#winShow.s1 .wsWords span,#winShow.s1 .wsWords b{animation:wsPop .55s cubic-bezier(.2,1.5,.4,1) forwards}
+#winShow.s1 #wsL2{animation-delay:.45s}#winShow.s1 #wsL3{animation-delay:.9s}
+@keyframes wsPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+#winShow.s2 .wsWords{opacity:0;transform:translateY(-70%)}
+.wsStage{position:relative;width:min(78vw,340px,52vh);aspect-ratio:1;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 40%,#121a26 0,#05070b 75%);box-shadow:0 0 0 1px rgba(255,255,255,.14),0 18px 50px rgba(0,0,0,.7);opacity:0;transform:scale(.8);transition:opacity .6s,transform .6s}
+#winShow.s2 .wsStage{opacity:1;transform:none}
+.wsZoom{position:absolute;inset:0;transform-origin:68.67% 68.67%;transition:transform 1.6s cubic-bezier(.6,0,.3,1)}
+#winShow.s3 .wsZoom{transform:translate(-18.67%,-18.67%) scale(4.3)}
+#wsDrone{position:absolute;inset:9%}#wsDrone svg{width:100%;height:100%;display:block}
+.wsHatch{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wsDoorL,.wsDoorR{transition:transform .9s cubic-bezier(.5,0,.2,1)}
+#winShow.s4 .wsDoorL{transform:translate(-27px,0)}#winShow.s4 .wsDoorR{transform:translate(27px,0)}
+.wsCrit{opacity:0;transition:opacity .5s .3s}#winShow.s4 .wsCrit{opacity:1}
+.wsTent{animation:wsWave 1.5s ease-in-out infinite alternate}
+@keyframes wsWave{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+.wsDrip{animation:wsDrip 1.4s ease-in infinite}
+@keyframes wsDrip{0%{transform:translateY(0);opacity:0}20%{opacity:.9}100%{transform:translateY(9px);opacity:0}}
+.wsLid{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(.25);transition:transform .6s}
+#winShow.s5 .wsLid{transform:scaleY(1.05)}
+.wsPee{opacity:0;transition:opacity .4s}#winShow.s5 .wsPee{opacity:1}
+.wsFlow{animation:wsFlow .5s linear infinite}
+@keyframes wsFlow{to{stroke-dashoffset:-11}}
+.wsSay{margin:0;max-width:420px;font-family:var(--mono);font-size:clamp(14px,4vw,18px);line-height:1.4;color:#f1e4c8;background:rgba(14,20,28,.92);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+#winShow.s5 .wsSay{opacity:1;transform:none}
+#wsSkip{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));background:rgba(10,16,24,.6);border:1px solid rgba(255,255,255,.3);color:#e4e9ef;padding:8px 16px;font-size:13px;letter-spacing:.1em}
+@media (prefers-reduced-motion:reduce){.wsTent,.wsDrip,.wsFlow{animation:none}}
 #film{position:fixed;inset:0;z-index:96;background:#04060a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px}#film[hidden]{display:none}
 #filmV{display:block;width:100%;max-width:960px;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);aspect-ratio:16/10;background:#04060a;border:1px solid var(--line);border-radius:4px}
 .filmRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.filmRow button{padding:12px 30px;font-size:14px;animation:none}
@@ -578,6 +612,40 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
     <details class="panel" id="logPanel" open><summary class="lbl">Log ▾</summary><div class="log" id="log"></div></details>
   </div>
 </main>
+<div id="winShow" hidden>
+  <canvas id="wsConf"></canvas>
+  <div class="wsWords"><span id="wsL1"></span><b id="wsL2"></b><span id="wsL3"></span></div>
+  <div class="wsStage"><div class="wsZoom"><div id="wsDrone"></div>
+    <svg class="wsHatch" viewBox="0 0 300 300" aria-hidden="true">
+      <defs>
+        <clipPath id="wsHole"><circle cx="206" cy="206" r="21"/></clipPath>
+        <linearGradient id="wsSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d7dee6"/><stop offset="50%" stop-color="#8a959e"/><stop offset="100%" stop-color="#39424b"/></linearGradient>
+        <radialGradient id="wsBrain" cx="40%" cy="32%" r="75%"><stop offset="0%" stop-color="#f6c0cf"/><stop offset="55%" stop-color="#d27d99"/><stop offset="100%" stop-color="#7d3552"/></radialGradient>
+      </defs>
+      <circle cx="206" cy="206" r="25" fill="#0b0e12" stroke="#8a959e" stroke-width="1.6"/>
+      <circle cx="206" cy="206" r="23" fill="none" stroke="#e8b400" stroke-width="1.6" stroke-dasharray="4 4"/>
+      <circle cx="206" cy="206" r="21" fill="#04060a"/>
+      <g class="wsCrit" clip-path="url(#wsHole)">
+        <g fill="none" stroke="#86b874" stroke-width="3.2" stroke-linecap="round">
+          <path class="wsTent" style="transform-origin:198px 208px" d="M 198 208 Q 188 214 186 224"/>
+          <path class="wsTent" style="transform-origin:203px 211px;animation-delay:.25s" d="M 203 211 Q 199 220 201 228"/>
+          <path class="wsTent" style="transform-origin:210px 211px;animation-delay:.5s" d="M 210 211 Q 214 220 211 228"/>
+          <path class="wsTent" style="transform-origin:215px 208px;animation-delay:.75s" d="M 215 208 Q 224 213 227 222"/>
+        </g>
+        <ellipse cx="206" cy="200" rx="14" ry="11" fill="url(#wsBrain)" stroke="#6a2a44" stroke-width=".9"/>
+        <g fill="none" stroke="#9c4f6c" stroke-width=".9" stroke-linecap="round"><path d="M 206 190 q -3 4 0 8 q 3 4 0 9"/><path d="M 197 194 q 3 2 2 5 q -2 3 1 6"/><path d="M 215 194 q -3 2 -2 5 q 2 3 -1 6"/><path d="M 194 201 q 3 -1 4 2"/><path d="M 218 201 q -3 -1 -4 2"/></g>
+        <path d="M 196 193 q 5 -5 12 -3" fill="none" stroke="#ffffff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/>
+        <circle cx="201" cy="205" r="2.7" fill="#fdfdf5"/><circle cx="211" cy="205" r="2.7" fill="#fdfdf5"/><circle cx="201.4" cy="205.6" r="1.2" fill="#14171c"/><circle cx="211.4" cy="205.6" r="1.2" fill="#14171c"/>
+        <path class="wsLid" d="M 198 205 a 3 3 0 0 1 6 0 Z M 208 205 a 3 3 0 0 1 6 0 Z" fill="#b7617f"/>
+        <g fill="#9be36a" opacity=".9"><ellipse class="wsDrip" cx="196" cy="210" rx="1.3" ry="2.2"/><ellipse class="wsDrip" style="animation-delay:.6s" cx="216" cy="210" rx="1.2" ry="2"/></g>
+      </g>
+      <g class="wsDoorL"><path d="M 206 181 A 25 25 0 0 0 206 231 Z" fill="url(#wsSteel)" stroke="#07090b" stroke-width="1.2"/><circle cx="190" cy="198" r="1.2" fill="#07090b"/><circle cx="190" cy="214" r="1.2" fill="#07090b"/><path d="M 198 196 v 20" stroke="#07090b" stroke-width="1" opacity=".5"/></g>
+      <g class="wsDoorR"><path d="M 206 181 A 25 25 0 0 1 206 231 Z" fill="url(#wsSteel)" stroke="#07090b" stroke-width="1.2"/><circle cx="222" cy="198" r="1.2" fill="#07090b"/><circle cx="222" cy="214" r="1.2" fill="#07090b"/><path d="M 214 196 v 20" stroke="#07090b" stroke-width="1" opacity=".5"/></g>
+      <g class="wsPee" fill="none" stroke-linecap="round"><path d="M 204 213 Q 192 214 182 234 T 158 300" stroke="#8a6d00" stroke-width="3.2" opacity=".5"/><path class="wsFlow" d="M 204 213 Q 192 214 182 234 T 158 300" stroke="#f6d743" stroke-width="2" stroke-dasharray="7 4"/></g>
+    </svg></div></div>
+  <p class="wsSay" id="wsSay"></p>
+  <button type="button" id="wsSkip">Skip</button>
+</div>
 <div id="film" hidden>
   <video id="filmV" playsinline webkit-playsinline preload="auto"></video>
   <div class="filmRow"><button type="button" id="filmSkip" class="primary">Skip</button><button type="button" id="filmSound" hidden>Tap for sound</button></div>
@@ -2075,7 +2143,11 @@ const FR={
 "It lands on one of the nine squares, by chance.": "Il tombe sur l'une des neuf cases, au hasard.",
 "Press Throw an asteroid, at the bottom of the screen.": "Appuyez sur Lancer un astéroïde, en bas de l'écran.",
 "The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Les astéroïdes ont dérivé, et l'un d'eux a roulé sur l'éclaireur ennemi. Maintenant, lancez-en un.",
-"Fired. It can fire again: tap it. Or take your turn.": "Tiré. Il peut encore tirer : touchez-le. Ou jouez votre tour."
+"Fired. It can fire again: tap it. Or take your turn.": "Tiré. Il peut encore tirer : touchez-le. Ou jouez votre tour.",
+"Have a good rest of your day,": "Passez une bonne fin de journée,",
+"Winner Winnerson": "Gagnant Gagnanson",
+"from Winnerville.": "de Gagnantville.",
+"I have been holding that this whole time.": "Je me retenais depuis le début."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3237,13 +3309,17 @@ const ES={
 "It lands on one of the nine squares, by chance.": "Cae en una de las nueve casillas, al azar.",
 "Press Throw an asteroid, at the bottom of the screen.": "Pulsa Lanzar un asteroide, en la parte inferior de la pantalla.",
 "The asteroids drifted, and one rolled over the enemy scout. Now throw one.": "Los asteroides derivaron, y uno arrolló al explorador enemigo. Ahora lanza uno.",
-"Fired. It can fire again: tap it. Or take your turn.": "Disparado. Puede volver a disparar: tócalo. O juega tu turno."
+"Fired. It can fire again: tap it. Or take your turn.": "Disparado. Puede volver a disparar: tócalo. O juega tu turno.",
+"Have a good rest of your day,": "Que tengas un buen resto del día,",
+"Winner Winnerson": "Ganador Ganadórez",
+"from Winnerville.": "de Villaganadora.",
+"I have been holding that this whole time.": "Me lo estaba aguantando todo este tiempo."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.124.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.125.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3819,7 +3895,8 @@ function checkSiegeWin(){ // a siege drone beside the enemy command drone, with 
   for(const x of S.drones){if(x.kind!=='X')continue;const ft=fireTargets(x);if(ft.cmd&&!ft.guards.length){gameOver(x.side,t`${who(x.side)} took the Command drone.`);return true;}}
   return false;}
 function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`${who(s)} hold${s===YOU?'':'s'} ${S.win} squares.`);return true;}return false;}
-function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);}
+function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);
+  if(w===YOU&&!S.lesson&&typeof winShow==='function')setTimeout(()=>{try{if(S&&S.over&&S.over.w===YOU)winShow();}catch(_){}},1300);} /* v1.125.0: the win scene (one/win.js), once the last move has been seen */
 async function afterAction(){const actor=S.turn;wreckSweep();
   if(S.over){closeAction(actor);save();renderAll();return;}
   if(S.rockNew&&S.turn===YOU&&!S.tut&&!(online&&net&&net.role!=='host')){S.rockNew=0;await rockPrompt();} /* v1.72: an asteroid just earned: the alert, and the throw before the turn passes */
@@ -6042,6 +6119,36 @@ function lessonLeave(){lessonLock(false);{const l=$('land1');if(l)l.classList.re
 (()=>{const b=$('coverTrain');if(b)b.addEventListener('click',lessonPick);
   const pk=$('lessonPick');if(pk){$('lessonPickClose').addEventListener('click',()=>{pk.hidden=true;});pk.addEventListener('click',e=>{if(e.target===pk)pk.hidden=true;});}
   if(S&&S.lesson)lessonLeave();})(); /* a page reloaded in the middle of a lesson goes back to the game that was put aside, or a fresh one */
+// ---------- the win scene (v1.125.0). User: "we should add a you win video. that is very short some confetti Then these words popup 'Have a
+// Good rest of your day Winner Winnerson from Winnerville.' Then you see the Command drone and the camera zooms in to a hatch that opens. some
+// hideous brain slime tentacles starts to pee. and it say I have been holding that this whole time."
+// Built as an animation in the page, not a film: nothing to download, and the words are in the player's language. About 13 seconds, with Skip.
+// Steps are classes on #winShow, set by timers: s1 confetti and the words; s2 the Command drone; s3 the camera goes in on the hatch; s4 the hatch
+// opens; s5 the pilot, the line and the voice (story/pilot-relief.mp3); out. Called from gameOver (p2.js) when the player wins, never in a lesson.
+// Functions and var only, like the other late parts of the script.
+var winTimers=[],winOn=false,winRaf=0;
+function winClose(){if(!winOn)return;winOn=false;for(const x of winTimers)clearTimeout(x);winTimers=[];if(winRaf)cancelAnimationFrame(winRaf);winRaf=0;const w=$('winShow');if(w){w.className='';w.hidden=true;}}
+function winConfetti(){const c=$('wsConf'),w=$('winShow');if(!c||!w)return;const dpr=Math.min(2,window.devicePixelRatio||1),W=c.width=Math.max(1,w.clientWidth*dpr),H=c.height=Math.max(1,w.clientHeight*dpr),ctx=c.getContext('2d');
+  const cols=['#ffd27a','#e8a63b','#4ea8dc','#6bd68a','#ef5d6f','#b06ce8','#ffffff'],ps=[];
+  for(let i=0;i<150;i++)ps.push({x:Math.random()*W,y:-Math.random()*H*0.9,vx:(Math.random()-.5)*1.6*dpr,vy:(1.6+Math.random()*2.6)*dpr,s:(4+Math.random()*6)*dpr,r:Math.random()*6.28,vr:(Math.random()-.5)*0.3,c:cols[i%cols.length]});
+  const t0=performance.now();
+  const frame=now=>{if(!winOn){winRaf=0;return;}const tm=(now-t0)/1000;ctx.clearRect(0,0,W,H);let live=0;
+    for(const p of ps){p.x+=p.vx+Math.sin(tm*3+p.r)*0.6*dpr;p.y+=p.vy;p.r+=p.vr;if(p.y<H+20*dpr)live++;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=Math.max(0,Math.min(1,(5.2-tm)/1.2));ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore();}
+    if(live&&tm<5.4)winRaf=requestAnimationFrame(frame);else{ctx.clearRect(0,0,W,H);winRaf=0;}};
+  winRaf=requestAnimationFrame(frame);}
+function winShow(){const w=$('winShow');if(!w||winOn)return;winOn=true;w.hidden=false;w.className='';
+  $('wsL1').textContent=t('Have a good rest of your day,');$('wsL2').textContent=t('Winner Winnerson');$('wsL3').textContent=t('from Winnerville.');
+  $('wsSay').textContent=t('I have been holding that this whole time.');$('wsSkip').textContent=t('Skip');$('wsDrone').innerHTML=cmdSVG(YOU);
+  void w.offsetWidth;w.classList.add('s1');winConfetti();
+  const at=(ms,f)=>winTimers.push(setTimeout(()=>{if(winOn)f();},ms));
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){at(4500,winClose);return;} /* the words only */
+  at(3400,()=>w.classList.add('s2'));
+  at(4700,()=>w.classList.add('s3'));
+  at(6400,()=>w.classList.add('s4'));
+  at(7400,()=>{w.classList.add('s5');try{storyPlayUrl('story/pilot-relief.mp3');}catch(_){}});
+  at(12400,()=>w.classList.add('out'));
+  at(13000,winClose);}
+(()=>{const b=$('wsSkip');if(b)b.addEventListener('click',winClose);})();
 </script>
 </body>
 </html>
