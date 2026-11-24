@@ -632,7 +632,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>Help us make the game better?</b><p id="teleNew" hidden></p><p>If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">Yes, send play notes</button><button type="button" id="teleNo">No thanks</button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>This game sends play notes</b><p id="teleNew" hidden></p><p>To make the game better, it sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can turn the notes off any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">OK, I accept</button><button type="button" id="teleNo" hidden>No thanks</button></div></div></div><div id="setpop" class="telepop" hidden><div class="tp"><b id="setpopH"></b><p id="setpopP"></p><p id="setpopL" hidden></p><div class="rb"><button type="button" id="setpopGo" class="primary"></button><button type="button" id="setpopNo"></button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1834,8 +1834,8 @@ const FR={
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, un drone de siège, une tourelle ou un drone protégé.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum. Rien ne s'empile sur une bombe ; c'est la bombe qui s'empile sur un porteur, à n'importe quel moment de sa mèche.",
 "Help us make the game better?": "Nous aider à améliorer le jeu ?",
-"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si vous dites oui, le jeu nous envoie de courtes notes de jeu anonymes : combien de temps vous jouez, quels modes vous essayez (histoire, partie libre, deux téléphones, partie guidée), quelles leçons et le film vous ouvrez et terminez, comment vos parties se terminent et en combien de tours, dans quel ordre vous avez fait tout cela, ce que vous changez dans les réglages, si un lien d'invitation vous a amené ici, et la version du jeu. Un numéro d'installation aléatoire distingue les joueurs qui reviennent.",
-"No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Pas de nom, pas d'e-mail, pas de position, rien de ce que vous tapez. Vous pouvez changer d'avis à tout moment dans les réglages, sous Partager les notes de jeu.",
+"To make the game better, it sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Pour améliorer le jeu, il nous envoie de courtes notes de jeu anonymes : combien de temps vous jouez, quels modes vous essayez (histoire, partie libre, deux téléphones, partie guidée), quelles leçons et le film vous ouvrez et terminez, comment vos parties se terminent et en combien de tours, dans quel ordre vous avez fait tout cela, ce que vous changez dans les réglages, si un lien d'invitation vous a amené ici, et la version du jeu. Un numéro d'installation aléatoire distingue les joueurs qui reviennent.",
+"No name, no email, no location, nothing you type. You can turn the notes off any time in Settings, under Share play notes.": "Pas de nom, pas d'e-mail, pas de position, rien de ce que vous tapez. Vous pouvez couper les notes à tout moment dans les réglages, sous Partager les notes de jeu.",
 "Yes, send play notes": "Oui, envoyer les notes",
 "No thanks": "Non merci",
 "Share play notes": "Notes de jeu",
@@ -2261,7 +2261,16 @@ const FR={
 "Turn {0}. No turn limit.": "Tour {0}. Sans limite de tours.",
 "The turn limit of {0} was reached and no one has won.": "La limite de {0} tours est atteinte et personne n'a gagné.",
 "{0} turns are left. If no one has won by then, the game is a tie.": "Il reste {0} tours. Si personne n'a gagné d'ici là, la partie est nulle.",
-"The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?": "Les notes de jeu comptent maintenant aussi les leçons et le film que vous ouvrez, et la fin de vos parties. Est-ce toujours d'accord ?"
+"The play notes now also count the lessons and the film you open, and how your games end.": "Les notes de jeu comptent maintenant aussi les leçons et le film que vous ouvrez, et la fin de vos parties.",
+"This game sends play notes": "Ce jeu envoie des notes de jeu",
+"OK, I accept": "D'accord, j'accepte",
+"Press New game": "Appuyez sur Nouvelle partie",
+"That setting starts with the next game. The game on the board keeps the settings it began with.": "Ce réglage commence avec la prochaine partie. La partie sur le plateau garde les réglages de son début.",
+"Starting a new game now counts this one as a loss.": "Commencer une nouvelle partie maintenant compte celle-ci comme une défaite.",
+"New game now": "Nouvelle partie maintenant",
+"Keep playing": "Continuer à jouer",
+"That setting starts with the next game.": "Ce réglage commence avec la prochaine partie.",
+"New game laid out with your settings.": "Nouvelle partie préparée avec vos réglages."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3011,8 +3020,8 @@ const ES={
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, un dron de asedio, una torreta ni un dron protegido.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo. Nada se apila sobre una bomba; la bomba se apila sobre un portador, en cualquier punto de su mecha.",
 "Help us make the game better?": "¿Nos ayudas a mejorar el juego?",
-"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si dices que sí, el juego nos envía notas de juego breves y anónimas: cuánto juegas, qué modos pruebas (historia, partida libre, dos teléfonos, partida guiada), qué lecciones y la película abres y terminas, cómo acaban tus partidas y cuántos turnos duran, en qué orden hiciste todo eso, qué cambias en Ajustes, si un enlace de invitación te trajo aquí y la versión del juego. Un número de instalación aleatorio distingue a los jugadores que vuelven.",
-"No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Sin nombre, sin correo, sin ubicación, nada de lo que escribes. Puedes cambiar de opinión cuando quieras en Ajustes, en Compartir notas de juego.",
+"To make the game better, it sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Para mejorar el juego, nos envía notas de juego breves y anónimas: cuánto juegas, qué modos pruebas (historia, partida libre, dos teléfonos, partida guiada), qué lecciones y la película abres y terminas, cómo acaban tus partidas y cuántos turnos duran, en qué orden hiciste todo eso, qué cambias en Ajustes, si un enlace de invitación te trajo aquí y la versión del juego. Un número de instalación aleatorio distingue a los jugadores que vuelven.",
+"No name, no email, no location, nothing you type. You can turn the notes off any time in Settings, under Share play notes.": "Sin nombre, sin correo, sin ubicación, nada de lo que escribes. Puedes desactivar las notas cuando quieras en Ajustes, en Compartir notas de juego.",
 "Yes, send play notes": "Sí, enviar notas",
 "No thanks": "No, gracias",
 "Share play notes": "Notas de juego",
@@ -3438,13 +3447,22 @@ const ES={
 "Turn {0}. No turn limit.": "Turno {0}. Sin límite de turnos.",
 "The turn limit of {0} was reached and no one has won.": "Se alcanzó el límite de {0} turnos y nadie ha ganado.",
 "{0} turns are left. If no one has won by then, the game is a tie.": "Quedan {0} turnos. Si nadie ha ganado para entonces, la partida es un empate.",
-"The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?": "Las notas de juego ahora también cuentan las lecciones y la película que abres, y cómo acaban tus partidas. ¿Sigue pareciéndote bien?"
+"The play notes now also count the lessons and the film you open, and how your games end.": "Las notas de juego ahora también cuentan las lecciones y la película que abres, y cómo acaban tus partidas.",
+"This game sends play notes": "Este juego envía notas de juego",
+"OK, I accept": "De acuerdo, acepto",
+"Press New game": "Pulsa Nueva partida",
+"That setting starts with the next game. The game on the board keeps the settings it began with.": "Ese ajuste empieza con la próxima partida. La partida del tablero conserva los ajustes con los que empezó.",
+"Starting a new game now counts this one as a loss.": "Empezar una nueva partida ahora cuenta esta como una derrota.",
+"New game now": "Nueva partida ahora",
+"Keep playing": "Seguir jugando",
+"That setting starts with the next game.": "Ese ajuste empieza con la próxima partida.",
+"New game laid out with your settings.": "Nueva partida preparada con tus ajustes."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.129.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.130.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4872,6 +4890,24 @@ setInterval(()=>{if(S&&S.tut&&!busy&&S.turn===YOU&&!S.over)renderGuide();},2000)
 $('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
 $('inSkill').addEventListener('change',()=>{const v=snapSkill();renderRecord();renderSkillNote();if(S&&!S.over&&!S.tut&&!S.story&&!(online&&net)&&S.skill!==v){S.skill=v;note(t`Bot skill set to ${v} from here on.`);save();renderAll();}}); // a skill change applies to the game in progress
 snapSkill();renderSkillNote();
+/* v1.130.0 (user: "in setting every time you change something and want it to take effect you have to push new game that needs to be pop up make
+   sure you push new game after changing the settings"). These settings are read only when a game is laid out: squares to win, fog, the asteroid
+   boxes and the three rule boxes. (Bot skill, Thinks ahead, Timers and the Turn limit act on the game in progress.) Changing one of them:
+   - with a free game on the board that has no move made yet: the board is laid out again at once with the new settings;
+   - otherwise a card comes up: the setting starts with the next game, New game now or Keep playing. It comes up once for each visit to
+     Settings, not after every box. New game now does what the New game button does, and says first if the game in progress counts as a loss. */
+const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean'];let setAsked=false;
+function setPop(){const p=$('setpop');if(!p)return;const mid=!!(S&&!S.over&&S.turnNo>2);$('setpopH').textContent=t('Press New game');
+  $('setpopP').textContent=t('That setting starts with the next game. The game on the board keeps the settings it began with.');
+  const l=$('setpopL');l.hidden=!mid;l.textContent=mid?t('Starting a new game now counts this one as a loss.'):'';
+  $('setpopGo').textContent=storyGate()?t('Story map'):t('New game now');$('setpopNo').textContent=t('Keep playing');p.hidden=false;}
+$('setup').addEventListener('change',e=>{const id=e.target&&e.target.id;if(!NEWGAME_ONLY.includes(id)||!S||S.lesson)return;
+  if(online&&net){setStatus(t('That setting starts with the next game.'));return;}
+  if(!S.over&&!S.turnNo&&!S.story&&!S.tut&&!busy){newGame({auto:1});setStatus(t('New game laid out with your settings.'));return;}
+  if(setAsked)return;setAsked=true;setPop();});
+$('setpopNo').addEventListener('click',()=>{$('setpop').hidden=true;});
+$('setpopGo').addEventListener('click',()=>{$('setpop').hidden=true;setAsked=false;if(busy)return;$('setup').classList.remove('open');if(storyGate()){openStoryMap();return;}if(S&&!S.over&&S.turnNo>2)gameOver(BOT,t('The game was abandoned.'));newGame();});
+$('btnSettings').addEventListener('click',()=>{setAsked=false;});$('btnNew').addEventListener('click',()=>{setAsked=false;});
 $('inMoves').addEventListener('change',()=>{if(S&&!S.over&&!S.lesson&&!S.tut&&!(online&&net)){S.moveCap=moveCapPref();save();renderSide();}}); /* v1.126.0: the game on the board takes the new limit too */
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
 if(prof.n)$('inName').value=prof.n;
@@ -5407,6 +5443,9 @@ $('inGate').addEventListener('change',()=>{const on=$('inGate').checked;try{if(o
 // move is made (afterAction sends 'started').
 // The card's words changed with this, so cc_tele_v marks which words were agreed to: a Yes given to the old words sends the old summary only
 // (the new parts are cut from what is sent) and the card comes up once more on the next Launch or Story tap. A No is never asked again.
+// v1.130.0 (user: "I think need them need to except the we need info from your play claimer"): the card is a notice to accept now, with one
+// button, OK, I accept. The No button stays in the page, hidden. Settings, Share play notes, still turns the notes off, and the card says so.
+// An install that said No before this stays off and is not shown the card.
 const TELE_BASE=NET_BASE+'/stats',TELE_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let tele=null,teleT0=Date.now(),telePushT=null,teleDirty=false;
 const teleOn=()=>{try{return localStorage.getItem('cc_tele')==='1';}catch(_){return false;}};
@@ -5458,7 +5497,7 @@ document.addEventListener('visibilitychange',()=>teleTick(document.hidden));
 window.addEventListener('pagehide',()=>teleTick(true));
 // the waiver card: asked once, on the first Launch or Story tap; then() runs after either answer
 function teleAsk(then){if(teleAsked()){then();return;}const el=$('telepop');if(!el){then();return;}
-  {let again=false;try{again=localStorage.getItem('cc_tele')==='1';}catch(_){}const nw=$('teleNew');if(nw){nw.hidden=!again;if(again)nw.textContent=t('The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?');}}
+  {let again=false;try{again=localStorage.getItem('cc_tele')==='1';}catch(_){}const nw=$('teleNew');if(nw){nw.hidden=!again;if(again)nw.textContent=t('The play notes now also count the lessons and the film you open, and how your games end.');}}
   const done=yes=>{try{localStorage.setItem('cc_tele',yes?'1':'0');localStorage.setItem('cc_tele_v',TELE_V);}catch(_){}el.hidden=true;$('inTele').checked=yes;if(yes)telePush(true);then();};
   $('teleYes').onclick=()=>done(true);$('teleNo').onclick=()=>done(false);el.hidden=false;}
 $('inTele').addEventListener('change',()=>{const on=$('inTele').checked;try{localStorage.setItem('cc_tele',on?'1':'0');localStorage.setItem('cc_tele_v',TELE_V);}catch(_){}if(on)telePush(true);});
