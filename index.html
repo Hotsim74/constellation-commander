@@ -2277,7 +2277,8 @@ const FR={
 "fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.": "arrivent calmes : une nouvelle étoile prend une couleur que peu d'étoiles autour de sa case ont ; moins de réactions en chaîne et moins de drones construits par chance. Décochez pour l'ancienne règle, n'importe quelle couleur. Compte à partir de votre prochaine partie.",
 "Lines of 3": "Lignes de 3",
 "a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un échange peut faire une simple ligne de 3, qui disparaît sans rien construire. Décochez et chaque échange doit construire un drone ; s'il ne vous reste que votre drone de commandement et aucun échange de ce genre, les étoiles sont remélangées. Compte à partir de votre prochaine partie.",
-"A line of 3 builds nothing. With this rule a swap must make a drone.": "Une ligne de 3 ne construit rien. Avec cette règle, un échange doit faire un drone."
+"A line of 3 builds nothing. With this rule a swap must make a drone.": "Une ligne de 3 ne construit rien. Avec cette règle, un échange doit faire un drone.",
+"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} a fait {1} : {2} n'est pas encore dans la flotte de ce secteur, rien de construit."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3468,13 +3469,14 @@ const ES={
 "fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.": "llegan tranquilas: una estrella nueva toma un color que pocas estrellas alrededor de su casilla tienen; menos reacciones en cadena y menos drones construidos por suerte. Desmarca para la regla anterior, cualquier color. Cuenta desde tu próxima partida.",
 "Lines of 3": "Líneas de 3",
 "a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un intercambio puede hacer una simple línea de 3, que desaparece sin construir nada. Desmarca y cada intercambio debe construir un dron; si solo te queda tu dron de mando y ningún intercambio así, las estrellas se barajan. Cuenta desde tu próxima partida.",
-"A line of 3 builds nothing. With this rule a swap must make a drone.": "Una línea de 3 no construye nada. Con esta regla, un intercambio debe hacer un dron."
+"A line of 3 builds nothing. With this rule a swap must make a drone.": "Una línea de 3 no construye nada. Con esta regla, un intercambio debe hacer un dron.",
+"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} hizo {1}: {2} aún no está en la flota de este sector, nada construido."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.131.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.131.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3747,7 +3749,7 @@ function spawnFrom(side,sp){
   if(!at){note(t`${who(side)} made ${sp.label} on the other side: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;}
   if(sp.cells.every(k=>S.own[k]===other(side))){note(t`${who(side)} made ${sp.label} on ${landName(other(side))}: stars cleared, nothing paid.`,{why:'nopay'});grantRock(side,sp);return;} // v1.19: a line entirely on their land pays nothing
   for(const letter0 of sp.letters){const letter=letter0;const locked=!!(S.allow&&!S.allow.includes(letter0));
-    if(locked){const j=storyJoins(letter0);note(t('{0} is not in this sector\'s fleet yet: stars cleared, nothing built.',cap(aname(letter0)))+(j?' '+t('It joins the fleet in {0}.',j):''),{why:'nopay'});grantRock(side,sp);continue;} /* v1.88: a locked ship's shape clears and builds nothing (v1.82 gave a scout; the user's mother: that confuses a new player) */
+    if(locked){const j=storyJoins(letter0);if(side!==YOU){note(t`${who(side)} made ${sp.label}: ${aname(letter0)} is not in this sector's fleet yet, nothing built.`,{why:'nopay'});grantRock(side,sp);continue;} /* v1.131.1: the other side's locked shape says whose it was, and leaves out the line meant for the player */note(t('{0} is not in this sector\'s fleet yet: stars cleared, nothing built.',cap(aname(letter0)))+(j?' '+t('It joins the fleet in {0}.',j):''),{why:'nopay'});grantRock(side,sp);continue;} /* v1.88: a locked ship's shape clears and builds nothing (v1.82 gave a scout; the user's mother: that confuses a new player) */
     let [r,c]=at;let o=droneAt(r,c);
     const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
     if(full&&sp.cap!=='always'){
