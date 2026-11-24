@@ -319,8 +319,10 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #intro small{display:block;margin-top:10px;color:var(--mute);font-size:14px}
 /* ---------- the start screen (v1.63) ---------- */
 /* v1.102.0: the opening film sits over everything, the Skip button under the picture */
-/* v1.125.0: the win scene (one/win.js). Steps are classes on #winShow. */
-#winShow{position:fixed;inset:0;z-index:95;background:rgba(4,6,10,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center;transition:opacity .5s}
+/* v1.127.0: the win scene, drawn again (one/win.js). Steps are classes on #winShow: s1 the words, s2 the Command drone, s3 the camera goes in
+   and the picture changes to the hull and its hatch, s4 the shield posts light, s5 the shield goes up, s6 the hatch opens, s7 the pilot comes
+   up, s8 the stream, the line and the voice. */
+#winShow{position:fixed;inset:0;z-index:95;background:rgba(4,6,10,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center;transition:opacity .5s}
 #winShow[hidden]{display:none}#winShow.out{opacity:0}
 #wsConf{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .wsWords{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;color:#f1e4c8;transition:opacity .5s,transform .5s}
@@ -331,28 +333,56 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 #winShow.s1 #wsL2{animation-delay:.45s}#winShow.s1 #wsL3{animation-delay:.9s}
 @keyframes wsPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 #winShow.s2 .wsWords{opacity:0;transform:translateY(-70%)}
-.wsStage{position:relative;width:min(78vw,340px,52vh);aspect-ratio:1;border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 40%,#121a26 0,#05070b 75%);box-shadow:0 0 0 1px rgba(255,255,255,.14),0 18px 50px rgba(0,0,0,.7);opacity:0;transform:scale(.8);transition:opacity .6s,transform .6s}
+.wsStage{position:relative;width:min(92vw,430px,58vh);aspect-ratio:1;border-radius:18px;overflow:hidden;background:#04060b;box-shadow:0 0 0 1px rgba(255,255,255,.16),0 18px 50px rgba(0,0,0,.7);opacity:0;transform:scale(.8);transition:opacity .6s,transform .6s}
 #winShow.s2 .wsStage{opacity:1;transform:none}
-.wsZoom{position:absolute;inset:0;transform-origin:68.67% 68.67%;transition:transform 1.6s cubic-bezier(.6,0,.3,1)}
-#winShow.s3 .wsZoom{transform:translate(-18.67%,-18.67%) scale(4.3)}
-#wsDrone{position:absolute;inset:9%}#wsDrone svg{width:100%;height:100%;display:block}
-.wsHatch{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.wsDoorL,.wsDoorR{transition:transform .9s cubic-bezier(.5,0,.2,1)}
-#winShow.s4 .wsDoorL{transform:translate(-27px,0)}#winShow.s4 .wsDoorR{transform:translate(27px,0)}
-.wsCrit{opacity:0;transition:opacity .5s .3s}#winShow.s4 .wsCrit{opacity:1}
-.wsTent{animation:wsWave 1.5s ease-in-out infinite alternate}
-@keyframes wsWave{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
-.wsDrip{animation:wsDrip 1.4s ease-in infinite}
-@keyframes wsDrip{0%{transform:translateY(0);opacity:0}20%{opacity:.9}100%{transform:translateY(9px);opacity:0}}
-.wsLid{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(.25);transition:transform .6s}
-#winShow.s5 .wsLid{transform:scaleY(1.05)}
-.wsPee{opacity:0;transition:opacity .4s}#winShow.s5 .wsPee{opacity:1}
-.wsFlow{animation:wsFlow .5s linear infinite}
-@keyframes wsFlow{to{stroke-dashoffset:-11}}
-.wsSay{margin:0;max-width:420px;font-family:var(--mono);font-size:clamp(14px,4vw,18px);line-height:1.4;color:#f1e4c8;background:rgba(14,20,28,.92);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
-#winShow.s5 .wsSay{opacity:1;transform:none}
+.wsSky,.wsClose{position:absolute;inset:0;width:100%;height:100%;display:block}
+.wsTw{animation:wsTw 1.8s ease-in-out infinite alternate}@keyframes wsTw{from{opacity:.25}to{opacity:1}}
+.wsWide{position:absolute;inset:0;transform-origin:64% 66%;transition:transform 1.5s cubic-bezier(.6,0,.8,.4),opacity .5s .9s}
+#winShow.s3 .wsWide{transform:scale(6);opacity:0}
+#wsDrone{position:absolute;inset:17%;filter:drop-shadow(0 0 18px rgba(255,170,60,.4))}#wsDrone svg{width:100%;height:100%;display:block}
+.wsMark{position:absolute;left:64%;top:66%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#ffe9b0;box-shadow:0 0 0 3px rgba(255,210,122,.35),0 0 14px 2px #ffb84a;animation:wsBlink .7s steps(2,jump-none) infinite}
+@keyframes wsBlink{from{opacity:1}to{opacity:.15}}
+.wsClose{opacity:0;transform:scale(.7);transition:opacity .6s .9s,transform 1.5s .8s cubic-bezier(.2,.7,.3,1)}
+#winShow.s3 .wsClose{opacity:1;transform:none}
+.wsBeacon{animation:wsBlink 1.1s steps(2,jump-none) infinite}
+.wsEm{fill:#26313b;transition:fill .25s}.wsEmG{fill:#7fe9ff;opacity:0;transition:opacity .25s}
+#winShow.s4 .wsEm{fill:#c9f7ff}#winShow.s4 .wsEmG{opacity:.4}
+.wsLamp{fill:#ff5252;animation:wsBlink .6s steps(2,jump-none) infinite}
+#winShow.s6 .wsLamp{fill:#62ff95;animation:none}
+.wsShield{transform-origin:200px 292px;transform:scale(.86,0);opacity:0;transition:transform .95s cubic-bezier(.2,1.25,.4,1),opacity .3s}
+#winShow.s5 .wsShield{transform:none;opacity:1}
+.wsFlash{opacity:0}#winShow.s5 .wsFlash{animation:wsFlash 1.2s ease-out}
+@keyframes wsFlash{0%{opacity:0}35%{opacity:.7}100%{opacity:0}}
+.wsRing{stroke-dasharray:14 10;animation:wsRun 1.1s linear infinite}@keyframes wsRun{to{stroke-dashoffset:-24}}
+.wsHex{animation:wsHexP 2.2s ease-in-out infinite alternate}@keyframes wsHexP{from{opacity:.3}to{opacity:.75}}
+.wsDoorL,.wsDoorR{transition:transform 1.05s cubic-bezier(.5,0,.2,1)}
+#winShow.s6 .wsDoorL{transform:translateX(-82px)}#winShow.s6 .wsDoorR{transform:translateX(82px)}
+.wsLight{opacity:0;transition:opacity .9s .25s}#winShow.s6 .wsLight{opacity:1}
+.wsRiseG{transform:translateY(135px);transition:transform 1.15s cubic-bezier(.3,1.2,.5,1)}
+#winShow.s7 .wsRiseG{transform:none}
+.wsHead{transform-origin:203px 232px;animation:wsPulse 1.7s ease-in-out infinite alternate}
+@keyframes wsPulse{from{transform:scale(1)}to{transform:scale(1.02,1.04)}}
+.wsTent{animation:wsWave 1.6s ease-in-out infinite alternate}
+@keyframes wsWave{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.wsGrab{stroke-dasharray:1 2;stroke-dashoffset:1.02;opacity:0;transition:stroke-dashoffset .6s .75s,opacity .1s .75s}
+#winShow.s7 .wsGrab{stroke-dashoffset:0;opacity:1}
+.wsDrip{animation:wsDrip 1.5s ease-in infinite}
+@keyframes wsDrip{0%{transform:translateY(0);opacity:0}20%{opacity:.95}100%{transform:translateY(22px);opacity:0}}
+.wsLid{transform:translateY(var(--a));transition:transform .5s}
+#winShow.s8 .wsLid{transform:translateY(var(--b))}
+.wsMouthA{transition:opacity .2s}.wsMouthB{opacity:0;transition:opacity .25s}
+#winShow.s8 .wsMouthA{opacity:0}#winShow.s8 .wsMouthB{opacity:1}
+.wsPee{opacity:0;transition:opacity .35s}#winShow.s8 .wsPee{opacity:1}
+.wsFlow{animation:wsFlow .45s linear infinite}@keyframes wsFlow{to{stroke-dashoffset:-12}}
+.wsRip{transform-box:fill-box;transform-origin:center;animation:wsRip 1s ease-out infinite}
+@keyframes wsRip{0%{transform:scale(.4);opacity:.95}100%{transform:scale(2.6);opacity:0}}
+.wsIce{animation:wsIce 2.6s linear infinite}
+@keyframes wsIce{0%{transform:translate(0,0) scale(.3);opacity:0}8%{opacity:1}75%{opacity:1}100%{transform:translate(165px,var(--dy,0px)) scale(1.15);opacity:0}}
+.wsIce rect{transform-box:fill-box;transform-origin:center;animation:wsSpin 1.3s linear infinite}@keyframes wsSpin{to{transform:rotate(360deg)}}
+.wsSay{margin:0;max-width:430px;font-family:var(--mono);font-size:clamp(14px,4vw,18px);line-height:1.4;color:#f1e4c8;background:rgba(14,20,28,.92);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+#winShow.s8 .wsSay{opacity:1;transform:none}
 #wsSkip{position:absolute;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));background:rgba(10,16,24,.6);border:1px solid rgba(255,255,255,.3);color:#e4e9ef;padding:8px 16px;font-size:13px;letter-spacing:.1em}
-@media (prefers-reduced-motion:reduce){.wsTent,.wsDrip,.wsFlow{animation:none}}
+@media (prefers-reduced-motion:reduce){.wsTent,.wsDrip,.wsFlow,.wsHead,.wsRip,.wsIce,.wsRing,.wsHex,.wsTw{animation:none}}
 #film{position:fixed;inset:0;z-index:96;background:#04060a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px}#film[hidden]{display:none}
 #filmV{display:block;width:100%;max-width:960px;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);aspect-ratio:16/10;background:#04060a;border:1px solid var(--line);border-radius:4px}
 .filmRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}.filmRow button{padding:12px 30px;font-size:14px;animation:none}
@@ -617,34 +647,99 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 <div id="winShow" hidden>
   <canvas id="wsConf"></canvas>
   <div class="wsWords"><span id="wsL1"></span><b id="wsL2"></b><span id="wsL3"></span></div>
-  <div class="wsStage"><div class="wsZoom"><div id="wsDrone"></div>
-    <svg class="wsHatch" viewBox="0 0 300 300" aria-hidden="true">
+  <div class="wsStage">
+    <svg class="wsSky" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        <clipPath id="wsHole"><circle cx="206" cy="206" r="21"/></clipPath>
-        <linearGradient id="wsSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d7dee6"/><stop offset="50%" stop-color="#8a959e"/><stop offset="100%" stop-color="#39424b"/></linearGradient>
-        <radialGradient id="wsBrain" cx="40%" cy="32%" r="75%"><stop offset="0%" stop-color="#f6c0cf"/><stop offset="55%" stop-color="#d27d99"/><stop offset="100%" stop-color="#7d3552"/></radialGradient>
+        <radialGradient id="wsSpace" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#141d2d"/><stop offset="1" stop-color="#03050a"/></radialGradient>
+        <radialGradient id="wsPlanet" cx="64%" cy="70%" r="72%"><stop offset="0" stop-color="#5a9fe2"/><stop offset=".6" stop-color="#1f4f8f"/><stop offset="1" stop-color="#0a1c3a"/></radialGradient>
       </defs>
-      <circle cx="206" cy="206" r="25" fill="#0b0e12" stroke="#8a959e" stroke-width="1.6"/>
-      <circle cx="206" cy="206" r="23" fill="none" stroke="#e8b400" stroke-width="1.6" stroke-dasharray="4 4"/>
-      <circle cx="206" cy="206" r="21" fill="#04060a"/>
-      <g class="wsCrit" clip-path="url(#wsHole)">
-        <g fill="none" stroke="#86b874" stroke-width="3.2" stroke-linecap="round">
-          <path class="wsTent" style="transform-origin:198px 208px" d="M 198 208 Q 188 214 186 224"/>
-          <path class="wsTent" style="transform-origin:203px 211px;animation-delay:.25s" d="M 203 211 Q 199 220 201 228"/>
-          <path class="wsTent" style="transform-origin:210px 211px;animation-delay:.5s" d="M 210 211 Q 214 220 211 228"/>
-          <path class="wsTent" style="transform-origin:215px 208px;animation-delay:.75s" d="M 215 208 Q 224 213 227 222"/>
-        </g>
-        <ellipse cx="206" cy="200" rx="14" ry="11" fill="url(#wsBrain)" stroke="#6a2a44" stroke-width=".9"/>
-        <g fill="none" stroke="#9c4f6c" stroke-width=".9" stroke-linecap="round"><path d="M 206 190 q -3 4 0 8 q 3 4 0 9"/><path d="M 197 194 q 3 2 2 5 q -2 3 1 6"/><path d="M 215 194 q -3 2 -2 5 q 2 3 -1 6"/><path d="M 194 201 q 3 -1 4 2"/><path d="M 218 201 q -3 -1 -4 2"/></g>
-        <path d="M 196 193 q 5 -5 12 -3" fill="none" stroke="#ffffff" stroke-width="1.2" opacity=".55" stroke-linecap="round"/>
-        <circle cx="201" cy="205" r="2.7" fill="#fdfdf5"/><circle cx="211" cy="205" r="2.7" fill="#fdfdf5"/><circle cx="201.4" cy="205.6" r="1.2" fill="#14171c"/><circle cx="211.4" cy="205.6" r="1.2" fill="#14171c"/>
-        <path class="wsLid" d="M 198 205 a 3 3 0 0 1 6 0 Z M 208 205 a 3 3 0 0 1 6 0 Z" fill="#b7617f"/>
-        <g fill="#9be36a" opacity=".9"><ellipse class="wsDrip" cx="196" cy="210" rx="1.3" ry="2.2"/><ellipse class="wsDrip" style="animation-delay:.6s" cx="216" cy="210" rx="1.2" ry="2"/></g>
+      <rect width="400" height="400" fill="url(#wsSpace)"/>
+      <g id="wsStars" fill="#ffffff"></g>
+      <circle cx="14" cy="-58" r="150" fill="url(#wsPlanet)"/><circle cx="14" cy="-58" r="155" fill="none" stroke="#8cc8ff" stroke-width="4" opacity=".22"/>
+    </svg>
+    <div class="wsWide"><div id="wsDrone"></div><i class="wsMark"></i></div>
+    <svg class="wsClose" viewBox="40 110 320 320" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="wsHull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5868"/><stop offset=".35" stop-color="#27313c"/><stop offset="1" stop-color="#0a0e13"/></linearGradient>
+        <linearGradient id="wsCollar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3bec9"/><stop offset=".5" stop-color="#606b76"/><stop offset="1" stop-color="#232a32"/></linearGradient>
+        <linearGradient id="wsSteel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c7d0d8"/><stop offset=".5" stop-color="#7e8993"/><stop offset="1" stop-color="#3a434c"/></linearGradient>
+        <radialGradient id="wsPit" cx="50%" cy="60%" r="60%"><stop offset="0" stop-color="#fff6b6"/><stop offset=".5" stop-color="#c4e065"/><stop offset="1" stop-color="#2c4a1c"/></radialGradient>
+        <linearGradient id="wsBeam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f4ffb0" stop-opacity=".34"/><stop offset="1" stop-color="#f4ffb0" stop-opacity="0"/></linearGradient>
+        <radialGradient id="wsBrain" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#ffd6e0"/><stop offset=".5" stop-color="#de8fac"/><stop offset="1" stop-color="#7c3152"/></radialGradient>
+        <linearGradient id="wsNeck" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cf8fa9"/><stop offset="1" stop-color="#6a2b48"/></linearGradient>
+        <linearGradient id="wsTentG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe37e"/><stop offset="1" stop-color="#47742b"/></linearGradient>
+        <radialGradient id="wsDomeG" cx="50%" cy="100%" r="100%"><stop offset="0" stop-color="#7fe9ff" stop-opacity=".03"/><stop offset=".75" stop-color="#7fe9ff" stop-opacity=".11"/><stop offset="1" stop-color="#aef3ff" stop-opacity=".42"/></radialGradient>
+        <pattern id="wsHexP" width="20.78" height="36" patternUnits="userSpaceOnUse"><path d="M10.39 0 L20.78 6 V18 L10.39 24 L0 18 V6 Z M10.39 24 V36" fill="none" stroke="#9aefff" stroke-width=".9" opacity=".55"/></pattern>
+        <clipPath id="wsOpenC"><ellipse cx="200" cy="291" rx="74" ry="22"/></clipPath>
+        <clipPath id="wsRiseC"><path d="M0 -40 H400 V291 H274 A74 22 0 0 1 126 291 H0 Z"/></clipPath>
+        <clipPath id="wsEyeL"><circle cx="186" cy="246" r="11"/></clipPath>
+        <clipPath id="wsEyeR"><circle cx="221" cy="244" r="8"/></clipPath>
+      </defs>
+      <!-- the hull -->
+      <g stroke-linecap="round"><path d="M76 244 L70 152" stroke="#8a95a0" stroke-width="2.6"/><path d="M62 178 H80 M65 166 H76" stroke="#8a95a0" stroke-width="1.6"/><path d="M70 152 V134" stroke="#aab5c0" stroke-width="1.2"/></g>
+      <circle class="wsBeacon" cx="70" cy="132" r="3.2" fill="#ff5252"/>
+      <path d="M322 236 L330 212" stroke="#8a95a0" stroke-width="2.6" stroke-linecap="round"/><path d="M312 210 Q331 196 346 212 Q328 220 312 210 Z" fill="#6d7882" stroke="#0a0d11" stroke-width="1"/>
+      <path d="M-10 252 Q200 200 410 252 V450 H-10 Z" fill="url(#wsHull)"/>
+      <path d="M-10 252 Q200 200 410 252" fill="none" stroke="#a9bbcf" stroke-width="1.6" opacity=".75"/>
+      <path d="M-10 266 Q200 214 410 266" fill="none" stroke="#ffb84a" stroke-width="3.2" opacity=".9"/>
+      <g fill="none" stroke="#05080c" stroke-width="1.5" opacity=".85"><path d="M-10 306 Q200 252 410 306"/><path d="M-10 384 Q200 330 410 384"/><path d="M96 236 L62 410"/><path d="M304 236 L338 410"/><path d="M18 250 L-10 330"/><path d="M382 250 L410 330"/></g>
+      <g fill="none" stroke="#8fa0b3" stroke-width=".8" opacity=".25"><path d="M-10 308 Q200 254 410 308"/><path d="M98 236 L64 410"/><path d="M306 236 L340 410"/></g>
+      <g fill="#ffdf9a"><rect x="52" y="352" width="13" height="6" rx="2"/><rect x="70" y="349" width="13" height="6" rx="2" opacity=".55"/><rect x="52" y="366" width="13" height="6" rx="2" opacity=".4"/><rect x="318" y="392" width="13" height="6" rx="2"/><rect x="336" y="395" width="13" height="6" rx="2" opacity=".7"/></g>
+      <g fill="#0a0d11" opacity=".8"><circle cx="78" cy="262" r="1.6"/><circle cx="118" cy="252" r="1.6"/><circle cx="282" cy="252" r="1.6"/><circle cx="322" cy="262" r="1.6"/><circle cx="74" cy="356" r="1.6"/><circle cx="326" cy="356" r="1.6"/></g>
+      <text x="292" y="366" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" font-weight="700" fill="#ffb84a" opacity=".5" letter-spacing="2" transform="rotate(7 292 366)">C-01</text>
+      <!-- the hatch -->
+      <ellipse cx="200" cy="299" rx="94" ry="31" fill="#090c10"/>
+      <ellipse cx="200" cy="292" rx="94" ry="31" fill="url(#wsCollar)" stroke="#0a0d11" stroke-width="1.5"/>
+      <ellipse cx="200" cy="292" rx="85" ry="27" fill="none" stroke="#14181d" stroke-width="7"/>
+      <ellipse cx="200" cy="292" rx="85" ry="27" fill="none" stroke="#f0bd1a" stroke-width="7" stroke-dasharray="11 9"/>
+      <ellipse cx="200" cy="291" rx="77" ry="23.5" fill="#0a0d11"/>
+      <ellipse cx="200" cy="291" rx="74" ry="22" fill="#04060a"/>
+      <ellipse class="wsLight" cx="200" cy="294" rx="74" ry="22" fill="url(#wsPit)" clip-path="url(#wsOpenC)"/>
+      <rect x="187" y="331" width="26" height="11" rx="3.5" fill="#1a2028" stroke="#0a0d11" stroke-width="1"/><circle class="wsLamp" cx="200" cy="336.5" r="3.2"/>
+      <g transform="translate(150 263.4)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.48s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.48s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g><g transform="translate(250 263.4)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.60s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.60s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g>
+      <g class="wsShield"><path d="M100 292 A100 118 0 0 1 300 292 A100 33 0 0 1 100 292 Z" fill="url(#wsDomeG)"/></g>
+      <path class="wsLight" d="M126 291 L152 178 H248 L274 291 Z" fill="url(#wsBeam)"/>
+      <g clip-path="url(#wsOpenC)">
+        <g class="wsDoorL"><rect x="118" y="264" width="82" height="54" fill="url(#wsSteel)"/><path d="M190 266 l-11 50 M175 266 l-11 50" stroke="#f0bd1a" stroke-width="4.5" opacity=".75"/><path d="M200 264 V318" stroke="#0a0d11" stroke-width="2.4"/><circle cx="148" cy="283" r="2" fill="#0a0d11"/><circle cx="148" cy="300" r="2" fill="#0a0d11"/></g>
+        <g class="wsDoorR"><rect x="200" y="264" width="82" height="54" fill="url(#wsSteel)"/><path d="M210 266 l11 50 M225 266 l11 50" stroke="#f0bd1a" stroke-width="4.5" opacity=".75"/><path d="M200 264 V318" stroke="#0a0d11" stroke-width="2.4"/><circle cx="252" cy="283" r="2" fill="#0a0d11"/><circle cx="252" cy="300" r="2" fill="#0a0d11"/></g>
       </g>
-      <g class="wsDoorL"><path d="M 206 181 A 25 25 0 0 0 206 231 Z" fill="url(#wsSteel)" stroke="#07090b" stroke-width="1.2"/><circle cx="190" cy="198" r="1.2" fill="#07090b"/><circle cx="190" cy="214" r="1.2" fill="#07090b"/><path d="M 198 196 v 20" stroke="#07090b" stroke-width="1" opacity=".5"/></g>
-      <g class="wsDoorR"><path d="M 206 181 A 25 25 0 0 1 206 231 Z" fill="url(#wsSteel)" stroke="#07090b" stroke-width="1.2"/><circle cx="222" cy="198" r="1.2" fill="#07090b"/><circle cx="222" cy="214" r="1.2" fill="#07090b"/><path d="M 214 196 v 20" stroke="#07090b" stroke-width="1" opacity=".5"/></g>
-      <g class="wsPee" fill="none" stroke-linecap="round"><path d="M 204 213 Q 192 214 182 234 T 158 300" stroke="#8a6d00" stroke-width="3.2" opacity=".5"/><path class="wsFlow" d="M 204 213 Q 192 214 182 234 T 158 300" stroke="#f6d743" stroke-width="2" stroke-dasharray="7 4"/></g>
-    </svg></div></div>
+      <!-- the pilot -->
+      <g clip-path="url(#wsRiseC)"><g class="wsRiseG">
+        <g class="wsTent" style="transform-origin:150px 304px"><path d="M150 306 C134 276 120 252 133 224 C138 212 151 213 150 224" fill="none" stroke="url(#wsTentG)" stroke-width="11" stroke-linecap="round"/><g fill="#e3f5b4" opacity=".8"><circle cx="139" cy="282" r="1.8"/><circle cx="131" cy="264" r="1.8"/><circle cx="129" cy="246" r="1.6"/></g></g>
+        <g class="wsTent" style="transform-origin:168px 304px;animation-delay:.5s"><path d="M168 306 C158 268 146 236 158 206 C162 196 173 198 171 208" fill="none" stroke="url(#wsTentG)" stroke-width="8" stroke-linecap="round"/></g>
+        <g class="wsTent" style="transform-origin:262px 304px;animation-delay:.9s"><path d="M262 306 C276 288 282 274 276 256 C273 247 263 249 265 257" fill="none" stroke="url(#wsTentG)" stroke-width="9" stroke-linecap="round"/><g fill="#e3f5b4" opacity=".8"><circle cx="272" cy="286" r="1.7"/><circle cx="277" cy="272" r="1.6"/></g></g>
+        <path d="M170 314 C172 284 176 268 170 250 L236 250 C230 268 234 284 236 314 Z" fill="url(#wsNeck)" stroke="#5d2440" stroke-width="1.4"/>
+        <path d="M228 306 C240 292 232 278 244 265" fill="none" stroke="url(#wsTentG)" stroke-width="7" stroke-linecap="round"/><circle cx="245.5" cy="262.5" r="3.3" fill="#e3f5b4" stroke="#47742b" stroke-width="1"/>
+        <g class="wsPee" fill="none" stroke-linecap="round"><path d="M246 261 Q250 226 272 211" stroke="#9a7a00" stroke-width="6.5" opacity=".45"/><path class="wsFlow" d="M246 261 Q250 226 272 211" stroke="#ffe35a" stroke-width="3.6" stroke-dasharray="8 4"/></g>
+        <g class="wsHead">
+          <path d="M156 240 C150 222 160 204 176 202 C182 190 202 188 210 196 C224 190 242 198 242 212 C252 220 250 240 240 246 C236 258 216 262 206 256 C194 264 170 260 164 250 C158 248 156 244 156 240 Z" fill="url(#wsBrain)" stroke="#5d2440" stroke-width="1.7"/>
+          <g fill="none" stroke="#a15274" stroke-width="1.7" stroke-linecap="round"><path d="M206 196 C200 210 212 222 204 236"/><path d="M176 204 C184 212 174 222 182 230"/><path d="M162 226 C172 224 176 234 170 240"/><path d="M190 212 C198 218 190 226 196 232"/><path d="M226 200 C220 210 230 218 224 228"/><path d="M242 216 C232 220 238 230 232 234"/><path d="M194 198 C192 204 198 206 196 210"/><path d="M216 206 C214 212 220 216 216 222"/></g>
+          <path d="M166 216 C170 205 182 199 194 198" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".5"/><path d="M228 204 q6 2 8 8" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+          <path d="M159 242 q-3 13 2 20 q5 -7 3 -20 Z" fill="#b6f25c" opacity=".9"/><path d="M243 240 q-2 10 2 15 q4 -5 2 -15 Z" fill="#b6f25c" opacity=".9"/><path d="M176 256 q-1 7 2 10 q3 -4 2 -10 Z" fill="#b6f25c" opacity=".8"/>
+          <circle cx="186" cy="246" r="11" fill="#fdfdf0" stroke="#5d2440" stroke-width="1.5"/><path d="M176 243 q4 1 5 4 M196 241 q-3 2 -3 5 M181 255 q2 -3 5 -3" fill="none" stroke="#d2475a" stroke-width=".7"/><circle cx="188" cy="247" r="5.2" fill="#c9e04a"/><ellipse cx="188" cy="247" rx="1.7" ry="4.3" fill="#14171c"/><circle cx="185" cy="243.5" r="1.6" fill="#ffffff"/>
+          <g clip-path="url(#wsEyeL)"><circle class="wsLid" style="--a:-19px;--b:-9px" cx="186" cy="246" r="12" fill="#c77a9a" stroke="#5d2440" stroke-width="1.2"/></g>
+          <circle cx="221" cy="244" r="8" fill="#fdfdf0" stroke="#5d2440" stroke-width="1.5"/><path d="M214 242 q3 1 4 3 M228 241 q-2 1 -3 3" fill="none" stroke="#d2475a" stroke-width=".7"/><circle cx="222" cy="245" r="3.8" fill="#c9e04a"/><ellipse cx="222" cy="245" rx="1.3" ry="3.1" fill="#14171c"/><circle cx="220" cy="242" r="1.2" fill="#ffffff"/>
+          <g clip-path="url(#wsEyeR)"><circle class="wsLid" style="--a:-14px;--b:-6.5px" cx="221" cy="244" r="9" fill="#c77a9a" stroke="#5d2440" stroke-width="1.2"/></g>
+        </g>
+        <path class="wsMouthA" d="M192 273 l4 -3 l4 3 l4 -3 l4 3 l4 -3" fill="none" stroke="#3b0f22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="wsMouthB" d="M191 268 Q203 286 215 268 Q203 274 191 268 Z" fill="#3b0f22" stroke="#3b0f22" stroke-width="1.4" stroke-linejoin="round"/>
+        <g fill="#b6f25c"><ellipse class="wsDrip" cx="161" cy="263" rx="1.9" ry="3.2"/><ellipse class="wsDrip" style="animation-delay:.55s" cx="245" cy="256" rx="1.7" ry="2.9"/><ellipse class="wsDrip" style="animation-delay:1s" cx="178" cy="267" rx="1.5" ry="2.6"/></g>
+      </g></g>
+      <g fill="none" stroke="url(#wsTentG)" stroke-linecap="round"><path class="wsGrab" pathLength="1" stroke-width="9" d="M158 306 C150 313 140 319 128 317 C119 315 117 324 126 327"/><path class="wsGrab" pathLength="1" stroke-width="8" style="transition-delay:1s" d="M216 311 C222 319 234 323 246 321 C256 319 259 328 251 331"/></g>
+      <g transform="translate(100 292)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.36s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.36s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g><g transform="translate(300 292)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.00s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.00s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g><g transform="translate(150 320.6)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.24s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.24s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g><g transform="translate(250 320.6)"><rect x="-4.5" y="-12" width="9" height="13" rx="2" fill="#3a4550" stroke="#0a0d11" stroke-width="1"/><circle class="wsEmG" style="transition-delay:0.12s" cy="-14" r="9"/><circle class="wsEm" style="transition-delay:0.12s" cy="-14" r="3.8" stroke="#0a0d11" stroke-width=".8"/></g>
+      <g class="wsShield">
+        <path class="wsHex" d="M100 292 A100 118 0 0 1 300 292 A100 33 0 0 1 100 292 Z" fill="url(#wsHexP)"/>
+        <path d="M100 292 A100 118 0 0 1 300 292" fill="none" stroke="#aef3ff" stroke-width="2" opacity=".85"/>
+        <path class="wsRing" d="M300 292 A100 33 0 0 1 100 292" fill="none" stroke="#7fe9ff" stroke-width="2.4"/>
+        <path d="M121 258 A84 100 0 0 1 171 198" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" opacity=".42"/><path d="M117 280 A84 100 0 0 1 118 268" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".3"/>
+        <path class="wsFlash" d="M100 292 A100 118 0 0 1 300 292 A100 33 0 0 1 100 292 Z" fill="#c8f8ff"/>
+      </g>
+      <g class="wsPee"><g transform="translate(272 211) rotate(-34)">
+        <ellipse class="wsRip" rx="4" ry="9" fill="none" stroke="#e6fbff" stroke-width="1.6"/><ellipse class="wsRip" style="animation-delay:.5s" rx="4" ry="9" fill="none" stroke="#e6fbff" stroke-width="1.6"/>
+        <g class="wsIce" style="animation-delay:0.00s;--dy:-14px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:0.37s;--dy:10px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:0.74s;--dy:-4px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:1.11s;--dy:18px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:1.48s;--dy:-22px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:1.85s;--dy:4px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g><g class="wsIce" style="animation-delay:2.22s;--dy:-10px"><rect x="-3.2" y="-3.2" width="6.4" height="6.4" fill="#fff8c4" stroke="#ffe35a" stroke-width=".9"/></g>
+      </g></g>
+    </svg>
+  </div>
   <p class="wsSay" id="wsSay"></p>
   <button type="button" id="wsSkip">Skip</button>
 </div>
@@ -3340,8 +3435,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.126.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.127.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3432,7 +3527,7 @@ function ruleOn(k){try{const v=localStorage.getItem(k);return v==null?true:v==='
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
 function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over){if(o.ver!==VERSION){o.hwreck=ruleOn('cc_hwreck2');o.wclean=ruleOn('cc_wclean2');o.jam=ruleOn('cc_jam2');if(!o.fields)o.fields=[];for(const d of o.drones||[])delete d.field;}if(o.moveCap==null)o.moveCap=(o.tut||(o.turnNo||0)>2*moveCapPref()-40)?0:moveCapPref(); /* v1.126.0: an older game takes the move limit, unless it is already at or near it */o.ver=VERSION;}return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
-const WRECK_TTL=10; // half-turns a wreck lies there: five rounds
+const WRECK_TTL=10; // single moves a wreck lies there: five turns (a turn is one move by each side). v1.127.0: the number on it counts turns, 5 down to 1
 const FALL_MS=1050,CLEAR_MS=420; // v1.62: the stars take their time: a flash as they go, a deliberate drop
 function wreckAt(r,c){S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} /* v1.62: every destroyed drone leaves wreckage; with Salvage on it also holds the missile */ // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
 const earned=()=>S.salvage?t(': a wreck holds its missile.'):t(': a missile earned.');
@@ -4304,7 +4399,7 @@ function renderBoard(gone,born,mark,fall){seeThru();drawFields();
     const seen=vis(YOU,r,c);
     let cls='cell'+((r+c)%2?' white':' red');if(r===SEAM)cls+=' seam';
     const ter=el.children[1];if(seen&&S.own[k]){const o=S.own[k];ter.className='ter'+(S.own[key(r-1,c)]!==o||r===0?' bt':'')+(S.own[key(r+1,c)]!==o||r===N-1?' bb':'')+(S.own[key(r,c-1)]!==o||c===0?' bl':'')+(S.own[key(r,c+1)]!==o||c===N-1?' br':'');}else ter.className='ter';
-    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck&&!S.wclean);const wn=el.children[4];if(wn){wn.textContent=Math.max(1,WRECK_TTL-age);wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[4];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
+    {const wk=el.children[2];if(seen&&S.wrecks&&S.wrecks[k]){const age=S.turnNo+1-S.wrecks[k];const sc=Math.max(.35,1-age/WRECK_TTL*.7);wk.style.display='block';wk.style.transform=`scale(${sc.toFixed(2)})`;wk.classList.toggle('cold',!S.salvage&&!S.hwreck&&!S.wclean);const wn=el.children[4];if(wn){wn.textContent=Math.max(1,Math.ceil((WRECK_TTL-age)/2)); /* v1.127.0: turns, not single moves */wn.style.display='block';}}else{wk.style.display='none';const wn=el.children[4];if(wn)wn.style.display='none';}} /* v1.112.0: the number is the turns left before the wreck fades */ /* v1.62: wreckage shrinks as it ages; cold grey unless Salvage gives it a missile */
     if(seen){if(S.own[k])cls+=' own'+S.own[k];if(isWall(r,c))cls+=' wall'+S.wall[k];if(isCmd(r,c))cls+=(S.cmd[1][0]===r&&S.cmd[1][1]===c)?' cmd1':' cmd2';}
     if(!seen)cls+=' fog';
     {const du=droneAt(r,c);if(du&&(du.side===YOU||seen)&&isStar(S.grid[r][c]))cls+=' under u'+S.grid[r][c];} /* v1.96: the star under a drone shows as a square frame in its color */
@@ -5251,7 +5346,7 @@ function storyBark(w){if(!bossSec()||!w||!w.why)return;const why=w.why,actor=S.t
   else if(why==='drift'&&!w.at&&actor===YOU)showBark('bigclear');}
 function storyBarkTurn(){const sec=bossSec();if(!sec||S.turn!==YOU)return;const m=cmdOf(YOU);
   if(m&&dronesOf(BOT).some(x=>x.kind==='X'&&Math.max(Math.abs(x.r-m.r),Math.abs(x.c-m.c))<=2))showBark('siege');
-  if(droneCount(BOT)<=3)showBark('low');if(droneCount(YOU)<=3)showBark('yourlow');if(S.turnNo>=20)showBark('mid');}
+  if(droneCount(BOT)<=3)showBark('low');if(droneCount(YOU)<=3)showBark('yourlow');if(S.turnNo>=40)showBark('mid'); /* v1.127.0: "Twenty turns" is said on turn 20 by the counter: 40 single moves, it was 20 */}
 // ----- the end of a sector: the dispatcher's word, and where to go next
 function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?secById(S.story):null;
   for(const id of ['btnStoryNext','btnStoryRetry','btnStoryMap'])$(id).hidden=true;$('btnAgain').hidden=inStory;
@@ -6151,15 +6246,25 @@ function lessonLeave(){lessonLock(false);{const l=$('land1');if(l)l.classList.re
 (()=>{const b=$('coverTrain');if(b)b.addEventListener('click',lessonPick);
   const pk=$('lessonPick');if(pk){$('lessonPickClose').addEventListener('click',()=>{pk.hidden=true;});pk.addEventListener('click',e=>{if(e.target===pk)pk.hidden=true;});}
   if(S&&S.lesson)lessonLeave();})(); /* a page reloaded in the middle of a lesson goes back to the game that was put aside, or a fresh one */
-// ---------- the win scene (v1.125.0). User: "we should add a you win video. that is very short some confetti Then these words popup 'Have a
-// Good rest of your day Winner Winnerson from Winnerville.' Then you see the Command drone and the camera zooms in to a hatch that opens. some
-// hideous brain slime tentacles starts to pee. and it say I have been holding that this whole time."
-// Built as an animation in the page, not a film: nothing to download, and the words are in the player's language. About 13 seconds, with Skip.
-// Steps are classes on #winShow, set by timers: s1 confetti and the words; s2 the Command drone; s3 the camera goes in on the hatch; s4 the hatch
-// opens; s5 the pilot, the line and the voice (story/pilot-relief.mp3); out. Called from gameOver (p2.js) when the player wins, never in a lesson.
-// Functions and var only, like the other late parts of the script.
+// ---------- the win scene (v1.125.0, drawn again in v1.127.0). User: "we should add a you win video. that is very short some confetti Then
+// these words popup 'Have a Good rest of your day Winner Winnerson from Winnerville.' Then you see the Command drone and the camera zooms in to
+// a hatch that opens. some hideous brain slime tentacles starts to pee. and it say I have been holding that this whole time."
+// v1.127.0, user: "lets have that ending play just once a day and we need to make it not look so crappy and have it put a force shield up over
+// the hatch. before it open it up so space is not getting in."
+// An animation in the page, not a film: nothing to download, and the words are in the player's language.
+// ONCE A DAY: the whole scene plays on the first win of the day (the day is kept in cc_winday). Later wins that day get the confetti and the
+// words only, about 5 seconds. winShow(true) plays the whole scene whatever the day; the address ...?winscene does that after the first tap.
+// Steps are classes on #winShow, set by timers: s1 confetti and the words; s2 the Command drone; s3 the camera goes in and the picture changes
+// to the hull and its hatch; s4 the six shield posts light; s5 the shield goes up; s6 the hatch opens under it; s7 the pilot comes up; s8 the
+// stream (it turns to ice where it leaves the shield), the line and the voice (story/pilot-relief.mp3); out. Called from gameOver (p2.js) when
+// the player wins, never in a lesson. Functions and var only, like the other late parts of the script.
 var winTimers=[],winOn=false,winRaf=0;
+function winDay(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function winFullDue(){try{return localStorage.getItem('cc_winday')!==winDay();}catch(_){return true;}}
 function winClose(){if(!winOn)return;winOn=false;for(const x of winTimers)clearTimeout(x);winTimers=[];if(winRaf)cancelAnimationFrame(winRaf);winRaf=0;const w=$('winShow');if(w){w.className='';w.hidden=true;}}
+function winStars(){const g=$('wsStars');if(!g||g.childNodes.length)return;let h='',s=7;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;}; /* the same sky every time */
+  for(let i=0;i<64;i++){const x=(rnd()*400).toFixed(1),y=(rnd()*400).toFixed(1),r=(.5+rnd()*1.1).toFixed(2),o=(.3+rnd()*.6).toFixed(2);h+=`<circle${i%5===0?' class="wsTw" style="animation-delay:'+(rnd()*1.8).toFixed(2)+'s"':''} cx="${x}" cy="${y}" r="${r}" opacity="${o}"/>`;}
+  g.innerHTML=h;}
 function winConfetti(){const c=$('wsConf'),w=$('winShow');if(!c||!w)return;const dpr=Math.min(2,window.devicePixelRatio||1),W=c.width=Math.max(1,w.clientWidth*dpr),H=c.height=Math.max(1,w.clientHeight*dpr),ctx=c.getContext('2d');
   const cols=['#ffd27a','#e8a63b','#4ea8dc','#6bd68a','#ef5d6f','#b06ce8','#ffffff'],ps=[];
   for(let i=0;i<150;i++)ps.push({x:Math.random()*W,y:-Math.random()*H*0.9,vx:(Math.random()-.5)*1.6*dpr,vy:(1.6+Math.random()*2.6)*dpr,s:(4+Math.random()*6)*dpr,r:Math.random()*6.28,vr:(Math.random()-.5)*0.3,c:cols[i%cols.length]});
@@ -6168,19 +6273,24 @@ function winConfetti(){const c=$('wsConf'),w=$('winShow');if(!c||!w)return;const
     for(const p of ps){p.x+=p.vx+Math.sin(tm*3+p.r)*0.6*dpr;p.y+=p.vy;p.r+=p.vr;if(p.y<H+20*dpr)live++;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.globalAlpha=Math.max(0,Math.min(1,(5.2-tm)/1.2));ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore();}
     if(live&&tm<5.4)winRaf=requestAnimationFrame(frame);else{ctx.clearRect(0,0,W,H);winRaf=0;}};
   winRaf=requestAnimationFrame(frame);}
-function winShow(){const w=$('winShow');if(!w||winOn)return;winOn=true;w.hidden=false;w.className='';
+function winShow(force){const w=$('winShow');if(!w||winOn)return;const full=force===true||winFullDue();winOn=true;w.hidden=false;w.className='';
   $('wsL1').textContent=t('Have a good rest of your day,');$('wsL2').textContent=t('Winner Winnerson');$('wsL3').textContent=t('from Winnerville.');
-  $('wsSay').textContent=t('I have been holding that this whole time.');$('wsSkip').textContent=t('Skip');$('wsDrone').innerHTML=cmdSVG(YOU);
+  $('wsSay').textContent=t('I have been holding that this whole time.');$('wsSkip').textContent=t('Skip');$('wsDrone').innerHTML=cmdSVG(YOU);winStars();
   void w.offsetWidth;w.classList.add('s1');winConfetti();
   const at=(ms,f)=>winTimers.push(setTimeout(()=>{if(winOn)f();},ms));
-  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){at(4500,winClose);return;} /* the words only */
+  if(!full||window.matchMedia('(prefers-reduced-motion:reduce)').matches){at(4300,()=>w.classList.add('out'));at(4900,winClose);return;} /* the words only */
+  try{localStorage.setItem('cc_winday',winDay());}catch(_){}
   at(3400,()=>w.classList.add('s2'));
-  at(4700,()=>w.classList.add('s3'));
-  at(6400,()=>w.classList.add('s4'));
-  at(7400,()=>{w.classList.add('s5');try{storyPlayUrl('story/pilot-relief.mp3');}catch(_){}});
-  at(12400,()=>w.classList.add('out'));
-  at(13000,winClose);}
-(()=>{const b=$('wsSkip');if(b)b.addEventListener('click',winClose);})();
+  at(4600,()=>w.classList.add('s3'));
+  at(6900,()=>w.classList.add('s4'));
+  at(7800,()=>w.classList.add('s5'));
+  at(9100,()=>w.classList.add('s6'));
+  at(10300,()=>w.classList.add('s7'));
+  at(12100,()=>{w.classList.add('s8');try{storyPlayUrl('story/pilot-relief.mp3');}catch(_){}});
+  at(17100,()=>w.classList.add('out'));
+  at(17700,winClose);}
+(()=>{const b=$('wsSkip');if(b)b.addEventListener('click',winClose);
+  if(/[?&]winscene\b/.test(location.search)){const h=()=>{document.removeEventListener('pointerup',h);setTimeout(()=>{try{winShow(true);}catch(_){}},900);};document.addEventListener('pointerup',h);}})(); /* to look at the scene without winning a game */
 </script>
 </body>
 </html>
