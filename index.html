@@ -609,6 +609,8 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck" checked> reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Siege field</span><label><input type="checkbox" id="inJam" checked> a bomb stacked onto a siege drone lets it place a field: tap the siege, press Place the field, then tap a square. For eight turns, enemy drones in the 3 × 3 around that square move only 1 square a turn and cannot fire. Untick for the old rule, a shield on one drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Wrecks</span><label><input type="checkbox" id="inWClean" checked> other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">New stars</span><label><input type="checkbox" id="inCalm" checked> fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">Lines of 3</span><label><input type="checkbox" id="inSwap3" checked> a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
   <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
   <button type="button" id="btnStory" class="primary">Story mode</button>
@@ -2270,7 +2272,12 @@ const FR={
 "New game now": "Nouvelle partie maintenant",
 "Keep playing": "Continuer à jouer",
 "That setting starts with the next game.": "Ce réglage commence avec la prochaine partie.",
-"New game laid out with your settings.": "Nouvelle partie préparée avec vos réglages."
+"New game laid out with your settings.": "Nouvelle partie préparée avec vos réglages.",
+"New stars": "Nouvelles étoiles",
+"fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.": "arrivent calmes : une nouvelle étoile prend une couleur que peu d'étoiles autour de sa case ont ; moins de réactions en chaîne et moins de drones construits par chance. Décochez pour l'ancienne règle, n'importe quelle couleur. Compte à partir de votre prochaine partie.",
+"Lines of 3": "Lignes de 3",
+"a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un échange peut faire une simple ligne de 3, qui disparaît sans rien construire. Décochez et chaque échange doit construire un drone ; s'il ne vous reste que votre drone de commandement et aucun échange de ce genre, les étoiles sont remélangées. Compte à partir de votre prochaine partie.",
+"A line of 3 builds nothing. With this rule a swap must make a drone.": "Une ligne de 3 ne construit rien. Avec cette règle, un échange doit faire un drone."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3456,13 +3463,18 @@ const ES={
 "New game now": "Nueva partida ahora",
 "Keep playing": "Seguir jugando",
 "That setting starts with the next game.": "Ese ajuste empieza con la próxima partida.",
-"New game laid out with your settings.": "Nueva partida preparada con tus ajustes."
+"New game laid out with your settings.": "Nueva partida preparada con tus ajustes.",
+"New stars": "Estrellas nuevas",
+"fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.": "llegan tranquilas: una estrella nueva toma un color que pocas estrellas alrededor de su casilla tienen; menos reacciones en cadena y menos drones construidos por suerte. Desmarca para la regla anterior, cualquier color. Cuenta desde tu próxima partida.",
+"Lines of 3": "Líneas de 3",
+"a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un intercambio puede hacer una simple línea de 3, que desaparece sin construir nada. Desmarca y cada intercambio debe construir un dron; si solo te queda tu dron de mando y ningún intercambio así, las estrellas se barajan. Cuenta desde tu próxima partida.",
+"A line of 3 builds nothing. With this rule a swap must make a drone.": "Una línea de 3 no construye nada. Con esta regla, un intercambio debe hacer un dron."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.130.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.131.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3505,7 +3517,7 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game',opts);}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:false /* v1.112.0: retired; only a hunter takes a wreck's missile now */,wrecks:{},
-     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,auto:opts.auto?1:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),calm:ruleOn('cc_calm'),no3:!(opts.tut||opts.lesson)&&!ruleOn('cc_swap3'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,auto:opts.auto?1:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
@@ -3551,7 +3563,7 @@ function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors
       default, on; newGame reads the key, not the box, and the box is set from the key at start. Unticking still turns a rule off. */
 function ruleOn(k){try{const v=localStorage.getItem(k);return v==null?true:v==='1';}catch(_){return true;}}
 function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
-function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over){if(o.ver!==VERSION){o.hwreck=ruleOn('cc_hwreck2');o.wclean=ruleOn('cc_wclean2');o.jam=ruleOn('cc_jam2');if(!o.fields)o.fields=[];for(const d of o.drones||[])delete d.field;}if(o.moveCap==null)o.moveCap=(o.tut||(o.turnNo||0)>2*moveCapPref()-40)?0:moveCapPref(); /* v1.126.0: an older game takes the move limit, unless it is already at or near it */o.ver=VERSION;}return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
+function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over){if(o.ver!==VERSION){if(o.calm==null)o.calm=ruleOn('cc_calm');o.hwreck=ruleOn('cc_hwreck2');o.wclean=ruleOn('cc_wclean2');o.jam=ruleOn('cc_jam2');if(!o.fields)o.fields=[];for(const d of o.drones||[])delete d.field;}if(o.moveCap==null)o.moveCap=(o.tut||(o.turnNo||0)>2*moveCapPref()-40)?0:moveCapPref(); /* v1.126.0: an older game takes the move limit, unless it is already at or near it */o.ver=VERSION;}return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
 function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
 const WRECK_TTL=10; // single moves a wreck lies there: five turns (a turn is one move by each side). v1.127.0: the number on it counts turns, 5 down to 1
 const FALL_MS=1050,CLEAR_MS=420; // v1.62: the stars take their time: a flash as they go, a deliberate drop
@@ -3702,7 +3714,7 @@ function gravity(g,side){
       const kept=[];for(const i of order)if(g[i][c]>=0)kept.push([g[i][c],i]);
       for(let j=0;j<order.length;j++){const i=order[j];
         if(j<kept.length){g[i][c]=kept[j][0];if(kept[j][1]!==i)fall.set(key(i,c),i-kept[j][1]);}
-        else{g[i][c]=(S&&S.lesson)?pickCalm(g,i,c):pickSafe(g,i,c);born.add(key(i,c));const far=down?r-1:e;fall.set(key(i,c),i-far);}}
+        else{g[i][c]=(S&&(S.lesson||S.calm))?pickCalm(g,i,c):pickSafe(g,i,c);born.add(key(i,c));const far=down?r-1:e;fall.set(key(i,c),i-far);}}
       r=e;
     }
   }
@@ -3767,6 +3779,18 @@ async function resolve(side,anchor){
     anchor=null;if(chain>12)break;
   }
 }
+/* v1.131.0 (user: "I am thinking we should stop the 3 star swaps to cut down on the forever cascade of stars breaking out. but If you are out of
+   all your drones except the commander and no moves on your side of the board. we could shuffle the stars for you").
+   MEASURED FIRST, bot against bot at skill 100 (DESIGN.md has the table). Stopping the swaps that make only a line of 3 did not cut the chain
+   reactions: 1.9 chain steps after each swap against 1.7 without the rule. A chain comes from the stars that fall in after ANY clear, and the
+   old pick for a new star (pickSafe) only avoided finishing a line with the two stars before it. What did cut them: picking each new star
+   with pickCalm, the lessons' pick, which takes the color with the fewest like-colored stars around the square: 0.7 chain steps a swap.
+   TWO RULES, both Settings boxes, read at newGame:
+   S.calm (New stars, cc_calm, ON by default): gravity fills with pickCalm.
+   S.no3 (Lines of 3, cc_swap3, the box unticked; OFF by default, never in a lesson or the coached game): a swap must make a shape that pays
+   a drone (swapMakes). The whole-board reshuffle is then replaced by the user's one: the side to move has only its Command drone and no such
+   swap on the squares it may swap. */
+function swapMakes(sh){return sh.cells.size>0&&!(S&&S.no3&&!sh.spawns.length);}
 function validSwaps(side){
   const out=[],g=S.grid;
   for(let r=0;r<N;r++)for(let c=0;c<N;c++)for(const [dr,dc] of [[0,1],[1,0]]){
@@ -3774,7 +3798,7 @@ function validSwaps(side){
     if(side!=null&&!(vis(side,r,c)&&vis(side,r2,c2)))continue;
     if(side!=null&&(S.own[key(r,c)]===other(side)||S.own[key(r2,c2)]===other(side)))continue; // v1.19: no swapping on the other side's land
     [g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];const sh=detectShapes(g,[r2,c2]);[g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];
-    if(sh.cells.size)out.push({a:[r,c],b:[r2,c2],sh});}
+    if(swapMakes(sh))out.push({a:[r,c],b:[r2,c2],sh});}
   return out;
 }
 function reshuffle(){for(let t=0;t<200;t++){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(isStar(S.grid[r][c]))S.grid[r][c]=pickSafe(S.grid,r,c);if(!detectShapes(S.grid).cells.size&&validSwaps().length)break;}note(t('No swap left anywhere: the stars were reshuffled.'),{why:'reshuffle'});}
@@ -4067,7 +4091,7 @@ async function afterAction(){const actor=S.turn;wreckSweep();
   if(S.moveCap){if(S.turnNo>=2*S.moveCap){gameTie();save();renderAll();return;}const left=S.moveCap-S.turnNo/2;if(left===20||left===10||left===5)note(t`${left} turns are left. If no one has won by then, the game is a tie.`);} /* v1.126.0 */
   if(S.wrecks)for(const k in S.wrecks)if(S.turnNo+1-S.wrecks[k]>=WRECK_TTL)delete S.wrecks[k];S.cleared={1:0,2:0};S.drifted=false;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
   S.moveLeft=S.timers?60000:0;sfxTurn();storyBarkTurn();
-  if(!validSwaps().length)reshuffle();
+  if(S.no3){if(!validSwaps(S.turn).length&&dronesOf(S.turn).every(d=>d.kind==='M'))reshuffle();}else if(!validSwaps().length)reshuffle();
   save();renderAll();
   if(S.turn===BOT&&!online){busy=true;await sleep(S.lesson?150:S.tut?1500:900+rnd(1200));await botSafely();busy=false;if(typeof renderActions==='function')renderActions();} /* v1.123.0: the bot's last redraw ran while busy was still set, so the action bar came up empty: a Throw an asteroid button earned earlier did not show until the player tapped something */
 }
@@ -4325,6 +4349,7 @@ async function humanSwap(a,b){
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
   const sh=detectShapes(g,b);
   if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sfx('swap-no');sel=null;renderBoard();return;}
+  if(!swapMakes(sh)){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('A line of 3 builds nothing. With this rule a swap must make a drone.'));sfx('swap-no');sel=null;renderBoard();return;} /* v1.131.0 */
   if(netGuest()){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];netSend({type:'swap',a,b});return;}
   busy=true;sel=null;note(t`${who(YOU)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard();
   await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
@@ -4762,7 +4787,7 @@ let drag=null,dragDrop=0; /* dragDrop: the id of a drone just dropped by hand; m
     if(cancel||nb<0||dg.p<0.5){back();
       if(!cancel&&nb<0&&dg.dir){const r2=dg.r+dir[0],c2=dg.c+dir[1];if(inb(r2,c2)&&S.own[key(r2,c2)]===BOT&&isStar(S.grid[r2][c2]))setStatus(t("That star is on the bot's land. You can only swap stars on open land or your own."));}
       return;}
-    const a=[dg.r,dg.c],q=rc(nb),G=S.grid;[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];const makes=detectShapes(G,q).cells.size>0;[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];
+    const a=[dg.r,dg.c],q=rc(nb),G=S.grid;[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];const makes=swapMakes(detectShapes(G,q));[G[a[0]][a[1]],G[q[0]][q[1]]]=[G[q[0]][q[1]],G[a[0]][a[1]]];
     if(makes&&!(S.lesson&&!lessonSwapOk(a,q))){ /* finish the slide, then the swap itself */
       gemSet(dg.k,dir[1]*dg.step,dir[0]*dg.step,true);gemSet(nb,-dir[1]*dg.step,-dir[0]*dg.step,true);cells[nb].classList.remove('dover');busy=true;
       setTimeout(()=>{gemClear(dg.k);gemClear(nb);busy=false;sel=null;mode=null;humanSwap(a,q);},160);return;}
@@ -4856,7 +4881,7 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
   const dl=side=>dronesOf(side).map(d=>LETTER[d.kind]+' '+sq(d.r,d.c)+(d.power>1?' p'+d.power:'')+(d.ammo?' m'+d.ammo:'')+(d.kind==='C'?' c'+(d.claims||0):'')+(d.shield?' shielded':'')+(d.fuse!=null?' fuse'+d.fuse:'')).join(', ')||'none';
   let ahead='auto';try{ahead=localStorage.getItem('cc_ahead')||'auto';}catch(_){}
   const mode=S.tut?'coached':S.story?'story '+S.story:(typeof online!=='undefined'&&online)?'friend':'free play';
-  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.moveCap?Math.min(S.moveCap,Math.floor((S.turnNo||0)/2)+1)+' of '+S.moveCap:(Math.floor((S.turnNo||0)/2)+1)+', no limit'} (move ${S.turnNo||0}) · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'} · siege field ${S.jam?'on':'off'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
+  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.moveCap?Math.min(S.moveCap,Math.floor((S.turnNo||0)/2)+1)+' of '+S.moveCap:(Math.floor((S.turnNo||0)/2)+1)+', no limit'} (move ${S.turnNo||0}) · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'} · siege field ${S.jam?'on':'off'} · new stars ${S.calm?'calm':'any color'} · lines of 3 ${S.no3?'off':'on'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
 /* v1.101.3: on a computer the clipboard can be refused (the page sits inside a frame, or is not the focused window). The fallback was prompt(), which
    browsers block inside frames and which cuts a many-line text down to one line, so the button looked dead. Now three steps: the clipboard, then the older
    select-and-copy, then a box on the page with the text selected, a Copy button and Save as a file. The button that was pressed says Copied for a moment. */
@@ -4896,7 +4921,7 @@ snapSkill();renderSkillNote();
    - with a free game on the board that has no move made yet: the board is laid out again at once with the new settings;
    - otherwise a card comes up: the setting starts with the next game, New game now or Keep playing. It comes up once for each visit to
      Settings, not after every box. New game now does what the New game button does, and says first if the game in progress counts as a loss. */
-const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean'];let setAsked=false;
+const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean','inCalm','inSwap3'];let setAsked=false;
 function setPop(){const p=$('setpop');if(!p)return;const mid=!!(S&&!S.over&&S.turnNo>2);$('setpopH').textContent=t('Press New game');
   $('setpopP').textContent=t('That setting starts with the next game. The game on the board keeps the settings it began with.');
   const l=$('setpopL');l.hidden=!mid;l.textContent=mid?t('Starting a new game now counts this one as a loss.'):'';
@@ -4923,11 +4948,11 @@ showCover();
 /* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
    progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
    sector no longer leaves its own skill in the Settings box. */
-const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inMoves','cc_moves','value'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked'],['inJam','cc_jam2','checked']];
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inMoves','cc_moves','value'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked'],['inJam','cc_jam2','checked'],['inCalm','cc_calm','checked'],['inSwap3','cc_swap3','checked']];
 function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
 function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
 for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
-{const sync=()=>{for(const [id,k] of [['inHWreck','cc_hwreck2'],['inWClean','cc_wclean2'],['inJam','cc_jam2']]){const el=$(id);if(el)el.checked=ruleOn(k);}};sync();window.addEventListener('pageshow',sync);} /* v1.116.1: the two rule boxes show what newGame will use, whatever the browser put back in them */
+{const sync=()=>{for(const [id,k] of [['inHWreck','cc_hwreck2'],['inWClean','cc_wclean2'],['inJam','cc_jam2'],['inCalm','cc_calm'],['inSwap3','cc_swap3']]){const el=$(id);if(el)el.checked=ruleOn(k);}};sync();window.addEventListener('pageshow',sync);} /* v1.116.1: the two rule boxes show what newGame will use, whatever the browser put back in them */
 snapSkill();renderSkillNote();
 buildBoard();
 if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').removeAttribute('open');} // phones: record and log start folded
@@ -5094,7 +5119,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
     if(a.type==='fire'){const d=byId(a.id);if(!d||d.side!==me)throw 0;const list=(a.list||[]).filter(x=>inb(x.r,x.c)&&vis(me,x.r,x.c)&&inRange(d,x.r,x.c)&&!(droneAt(x.r,x.c)&&droneAt(x.r,x.c).side===me)&&(droneAt(x.r,x.c)||S.grid[x.r][x.c]>=0)).slice(0,Math.min(shotsLeft(d),shotCap(d)));if(!list.length)throw 0;
       if(!d.bombAmmo)d.ammo=ammoOf(d)-list.length;d.shots=(d.shots||0)+list.length;await fireShots(me,list,d);closeAction(me);save();renderAll();}
     else if(a.type==='swap'){const p=a.a,q=a.b,g=S.grid;if(!p||!q||!inb(p[0],p[1])||!inb(q[0],q[1])||Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])!==1||!isStar(g[p[0]][p[1]])||!isStar(g[q[0]][q[1]])||S.own[key(p[0],p[1])]===YOU||S.own[key(q[0],q[1])]===YOU)throw 0;
-      [g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];const sh=detectShapes(g,q);if(!sh.cells.size){[g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];throw 0;}
+      [g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];const sh=detectShapes(g,q);if(!swapMakes(sh)){[g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];throw 0;}
       note(t`${who(me)} swapped ${sq(p[0],p[1])} and ${sq(q[0],q[1])}.`,{why:'swap',at:[p,q],lab:[t('swapped'),'']});renderBoard();await resolve(me,sh.cells.has(key(q[0],q[1]))?q:p);await afterAction();}
     else if(a.type==='move'){const d=byId(a.id);if(!d||d.side!==me||!inb(a.r,a.c)||!targets(d).has(key(a.r,a.c)))throw 0;const from=[d.r,d.c];applyMove(d,a.r,a.c);await movedAnim(d,from);await afterAction();}
     else if(a.type==='cclaim'){const d=byId(a.id);if(!d||d.side!==me||!cmdClaimOk(d))throw 0;applyCmdClaim(d);renderBoard();await afterAction();}
