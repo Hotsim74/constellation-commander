@@ -602,7 +602,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
   <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
   <div class="field"><span class="lbl">New player</span><label><input type="checkbox" id="inGate"> Launch stays dark until the first story is done. Turn this off to open everything now.</label></div>
-  <div class="field"><span class="lbl">Share play notes</span><label><input type="checkbox" id="inTele"> Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.</label></div>
+  <div class="field"><span class="lbl">Share play notes</span><label><input type="checkbox" id="inTele"> Send anonymous play notes to the makers: time played, modes and lessons tried, how games end, Settings changed, invites. No name, nothing typed.</label></div>
   <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
   <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
   <div class="field" hidden><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
@@ -632,7 +632,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
-    <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>Help us make the game better?</b><p>If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">Yes, send play notes</button><button type="button" id="teleNo">No thanks</button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
+    <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>Help us make the game better?</b><p id="teleNew" hidden></p><p>If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">Yes, send play notes</button><button type="button" id="teleNo">No thanks</button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
     <div class="acthint" id="acthint"></div>
@@ -1834,12 +1834,12 @@ const FR={
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un bouclier empilé à puissance 3 peut se jeter sur un drone ennemi à côté de lui. Les deux sont détruits, quelle que soit la puissance de l'autre. Pas le drone de commandement, un drone de siège, une tourelle ou un drone protégé.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Empiler ajoute de la puissance : chaque point demande un missile de plus pour tomber. La pile garde le type de celui du dessous et suit les deux couleurs. Puissance 3 au maximum. Rien ne s'empile sur une bombe ; c'est la bombe qui s'empile sur un porteur, à n'importe quel moment de sa mèche.",
 "Help us make the game better?": "Nous aider à améliorer le jeu ?",
-"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si vous dites oui, le jeu nous envoie de courtes notes de jeu anonymes : combien de temps vous jouez, quels modes vous essayez (histoire, partie libre, deux téléphones, partie guidée), ce que vous changez dans les réglages, si un lien d'invitation vous a amené ici, et la version du jeu. Un numéro d'installation aléatoire distingue les joueurs qui reviennent.",
+"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si vous dites oui, le jeu nous envoie de courtes notes de jeu anonymes : combien de temps vous jouez, quels modes vous essayez (histoire, partie libre, deux téléphones, partie guidée), quelles leçons et le film vous ouvrez et terminez, comment vos parties se terminent et en combien de tours, dans quel ordre vous avez fait tout cela, ce que vous changez dans les réglages, si un lien d'invitation vous a amené ici, et la version du jeu. Un numéro d'installation aléatoire distingue les joueurs qui reviennent.",
 "No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Pas de nom, pas d'e-mail, pas de position, rien de ce que vous tapez. Vous pouvez changer d'avis à tout moment dans les réglages, sous Partager les notes de jeu.",
 "Yes, send play notes": "Oui, envoyer les notes",
 "No thanks": "Non merci",
 "Share play notes": "Notes de jeu",
-"Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.": "Envoyer des notes de jeu anonymes aux auteurs : temps de jeu, modes essayés, réglages changés, invitations. Pas de nom, rien de tapé.",
+"Send anonymous play notes to the makers: time played, modes and lessons tried, how games end, Settings changed, invites. No name, nothing typed.": "Envoyer des notes de jeu anonymes aux auteurs : temps de jeu, modes et leçons essayés, fin des parties, réglages changés, invitations. Pas de nom, rien de tapé.",
 "Invite a friend": "Inviter un ami",
 "Copy invite link": "Copier le lien d'invitation",
 "Invite link copied.": "Lien d'invitation copié.",
@@ -2260,7 +2260,8 @@ const FR={
 "Turn {0} of {1}. No winner by the end is a tie.": "Tour {0} sur {1}. Sans vainqueur à la fin, match nul.",
 "Turn {0}. No turn limit.": "Tour {0}. Sans limite de tours.",
 "The turn limit of {0} was reached and no one has won.": "La limite de {0} tours est atteinte et personne n'a gagné.",
-"{0} turns are left. If no one has won by then, the game is a tie.": "Il reste {0} tours. Si personne n'a gagné d'ici là, la partie est nulle."
+"{0} turns are left. If no one has won by then, the game is a tie.": "Il reste {0} tours. Si personne n'a gagné d'ici là, la partie est nulle.",
+"The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?": "Les notes de jeu comptent maintenant aussi les leçons et le film que vous ouvrez, et la fin de vos parties. Est-ce toujours d'accord ?"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3010,12 +3011,12 @@ const ES={
 "A guard stacked to power 3 can throw itself at an enemy drone beside it. Both are destroyed, whatever the other one's power. Not the Command drone, a siege, a turret or a shielded drone.": "Un guardián apilado a potencia 3 puede lanzarse contra un dron enemigo a su lado. Los dos quedan destruidos, sea cual sea la potencia del otro. No el dron de mando, un dron de asedio, una torreta ni un dron protegido.",
 "Stacking adds power: each power takes one more missile to bring down. The stack keeps the kind it landed on and rides both colors. Power 3 is the most. Nothing stacks onto a bomb; a bomb stacks onto a carrier, at any point on its fuse.": "Apilar añade potencia: cada potencia necesita un misil más para derribarla. La pila conserva el tipo sobre el que aterrizó y viaja por ambos colores. Potencia 3 es el máximo. Nada se apila sobre una bomba; la bomba se apila sobre un portador, en cualquier punto de su mecha.",
 "Help us make the game better?": "¿Nos ayudas a mejorar el juego?",
-"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si dices que sí, el juego nos envía notas de juego breves y anónimas: cuánto juegas, qué modos pruebas (historia, partida libre, dos teléfonos, partida guiada), qué cambias en Ajustes, si un enlace de invitación te trajo aquí y la versión del juego. Un número de instalación aleatorio distingue a los jugadores que vuelven.",
+"If you say yes, the game sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.": "Si dices que sí, el juego nos envía notas de juego breves y anónimas: cuánto juegas, qué modos pruebas (historia, partida libre, dos teléfonos, partida guiada), qué lecciones y la película abres y terminas, cómo acaban tus partidas y cuántos turnos duran, en qué orden hiciste todo eso, qué cambias en Ajustes, si un enlace de invitación te trajo aquí y la versión del juego. Un número de instalación aleatorio distingue a los jugadores que vuelven.",
 "No name, no email, no location, nothing you type. You can change your mind any time in Settings, under Share play notes.": "Sin nombre, sin correo, sin ubicación, nada de lo que escribes. Puedes cambiar de opinión cuando quieras en Ajustes, en Compartir notas de juego.",
 "Yes, send play notes": "Sí, enviar notas",
 "No thanks": "No, gracias",
 "Share play notes": "Notas de juego",
-"Send anonymous play notes to the makers: time played, modes tried, Settings changed, invites. No name, nothing typed.": "Enviar notas de juego anónimas a los autores: tiempo jugado, modos probados, ajustes cambiados, invitaciones. Sin nombre, nada escrito.",
+"Send anonymous play notes to the makers: time played, modes and lessons tried, how games end, Settings changed, invites. No name, nothing typed.": "Enviar notas de juego anónimas a los autores: tiempo jugado, modos y lecciones probados, cómo acaban las partidas, ajustes cambiados, invitaciones. Sin nombre, nada escrito.",
 "Invite a friend": "Invitar a un amigo",
 "Copy invite link": "Copiar enlace de invitación",
 "Invite link copied.": "Enlace de invitación copiado.",
@@ -3436,13 +3437,14 @@ const ES={
 "Turn {0} of {1}. No winner by the end is a tie.": "Turno {0} de {1}. Sin ganador al final, empate.",
 "Turn {0}. No turn limit.": "Turno {0}. Sin límite de turnos.",
 "The turn limit of {0} was reached and no one has won.": "Se alcanzó el límite de {0} turnos y nadie ha ganado.",
-"{0} turns are left. If no one has won by then, the game is a tie.": "Quedan {0} turnos. Si nadie ha ganado para entonces, la partida es un empate."
+"{0} turns are left. If no one has won by then, the game is a tie.": "Quedan {0} turnos. Si nadie ha ganado para entonces, la partida es un empate.",
+"The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?": "Las notas de juego ahora también cuentan las lecciones y la película que abres, y cómo acaban tus partidas. ¿Sigue pareciéndote bien?"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.128.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.129.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3482,10 +3484,10 @@ function pickCalm(g,r,c){let best=0,bs=1e9;const k0=rnd(KINDS);for(let n=0;n<KIN
   if(sc<bs){bs=sc;best=k;}}return best;}
 function pickSafe(g,r,c){let k,t=0;do{k=rnd(KINDS);t++;}while(t<30&&((c>=2&&g[r][c-1]===k&&g[r][c-2]===k)||(r>=2&&g[r-1][c]===k&&g[r-2][c]===k)));return k;}
 function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push(pickSafe(g,r,c));}return g;}
-function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game');}catch(_){} /* v1.94: counted once S stands */
+function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game',opts);}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:false /* v1.112.0: retired; only a hunter takes a wreck's missile now */,wrecks:{},
-     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,auto:opts.auto?1:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
     for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
@@ -4033,7 +4035,7 @@ function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`
 const MOVE_CAP_DEFAULT=150;
 function moveCapPref(){const e=$('inMoves');if(!e)return MOVE_CAP_DEFAULT;const x=String(e.value).trim();if(x==='')return MOVE_CAP_DEFAULT;const v=Math.round(+x);return isFinite(v)?Math.max(0,Math.min(500,v)):MOVE_CAP_DEFAULT;}
 function gameTie(){if(S.over)return;S.over={w:0,reason:t`The turn limit of ${S.moveCap} was reached and no one has won.`}; /* v1.126.1: the player's word is TURN: one move by each side is one turn */if(simQuiet)return;note(t`Game over. A tie. ${S.over.reason}`,{why:'over'});rateGame(0);}
-function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);
+function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;if(S.tut)try{if(typeof teleEv==='function')teleEv('result',w);}catch(_){} /* v1.129.0: the coached game is not rated, so its result is noted here */note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);
   if(w===YOU&&!S.lesson&&typeof winShow==='function')setTimeout(()=>{try{if(S&&S.over&&S.over.w===YOU)winShow();}catch(_){}},1300);} /* v1.125.0: the win scene (one/win.js), once the last move has been seen */
 async function afterAction(){const actor=S.turn;wreckSweep();
   if(S.over){closeAction(actor);save();renderAll();return;}
@@ -4043,6 +4045,7 @@ async function afterAction(){const actor=S.turn;wreckSweep();
   await tickBombs(S.turn);if(S.over){closeAction(actor);save();renderAll();return;}
   sweepSiege();if(checkLand()||checkSiegeWin()){closeAction(actor);save();renderAll();return;}
   closeAction(actor);S.turn=other(S.turn);S.turnNo++;reload(S.turn);await turretFire(S.turn);if(!S.over){sweepSiege();if(checkLand()||checkSiegeWin()){save();renderAll();return;}}else{save();renderAll();return;}
+  if(S.auto){delete S.auto;try{if(typeof teleEv==='function')teleEv('started');}catch(_){}} /* v1.129.0: a game the page laid out by itself is counted from its first move */
   if(S.moveCap){if(S.turnNo>=2*S.moveCap){gameTie();save();renderAll();return;}const left=S.moveCap-S.turnNo/2;if(left===20||left===10||left===5)note(t`${left} turns are left. If no one has won by then, the game is a tie.`);} /* v1.126.0 */
   if(S.wrecks)for(const k in S.wrecks)if(S.turnNo+1-S.wrecks[k]>=WRECK_TTL)delete S.wrecks[k];S.cleared={1:0,2:0};S.drifted=false;for(const d of S.drones)d.shots=0;mode=null;sel=null;pending=null;aimList=[];
   S.moveLeft=S.timers?60000:0;sfxTurn();storyBarkTurn();
@@ -4783,7 +4786,7 @@ const botRating=(s,story)=>800+8*Math.round(story?s*STORY_SOFT:s); // v1.43: 10 
 const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.min(8,Math.floor(Math.abs(rA-rB)/ROCK_PTS)); /* at most 8 asteroids of handicap: more wrecks a board */let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
-function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}try{teleEv('end',w===YOU);}catch(_){} /* v1.94 */
+function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}try{teleEv('end',w===YOU);teleEv('result',w);}catch(_){} /* v1.94; v1.129.0: and the result with its turns */
   const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill,!!(S.story&&!S.hard)),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:w===0?0.5:0 /* v1.126.0: a tie is half a win */,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score===1)prof.w++;else if(!score)prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
@@ -4900,7 +4903,7 @@ if(innerWidth<=1000){$('recordPanel').removeAttribute('open');$('logPanel').remo
   let seenIntro=false;try{seenIntro=localStorage.getItem('cc1_intro')==='1';}catch(_){}
   if(resumed){if(S)renderAll();return;}
   if(!seenIntro){try{localStorage.setItem('cc1_intro','1');localStorage.setItem('cc_gate','1');}catch(_){}if(!S)newGame({tut:true});} // first open: straight into the coached game; v1.84: and the gate is on (story only until FREE_AFTER sectors)
-  else if(!S)newGame();
+  else if(!S)newGame({auto:1});
   storyGateApply();
 })();
 document.addEventListener('click',e=>{if(e.target.closest('.cell'))tutOnSelect();},true);
@@ -5118,10 +5121,10 @@ function netOppLeft(){if(!net)return;sfx('left');
   else{if(S&&!S.over){S.over={w:YOU,reason:t`${SNAME[BOT]} left the match.`};note(t`Game over. ${who(YOU)} win${''}. ${S.over.reason}`);rateGame(YOU);save();renderAll();}}
   net.err=t('{0} left the match.',SNAME[BOT]);}
 async function netLeave(){if(!net)return;const n=net;
-  if(n.role==='spec'){if(n.es)n.es.close();online=false;net=null;Object.assign(SNAME,SNAME0);S=n.prevS||null;if(!S)newGame();else{sel=null;mode=null;busy=false;renderAll();}renderWait();renderNet();return;}
+  if(n.role==='spec'){if(n.es)n.es.close();online=false;net=null;Object.assign(SNAME,SNAME0);S=n.prevS||null;if(!S)newGame({auto:1});else{sel=null;mode=null;busy=false;renderAll();}renderWait();renderNet();return;}
   if(n.role==='host'){fetch(lobbyUrl(n.code),{method:'DELETE'}).catch(()=>{});if(n.started&&S&&!S.over&&S.turnNo>2){gameOver(BOT,t`${SNAME[YOU]} left the match.`);save();renderAll();netPush(true);}await netWrite({left:'host'});}
   else{if(S&&!S.over&&S.turnNo>2)await netWrite({act:{type:'resign',seq:Date.now()}});await netWrite({left:'guest'});}
-  if(n.es)n.es.close();online=false;net=null;netForget();Object.assign(SNAME,SNAME0);note(t('Left the match.'));renderWait();renderNet();newGame();
+  if(n.es)n.es.close();online=false;net=null;netForget();Object.assign(SNAME,SNAME0);note(t('Left the match.'));renderWait();renderNet();newGame({auto:1});
 }
 async function netResume(){let info=null;try{info=JSON.parse(localStorage.getItem(NET_KEY)||'null');}catch(_){}if(!info||!info.code)return false;
   let doc=null,failed=false;try{const r=await fetch(netUrl(info.code));if(r.ok)doc=await r.json();else if(r.status>=500)failed=true;}catch(_){failed=true;}
@@ -5373,7 +5376,7 @@ function storyOver(){const inStory=!!(S&&S.story&&S.over);const sec=inStory?secB
   const next=storyNext();if(won&&next)$('btnStoryNext').hidden=false;if(!won)$('btnStoryRetry').hidden=false;$('btnStoryMap').hidden=false;}
 function storyAfterRating(){} // (ratings run as for any bot game)
 $('storyList').addEventListener('click',e=>{const b=e.target.closest('button[data-sec]');if(!b||b.disabled)return;openBrief(secById(b.dataset.sec));});
-$('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S){if(storyGate()){const n=storyNext();if(n){openBrief(n);return;}}newGame();}});
+$('btnStoryClose').addEventListener('click',()=>{$('story').hidden=true;if(!S){if(storyGate()){const n=storyNext();if(n){openBrief(n);return;}}newGame({auto:1});}});
 $('btnBriefBack').addEventListener('click',()=>{if(typeDone)typeDone();if(storyAudio){try{storyAudio.pause();}catch(_){}}$('brief').hidden=true;openStoryMap();});
 $('btnBriefGo').addEventListener('click',storyLaunch);
 $('briefText').addEventListener('click',()=>{if(typeDone)typeDone();});$('briefBrag').addEventListener('click',()=>{if(typeDone)typeDone();});
@@ -5393,10 +5396,25 @@ $('inGate').addEventListener('change',()=>{const on=$('inGate').checked;try{if(o
 // two-phone host/join counts, the version, language, platform, which site served it, and the invite that brought the
 // install (?from=<id>). An invite also writes /stats/invites/<from>/<id>. The database rules must allow /stats (see
 // DESIGN.md v1.94). stats.html on the site reads it all back as tables.
+// v1.129.0, PLAY NOTES 2 (user: "we need the look at what they are doing are they watching the training videos before play how many do they
+// watch before they just go for a game"). Added to the summary: les / lesDone / lesQuit (lessons opened, finished, left, by lesson), film (times
+// the film was closed), res (wins, losses and ties by mode, the coached game too), tsum and tn (turns of finished games), left (games dropped
+// for a new one after turn 2, by mode), b4 (what had been done when the first real game started) and trail: the first 80 steps in order, as
+// short codes with no times: o an open, film:87 the film closed at 87 percent, coach, L+scout a lesson opened, L=scout finished, Lxscout left,
+// story:orion, free:30, net, W:story:41 / L:.. / T:.. a result with its turns, left:coach:7 a game dropped at turn 7.
+// A lesson used to be counted as a free game at skill 0; it is its own thing now. A game the page lays out by itself (at open with nothing
+// saved, after a lesson, after a two-phone match: newGame({auto:1}), S.auto) used to count as a game started; now it counts when its first
+// move is made (afterAction sends 'started').
+// The card's words changed with this, so cc_tele_v marks which words were agreed to: a Yes given to the old words sends the old summary only
+// (the new parts are cut from what is sent) and the card comes up once more on the next Launch or Story tap. A No is never asked again.
 const TELE_BASE=NET_BASE+'/stats',TELE_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 let tele=null,teleT0=Date.now(),telePushT=null,teleDirty=false;
 const teleOn=()=>{try{return localStorage.getItem('cc_tele')==='1';}catch(_){return false;}};
-const teleAsked=()=>{try{return localStorage.getItem('cc_tele')!=null;}catch(_){return true;}};
+const TELE_V='2',teleV2=()=>{try{return localStorage.getItem('cc_tele_v')===TELE_V;}catch(_){return false;}};
+const teleAsked=()=>{try{const a=localStorage.getItem('cc_tele');return a!=null&&!(a==='1'&&!teleV2());}catch(_){return true;}};
+const teleMode=s=>s.lesson?'lesson':s.story?'story':s.tut?'coach':(online&&net)?'net':'free';
+function teleTrail(x){if(!tele)return;if(!tele.trail)tele.trail=[];if(tele.trail.length<80)tele.trail.push(x);}
+function teleLessonOut(onlyDone){try{if(!tele||!S||!S.lesson||S.lesson.told)return;if(onlyDone&&!S.lesson.done)return;S.lesson.told=1;const id=S.lesson.id,k=S.lesson.done?'lesDone':'lesQuit';if(!tele[k])tele[k]={};tele[k][id]=(tele[k][id]||0)+1;teleTrail((S.lesson.done?'L=':'Lx')+id);teleSave();telePush();}catch(_){}}
 function teleId(){if(tele&&tele.id)return tele.id;let id=null;try{id=localStorage.getItem('cc_iid');}catch(_){}
   if(!id){const b=new Uint8Array(6);try{crypto.getRandomValues(b);}catch(_){for(let i=0;i<6;i++)b[i]=rnd(256);}id=Array.from(b).map(x=>TELE_ALPHA[x%32]).join('');try{localStorage.setItem('cc_iid',id);}catch(_){}}
   return id;}
@@ -5407,31 +5425,43 @@ function teleLoad(){try{tele=JSON.parse(localStorage.getItem('cc_tele_sum')||'nu
   if(!tele||!tele.id){let from=null;try{from=(new URLSearchParams(location.search).get('from')||'').replace(/[^A-Z2-9]/g,'').slice(0,8)||null;}catch(_){}
     let gate=false;try{gate=localStorage.getItem('cc_gate')==='1';}catch(_){}
     tele={id:teleId(),first:Date.now(),from,gate:gate?1:0,opens:0,secs:0,games:{},skills:{},ends:0,wins:0,story:{},settings:{},net:{host:0,join:0}};fresh=true;}
-  try{localStorage.setItem('cc_iid',tele.id);}catch(_){}tele.v=VERSION;tele.lang=LANG;tele.plat=telePlat();tele.host=(location.hostname||'file').split('.')[0]||'local';tele.opens=(tele.opens||0)+1;tele.last=Date.now();
+  try{localStorage.setItem('cc_iid',tele.id);}catch(_){}tele.v=VERSION;tele.lang=LANG;tele.plat=telePlat();tele.host=(location.hostname||'file').split('.')[0]||'local';tele.opens=(tele.opens||0)+1;tele.last=Date.now();teleTrail('o');
   teleSave();if(fresh&&tele.from&&tele.from!==tele.id)tele._invite=1;}
 function teleSave(){try{localStorage.setItem('cc_tele_sum',JSON.stringify(tele));}catch(_){}}
 function teleHeld(){try{tele.held=SECTORS.filter(s=>story.won[s.id]).length;tele.held2=SECTORS2.filter(s=>story.won[s.id]).length;}catch(_){}}
 function telePush(now){if(!tele||!teleOn())return;teleDirty=true;if(now){clearTimeout(telePushT);telePushT=null;teleSend();return;}if(!telePushT)telePushT=setTimeout(teleSend,4000);}
 function teleSend(){telePushT=null;if(!teleDirty||!tele||!teleOn())return;teleDirty=false;teleHeld();tele.last=Date.now();teleSave();
-  const body=Object.assign({},tele);delete body._invite;
+  const body=Object.assign({},tele);delete body._invite;if(!teleV2())for(const k of ['les','lesDone','lesQuit','film','res','tsum','tn','left','b4','trail'])delete body[k]; /* agreed to the older words: the older summary */
   try{fetch(`${TELE_BASE}/installs/${tele.id}.json`,{method:'PUT',body:JSON.stringify(body),keepalive:true}).catch(()=>{});}catch(_){}
   if(tele._invite){delete tele._invite;teleSave();try{fetch(`${TELE_BASE}/invites/${tele.from}/${tele.id}.json`,{method:'PUT',body:JSON.stringify(Date.now()),keepalive:true}).catch(()=>{});}catch(_){}}}
+function teleStart(){if(!tele||!S)return;const bump=(o,k)=>{o[k]=(o[k]||0)+1;},mode=teleMode(S),n=q=>Object.values(q||{}).reduce((x,y)=>x+(y&&typeof y==='object'?Object.values(y).reduce((u,v)=>u+(+v||0),0):(+y||0)),0);
+  if(mode==='lesson'){bump(tele.les||(tele.les={}),S.lesson.id);teleTrail('L+'+S.lesson.id);}
+  else{if(mode!=='coach'&&!tele.b4)tele.b4={les:n(tele.les),done:n(tele.lesDone),coach:+(tele.games||{}).coach||0,coachEnd:n({c:(tele.res||{}).coach}),film:+tele.film||0};
+    bump(tele.games,mode);if(mode==='free')bump(tele.skills,String(S.skill));teleTrail(mode==='story'?'story:'+S.story:mode==='free'?'free:'+S.skill:mode);}
+  teleSave();telePush();}
 function teleEv(kind,a,b){if(!tele)return;const bump=(o,k)=>{o[k]=(o[k]||0)+1;};
-  if(kind==='game'){setTimeout(()=>{if(!S)return;const mode=S.story?'story':S.tut?'coach':(online&&net)?'net':'free';bump(tele.games,mode);if(mode==='free')bump(tele.skills,String(S.skill));teleSave();telePush();},0);return;}
+  if(kind==='game'){const o=a||{}; /* called at the top of newGame: S is still the game being replaced */
+    try{if(S&&!S.lesson&&!S.over&&(S.turnNo||0)>2&&!o.lesson){const m=teleMode(S);bump(tele.left||(tele.left={}),m);teleTrail('left:'+m+':'+Math.ceil(S.turnNo/2));}}catch(_){} /* a lesson only sets the game aside */
+    if(o.auto)return; /* a game the page laid out by itself (at open, after a lesson, after a match): it counts when its first move is made */
+    setTimeout(teleStart,0);return;}
+  else if(kind==='started'){teleStart();return;}
   else if(kind==='end'){tele.ends++;if(a)tele.wins++;}
+  else if(kind==='result'){if(!S||S.lesson||(online&&net&&net.role==='spec'))return;const m=teleMode(S),r=a===0?'t':a===YOU?'w':'l',tn=Math.ceil((S.turnNo||0)/2),Rr=tele.res||(tele.res={}),q=Rr[m]||(Rr[m]={w:0,l:0,t:0});q[r]++;tele.tsum=(tele.tsum||0)+tn;tele.tn=(tele.tn||0)+1;teleTrail(r.toUpperCase()+':'+m+':'+tn);}
+  else if(kind==='film'){tele.film=(tele.film||0)+1;teleTrail('film:'+(+a||0));}
   else if(kind==='story')bump(tele.story,a);
   else if(kind==='setting')bump(tele.settings,a);
   else if(kind==='net')bump(tele.net,a);
   else if(kind==='invite')bump(tele,'invited');
   teleSave();telePush();}
-function teleTick(hide){const now=Date.now();if(hide){if(tele){tele.secs=(tele.secs||0)+Math.max(0,Math.min(3600,Math.round((now-teleT0)/1000)));teleSave();telePush(true);}}teleT0=now;}
+function teleTick(hide){const now=Date.now();if(hide){teleLessonOut(true);if(tele){tele.secs=(tele.secs||0)+Math.max(0,Math.min(3600,Math.round((now-teleT0)/1000)));teleSave();telePush(true);}}teleT0=now;}
 document.addEventListener('visibilitychange',()=>teleTick(document.hidden));
 window.addEventListener('pagehide',()=>teleTick(true));
 // the waiver card: asked once, on the first Launch or Story tap; then() runs after either answer
 function teleAsk(then){if(teleAsked()){then();return;}const el=$('telepop');if(!el){then();return;}
-  const done=yes=>{try{localStorage.setItem('cc_tele',yes?'1':'0');}catch(_){}el.hidden=true;$('inTele').checked=yes;if(yes)telePush(true);then();};
+  {let again=false;try{again=localStorage.getItem('cc_tele')==='1';}catch(_){}const nw=$('teleNew');if(nw){nw.hidden=!again;if(again)nw.textContent=t('The play notes now also count the lessons and the film you open, and how your games end. Is that still all right?');}}
+  const done=yes=>{try{localStorage.setItem('cc_tele',yes?'1':'0');localStorage.setItem('cc_tele_v',TELE_V);}catch(_){}el.hidden=true;$('inTele').checked=yes;if(yes)telePush(true);then();};
   $('teleYes').onclick=()=>done(true);$('teleNo').onclick=()=>done(false);el.hidden=false;}
-$('inTele').addEventListener('change',()=>{const on=$('inTele').checked;try{localStorage.setItem('cc_tele',on?'1':'0');}catch(_){}if(on)telePush(true);});
+$('inTele').addEventListener('change',()=>{const on=$('inTele').checked;try{localStorage.setItem('cc_tele',on?'1':'0');localStorage.setItem('cc_tele_v',TELE_V);}catch(_){}if(on)telePush(true);});
 $('inTele').checked=teleOn();
 $('setup').addEventListener('change',e=>{if(e.target&&e.target.id&&e.target.id!=='inTele')teleEv('setting',e.target.id);});
 $('btnInvite').addEventListener('click',async()=>{teleEv('invite');const u=teleInviteUrl();try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({title:'Constellation Commander',text:t('Come play Constellation Commander with me.'),url:u});return;}}catch(e){if(e&&e.name==='AbortError')return;}
@@ -5636,7 +5666,7 @@ function coverBuild(){const cv=$('cover');const c=$('cvSky');const ctx=c.getCont
 const FILM_SRC='film/guard_film.mp4';
 let filmOn=false;
 function filmSeen(){try{return localStorage.getItem('cc_film')==='1';}catch(_){return true;}}
-function filmClose(){if(!filmOn)return;filmOn=false;window.ccFilm=false;const v=$('filmV');try{v.pause();v.removeAttribute('src');v.load();}catch(_){}
+function filmClose(){if(!filmOn)return;filmOn=false;window.ccFilm=false;const v=$('filmV');try{if(typeof teleEv==='function')teleEv('film',v.duration?Math.round(100*v.currentTime/v.duration):0);}catch(_){}try{v.pause();v.removeAttribute('src');v.load();}catch(_){}
   $('film').hidden=true;try{localStorage.setItem('cc_film','1');}catch(_){}
   musicArm();musicResume(); /* a tap on Skip is the first touch: the title music may start. With no touch at all, the start screen keeps its Tap to begin */
   setTimeout(()=>{const ctx=musicCtxGet(),cv=$('cover'),tp=$('cvTap');if(!ctx||!cv||cv.hidden)return;if(ctx.state==='running')coverLift();
@@ -6248,7 +6278,7 @@ async function lessonDemo(){if(S.lesson.id==='asteroid')return lessonDemoAsteroi
     await say(10,4400);if(!here())return;
     await say(11,2000);if(!here())return;S.lesson.phase='do';sel=null;mode=null;}
   finally{lessonLock(false);if(S&&S.lesson&&S.gid===gid){save();renderAll();}}}
-function lessonStart(id){try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold');if(!S.over&&S.turnNo>0)localStorage.setItem('cc1_hold',JSON.stringify(S));}}catch(_){} /* a game in progress waits; it comes back when the lesson is left */
+function lessonStart(id){try{if(typeof teleLessonOut==='function')teleLessonOut();}catch(_){}try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold');if(!S.over&&S.turnNo>0)localStorage.setItem('cc1_hold',JSON.stringify(S));}}catch(_){} /* a game in progress waits; it comes back when the lesson is left */
   const cv=$('cover');if(cv&&!cv.hidden){cv.hidden=true;$('cvFleet').innerHTML='';}
   {const pk=$('lessonPick');if(pk)pk.hidden=true;}
   newGame({lesson:id});S.log=[];note(t('Lesson')+': '+t((LESSON_INFO[id]||LESSON_INFO.scout).title)+'.');renderAll();lessonDemo();}
@@ -6256,8 +6286,8 @@ function lessonStart(id){try{if(S&&!S.lesson){localStorage.removeItem('cc1_hold'
 function lessonPick(){const pk=$('lessonPick'),ls=$('lessonList');if(!pk||!ls){lessonStart(LESSON_LIST[0]);return;}const done=lessonDone();ls.innerHTML='';
   LESSON_LIST.forEach((id,n)=>{const bt=document.createElement('button');bt.type='button';bt.className=done.includes(id)?'':'primary';bt.textContent=(n+1)+'. '+t(LESSON_INFO[id].title)+(done.includes(id)?' ✓':'');bt.addEventListener('click',()=>lessonStart(id));ls.appendChild(bt);});
   pk.hidden=false;}
-function lessonLeave(){lessonLock(false);{const l=$('land1');if(l)l.classList.remove('lpoint');}let held=null;try{const s=localStorage.getItem('cc1_hold');if(s){held=JSON.parse(s);localStorage.removeItem('cc1_hold');}}catch(_){}
-  if(held&&held.grid&&held.grid.length===N){S=held;sel=null;mode=null;pending=null;aimList=[];save();renderAll();}else newGame({});}
+function lessonLeave(){try{if(typeof teleLessonOut==='function')teleLessonOut();}catch(_){}lessonLock(false);{const l=$('land1');if(l)l.classList.remove('lpoint');}let held=null;try{const s=localStorage.getItem('cc1_hold');if(s){held=JSON.parse(s);localStorage.removeItem('cc1_hold');}}catch(_){}
+  if(held&&held.grid&&held.grid.length===N){S=held;sel=null;mode=null;pending=null;aimList=[];save();renderAll();}else newGame({auto:1});}
 (()=>{const b=$('coverTrain');if(b)b.addEventListener('click',lessonPick);
   const pk=$('lessonPick');if(pk){$('lessonPickClose').addEventListener('click',()=>{pk.hidden=true;});pk.addEventListener('click',e=>{if(e.target===pk)pk.hidden=true;});}
   if(S&&S.lesson)lessonLeave();})(); /* a page reloaded in the middle of a lesson goes back to the game that was put aside, or a fresh one */
