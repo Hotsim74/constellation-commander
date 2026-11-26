@@ -589,6 +589,12 @@ body.clean header h1{font-size:11px;color:var(--mute);order:2;margin:0}body.clea
 header button:disabled{opacity:.4}
 #tapnote{position:fixed;z-index:60;max-width:min(300px,calc(100vw - 16px));padding:8px 12px;font-size:14px;line-height:1.35;color:var(--text);background:rgba(10,16,24,.97);border:2px solid var(--danger);border-radius:8px;box-shadow:0 8px 22px rgba(0,0,0,.6);pointer-events:none;opacity:0}
 #tapnote[hidden]{display:none}#tapnote.show{opacity:1;animation:barkIn .2s ease-out}
+/* v1.134.0: the replay bar */
+#rpbar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--panel);border-top:2px solid var(--you);padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px rgba(0,0,0,.5)}
+#rpbar[hidden]{display:none}#rpText{white-space:pre-line;font-size:13px;line-height:1.35;color:var(--text);max-width:900px;margin:0 auto 6px;min-height:2.7em;max-height:5.6em;overflow:hidden}
+#rpbar .rprow{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}#rpbar button{padding:8px 12px;font-size:13px}#rpPos{font-family:var(--mono);font-size:12px;color:var(--mute);margin:0 6px}
+body.replay{padding-bottom:170px}body.replay .acts,body.replay header button,body.replay #over{display:none!important}
+.cell.rpchg{box-shadow:inset 0 0 0 3px #fff;animation:rpchg 1s ease-out forwards}@keyframes rpchg{from{box-shadow:inset 0 0 0 4px #fff}to{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}}
 </style>
 <div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
 <header>
@@ -602,6 +608,7 @@ header button:disabled{opacity:.4}
 </header>
 <form class="setup" id="setup" onsubmit="return false">
   <div class="field"><span class="lbl">Beginner settings</span><label><input type="checkbox" id="inBeginner"> show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log</label></div>
+  <div class="field"><span class="lbl">Replay</span><button type="button" id="btnRecWatch">Watch this game</button> <button type="button" id="btnRecCopy">Copy replay</button> <button type="button" id="btnRecPaste">Paste replay</button></div>
   <div class="field"><span class="lbl">Saved game</span><button type="button" id="btnSaveCopy">Copy save</button> <button type="button" id="btnSavePaste">Paste save</button></div>
   <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"><span class="acthint" id="skillNote" style="max-width:240px;font-size:12px"></span></div>
   <div class="field"><span class="lbl">Thinks ahead</span><select id="inAhead"><option value="auto">Auto</option><option value="0">0 moves</option><option value="1">1 move</option><option value="2">2 moves</option><option value="3">3 moves</option><option value="4">4 moves</option><option value="5">5 moves</option></select><span class="acthint" style="max-width:240px;font-size:12px">Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.</span></div>
@@ -668,6 +675,7 @@ header button:disabled{opacity:.4}
   </div>
 </main>
 <div id="tapnote" hidden></div>
+<div id="rpbar" hidden><div id="rpText"></div><div class="rprow"><button type="button" id="rpFirst">|&lt;</button><button type="button" id="rpBack">&lt;</button><button type="button" id="rpPlay" class="primary">Play</button><button type="button" id="rpFwd">&gt;</button><button type="button" id="rpSpeed">1×</button><span id="rpPos"></span><button type="button" id="rpExit">Exit</button></div></div>
 <div id="winShow" hidden>
   <canvas id="wsConf"></canvas>
   <div class="wsFind" id="wsFind"><i></i><i></i><span id="wsFindL"></span></div>
@@ -2318,7 +2326,22 @@ const FR={
 "Turn {0}": "Tour {0}",
 "Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "Commencer une nouvelle partie ? Moins de 7 tours ont été joués, celle-ci ne compte donc pas comme une défaite.",
 "Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "Quitter la partie ? Moins de 7 tours ont été joués, elle ne compte donc pas comme une défaite.",
-"{0}, {1} at {2}": "{0}, {1} en {2}"
+"{0}, {1} at {2}": "{0}, {1} en {2}",
+"Replay": "Rediffusion",
+"Watch this game": "Regarder cette partie",
+"Copy replay": "Copier la rediffusion",
+"Paste replay": "Coller une rediffusion",
+"Pause": "Pause",
+"Exit": "Quitter",
+"The start of the game.": "Le début de la partie.",
+"{0} of {1}": "{0} sur {1}",
+"Replay: {0} against {1}, version {2}.": "Rediffusion : {0} contre {1}, version {2}.",
+"Finish what is on the board first.": "Finissez d'abord ce qui est sur le plateau.",
+"No game to copy yet. Play a few moves first.": "Pas encore de partie à copier. Jouez d'abord quelques coups.",
+"No game to watch yet. Play a few moves first.": "Pas encore de partie à regarder. Jouez d'abord quelques coups.",
+"Replay copied: {0} steps.": "Rediffusion copiée : {0} étapes.",
+"Paste a replay code here:": "Collez un code de rediffusion ici :",
+"That is not a replay code.": "Ce n'est pas un code de rediffusion."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3533,13 +3556,29 @@ const ES={
 "Turn {0}": "Turno {0}",
 "Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "¿Empezar una partida nueva? Se jugaron menos de 7 turnos, así que esta no cuenta como derrota.",
 "Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "¿Dejar la partida? Se jugaron menos de 7 turnos, así que no cuenta como derrota.",
-"{0}, {1} at {2}": "{0}, {1} en {2}"
+"{0}, {1} at {2}": "{0}, {1} en {2}",
+"Replay": "Repetición",
+"Watch this game": "Ver esta partida",
+"Copy replay": "Copiar repetición",
+"Paste replay": "Pegar repetición",
+"Play": "Reproducir",
+"Pause": "Pausa",
+"Exit": "Salir",
+"The start of the game.": "El inicio de la partida.",
+"{0} of {1}": "{0} de {1}",
+"Replay: {0} against {1}, version {2}.": "Repetición: {0} contra {1}, versión {2}.",
+"Finish what is on the board first.": "Termina primero lo que hay en el tablero.",
+"No game to copy yet. Play a few moves first.": "Aún no hay partida que copiar. Juega primero unas jugadas.",
+"No game to watch yet. Play a few moves first.": "Aún no hay partida que ver. Juega primero unas jugadas.",
+"Replay copied: {0} steps.": "Repetición copiada: {0} pasos.",
+"Paste a replay code here:": "Pega aquí un código de repetición:",
+"That is not a replay code.": "Eso no es un código de repetición."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.133.2';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.134.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3627,9 +3666,9 @@ function mk(side,r,c,kind,color,sqc){const d={id:S.nextId++,r,c,side,kind,colors
       the v1.110.0 trial left 'off' stored for good. The rules now live under new keys (cc_hwreck2, cc_wclean2), so every device starts from the
       default, on; newGame reads the key, not the box, and the box is set from the key at start. Unticking still turns a rule off. */
 function ruleOn(k){try{const v=localStorage.getItem(k);return v==null?true:v==='1';}catch(_){return true;}}
-function save(){if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}} // a spectator never saves the game being watched over their own
+function save(){if(typeof RP!=='undefined'&&RP)return; /* v1.134.0: a replay on screen is never saved over the real game */if(online&&net&&net.role==='spec')return;try{localStorage.setItem('cc1_state',JSON.stringify(S));}catch(_){}if(typeof recFrame==='function')recFrame();} // a spectator never saves the game being watched over their own
 function load(){try{let s=localStorage.getItem('cc1_state');if(s){let o=JSON.parse(s);if(o&&o.lesson){s=localStorage.getItem('cc1_hold');localStorage.removeItem('cc1_hold');o=s?JSON.parse(s):null;} /* v1.103.0: a page reloaded in the middle of a lesson opens on the game that was put aside, or on none */if(o&&o.grid&&o.grid.length===N&&(o.ver===VERSION||SAVE_OK.includes(o.ver)||o.over)){if(!o.over){if(o.ver!==VERSION){if(o.calm==null)o.calm=ruleOn('cc_calm');o.hwreck=ruleOn('cc_hwreck2');o.wclean=ruleOn('cc_wclean2');o.jam=ruleOn('cc_jam2');if(!o.fields)o.fields=[];for(const d of o.drones||[])delete d.field;}if(o.moveCap==null)o.moveCap=(o.tut||(o.turnNo||0)>2*moveCapPref()-40)?0:moveCapPref(); /* v1.126.0: an older game takes the move limit, unless it is already at or near it */o.ver=VERSION;}return o;}}}catch(_){}return null;} // a finished game is kept across versions so it can still be copied
-function note(t,w){S.log.unshift(t);if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
+function note(t,w){S.log.unshift(t);if(!simQuiet)S.ln=(S.ln||0)+1; /* v1.134.0: lines written so far, for the replay record */if(S.log.length>60)S.log.pop();if(w){(S.ev||(S.ev=[])).push(Object.assign({text:t},w));if(!simQuiet){sfxNote(w);storyBark(w);}}}
 const WRECK_TTL=10; // single moves a wreck lies there: five turns (a turn is one move by each side). v1.127.0: the number on it counts turns, 5 down to 1
 const FALL_MS=1050,CLEAR_MS=420; // v1.62: the stars take their time: a flash as they go, a deliberate drop
 function wreckAt(r,c){S.wrecks=S.wrecks||{};S.wrecks[key(r,c)]=S.turnNo+1;} /* v1.62: every destroyed drone leaves wreckage; with Salvage on it also holds the missile */ // stored as turnNo+1 so a wreck on turn 0 is still truthy // Salvage on: a destroyed drone leaves a wreck holding its missile
@@ -4466,6 +4505,7 @@ async function humanShots(d,list){if(netSend({type:'fire',id:d.id,list}))return;
 // ---------- input ----------
 let peek=null; // an enemy drone whose reach is being shown
 function onCell(r,c){
+  if(typeof RP!=='undefined'&&RP)return; /* v1.134.0: watching a replay */
   if(Date.now()-swDone<350)return; /* the click that follows a swipe */
   if(rockWait&&mode!=='rock'){rockPopClose();rockDone();return;} /* v1.81: the asteroid alert is up: a tap anywhere else puts it away (the throw stays in the buttons) and nothing else happens until the turn's own flow has finished */
   if(busy||!S||S.over||S.turn!==YOU||netSpec())return;
@@ -6521,6 +6561,74 @@ function winShow(force){const w=$('winShow');if(!w||winOn)return;const full=forc
   at(18000+o,winClose);}
 (()=>{const b=$('wsSkip');if(b)b.addEventListener('click',winClose);
   if(/[?&]winscene\b/.test(location.search)){const iv=setInterval(()=>{const cv=$('cover');if(cv&&!cv.hidden)return;clearInterval(iv);setTimeout(()=>{try{winShow(true);}catch(_){}},900);},300);}})(); /* to look at the scene without winning a game: it plays once the start screen is gone and the board shows */
+// ---------- the replay recorder and player (v1.134.0). User: "I am thinking we could add a player we put in the code and can watch the moves"
+// and "I think the player needs to be smart enough to play older version of the game".
+// So a replay is NOT the moves run again through the rules (a rule change would make an old game play out differently). It is a record of what
+// the board looked like after every move: the stars, the land, every drone, the missiles, and the log lines that move wrote. Any later version
+// can show that, whatever the rules have become.
+// RECORDING. save() (p2.js) calls recFrame() after every change it keeps: each move, each missile, each throw, for both sides. REC is the record
+// of the game on the board: {fmt, v, gid, you, bot, base, f:[frames], ln}. base is a copy of S at the first frame (skill, squares to win, the
+// asteroid counts, the rules in force); a frame holds only what changes. It is kept in cc_rec so a reload does not lose it, and a finished
+// game's record is also kept in cc_rec_last. Not in a lesson. A loaded save starts a new record from the loaded position.
+// THE CODE. Copy replay (Settings) packs the record: JSON, squeezed with the browser's own deflate when it has one, then base64. "CCR1." squeezed,
+// "CCR0." plain. Paste replay reads either.
+// WATCHING. RP is the replay on screen. The real game is set aside (RP.hold) and comes back on Exit; nothing is saved and no input reaches the
+// board while RP is set (save() and onCell() look at it). Each step puts a frame's state in S and draws it with the game's own drawing, marks
+// the squares that changed, and shows that move's log lines in the bar. First, back, play or pause, forward, speed, Exit.
+var REC=null,RP=null;
+function recPack(){
+  return {g:S.grid.map(r=>r.map(v=>v<0?'.':v===ROCK?'%':String(v)).join('')).join(''),o:S.own.join(''),d:JSON.parse(JSON.stringify(S.drones)),
+    m:[S.missiles[1],S.missiles[2]],th:S.throws?[S.throws[1]||0,S.throws[2]||0]:[0,0],tn:S.turnNo||0,tu:S.turn,c:[S.cmd[1],S.cmd[2]],
+    w:S.wrecks&&Object.keys(S.wrecks).length?JSON.parse(JSON.stringify(S.wrecks)):0,fl:S.fields&&S.fields.length?JSON.parse(JSON.stringify(S.fields)):0,
+    wl:S.wall&&Object.keys(S.wall).length?JSON.parse(JSON.stringify(S.wall)):0,ov:S.over?{w:S.over.w,reason:S.over.reason}:0};}
+function recFrame(){try{if(RP||!S||S.lesson||simQuiet||(online&&net&&net.role==='spec'))return;
+  if(!REC||REC.gid!==S.gid){let o=null;try{o=JSON.parse(localStorage.getItem('cc_rec')||'null');}catch(_){}
+    if(o&&o.f&&o.gid===S.gid)REC=o;else{const base=JSON.parse(JSON.stringify(S));for(const k of ['log','last','ev','grid','own','drones','wrecks','fields','seen'])delete base[k];
+      REC={fmt:1,v:VERSION,gid:S.gid,t:Date.now(),you:SNAME[YOU],bot:SNAME[BOT],base,f:[],ln:0};}}
+  if(REC.f.length>=900)return; /* a very long game stops being recorded here */
+  const fr=recPack(),key=JSON.stringify(fr),last=REC.f.length?REC.f[REC.f.length-1]:null,nw=Math.max(0,Math.min(60,(S.ln||0)-(REC.ln||0)));
+  const lines=nw?S.log.slice(0,nw).reverse():[];REC.ln=S.ln||0;
+  if(last&&last.k===key){if(lines.length)last.l=(last.l||[]).concat(lines);}else{fr.k=key;fr.l=lines;REC.f.push(fr);}
+  const out=JSON.stringify(REC,(k,v)=>k==='k'?undefined:v);try{localStorage.setItem('cc_rec',out);if(S.over)localStorage.setItem('cc_rec_last',out);}catch(_){}
+}catch(_){}}
+function recBytesToB64(u8){let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s);}
+function recB64ToBytes(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u;}
+async function recCode(rec){const u8=new TextEncoder().encode(JSON.stringify(rec,(k,v)=>k==='k'?undefined:v));
+  try{if(typeof CompressionStream==='function'){const z=new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer());return 'CCR1.'+recBytesToB64(z);}}catch(_){}
+  return 'CCR0.'+recBytesToB64(u8);}
+async function recRead(code){try{const tx=String(code||'').replace(/\s+/g,'');const m=/CCR([01])\.([A-Za-z0-9+\/=]+)/.exec(tx);if(!m)return null;let u8=recB64ToBytes(m[2]);
+  if(m[1]==='1')u8=new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  const o=JSON.parse(new TextDecoder().decode(u8));return o&&o.f&&o.f.length&&o.base?o:null;}catch(_){return null;}}
+function recPick(){let cur=REC&&REC.f&&REC.f.length>1?REC:null,last=null;try{last=JSON.parse(localStorage.getItem('cc_rec_last')||'null');}catch(_){}return cur||(last&&last.f&&last.f.length>1?last:null);}
+function rpState(i){const R=RP.rec,f=R.f[i],log=[];for(let j=0;j<=i;j++)for(const x of (R.f[j].l||[]))log.unshift(x);
+  return Object.assign({},JSON.parse(JSON.stringify(R.base)),{grid:(f.g.match(/.{11}/g)||[]).map(row=>Array.from(row).map(ch=>ch==='.'?-1:ch==='%'?ROCK:+ch)),own:Array.from(f.o).map(Number),
+    drones:JSON.parse(JSON.stringify(f.d)),missiles:{1:f.m[0],2:f.m[1]},throws:{1:f.th?f.th[0]:0,2:f.th?f.th[1]:0},turn:f.tu,turnNo:f.tn,cmd:{1:f.c[0],2:f.c[1]},wrecks:f.w||{},fields:f.fl||[],wall:f.wl||{},
+    seen:{1:[],2:[]},fog:0,over:null,timers:false,moveLeft:0,tut:false,lesson:null,story:null,auto:0,rated:true,log:log.slice(0,60),last:null,ev:[],gid:-1});}
+function rpDraw(){if(!RP)return;const R=RP.rec,i=RP.i,f=R.f[i],p=i>0?R.f[i-1]:null;S=rpState(i);sel=null;mode=null;pending=null;aimList=[];busy=true;renderAll();
+  if(p){const dk=fr=>{const m={};for(const d of fr.d)m[d.r*N+d.c]=d.side+d.kind+(d.power||1);return m;},a=dk(p),b=dk(f);
+    for(let k=0;k<N*N;k++)if(cells[k]&&(p.g[k]!==f.g[k]||p.o[k]!==f.o[k]||a[k]!==b[k]))cells[k].classList.add('rpchg');}
+  const lines=(f.l||[]).slice(-4);$('rpText').textContent=lines.length?lines.join('\n'):(i===0?t('The start of the game.'):'');
+  $('rpPos').textContent=t`${i+1} of ${R.f.length}`+' · '+(R.base.moveCap?t`Turn ${Math.min(R.base.moveCap,Math.floor(f.tn/2)+1)} of ${R.base.moveCap}`:t`Turn ${Math.floor(f.tn/2)+1}`);
+  $('rpPlay').textContent=RP.timer?t('Pause'):t('Play');$('rpSpeed').textContent=RP.speed+'×';
+  setStatus(t`Replay: ${R.you} against ${R.bot}, version ${R.v}.`+(f.ov?' '+(f.ov.reason||''):''));}
+function rpStop(){if(RP&&RP.timer){clearTimeout(RP.timer);RP.timer=null;}}
+function rpGo(i){if(!RP)return;RP.i=Math.max(0,Math.min(RP.rec.f.length-1,i));rpDraw();}
+function rpTick(){if(!RP)return;if(RP.i>=RP.rec.f.length-1){rpStop();rpDraw();return;}RP.i++;RP.timer=setTimeout(rpTick,Math.round(1100/RP.speed));rpDraw();}
+function rpStart(rec){if(!rec||!rec.f||!rec.f.length||RP)return false;if(busy||(online&&net)){setStatus(t('Finish what is on the board first.'));return false;}
+  if(typeof winClose==='function')winClose();$('setup').classList.remove('open');
+  RP={rec,i:0,hold:S,names:[SNAME[YOU],SNAME[BOT]],speed:1,timer:null};SNAME[YOU]=rec.you||SNAME[YOU];SNAME[BOT]=rec.bot||SNAME[BOT];
+  document.body.classList.add('replay');$('rpbar').hidden=false;rpDraw();return true;}
+function rpExit(){if(!RP)return;rpStop();const h=RP.hold;SNAME[YOU]=RP.names[0];SNAME[BOT]=RP.names[1];RP=null;document.body.classList.remove('replay');$('rpbar').hidden=true;
+  S=h;sel=null;mode=null;pending=null;aimList=[];busy=false;if(S)renderAll();else newGame({auto:1});}
+(()=>{const on=(id,f)=>{const e=$(id);if(e)e.addEventListener('click',f);};
+  on('rpFirst',()=>{rpStop();rpGo(0);});on('rpBack',()=>{rpStop();rpGo(RP.i-1);});on('rpFwd',()=>{rpStop();rpGo(RP.i+1);});
+  on('rpPlay',()=>{if(!RP)return;if(RP.timer){rpStop();rpDraw();}else{if(RP.i>=RP.rec.f.length-1)RP.i=0;RP.timer=setTimeout(rpTick,300);rpDraw();}});
+  on('rpSpeed',()=>{if(!RP)return;RP.speed=RP.speed===1?2:RP.speed===2?4:1;rpDraw();});on('rpExit',rpExit);
+  on('btnRecCopy',async()=>{const rec=recPick();if(!rec){setStatus(t('No game to copy yet. Play a few moves first.'));return;}const code=await recCode(rec);
+    if(await clipPut(code)){copiedMark($('btnRecCopy'));setStatus(t`Replay copied: ${rec.f.length} steps.`);}else copyBox(code,t('Copy this:'));});
+  on('btnRecPaste',async()=>{const tx=prompt(t('Paste a replay code here:'));if(tx==null)return;const rec=await recRead(tx);if(!rec){setStatus(t('That is not a replay code.'));return;}rpStart(rec);});
+  on('btnRecWatch',()=>{const rec=recPick();if(!rec){setStatus(t('No game to watch yet. Play a few moves first.'));return;}rpStart(JSON.parse(JSON.stringify(rec,(k,v)=>k==='k'?undefined:v)));});
+})();
 </script>
 </body>
 </html>
