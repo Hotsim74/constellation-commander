@@ -601,6 +601,9 @@ header button:disabled{opacity:.4}
 #rpbar .rprow{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}#rpbar button{padding:8px 12px;font-size:13px}#rpPos{font-family:var(--mono);font-size:12px;color:var(--mute);margin:0 6px}
 body.replay{padding-bottom:170px}body.replay .acts,body.replay header button,body.replay #over{display:none!important}
 .cell.rpchg{box-shadow:inset 0 0 0 3px #fff;animation:rpchg 1s ease-out forwards}@keyframes rpchg{from{box-shadow:inset 0 0 0 4px #fff}to{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}}
+/* v1.140.0: Settings in groups, each under a heading */
+.setup .sgrp{flex:0 0 100%;margin:10px 0 0;padding-top:10px;border-top:1px solid var(--line);font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--you)}
+.setup .sgrp:first-child{margin-top:0;padding-top:0;border-top:0}
 </style>
 <div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
 <header>
@@ -613,43 +616,51 @@ body.replay{padding-bottom:170px}body.replay .acts,body.replay header button,bod
   </div>
 </header>
 <form class="setup" id="setup" onsubmit="return false">
-  <div class="field"><span class="lbl">Beginner settings</span><label><input type="checkbox" id="inBeginner"> show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log</label></div>
-  <div class="field"><span class="lbl">Replay</span><button type="button" id="btnRecWatch">Watch this game</button> <button type="button" id="btnRecCopy">Copy replay</button> <button type="button" id="btnRecPaste">Paste replay</button></div>
-  <div class="field"><span class="lbl">Saved game</span><button type="button" id="btnSaveCopy">Copy save</button> <button type="button" id="btnSavePaste">Paste save</button></div>
+  <h3 class="sgrp">Play</h3>
+  <button type="button" id="btnStory" class="primary">Story mode</button>
+  <button type="button" id="btnNet" class="primary">Play a friend</button>
+  <button type="button" id="btnTut">Guided first game</button>
+  <button type="button" id="btnHow">How to play</button>
+  <a href="https://hotsim74.github.io/constellation-commander/rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
+  <h3 class="sgrp">Beginner settings</h3>
+  <div class="field"><span class="lbl">Show the writing</span><label><input type="checkbox" id="inBeginner"> show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log</label></div>
+  <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
+  <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
+  <div class="field"><span class="lbl">Swap hint</span><label><input type="checkbox" id="inHint"> show me the best star swap on the board after 1 minute without a move</label></div>
+  <div class="field"><span class="lbl">Starting land</span><label><input type="checkbox" id="inStart3"> begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.</label></div>
+  <div class="field"><span class="lbl">New player</span><label><input type="checkbox" id="inGate"> Launch stays dark until the first story is done. Turn this off to open everything now.</label></div>
+  <h3 class="sgrp">The bot</h3>
   <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"><span class="acthint" id="skillNote" style="max-width:240px;font-size:12px"></span></div>
   <div class="field"><span class="lbl">Thinks ahead</span><select id="inAhead"><option value="auto">Auto</option><option value="0">0 moves</option><option value="1">1 move</option><option value="2">2 moves</option><option value="3">3 moves</option><option value="4">4 moves</option><option value="5">5 moves</option></select><span class="acthint" style="max-width:240px;font-size:12px">Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.</span></div>
+  <h3 class="sgrp">The game</h3>
+  <div class="field"><span class="lbl">Squares to win</span><input type="number" id="inWin" min="60" max="100" value="69"></div>
+  <div class="field"><span class="lbl">Turn limit</span><label><input type="number" id="inMoves" min="0" max="500" value="150" style="width:64px"> turns, then a tie. 0 is no limit</label></div>
+  <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Timers</span><label><input type="checkbox" id="inTimers"> clock 20 min, 60 s a move</label></div>
   <div class="field"><span class="lbl">Handicap</span><label><input type="checkbox" id="inAuto" checked> asteroids from ratings</label></div>
   <div class="field"><span class="lbl">Your asteroids</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Bot asteroids</span><input type="number" id="inRock2" min="0" max="20" value="6"></div>
-  <div class="field"><span class="lbl">Turn limit</span><label><input type="number" id="inMoves" min="0" max="500" value="150" style="width:64px"> turns, then a tie. 0 is no limit</label></div>
-  <div class="field"><span class="lbl">Starting land</span><label><input type="checkbox" id="inStart3"> begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.</label></div>
-  <div class="field"><span class="lbl">Squares to win</span><input type="number" id="inWin" min="60" max="100" value="69"></div>
-  <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
-  <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
-  <div class="field"><span class="lbl">Explain moves</span><label><input type="checkbox" id="inExplain" checked> what happened, and why</label></div>
-  <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
-  <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
-  <div class="field"><span class="lbl">New player</span><label><input type="checkbox" id="inGate"> Launch stays dark until the first story is done. Turn this off to open everything now.</label></div>
-  <div class="field"><span class="lbl">Swap hint</span><label><input type="checkbox" id="inHint"> show me the best star swap on the board after 1 minute without a move</label></div>
-  <div class="field"><span class="lbl">Share play notes</span><label><input type="checkbox" id="inTele"> Send anonymous play notes to the makers: time played, modes and lessons tried, how games end, Settings changed, invites. No name, nothing typed.</label></div>
-  <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
-  <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
-  <div class="field" hidden><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
+  <h3 class="sgrp">Rules</h3>
   <div class="field"><span class="lbl">Hunters</span><label><input type="checkbox" id="inHWreck" checked> reload from wrecks: a hunter is born with 2 missiles and takes one from each wreck it stands on. Untick for the old rule, loading at the Command drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Siege field</span><label><input type="checkbox" id="inJam" checked> a bomb stacked onto a siege drone lets it place a field: tap the siege, press Place the field, then tap a square. For eight turns, enemy drones in the 3 × 3 around that square move only 1 square a turn and cannot fire. Untick for the old rule, a shield on one drone. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Wrecks</span><label><input type="checkbox" id="inWClean" checked> other drones clear them: a drone that is not a hunter clears a wreck by ending a move on it, and the missile goes to the Command drone, toward a turret. Untick to leave wrecks to hunters only. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">New stars</span><label><input type="checkbox" id="inCalm" checked> fall in calm: a new star takes a color that few of the stars around its square have, so fewer chain reactions break out and fewer drones are built by luck. Untick for the old rule, any color. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Lines of 3</span><label><input type="checkbox" id="inSwap3" checked> a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.</label></div>
-  <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
-  <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
-  <button type="button" id="btnStory" class="primary">Story mode</button>
-  <button type="button" id="btnNet" class="primary">Play a friend</button>
-  <button type="button" id="btnHow">How to play</button>
-  <button type="button" id="btnTut">Guided first game</button>
+  <div class="field" hidden><span class="lbl">Salvage</span><label><input type="checkbox" id="inSalvage"> missiles stay in the wreck until a drone stands on it</label></div>
+  <h3 class="sgrp">Your games</h3>
+  <div class="field"><span class="lbl">Replay</span><button type="button" id="btnRecWatch">Watch this game</button> <button type="button" id="btnRecCopy">Copy replay</button> <button type="button" id="btnRecPaste">Paste replay</button></div>
+  <div class="field"><span class="lbl">Saved game</span><button type="button" id="btnSaveCopy">Copy save</button> <button type="button" id="btnSavePaste">Paste save</button></div>
   <button type="button" id="btnCopy">Copy as text</button>
   <button type="button" id="btnCopyLast" hidden>Copy last finished game</button>
-  <a href="https://hotsim74.github.io/constellation-commander/rules.html" target="_blank" rel="noopener" style="font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--you);padding:8px 4px;text-decoration:none">Rules</a>
+  <h3 class="sgrp">Sound and screen</h3>
+  <div class="field"><span class="lbl">Music</span><label><input type="checkbox" id="inMusic" checked> follows the game</label></div>
+  <div class="field"><span class="lbl">Sound</span><label><input type="checkbox" id="inSound" checked> sound effects and story voices</label></div>
+  <div class="field"><span class="lbl">Drag</span><label><input type="checkbox" id="inSwipe"> pieces stick to your finger: drag a star onto its neighbour to swap, a drone to its square, let go to drop</label></div>
+  <div class="field"><span class="lbl">Language</span><select id="inLang" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option></select></div>
+  <h3 class="sgrp">You</h3>
+  <div class="field"><span class="lbl">Your name</span><input type="text" id="inName" maxlength="12" style="width:120px"></div>
+  <div class="field"><span class="lbl">Share play notes</span><label><input type="checkbox" id="inTele"> Send anonymous play notes to the makers: time played, modes and lessons tried, how games end, Settings changed, invites. No name, nothing typed.</label></div>
+  <div class="field"><span class="lbl">Invite a friend</span><button type="button" id="btnInvite">Copy invite link</button></div>
 </form>
 <div class="panel" id="netbox" hidden style="margin-bottom:8px">
   <span class="lbl">Play a friend</span>
@@ -2362,7 +2373,15 @@ const FR={
 "Open Settings": "Ouvrir les Réglages",
 "Not now": "Pas maintenant",
 "Starting land": "Terrain de départ",
-"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "commencer avec vos trois rangées du fond déjà revendiquées, 33 cases par camp, pour une partie plus courte. Partie libre et deux téléphones. Compte à partir de votre prochaine partie."
+"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "commencer avec vos trois rangées du fond déjà revendiquées, 33 cases par camp, pour une partie plus courte. Partie libre et deux téléphones. Compte à partir de votre prochaine partie.",
+"Show the writing": "Afficher le texte",
+"The bot": "Le bot",
+"Your games": "Vos parties",
+"Sound and screen": "Son et écran",
+"New setting is on": "Le nouveau réglage est actif",
+"OK": "D'accord",
+"No move had been made yet, so the board was laid out again with your new setting.": "Aucun coup n'avait encore été joué : le plateau a été refait avec votre nouveau réglage.",
+"Press New game for the new setting to take effect. The game on the board keeps the settings it began with.": "Appuyez sur Nouvelle partie pour que le nouveau réglage prenne effet. La partie sur le plateau garde les réglages de son début."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3605,13 +3624,21 @@ const ES={
 "Open Settings": "Abrir Ajustes",
 "Not now": "Ahora no",
 "Starting land": "Terreno inicial",
-"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "empezar con tus tres filas del fondo ya reclamadas, 33 casillas por bando, para una partida más corta. Partida libre y dos teléfonos. Cuenta desde tu próxima partida."
+"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "empezar con tus tres filas del fondo ya reclamadas, 33 casillas por bando, para una partida más corta. Partida libre y dos teléfonos. Cuenta desde tu próxima partida.",
+"Show the writing": "Mostrar el texto",
+"The bot": "El bot",
+"Your games": "Tus partidas",
+"Sound and screen": "Sonido y pantalla",
+"New setting is on": "El nuevo ajuste está activo",
+"OK": "Vale",
+"No move had been made yet, so the board was laid out again with your new setting.": "Aún no se había hecho ninguna jugada, así que el tablero se preparó de nuevo con tu nuevo ajuste.",
+"Press New game for the new setting to take effect. The game on the board keeps the settings it began with.": "Pulsa Nueva partida para que el nuevo ajuste tenga efecto. La partida del tablero conserva los ajustes con los que empezó."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.139.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0','1.138.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.140.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0','1.138.1','1.139.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -5154,16 +5181,20 @@ beginnerApply();
    - otherwise a card comes up: the setting starts with the next game, New game now or Keep playing. It comes up once for each visit to
      Settings, not after every box. New game now does what the New game button does, and says first if the game in progress counts as a loss. */
 const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean','inCalm','inSwap3','inStart3'];let setAsked=false;
-function setPop(){const p=$('setpop');if(!p)return;const mid=quitCounts();$('setpopH').textContent=t('Press New game');
-  $('setpopP').textContent=t('That setting starts with the next game. The game on the board keeps the settings it began with.');
+/* v1.140.0 (user: "when I click something in setting a pop up should say push new game for new setting to take affect"): the card comes up
+   every time one of these settings is changed (it was once for each visit to Settings), and also when the board was laid out again by
+   itself because no move had been made (that used to be said only in the status line). */
+let setPopLaid=false;
+function setPop(laid){const p=$('setpop');if(!p)return;setPopLaid=!!laid;const mid=!laid&&quitCounts();$('setpopH').textContent=laid?t('New setting is on'):t('Press New game');
+  $('setpopP').textContent=laid?t('No move had been made yet, so the board was laid out again with your new setting.'):t('Press New game for the new setting to take effect. The game on the board keeps the settings it began with.');
   const l=$('setpopL');l.hidden=!mid;l.textContent=mid?t('Starting a new game now counts this one as a loss.'):'';
-  $('setpopGo').textContent=storyGate()?t('Story map'):t('New game now');$('setpopNo').textContent=t('Keep playing');p.hidden=false;}
+  $('setpopGo').textContent=laid?t('OK'):storyGate()?t('Story map'):t('New game now');$('setpopNo').textContent=t('Keep playing');$('setpopNo').hidden=!!laid;p.hidden=false;}
 $('setup').addEventListener('change',e=>{const id=e.target&&e.target.id;if(!NEWGAME_ONLY.includes(id)||!S||S.lesson)return;
   if(online&&net){setStatus(t('That setting starts with the next game.'));return;}
-  if(!S.over&&!S.turnNo&&!S.story&&!S.tut&&!busy){newGame({auto:1});setStatus(t('New game laid out with your settings.'));return;}
-  if(setAsked)return;setAsked=true;setPop();});
+  if(!S.over&&!S.turnNo&&!S.story&&!S.tut&&!busy){newGame({auto:1});setStatus(t('New game laid out with your settings.'));setPop(true);return;}
+  setPop(false);});
 $('setpopNo').addEventListener('click',()=>{$('setpop').hidden=true;});
-$('setpopGo').addEventListener('click',()=>{$('setpop').hidden=true;setAsked=false;if(busy)return;$('setup').classList.remove('open');if(storyGate()){openStoryMap();return;}if(quitCounts())gameOver(BOT,t('The game was abandoned.'));newGame();});
+$('setpopGo').addEventListener('click',()=>{$('setpop').hidden=true;setAsked=false;if(setPopLaid){setPopLaid=false;return;}if(busy)return;$('setup').classList.remove('open');if(storyGate()){openStoryMap();return;}if(quitCounts())gameOver(BOT,t('The game was abandoned.'));newGame();});
 $('btnSettings').addEventListener('click',()=>{setAsked=false;$('inHint').checked=hintOn();});
 $('inHint').addEventListener('change',()=>{try{localStorage.setItem('cc_hint',$('inHint').checked?'1':'0');}catch(_){}hintAt=Date.now();hintShow=null;if(S)renderBoard();});$('inHint').checked=hintOn();$('btnNew').addEventListener('click',()=>{setAsked=false;});
 $('inMoves').addEventListener('change',()=>{if(S&&!S.over&&!S.lesson&&!S.tut&&!(online&&net)){S.moveCap=moveCapPref();save();renderSide();}}); /* v1.126.0: the game on the board takes the new limit too */
