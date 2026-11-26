@@ -2317,7 +2317,8 @@ const FR={
 "Turn {0} of {1}": "Tour {0} sur {1}",
 "Turn {0}": "Tour {0}",
 "Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "Commencer une nouvelle partie ? Moins de 7 tours ont été joués, celle-ci ne compte donc pas comme une défaite.",
-"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "Quitter la partie ? Moins de 7 tours ont été joués, elle ne compte donc pas comme une défaite."
+"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "Quitter la partie ? Moins de 7 tours ont été joués, elle ne compte donc pas comme une défaite.",
+"{0}, {1} at {2}": "{0}, {1} en {2}"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3531,13 +3532,14 @@ const ES={
 "Turn {0} of {1}": "Turno {0} de {1}",
 "Turn {0}": "Turno {0}",
 "Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "¿Empezar una partida nueva? Se jugaron menos de 7 turnos, así que esta no cuenta como derrota.",
-"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "¿Dejar la partida? Se jugaron menos de 7 turnos, así que no cuenta como derrota."
+"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "¿Dejar la partida? Se jugaron menos de 7 turnos, así que no cuenta como derrota.",
+"{0}, {1} at {2}": "{0}, {1} en {2}"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.133.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.133.2';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4043,14 +4045,15 @@ async function fireShots(side,list,shooter){
   // every shot is aimed first; then they all fly and land at once and the stars drop once
   if(shooter){sfx(shooter.kind==='T'?'turret-fire':list.length>1?'fire2':'fire');await Promise.all(list.map(t=>shootAnim([shooter.r,shooter.c],[t.r,t.c])));}
   if(shooter&&shooter.bombAmmo){delete shooter.bombAmmo;const tg=list[0];await blastAt(side,tg.r,tg.c,t`${cap(own(side,'H'))}'s bomb missile`);return;} /* the bomb missile: one shot, a blast where it lands */
+  const by=shooter&&TNAME[shooter.kind]?t('{0}, {1} at {2}',who(side),TNAME[shooter.kind],sq(shooter.r,shooter.c)):who(side); /* v1.133.2: the log says which drone fired, "You, scout at f4: a missile destroyed ..." */
   let dropped=false;
   for(const {r,c} of list){const o=droneAt(r,c);const el=cellEl(r,c);el.classList.add('boom');setTimeout(()=>el.classList.remove('boom'),500);
-    if(o&&o.side!==side&&o.kind==='T'){queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,'T')} at ${sq(r,c)}; it holds. Only a bomb, an asteroid or a siege drone can end it.`,{why:'fire_t',at:[[r,c]],lab:[t('it holds')]});}
-    else if(o&&o.side!==side&&o.shield){queueHit(r,c);note(t`${who(side)}: a missile hit the shield on ${own(o.side,o.kind)} at ${sq(r,c)}; it holds.`,{why:'fire_sh',at:[[r,c]],lab:[t('it holds')]});}
-    else if(o&&o.side!==side&&o.kind==='X'&&o.power<=1){queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,'X')} at ${sq(r,c)}; it holds. Only a bomb or four drones around it can end it.`,{why:'fire_x',at:[[r,c]],lab:[t('it holds')]});} /* v1.51: missiles cannot destroy a siege; a stack is stripped, a lone one holds */
-    else if(o&&o.side!==side&&o.kind==='M'&&o.power<=1){queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,'M')} at ${sq(r,c)}; it holds. Only a siege drone can take it.`,{why:'fire_m',at:[[r,c]],lab:[t('it holds')]});}
-    else if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);if(!S.salvage)S.missiles[side]++;wreckAt(r,c);note(t`${who(side)}: a missile destroyed ${own(o.side,o.kind)} at ${sq(r,c)}${earned()}`,{why:'fire_kill',at:[[r,c]],lab:[t('destroyed')]});}else{queueHit(r,c);note(t`${who(side)}: a missile hit ${own(o.side,o.kind)} at ${sq(r,c)}: power ${o.power}.`,{why:'fire_hit',at:[[r,c]],lab:[t('hit')]});}}
-    else if(S.grid[r][c]>=0){if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;note(t`${who(side)}: a missile cleared ${S.grid[r][c]===ROCK?t('an asteroid'):t('a {0} star',KNAME[S.grid[r][c]])} at ${sq(r,c)}.`,{why:'fire_clear',at:[[r,c]],lab:[t('cleared')]});S.grid[r][c]=-1;dropped=true;}}
+    if(o&&o.side!==side&&o.kind==='T'){queueHit(r,c);note(t`${by}: a missile hit ${own(o.side,'T')} at ${sq(r,c)}; it holds. Only a bomb, an asteroid or a siege drone can end it.`,{why:'fire_t',at:[[r,c]],lab:[t('it holds')]});}
+    else if(o&&o.side!==side&&o.shield){queueHit(r,c);note(t`${by}: a missile hit the shield on ${own(o.side,o.kind)} at ${sq(r,c)}; it holds.`,{why:'fire_sh',at:[[r,c]],lab:[t('it holds')]});}
+    else if(o&&o.side!==side&&o.kind==='X'&&o.power<=1){queueHit(r,c);note(t`${by}: a missile hit ${own(o.side,'X')} at ${sq(r,c)}; it holds. Only a bomb or four drones around it can end it.`,{why:'fire_x',at:[[r,c]],lab:[t('it holds')]});} /* v1.51: missiles cannot destroy a siege; a stack is stripped, a lone one holds */
+    else if(o&&o.side!==side&&o.kind==='M'&&o.power<=1){queueHit(r,c);note(t`${by}: a missile hit ${own(o.side,'M')} at ${sq(r,c)}; it holds. Only a siege drone can take it.`,{why:'fire_m',at:[[r,c]],lab:[t('it holds')]});}
+    else if(o&&o.side!==side){o.power--;if(o.power<=0){queueShatter(o);S.drones=S.drones.filter(x=>x!==o);if(!S.salvage)S.missiles[side]++;wreckAt(r,c);note(t`${by}: a missile destroyed ${own(o.side,o.kind)} at ${sq(r,c)}${earned()}`,{why:'fire_kill',at:[[r,c]],lab:[t('destroyed')]});}else{queueHit(r,c);note(t`${by}: a missile hit ${own(o.side,o.kind)} at ${sq(r,c)}: power ${o.power}.`,{why:'fire_hit',at:[[r,c]],lab:[t('hit')]});}}
+    else if(S.grid[r][c]>=0){if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;note(t`${by}: a missile cleared ${S.grid[r][c]===ROCK?t('an asteroid'):t('a {0} star',KNAME[S.grid[r][c]])} at ${sq(r,c)}.`,{why:'fire_clear',at:[[r,c]],lab:[t('cleared')]});S.grid[r][c]=-1;dropped=true;}}
   renderBoard();await playFX();
   if(dropped){const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);await sleep(FALL_MS);await resolve(side,null);}
 }
