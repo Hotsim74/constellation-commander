@@ -66,16 +66,22 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
   .big{font-size:18px}
 }
 .cell{position:relative;background:var(--sq);aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:visible}
-.cell.red{background:#2a1d22}.cell.white{background:#232b34}
+/* v1.136.0 (user: "the checkered board ... can we just make them white and red instead of the little squares at the top right"). The square
+   itself is red or white now (a dark red and a grey-white, so the five star colors still stand out), and the corner marker (.sqm) is hidden.
+   Land used to paint the whole square amber or blue, which hid the checker; it is a tint over the red or white now (35 percent of the side's
+   color), with the outline round the land as before. Plain colors, not layers: .mv, .tk and .st put their own glow in background-image. */
+.cell.red{background-color:#4f1b21}.cell.white{background-color:#6d7783}
 .cell.seam{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .cell.own1{background:#5a4720}.cell.own2{background:#1b4668}.cell.own3{background:linear-gradient(135deg,#5a4720 50%,#1b4668 50%)}
+.cell.red.own1{background:#7c4528}.cell.white.own1{background:#8f8162}.cell.red.own2{background:#44355a}.cell.white.own2{background:#537792}
+.cell.red.own3{background:linear-gradient(135deg,#7c4528 50%,#44355a 50%)}.cell.white.own3{background:linear-gradient(135deg,#8f8162 50%,#537792 50%)}
 .ter{position:absolute;inset:0;pointer-events:none;z-index:2;border:0 solid transparent}
 .own1 .ter{border-color:var(--you)}.own2 .ter{border-color:var(--bot)}.own3 .ter{border-color:#fff}
 .ter.bt{border-top-width:3px}.ter.bb{border-bottom-width:3px}.ter.bl{border-left-width:3px}.ter.br{border-right-width:3px}
-.cell.wall1{background:#4a3d22;box-shadow:inset 0 0 0 2px #7a6236}.cell.wall2{background:#20415a;box-shadow:inset 0 0 0 2px #3a6f92}
+.cell.wall1,.cell.red.wall1,.cell.white.wall1{background:#4a3d22;box-shadow:inset 0 0 0 2px #7a6236}.cell.wall2,.cell.red.wall2,.cell.white.wall2{background:#20415a;box-shadow:inset 0 0 0 2px #3a6f92}
 .cell.cmd1,.cell.cmd2{font-family:var(--display);font-weight:800;font-size:22px}
 .cell.cmd1{color:var(--you);box-shadow:inset 0 0 0 2px var(--you)}.cell.cmd2{color:var(--bot);box-shadow:inset 0 0 0 2px var(--bot)}
-.cell.fog{background:#0b0f15}
+.cell.fog,.cell.fog.red,.cell.fog.white{background:#0b0f15!important}
 .cell.fog .gem,.cell.fog .asteroid{visibility:hidden}
 .cell.fog::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 3px,transparent 3px 7px)}
 .cell.lit{box-shadow:inset 0 0 0 2px var(--ok)}
@@ -292,7 +298,7 @@ details.panel summary{cursor:pointer;list-style:none}details.panel summary::-web
 .dr .bdg i{width:20%;aspect-ratio:1;border-radius:2px;border:1px solid #000;display:block}
 .dr .bdg i.any{background:conic-gradient(#e5484d 0 20%,#f0a52b 0 40%,#3ec27a 0 60%,#3f8ff0 0 80%,#b06ce8 0)}
 .sqm{position:absolute;right:4%;top:4%;width:15%;height:15%;border-radius:2px;z-index:2;pointer-events:none;border:1px solid rgba(0,0,0,.55);opacity:.9}
-.cell.red .sqm{background:#c0392b}.cell.white .sqm{background:#eee}.cell.fog .sqm{visibility:hidden}
+.cell.red .sqm{background:#c0392b}.cell.white .sqm{background:#eee}.cell.fog .sqm{visibility:hidden}.sqm{display:none} /* v1.136.0: the square shows its color itself */
 .dr.sel{box-shadow:0 0 0 3px var(--you)}
 .dr.colors{background:conic-gradient(var(--c1) 0 50%,var(--c2) 50% 100%)}
 .side{flex:1 1 260px;min-width:250px;display:flex;flex-direction:column;gap:10px}
@@ -3588,8 +3594,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.135.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.136.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
