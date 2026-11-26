@@ -623,6 +623,7 @@ body.replay{padding-bottom:170px}body.replay .acts,body.replay header button,bod
   <div class="field"><span class="lbl">Your asteroids</span><input type="number" id="inRock1" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Bot asteroids</span><input type="number" id="inRock2" min="0" max="20" value="6"></div>
   <div class="field"><span class="lbl">Turn limit</span><label><input type="number" id="inMoves" min="0" max="500" value="150" style="width:64px"> turns, then a tie. 0 is no limit</label></div>
+  <div class="field"><span class="lbl">Starting land</span><label><input type="checkbox" id="inStart3"> begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.</label></div>
   <div class="field"><span class="lbl">Squares to win</span><input type="number" id="inWin" min="60" max="100" value="69"></div>
   <div class="field"><span class="lbl">Fog of war</span><select id="inFog" style="background:var(--panel2);border:1px solid var(--line);color:var(--text);font-family:var(--mono);padding:5px 8px;border-radius:3px"><option value="0" selected>off, the whole board shows</option><option value="1">from the seam: your half lit, scouts clear the rest</option><option value="2">everything dark, even your own half</option></select></div>
   <div class="field"><span class="lbl">Drone tips</span><label><input type="checkbox" id="inTips" checked> tap a drone to read</label></div>
@@ -2359,7 +2360,9 @@ const FR={
 "show me the best star swap on the board after 1 minute without a move": "me montrer le meilleur échange d'étoiles du plateau après 1 minute sans jouer",
 "This is free play, and you can set it up your way. Settings can change the bot's skill, light up the best swap when you are stuck, turn the writing on the screen back on, change the rules, and save or replay your games.": "C'est la partie libre, et vous pouvez la régler à votre façon. Les Réglages peuvent changer le niveau du bot, éclairer le meilleur échange quand vous êtes bloqué, remettre le texte à l'écran, changer les règles, et sauver ou revoir vos parties.",
 "Open Settings": "Ouvrir les Réglages",
-"Not now": "Pas maintenant"
+"Not now": "Pas maintenant",
+"Starting land": "Terrain de départ",
+"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "commencer avec vos trois rangées du fond déjà revendiquées, 33 cases par camp, pour une partie plus courte. Partie libre et deux téléphones. Compte à partir de votre prochaine partie."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3600,13 +3603,15 @@ const ES={
 "show me the best star swap on the board after 1 minute without a move": "mostrarme el mejor intercambio de estrellas del tablero tras 1 minuto sin jugar",
 "This is free play, and you can set it up your way. Settings can change the bot's skill, light up the best swap when you are stuck, turn the writing on the screen back on, change the rules, and save or replay your games.": "Esta es la partida libre, y puedes ajustarla a tu manera. En Ajustes puedes cambiar el nivel del bot, iluminar el mejor intercambio cuando te atascas, volver a mostrar el texto en pantalla, cambiar las reglas y guardar o volver a ver tus partidas.",
 "Open Settings": "Abrir Ajustes",
-"Not now": "Ahora no"
+"Not now": "Ahora no",
+"Starting land": "Terreno inicial",
+"begin with your three back rows already claimed, 33 squares each side, for a shorter game. Free play and two phones. Counts from your next new game.": "empezar con tus tres filas del fondo ya reclamadas, 33 casillas por bando, para una partida más corta. Partida libre y dos teléfonos. Cuenta desde tu próxima partida."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.138.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.139.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0','1.138.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3649,10 +3654,13 @@ function freshGrid(){const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;
 function newGame(opts={}){try{if(typeof teleEv==='function')teleEv('game',opts);}catch(_){} /* v1.94: counted once S stands */
   const skill=Math.round(Math.max(0,Math.min(100,+$('inSkill').value||0))/10)*10; // skill moves by tens
   S={ver:VERSION,grid:freshGrid(),own:new Array(N*N).fill(0),wall:{},cmd:{1:[N-1,5],2:[0,5]},drones:[],turn:YOU,missiles:{1:1,2:1},throws:{1:0,2:0},seen:{1:[],2:[]},cleared:{1:0,2:0},drifted:false,salvage:false /* v1.112.0: retired; only a hunter takes a wreck's missile now */,wrecks:{},
-     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),calm:ruleOn('cc_calm'),no3:!(opts.tut||opts.lesson)&&!ruleOn('cc_swap3'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,auto:opts.auto?1:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
+     over:null,hwreck:ruleOn('cc_hwreck2'),wclean:ruleOn('cc_wclean2'),jam:ruleOn('cc_jam2'),calm:ruleOn('cc_calm'),start3:!(opts.tut||opts.lesson||opts.story)&&(()=>{try{return localStorage.getItem('cc_start3')==='1';}catch(_){return false;}})(),no3:!(opts.tut||opts.lesson)&&!ruleOn('cc_swap3'),fields:[],skill,log:[],nextId:1,timers:$('inTimers').checked,clock:{1:20*60000,2:20*60000},moveLeft:0,turnNo:0,auto:opts.auto?1:0,moveCap:(opts.tut||opts.lesson)?0:moveCapPref(),tut:!!opts.tut,tutStep:0,asteroids:{1:0,2:0},rated:false,shape:'',win:Math.max(60,Math.min(100,+$('inWin').value||WIN_DEFAULT)),fog:+$('inFog').value||0};
   for(const side of [YOU,BOT]){
     const b=backRow(side),f=side===YOU?b-1:b+1,y=side===YOU?f-1:f+1;
-    for(const r of [b,f,y])for(let c=4;c<=6;c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
+    for(const r of [b,f,y])for(let c=S.start3?0:4;c<=(S.start3?N-1:6);c++)S.own[key(r,c)]=side; // v1.26: a block of nine, three by three, at the middle of the back row
+    /* v1.139.0 (user: "more space claimed at the start like the first 3 rows ... an option in the beginner settings. That would speed up the game
+       by 8 moves"): S.start3 (Settings, Starting land, cc_start3, off by default): each side begins with its three back rows, 33 squares. Free
+       play and two phones; not the story, the coached game or a lesson. */
     // v1.30: the command drone in the back middle, a scout on its left, a siege drone on its right, the guard at the front edge: all inside the nine.
     // v1.82: in story mode the fleet grows a ship a sector (S.allow); the start holds only what is unlocked, and the sector's new ship waits in the middle of the block.
     const allow=opts.story?storyAllow(opts.story):null,intro=opts.story?storyIntro(opts.story):null;
@@ -5063,7 +5071,7 @@ function gameText(){const rows=[];for(let r=0;r<N;r++){let s='';for(let c=0;c<N;
   const dl=side=>dronesOf(side).map(d=>LETTER[d.kind]+' '+sq(d.r,d.c)+(d.power>1?' p'+d.power:'')+(d.ammo?' m'+d.ammo:'')+(d.kind==='C'?' c'+(d.claims||0):'')+(d.shield?' shielded':'')+(d.fuse!=null?' fuse'+d.fuse:'')).join(', ')||'none';
   let ahead='auto';try{ahead=localStorage.getItem('cc_ahead')||'auto';}catch(_){}
   const mode=S.tut?'coached':S.story?'story '+S.story:(typeof online!=='undefined'&&online)?'friend':'free play';
-  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.moveCap?Math.min(S.moveCap,Math.floor((S.turnNo||0)/2)+1)+' of '+S.moveCap:(Math.floor((S.turnNo||0)/2)+1)+', no limit'} (move ${S.turnNo||0}) · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'} · siege field ${S.jam?'on':'off'} · new stars ${S.calm?'calm':'any color'} · lines of 3 ${S.no3?'off':'on'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
+  return `CONSTELLATION COMMANDER v${VERSION} ${new Date().toLocaleString()}\n${$('status').textContent}\nLand you ${landOf(YOU)} bot ${landOf(BOT)} need ${S.win} · missiles ${S.missiles[1]}/${S.missiles[2]} · skill ${S.skill} · asteroids ${S.asteroids[1]}/${S.asteroids[2]}${S.timers?' · clocks '+fmt(S.clock[1])+' '+fmt(S.clock[2]):' · relaxed'} · ${mode} · thinks ahead ${S.story?(S.hard||S.ahead?1:0):ahead} · turn ${S.moveCap?Math.min(S.moveCap,Math.floor((S.turnNo||0)/2)+1)+' of '+S.moveCap:(Math.floor((S.turnNo||0)/2)+1)+', no limit'} (move ${S.turnNo||0}) · hunters ${S.hwreck?'reload from wrecks':'load at the Command drone'} · wrecks ${S.wclean?'cleared by any drone':'for hunters only'} · siege field ${S.jam?'on':'off'} · start ${S.start3?'3 rows':'9 squares'} · new stars ${S.calm?'calm':'any color'} · lines of 3 ${S.no3?'off':'on'}\n\nBOARD (row 11 at the top, columns a to k. Letters are drones, UPPER yours, lower the bot's: C command, S scout, G guard, R raider, H hunter, W warp, X siege, B bomb, T turret. + your land, - bot land, = contested. 1 red 2 gold 3 green 4 blue 5 violet: stars on open squares. % asteroid, ? fog, # wall, . empty)\n${rows.join('\n')}\n\nDRONES (p power, m missiles loaded, c claims left)\nYou: ${dl(YOU)}\nBot: ${dl(BOT)}\n\nLOG (newest first)\n${S.log.slice(0,60).join('\n')}`;}
 /* v1.101.3: on a computer the clipboard can be refused (the page sits inside a frame, or is not the focused window). The fallback was prompt(), which
    browsers block inside frames and which cuts a many-line text down to one line, so the button looked dead. Now three steps: the clipboard, then the older
    select-and-copy, then a box on the page with the text selected, a Copy button and Save as a file. The button that was pressed says Copied for a moment. */
@@ -5145,7 +5153,7 @@ beginnerApply();
    - with a free game on the board that has no move made yet: the board is laid out again at once with the new settings;
    - otherwise a card comes up: the setting starts with the next game, New game now or Keep playing. It comes up once for each visit to
      Settings, not after every box. New game now does what the New game button does, and says first if the game in progress counts as a loss. */
-const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean','inCalm','inSwap3'];let setAsked=false;
+const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean','inCalm','inSwap3','inStart3'];let setAsked=false;
 function setPop(){const p=$('setpop');if(!p)return;const mid=quitCounts();$('setpopH').textContent=t('Press New game');
   $('setpopP').textContent=t('That setting starts with the next game. The game on the board keeps the settings it began with.');
   const l=$('setpopL');l.hidden=!mid;l.textContent=mid?t('Starting a new game now counts this one as a loss.'):'';
@@ -5173,7 +5181,7 @@ showCover();
 /* v1.101.2 (user: set skill 90, a new version loaded, it was back at 10). Bot skill, the land needed, fog and timers lived only in the game in
    progress; a new version drops an unfinished game, so they fell back to the page's defaults. They are kept on their own now, and a story
    sector no longer leaves its own skill in the Settings box. */
-const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inMoves','cc_moves','value'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked'],['inJam','cc_jam2','checked'],['inCalm','cc_calm','checked'],['inSwap3','cc_swap3','checked']];
+const PREFS=[['inSkill','cc_skill','value'],['inWin','cc_win','value'],['inFog','cc_fog','value'],['inTimers','cc_timers','checked'],['inMoves','cc_moves','value'],['inHWreck','cc_hwreck2','checked'],['inWClean','cc_wclean2','checked'],['inJam','cc_jam2','checked'],['inCalm','cc_calm','checked'],['inStart3','cc_start3','checked'],['inSwap3','cc_swap3','checked']];
 function prefSave(id){const p=PREFS.find(x=>x[0]===id);const el=$(id);if(!p||!el)return;try{localStorage.setItem(p[1],p[2]==='checked'?(el.checked?'1':'0'):String(el.value));}catch(_){}}
 function prefHas(id){const p=PREFS.find(x=>x[0]===id);try{return !!p&&localStorage.getItem(p[1])!=null;}catch(_){return false;}}
 for(const [id,k,prop] of PREFS){const el=$(id);if(!el)continue;let v=null;try{v=localStorage.getItem(k);}catch(_){}if(v!=null){if(prop==='checked')el.checked=v==='1';else el.value=v;}el.addEventListener('change',()=>prefSave(id));}
