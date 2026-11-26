@@ -578,16 +578,29 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
   .acts button{font-size:13px;padding:10px 12px}
   body{padding-bottom:84px}
 }
+/* v1.132.0: the clean screen. body.clean is the default: the Save, Load, New game and Settings buttons, the land counts, one status line, the
+   board and the drone buttons. Settings, Beginner settings, takes the class off and everything written comes back. */
+.landbar{display:none}
+body.clean .landbar{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 6px;padding:0 2px;font-family:var(--mono);font-size:12px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.landbar b{font-family:var(--display);font-size:24px;letter-spacing:0;font-variant-numeric:tabular-nums}
+.landbar .lbY b{color:var(--you);margin-left:6px}.landbar .lbB b{color:var(--bot);margin-right:6px}.landbar .lbT{font-size:11px;text-align:center}
+body.clean header h1 .ttl,body.clean #explain,body.clean #legend,body.clean #dtip,body.clean #acthint,body.clean .side{display:none!important}
+body.clean header h1{font-size:11px;color:var(--mute);order:2;margin:0}body.clean header{margin-bottom:8px}
+header button:disabled{opacity:.4}
 </style>
 <div id="newver" hidden><span id="newverText">A newer version of the game is out.</span><button type="button" id="btnReload" style="background:#1a1200;color:var(--you);border-color:#1a1200">Reload now</button><span id="newverX" style="cursor:pointer;padding:0 6px">×</span></div>
 <header>
-  <h1>Constellation Commander <small id="ver"></small></h1>
+  <h1><span class="ttl">Constellation Commander </span><small id="ver"></small></h1>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <button id="btnSave">Save</button>
+    <button id="btnLoad">Load</button>
     <button id="btnSettings">Settings</button>
     <button id="btnNew" class="primary">New game</button>
   </div>
 </header>
 <form class="setup" id="setup" onsubmit="return false">
+  <div class="field"><span class="lbl">Beginner settings</span><label><input type="checkbox" id="inBeginner"> show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log</label></div>
+  <div class="field"><span class="lbl">Saved game</span><button type="button" id="btnSaveCopy">Copy save</button> <button type="button" id="btnSavePaste">Paste save</button></div>
   <div class="field"><span class="lbl">Bot skill %</span><input type="number" id="inSkill" min="0" max="100" step="10" value="10"><span class="acthint" id="skillNote" style="max-width:240px;font-size:12px"></span></div>
   <div class="field"><span class="lbl">Thinks ahead</span><select id="inAhead"><option value="auto">Auto</option><option value="0">0 moves</option><option value="1">1 move</option><option value="2">2 moves</option><option value="3">3 moves</option><option value="4">4 moves</option><option value="5">5 moves</option></select><span class="acthint" style="max-width:240px;font-size:12px">Free play only. Auto is 1 move from skill 80. 4 and 5 take a few seconds a turn.</span></div>
   <div class="field"><span class="lbl">Timers</span><label><input type="checkbox" id="inTimers"> clock 20 min, 60 s a move</label></div>
@@ -634,6 +647,7 @@ body.gated #coverGo{opacity:.28;filter:grayscale(.85) brightness(.7);pointer-eve
 <div class="status" id="status">Loading…</div>
 <main>
   <div class="boardwrap">
+    <div class="landbar" id="landbar"><span class="lbY"><span id="lbN1"></span><b id="lb1"></b></span><span class="lbT" id="lbT"></span><span class="lbB"><b id="lb2"></b><span id="lbN2"></span></span></div>
     <div class="board" id="board"><div id="telepop" class="telepop" hidden><div class="tp"><b>This game sends play notes</b><p id="teleNew" hidden></p><p>To make the game better, it sends us short anonymous play notes: how long you play, which modes you try (story, free play, two phones, the coached game), which lessons and the film you open and finish, how your games end and how many turns they take, the order you did those in, what you change in Settings, whether an invite link brought you here, and the game version. A random install number tells returning players apart.</p><p>No name, no email, no location, nothing you type. You can turn the notes off any time in Settings, under Share play notes.</p><div class="rb"><button type="button" id="teleYes" class="primary">OK, I accept</button><button type="button" id="teleNo" hidden>No thanks</button></div></div></div><div id="setpop" class="telepop" hidden><div class="tp"><b id="setpopH"></b><p id="setpopP"></p><p id="setpopL" hidden></p><div class="rb"><button type="button" id="setpopGo" class="primary"></button><button type="button" id="setpopNo"></button></div></div></div><div id="rockpop" class="rockpop" hidden><i class="asteroid v1"></i><div class="rk"><b>Asteroid ready<span id="rockN"></span></b><p>Use your Command drone's mass driver and throw an asteroid. Save this mission from becoming a catastrophe.</p><p class="rq">Pick a block of nine squares to fire at.</p><div class="rb"><button type="button" id="rockPick" class="primary">Pick the block</button><button type="button" id="rockLater">Later</button></div></div></div><div id="bark" class="bark" hidden><div class="dr s2"></div><div class="bk"><b id="barkWho"></b><span id="barkText"></span></div></div><div id="over"><div class="card"><h2 id="overTitle"></h2><div id="overText"></div><div class="overbtns"><button id="btnAgain" class="primary">New game</button><button id="btnStoryNext" class="primary" hidden>Next sector</button><button id="btnStoryRetry" class="primary" hidden>Retry</button><button id="btnStoryMap" hidden>Story map</button><button id="btnCopyOver" class="primary" style="background:var(--panel2);color:var(--text);border-color:var(--you)">Copy this game</button></div></div></div><div id="netwait"><div class="card"><h2 id="netwaitTitle"></h2><div id="netwaitText"></div><button type="button" id="btnNetCancel" style="margin-top:12px">Leave</button></div></div></div>
     <div class="legend" id="legend"><b>M</b> command drone · <b>S</b> scout · <b>G</b> guard · <b>R</b> raider · <b>H</b> hunter · <b>W</b> warp · <b>X</b> siege · <b>B</b> bomb</div>
     <div class="tipcard" id="dtip" hidden></div>
@@ -2278,7 +2292,27 @@ const FR={
 "Lines of 3": "Lignes de 3",
 "a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un échange peut faire une simple ligne de 3, qui disparaît sans rien construire. Décochez et chaque échange doit construire un drone ; s'il ne vous reste que votre drone de commandement et aucun échange de ce genre, les étoiles sont remélangées. Compte à partir de votre prochaine partie.",
 "A line of 3 builds nothing. With this rule a swap must make a drone.": "Une ligne de 3 ne construit rien. Avec cette règle, un échange doit faire un drone.",
-"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} a fait {1} : {2} n'est pas encore dans la flotte de ce secteur, rien de construit."
+"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} a fait {1} : {2} n'est pas encore dans la flotte de ce secteur, rien de construit.",
+"Save": "Sauver",
+"Load": "Charger",
+"Beginner settings": "Réglages débutant",
+"show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log": "afficher tout le texte : ce qui s'est passé et pourquoi, les fiches des drones, la légende, le tour, votre palmarès et le journal",
+"Saved game": "Partie sauvée",
+"Copy save": "Copier la sauvegarde",
+"Paste save": "Coller une sauvegarde",
+"You can save on your turn, in a game against the bot.": "Vous pouvez sauver à votre tour, dans une partie contre le bot.",
+"Could not save.": "Sauvegarde impossible.",
+"Saved at turn {0}.": "Sauvé au tour {0}.",
+"No saved game yet.": "Pas encore de partie sauvée.",
+"Load the saved game? The game on the board is replaced.": "Charger la partie sauvée ? La partie sur le plateau est remplacée.",
+"Loaded. This game no longer moves your rating.": "Chargée. Cette partie ne change plus votre classement.",
+"This game was loaded from a save, so the rating does not move.": "Cette partie vient d'une sauvegarde : le classement ne bouge pas.",
+"Save copied.": "Sauvegarde copiée.",
+"Paste a save here:": "Collez une sauvegarde ici :",
+"That is not a save from this game.": "Ce n'est pas une sauvegarde de ce jeu.",
+"Saved game replaced. Press Load to play it.": "Partie sauvée remplacée. Appuyez sur Charger pour la jouer.",
+"Turn {0} of {1}": "Tour {0} sur {1}",
+"Turn {0}": "Tour {0}"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3470,13 +3504,33 @@ const ES={
 "Lines of 3": "Líneas de 3",
 "a swap may make a plain line of 3, which clears and builds nothing. Untick and every swap must build a drone; if you have only your Command drone and no such swap, the stars are reshuffled. Counts from your next new game.": "un intercambio puede hacer una simple línea de 3, que desaparece sin construir nada. Desmarca y cada intercambio debe construir un dron; si solo te queda tu dron de mando y ningún intercambio así, las estrellas se barajan. Cuenta desde tu próxima partida.",
 "A line of 3 builds nothing. With this rule a swap must make a drone.": "Una línea de 3 no construye nada. Con esta regla, un intercambio debe hacer un dron.",
-"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} hizo {1}: {2} aún no está en la flota de este sector, nada construido."
+"{0} made {1}: {2} is not in this sector's fleet yet, nothing built.": "{0} hizo {1}: {2} aún no está en la flota de este sector, nada construido.",
+"Save": "Guardar",
+"Load": "Cargar",
+"Beginner settings": "Ajustes de principiante",
+"show all the writing: what happened and why, drone tips, the legend, the turn, your record and the log": "mostrar todo el texto: qué pasó y por qué, las fichas de los drones, la leyenda, el turno, tu historial y el registro",
+"Saved game": "Partida guardada",
+"Copy save": "Copiar partida guardada",
+"Paste save": "Pegar partida guardada",
+"You can save on your turn, in a game against the bot.": "Puedes guardar en tu turno, en una partida contra el bot.",
+"Could not save.": "No se pudo guardar.",
+"Saved at turn {0}.": "Guardada en el turno {0}.",
+"No saved game yet.": "Aún no hay partida guardada.",
+"Load the saved game? The game on the board is replaced.": "¿Cargar la partida guardada? La partida del tablero se reemplaza.",
+"Loaded. This game no longer moves your rating.": "Cargada. Esta partida ya no cambia tu puntuación.",
+"This game was loaded from a save, so the rating does not move.": "Esta partida se cargó de una guardada: la puntuación no cambia.",
+"Save copied.": "Partida guardada copiada.",
+"Paste a save here:": "Pega aquí una partida guardada:",
+"That is not a save from this game.": "Eso no es una partida guardada de este juego.",
+"Saved game replaced. Press Load to play it.": "Partida guardada reemplazada. Pulsa Cargar para jugarla.",
+"Turn {0} of {1}": "Turno {0} de {1}",
+"Turn {0}": "Turno {0}"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.131.1';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.132.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4490,6 +4544,10 @@ function renderSide(){
   for(const s of [YOU,BOT]){const n=droneCount(s),m=S.missiles[s];let sees=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(vis(s,r,c))sees++;$('meta'+s).textContent=(s===YOU?t`${n} of ${MAXD} drones · ${m} missile${m===1?'':'s'} on the Command drone`:t`${n} of ${MAXD} drones`)+(S.fog?t` · sees ${sees} squares`:'');} // only the owner sees missiles
   $('botlbl').textContent=(online&&net)?`${SNAME[BOT]} · ${net.oppR}`:t`${SNAME[BOT]} · skill ${S.skill}`;
   {const n=Math.floor((S.turnNo||0)/2)+1;$('movesPanel').hidden=!!(S.lesson||S.tut);$('movesTxt').textContent=S.moveCap?t`Turn ${Math.min(S.moveCap,n)} of ${S.moveCap}. No winner by the end is a tie.`:t`Turn ${n}. No turn limit.`;} /* v1.126.1: a turn counter, one move by each side is one turn; shown with or without a limit */
+  {const n=Math.floor((S.turnNo||0)/2)+1,quiet=!!(S.lesson||S.tut); /* v1.132.0: the land bar over the board (the clean screen) */
+    $('lbN1').textContent=SNAME[YOU];$('lb1').textContent=landOf(YOU)+' / '+S.win;$('lb2').textContent=landOf(BOT)+' / '+S.win;$('lbN2').textContent=SNAME[BOT];
+    $('lbT').textContent=quiet?'':(S.moveCap?t`Turn ${Math.min(S.moveCap,n)} of ${S.moveCap}`:t`Turn ${n}`)+(S.timers?' · '+fmt(S.clock[1])+' / '+fmt(S.clock[2]):'');}
+  if(typeof saveBtns==='function')saveBtns();
   $('clocksPanel').hidden=!S.timers;$('ck1').textContent=S.timers?fmt(S.clock[1]):t('relaxed');$('ck2').textContent=S.timers?fmt(S.clock[2]):t('relaxed');
   $('log').innerHTML=S.log.map(t=>`<div>${t}</div>`).join('');
 }
@@ -4832,6 +4890,7 @@ const kFactor=g=>g<10?40:24;
 function expected(rA,rB,rocksA,rocksB){const a=rA-ROCK_PTS*(rocksA-rocksB);return 1/(1+Math.pow(10,(rB-a)/400));}
 function handicapRocks(rA,rB,base){base=Math.max(0,Math.min(20,base|0));const extra=Math.min(8,Math.floor(Math.abs(rA-rB)/ROCK_PTS)); /* at most 8 asteroids of handicap: more wrecks a board */let up=Math.ceil(extra/2),down=Math.min(base,Math.floor(extra/2));up=Math.min(20-base,up+(Math.floor(extra/2)-down));return rA>=rB?[base+up,base-down]:[base-down,base+up];}
 function rateGame(w){if(!S||S.tut)return;const isNet=!!(online&&net);if(isNet){if(net.role==='spec'||net.rated)return;net.rated=true;}else{if(S.rated)return;S.rated=true;}try{teleEv('end',w===YOU);teleEv('result',w);}catch(_){} /* v1.94; v1.129.0: and the result with its turns */
+  if(S.loaded&&!isNet){note(t('This game was loaded from a save, so the rating does not move.'));return;} /* v1.132.0 */
   const oppR=isNet?(net.oppR||BASE_R):botRating(S.skill,!!(S.story&&!S.hard)),weight=isNet?1:Math.max(0.1,S.skill/100),oname=isNet?SNAME[BOT]:'Bot '+S.skill,score=w===YOU?1:w===0?0.5:0 /* v1.126.0: a tie is half a win */,E=expected(prof.r,oppR,S.asteroids[1],S.asteroids[2]),d=Math.round(kFactor(prof.g)*weight*(score-E)),before=prof.r;
   prof.r=Math.max(100,prof.r+d);prof.g++;if(score===1)prof.w++;else if(!score)prof.l++;prof.h.unshift({t:Date.now(),o:oname,s:score,d,r:prof.r});if(prof.h.length>30)prof.h.pop();saveProf();
   note(t`Rating ${before} → ${prof.r} (${d>=0?'+':''}${d}). ${oname} was rated ${oppR}; asteroids ${S.asteroids[1]} to ${S.asteroids[2]}.`);}
@@ -4917,6 +4976,31 @@ setInterval(()=>{if(S&&S.tut&&!busy&&S.turn===YOU&&!S.over)renderGuide();},2000)
 $('inName').addEventListener('change',()=>{prof.n=$('inName').value.trim().slice(0,12);saveProf();renderRecord();});
 $('inSkill').addEventListener('change',()=>{const v=snapSkill();renderRecord();renderSkillNote();if(S&&!S.over&&!S.tut&&!S.story&&!(online&&net)&&S.skill!==v){S.skill=v;note(t`Bot skill set to ${v} from here on.`);save();renderAll();}}); // a skill change applies to the game in progress
 snapSkill();renderSkillNote();
+/* v1.132.0 SAVE AND LOAD (user: "I think a save game option is the answer. it is also a cheat you can save the game see what the computer does then
+   reload the game if you didn't like it"). One slot, cc_save1, a copy of S. Save: on your turn, in a game against the bot (not a lesson, the
+   coached game or a two-phone match). Load puts the copy back and marks it (S.loaded), and a loaded game does not move the rating (rateGame);
+   a story sector won that way still counts. Settings has Copy save and Paste save: the slot as text, to send a position to someone. */
+function saveOk(){return !!(S&&!S.over&&!S.lesson&&!S.tut&&!(online&&net)&&!busy&&S.turn===YOU);}
+function saveRead(tx){try{const o=JSON.parse(tx||'null');return o&&o.grid&&o.grid.length===N&&o.drones&&(o.ver===VERSION||SAVE_OK.includes(o.ver))&&!o.lesson&&!o.tut?o:null;}catch(_){return null;}}
+function saveGet(){let tx=null;try{tx=localStorage.getItem('cc_save1');}catch(_){}return saveRead(tx);}
+function saveBtns(){const a=$('btnSave'),b=$('btnLoad');if(!a||!b)return;const off=!!(S&&(S.lesson||(online&&net)));a.disabled=off||!!(S&&(S.over||S.tut));b.disabled=off||!saveGet();}
+function saveGame(){if(!saveOk()){setStatus(t('You can save on your turn, in a game against the bot.'));return;}
+  try{localStorage.setItem('cc_save1',JSON.stringify(S));}catch(_){setStatus(t('Could not save.'));return;}
+  setStatus(t`Saved at turn ${Math.floor((S.turnNo||0)/2)+1}.`);sfx('tap');saveBtns();}
+function loadGame(){if(busy||(online&&net)||(S&&S.lesson))return;const o=saveGet();if(!o){setStatus(t('No saved game yet.'));return;}
+  if(S&&!S.over&&S.turnNo>0&&!confirm(t('Load the saved game? The game on the board is replaced.')))return;
+  if(o.calm==null)o.calm=ruleOn('cc_calm');if(o.moveCap==null)o.moveCap=0;if(!o.fields)o.fields=[];o.ver=VERSION;o.loaded=(o.loaded||0)+1;o.gid=Date.now();delete o.auto;
+  S=o;sel=null;mode=null;pending=null;aimList=[];if(typeof winClose==='function')winClose();save();renderAll();setStatus(t('Loaded. This game no longer moves your rating.'));}
+$('btnSave').addEventListener('click',saveGame);$('btnLoad').addEventListener('click',loadGame);
+$('btnSaveCopy').addEventListener('click',async()=>{let tx=null;try{tx=localStorage.getItem('cc_save1');}catch(_){}if(!saveRead(tx)){if(!saveOk()){setStatus(t('No saved game yet.'));return;}tx=JSON.stringify(S);}
+  if(await clipPut(tx)){copiedMark($('btnSaveCopy'));setStatus(t('Save copied.'));}else copyBox(tx,t('Copy this:'));});
+$('btnSavePaste').addEventListener('click',()=>{const tx=prompt(t('Paste a save here:'));if(tx==null)return;if(!saveRead(tx.trim())){setStatus(t('That is not a save from this game.'));return;}
+  try{localStorage.setItem('cc_save1',tx.trim());}catch(_){setStatus(t('Could not save.'));return;}saveBtns();setStatus(t('Saved game replaced. Press Load to play it.'));});
+/* v1.132.0 THE CLEAN SCREEN (user: "lots of small writing on the screen. lets have that turned off by default. We will have a spot in setting call
+   beginner settings That will let them turn all the writing on"). cc_beginner '1' shows everything; anything else is the clean screen. */
+function beginnerApply(){let on=false;try{on=localStorage.getItem('cc_beginner')==='1';}catch(_){}document.body.classList.toggle('clean',!on);const b=$('inBeginner');if(b)b.checked=on;}
+$('inBeginner').addEventListener('change',()=>{try{localStorage.setItem('cc_beginner',$('inBeginner').checked?'1':'0');}catch(_){}beginnerApply();if(S)renderAll();});
+beginnerApply();
 /* v1.130.0 (user: "in setting every time you change something and want it to take effect you have to push new game that needs to be pop up make
    sure you push new game after changing the settings"). These settings are read only when a game is laid out: squares to win, fog, the asteroid
    boxes and the three rule boxes. (Bot skill, Thinks ahead, Timers and the Turn limit act on the game in progress.) Changing one of them:
