@@ -2356,7 +2356,10 @@ const FR={
 "Stay": "Rester",
 "Use this save": "Utiliser cette sauvegarde",
 "Swap hint": "Indice d'échange",
-"show me the best star swap on the board after 1 minute without a move": "me montrer le meilleur échange d'étoiles du plateau après 1 minute sans jouer"
+"show me the best star swap on the board after 1 minute without a move": "me montrer le meilleur échange d'étoiles du plateau après 1 minute sans jouer",
+"This is free play, and you can set it up your way. Settings can change the bot's skill, light up the best swap when you are stuck, turn the writing on the screen back on, change the rules, and save or replay your games.": "C'est la partie libre, et vous pouvez la régler à votre façon. Les Réglages peuvent changer le niveau du bot, éclairer le meilleur échange quand vous êtes bloqué, remettre le texte à l'écran, changer les règles, et sauver ou revoir vos parties.",
+"Open Settings": "Ouvrir les Réglages",
+"Not now": "Pas maintenant"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3594,13 +3597,16 @@ const ES={
 "Stay": "Quedarse",
 "Use this save": "Usar esta partida",
 "Swap hint": "Pista de intercambio",
-"show me the best star swap on the board after 1 minute without a move": "mostrarme el mejor intercambio de estrellas del tablero tras 1 minuto sin jugar"
+"show me the best star swap on the board after 1 minute without a move": "mostrarme el mejor intercambio de estrellas del tablero tras 1 minuto sin jugar",
+"This is free play, and you can set it up your way. Settings can change the bot's skill, light up the best swap when you are stuck, turn the writing on the screen back on, change the rules, and save or replay your games.": "Esta es la partida libre, y puedes ajustarla a tu manera. En Ajustes puedes cambiar el nivel del bot, iluminar el mejor intercambio cuando te atascas, volver a mostrar el texto en pantalla, cambiar las reglas y guardar o volver a ver tus partidas.",
+"Open Settings": "Abrir Ajustes",
+"Not now": "Ahora no"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.137.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.138.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4998,6 +5004,16 @@ function renderRecord(){const last=prof.h.slice(0,10).map(x=>x.s===0.5?'<b>T</b>
   const sk=S?S.skill:+$('inSkill').value;$('record').innerHTML=(prof.n?prof.n+' · ':'')+t`Rating <b style="font-family:var(--mono);font-size:16px;color:var(--text)">${prof.r}</b> · ${prof.g} game${prof.g===1?'':'s'}, ${prof.w} won`+(prof.g?' · '+last:'')+'<br>'+((online&&net)?t`${SNAME[BOT]} is rated ${net.oppR||BASE_R}. A game against a person moves your rating at full weight.`:t`Bot at skill ${sk} is rated ${botRating(sk)}; a game against it moves you at ${Math.max(10,sk)}% of a game against a person.`);}
 
 // ---------- the timed hint: at bot skill 50 and under, sit 30 seconds on your turn and the best swap lights up (user, 2026-10-14)
+/* v1.138.0 (user: "maybe we should do a little pop up telling new players there are lot of good things they can change in settings. for there
+   first 2 games out of story mode"). A card at the start of a free game (not the story, the coached game, a lesson or a two-phone match), for
+   the first two such games on this device (cc_settip counts them). It waits until the board is what the player is looking at: the start
+   screen, the film, the story map and every other card are gone, it is their move and no move has been made. Open Settings opens the panel. */
+let setTipGid=0;
+setInterval(async()=>{try{if(!S||S.over||S.story||S.tut||S.lesson||online||busy||S.turn!==YOU||S.turnNo||S.gid===setTipGid)return;if(typeof RP!=='undefined'&&RP)return;
+  for(const id of ['cover','film','story','brief','lessonPick','copyBox','intro','telepop','askpop','setpop','winShow','rockpop']){const e=$(id);if(e&&!e.hidden)return;}if($('setup').classList.contains('open'))return;
+  let n=0;try{n=+localStorage.getItem('cc_settip')||0;}catch(_){}if(n>=2){setTipGid=S.gid;return;}
+  setTipGid=S.gid;try{localStorage.setItem('cc_settip',String(n+1));}catch(_){}
+  if(await askCard(t("This is free play, and you can set it up your way. Settings can change the bot's skill, light up the best swap when you are stuck, turn the writing on the screen back on, change the rules, and save or replay your games."),t('Open Settings'),t('Not now'))){$('setup').classList.add('open');try{$('setup').scrollIntoView({block:'start',behavior:'smooth'});}catch(_){}$('inHint').checked=hintOn();}}catch(_){}},1200);
 /* v1.137.0 (user: "In the new player spot in settings I'm thinking about adding a show me the best star swap on the board after 1 minute
    option"). The hint was automatic: bot skill 50 or under, 30 seconds. It is a Settings box now, Swap hint, under New player: ticked, the best
    swap lights up after 1 minute without a move, at any skill; unticked, never. Until the box has been touched it follows the New player
