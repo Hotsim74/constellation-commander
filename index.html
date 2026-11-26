@@ -2312,7 +2312,9 @@ const FR={
 "That is not a save from this game.": "Ce n'est pas une sauvegarde de ce jeu.",
 "Saved game replaced. Press Load to play it.": "Partie sauvée remplacée. Appuyez sur Charger pour la jouer.",
 "Turn {0} of {1}": "Tour {0} sur {1}",
-"Turn {0}": "Tour {0}"
+"Turn {0}": "Tour {0}",
+"Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "Commencer une nouvelle partie ? Moins de 7 tours ont été joués, celle-ci ne compte donc pas comme une défaite.",
+"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "Quitter la partie ? Moins de 7 tours ont été joués, elle ne compte donc pas comme une défaite."
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3524,13 +3526,15 @@ const ES={
 "That is not a save from this game.": "Eso no es una partida guardada de este juego.",
 "Saved game replaced. Press Load to play it.": "Partida guardada reemplazada. Pulsa Cargar para jugarla.",
 "Turn {0} of {1}": "Turno {0} de {1}",
-"Turn {0}": "Turno {0}"
+"Turn {0}": "Turno {0}",
+"Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.": "¿Empezar una partida nueva? Se jugaron menos de 7 turnos, así que esta no cuenta como derrota.",
+"Leave the match? Fewer than 7 turns were played, so it does not count as a loss.": "¿Dejar la partida? Se jugaron menos de 7 turnos, así que no cuenta como derrota."
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.132.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.133.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -4132,6 +4136,11 @@ function checkLand(){for(const s of [YOU,BOT])if(landOf(s)>=S.win){gameOver(s,t`
    and no one has won, the game is a tie: S.over.w is 0. A win on the last move still counts: the win checks run first. */
 const MOVE_CAP_DEFAULT=150;
 function moveCapPref(){const e=$('inMoves');if(!e)return MOVE_CAP_DEFAULT;const x=String(e.value).trim();if(x==='')return MOVE_CAP_DEFAULT;const v=Math.round(+x);return isFinite(v)?Math.max(0,Math.min(500,v)):MOVE_CAP_DEFAULT;}
+/* v1.133.0 (user: "a quiet game with less then 7 moves will not count as a lost game"). A game that is quit counts as a loss only once seven
+   turns have been played (a turn is one move by each side, so S.turnNo 14: the counter reads turn 8). It was three single moves. The same
+   for leaving a two-phone match. Before that the game is dropped: no result, no rating change. */
+const QUIT_FREE=7;
+function quitCounts(){return !!(S&&!S.over&&(S.turnNo||0)>=2*QUIT_FREE);}
 function gameTie(){if(S.over)return;S.over={w:0,reason:t`The turn limit of ${S.moveCap} was reached and no one has won.`}; /* v1.126.1: the player's word is TURN: one move by each side is one turn */if(simQuiet)return;note(t`Game over. A tie. ${S.over.reason}`,{why:'over'});rateGame(0);}
 function gameOver(w,reason){if(S.over)return;S.over={w,reason};if(simQuiet)return;if(S.tut)try{if(typeof teleEv==='function')teleEv('result',w);}catch(_){} /* v1.129.0: the coached game is not rated, so its result is noted here */note(t`Game over. ${who(w)} win${w===YOU?'':'s'}. ${reason}`,{why:'over'});rateGame(w);
   if(w===YOU&&!S.lesson&&typeof winShow==='function')setTimeout(()=>{try{if(S&&S.over&&S.over.w===YOU)winShow();}catch(_){}},1300);} /* v1.125.0: the win scene (one/win.js), once the last move has been seen */
@@ -4966,7 +4975,7 @@ try{if(localStorage.getItem('cc_lastgame'))$('btnCopyLast').hidden=false;}catch(
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
-$('btnNew').addEventListener('click',()=>{if(busy)return;if(storyGate()){openStoryMap();return;} /* v1.84: a new player's New game is the story map */if(online&&net){if(confirm(t('Leave the match? An unfinished match counts as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(t('Start a new game? This one counts as a loss.')))return;if(S&&!S.over&&S.turnNo>2){gameOver(BOT,t('The game was abandoned.'));}newGame();});
+$('btnNew').addEventListener('click',()=>{if(busy)return;if(storyGate()){openStoryMap();return;} /* v1.84: a new player's New game is the story map */if(online&&net){if(confirm(quitCounts()?t('Leave the match? An unfinished match counts as a loss.'):t('Leave the match? Fewer than 7 turns were played, so it does not count as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(quitCounts()?t('Start a new game? This one counts as a loss.'):t('Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.')))return;if(quitCounts()){gameOver(BOT,t('The game was abandoned.'));}newGame();});
 $('btnAgain').addEventListener('click',()=>{if(online&&net)netLeave();else if(storyGate())openStoryMap();else newGame();});
 $('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
 $('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
@@ -5008,7 +5017,7 @@ beginnerApply();
    - otherwise a card comes up: the setting starts with the next game, New game now or Keep playing. It comes up once for each visit to
      Settings, not after every box. New game now does what the New game button does, and says first if the game in progress counts as a loss. */
 const NEWGAME_ONLY=['inWin','inFog','inAuto','inRock1','inRock2','inHWreck','inJam','inWClean','inCalm','inSwap3'];let setAsked=false;
-function setPop(){const p=$('setpop');if(!p)return;const mid=!!(S&&!S.over&&S.turnNo>2);$('setpopH').textContent=t('Press New game');
+function setPop(){const p=$('setpop');if(!p)return;const mid=quitCounts();$('setpopH').textContent=t('Press New game');
   $('setpopP').textContent=t('That setting starts with the next game. The game on the board keeps the settings it began with.');
   const l=$('setpopL');l.hidden=!mid;l.textContent=mid?t('Starting a new game now counts this one as a loss.'):'';
   $('setpopGo').textContent=storyGate()?t('Story map'):t('New game now');$('setpopNo').textContent=t('Keep playing');p.hidden=false;}
@@ -5017,7 +5026,7 @@ $('setup').addEventListener('change',e=>{const id=e.target&&e.target.id;if(!NEWG
   if(!S.over&&!S.turnNo&&!S.story&&!S.tut&&!busy){newGame({auto:1});setStatus(t('New game laid out with your settings.'));return;}
   if(setAsked)return;setAsked=true;setPop();});
 $('setpopNo').addEventListener('click',()=>{$('setpop').hidden=true;});
-$('setpopGo').addEventListener('click',()=>{$('setpop').hidden=true;setAsked=false;if(busy)return;$('setup').classList.remove('open');if(storyGate()){openStoryMap();return;}if(S&&!S.over&&S.turnNo>2)gameOver(BOT,t('The game was abandoned.'));newGame();});
+$('setpopGo').addEventListener('click',()=>{$('setpop').hidden=true;setAsked=false;if(busy)return;$('setup').classList.remove('open');if(storyGate()){openStoryMap();return;}if(quitCounts())gameOver(BOT,t('The game was abandoned.'));newGame();});
 $('btnSettings').addEventListener('click',()=>{setAsked=false;});$('btnNew').addEventListener('click',()=>{setAsked=false;});
 $('inMoves').addEventListener('change',()=>{if(S&&!S.over&&!S.lesson&&!S.tut&&!(online&&net)){S.moveCap=moveCapPref();save();renderSide();}}); /* v1.126.0: the game on the board takes the new limit too */
 $('inTimers').addEventListener('change',()=>{if(S){S.timers=$('inTimers').checked;if(S.timers&&S.clock[1]<=0){S.clock={1:20*60000,2:20*60000};}S.moveLeft=S.timers?60000:0;save();renderSide();}});
@@ -5269,8 +5278,8 @@ function netOppLeft(){if(!net)return;sfx('left');
   net.err=t('{0} left the match.',SNAME[BOT]);}
 async function netLeave(){if(!net)return;const n=net;
   if(n.role==='spec'){if(n.es)n.es.close();online=false;net=null;Object.assign(SNAME,SNAME0);S=n.prevS||null;if(!S)newGame({auto:1});else{sel=null;mode=null;busy=false;renderAll();}renderWait();renderNet();return;}
-  if(n.role==='host'){fetch(lobbyUrl(n.code),{method:'DELETE'}).catch(()=>{});if(n.started&&S&&!S.over&&S.turnNo>2){gameOver(BOT,t`${SNAME[YOU]} left the match.`);save();renderAll();netPush(true);}await netWrite({left:'host'});}
-  else{if(S&&!S.over&&S.turnNo>2)await netWrite({act:{type:'resign',seq:Date.now()}});await netWrite({left:'guest'});}
+  if(n.role==='host'){fetch(lobbyUrl(n.code),{method:'DELETE'}).catch(()=>{});if(n.started&&quitCounts()){gameOver(BOT,t`${SNAME[YOU]} left the match.`);save();renderAll();netPush(true);}await netWrite({left:'host'});}
+  else{if(quitCounts())await netWrite({act:{type:'resign',seq:Date.now()}});await netWrite({left:'guest'});}
   if(n.es)n.es.close();online=false;net=null;netForget();Object.assign(SNAME,SNAME0);note(t('Left the match.'));renderWait();renderNet();newGame({auto:1});
 }
 async function netResume(){let info=null;try{info=JSON.parse(localStorage.getItem(NET_KEY)||'null');}catch(_){}if(!info||!info.code)return false;
