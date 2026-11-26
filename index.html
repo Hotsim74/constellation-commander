@@ -674,6 +674,7 @@ body.replay{padding-bottom:170px}body.replay .acts,body.replay header button,bod
     <details class="panel" id="logPanel" open><summary class="lbl">Log ▾</summary><div class="log" id="log"></div></details>
   </div>
 </main>
+<div id="askpop" class="telepop" hidden style="z-index:96"><div class="tp"><p id="askP"></p><textarea id="askIn" hidden rows="4" style="width:100%;box-sizing:border-box;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12px;padding:6px;margin-bottom:10px"></textarea><div class="rb"><button type="button" id="askYes" class="primary"></button><button type="button" id="askNo"></button></div></div></div>
 <div id="tapnote" hidden></div>
 <div id="rpbar" hidden><div id="rpText"></div><div class="rprow"><button type="button" id="rpFirst">|&lt;</button><button type="button" id="rpBack">&lt;</button><button type="button" id="rpPlay" class="primary">Play</button><button type="button" id="rpFwd">&gt;</button><button type="button" id="rpSpeed">1×</button><span id="rpPos"></span><button type="button" id="rpExit">Exit</button></div></div>
 <div id="winShow" hidden>
@@ -2341,7 +2342,12 @@ const FR={
 "No game to watch yet. Play a few moves first.": "Pas encore de partie à regarder. Jouez d'abord quelques coups.",
 "Replay copied: {0} steps.": "Rediffusion copiée : {0} étapes.",
 "Paste a replay code here:": "Collez un code de rediffusion ici :",
-"That is not a replay code.": "Ce n'est pas un code de rediffusion."
+"That is not a replay code.": "Ce n'est pas un code de rediffusion.",
+"The game is still in the middle of a move. Start a new game anyway?": "La partie est encore au milieu d'un coup. Commencer quand même une nouvelle partie ?",
+"Keep waiting": "Attendre",
+"A move is still being made. Try New game again in a moment.": "Un coup est encore en cours. Réessayez Nouvelle partie dans un instant.",
+"Stay": "Rester",
+"Use this save": "Utiliser cette sauvegarde"
 };
 const ES={
 "New game. Asteroids {0} to {1}, bot at skill {2}{3}.": "Nueva partida. Asteroides {0} a {1}, bot a nivel {2}{3}.",
@@ -3572,13 +3578,18 @@ const ES={
 "No game to watch yet. Play a few moves first.": "Aún no hay partida que ver. Juega primero unas jugadas.",
 "Replay copied: {0} steps.": "Repetición copiada: {0} pasos.",
 "Paste a replay code here:": "Pega aquí un código de repetición:",
-"That is not a replay code.": "Eso no es un código de repetición."
+"That is not a replay code.": "Eso no es un código de repetición.",
+"The game is still in the middle of a move. Start a new game anyway?": "La partida sigue en mitad de una jugada. ¿Empezar una partida nueva de todos modos?",
+"Keep waiting": "Seguir esperando",
+"A move is still being made. Try New game again in a moment.": "Aún se está haciendo una jugada. Prueba Nueva partida otra vez en un momento.",
+"Stay": "Quedarse",
+"Use this save": "Usar esta partida"
 };
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.134.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.134.1';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -5031,7 +5042,24 @@ try{if(localStorage.getItem('cc_lastgame'))$('btnCopyLast').hidden=false;}catch(
 
 // ---------- boot ----------
 $('btnSettings').addEventListener('click',()=>$('setup').classList.toggle('open'));
-$('btnNew').addEventListener('click',()=>{if(busy)return;if(storyGate()){openStoryMap();return;} /* v1.84: a new player's New game is the story map */if(online&&net){if(confirm(quitCounts()?t('Leave the match? An unfinished match counts as a loss.'):t('Leave the match? Fewer than 7 turns were played, so it does not count as a loss.')))netLeave();return;}if(S&&!S.over&&S.turnNo>2&&!confirm(quitCounts()?t('Start a new game? This one counts as a loss.'):t('Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.')))return;if(quitCounts()){gameOver(BOT,t('The game was abandoned.'));}newGame();});
+/* v1.134.1 (user: "I'm trying to hit new game it is not letting me"). Two ways the button could do nothing, and say nothing. (1) It asked
+   with the browser's own confirm(); a browser that has been told to stop a page's pop-ups, and any page shown inside a frame (the claude.ai
+   copy), answers No by itself. The questions are cards in the page now (askCard, askText), for New game, Load, Paste save and Paste replay.
+   (2) While a move was being made (busy) the tap was dropped without a word. Now the status line says so, and if the game is still in the
+   middle of that same move 12 seconds later, New game offers to start over anyway. */
+let askDone=null,busyTap=0;
+function askShow(text,yes,no,input){return new Promise(res=>{const p=$('askpop');if(askDone)askDone(null);$('askP').textContent=text;$('askYes').textContent=yes;$('askNo').textContent=no;
+  const ta=$('askIn');ta.hidden=!input;ta.value='';p.hidden=false;if(input)setTimeout(()=>{try{ta.focus();}catch(_){}},50);askDone=v=>{askDone=null;p.hidden=true;res(v);};});}
+function askCard(text,yes,no){return askShow(text,yes,no,false).then(v=>v===true);}
+function askText(text,yes){return askShow(text,yes,t('Cancel'),true).then(v=>typeof v==='string'?v:null);}
+$('askYes').addEventListener('click',()=>{if(askDone)askDone($('askIn').hidden?true:$('askIn').value);});$('askNo').addEventListener('click',()=>{if(askDone)askDone(null);});
+$('btnNew').addEventListener('click',async()=>{if(typeof RP!=='undefined'&&RP)return;
+  if(busy){const now=Date.now();if(busyTap&&now-busyTap>12000&&now-busyTap<120000){if(!(await askCard(t('The game is still in the middle of a move. Start a new game anyway?'),t('New game'),t('Keep waiting'))))return;busyTap=0;busy=false;sel=null;mode=null;newGame();return;}
+    if(!busyTap||now-busyTap>=120000)busyTap=now;setStatus(t('A move is still being made. Try New game again in a moment.'));return;}
+  busyTap=0;if(storyGate()){openStoryMap();return;} /* v1.84: a new player's New game is the story map */
+  if(online&&net){if(await askCard(quitCounts()?t('Leave the match? An unfinished match counts as a loss.'):t('Leave the match? Fewer than 7 turns were played, so it does not count as a loss.'),t('Leave'),t('Stay')))netLeave();return;}
+  if(S&&!S.over&&S.turnNo>2&&!(await askCard(quitCounts()?t('Start a new game? This one counts as a loss.'):t('Start a new game? Fewer than 7 turns were played, so this one does not count as a loss.'),t('New game'),t('Keep playing'))))return;
+  if(busy)return;if(quitCounts()){gameOver(BOT,t('The game was abandoned.'));}newGame();});
 $('btnAgain').addEventListener('click',()=>{if(online&&net)netLeave();else if(storyGate())openStoryMap();else newGame();});
 $('btnTut').addEventListener('click',()=>{if(busy)return;$('setup').classList.remove('open');newGame({tut:true});});
 $('btnHow').addEventListener('click',()=>{$('intro').hidden=false;});
@@ -5052,14 +5080,14 @@ function saveBtns(){const a=$('btnSave'),b=$('btnLoad');if(!a||!b)return;const o
 function saveGame(){if(!saveOk()){setStatus(t('You can save on your turn, in a game against the bot.'));return;}
   try{localStorage.setItem('cc_save1',JSON.stringify(S));}catch(_){setStatus(t('Could not save.'));return;}
   setStatus(t`Saved at turn ${Math.floor((S.turnNo||0)/2)+1}.`);sfx('tap');saveBtns();}
-function loadGame(){if(busy||(online&&net)||(S&&S.lesson))return;const o=saveGet();if(!o){setStatus(t('No saved game yet.'));return;}
-  if(S&&!S.over&&S.turnNo>0&&!confirm(t('Load the saved game? The game on the board is replaced.')))return;
+async function loadGame(){if(busy||(online&&net)||(S&&S.lesson))return;const o=saveGet();if(!o){setStatus(t('No saved game yet.'));return;}
+  if(S&&!S.over&&S.turnNo>0&&!(await askCard(t('Load the saved game? The game on the board is replaced.'),t('Load'),t('Cancel'))))return;if(busy)return;
   if(o.calm==null)o.calm=ruleOn('cc_calm');if(o.moveCap==null)o.moveCap=0;if(!o.fields)o.fields=[];o.ver=VERSION;o.loaded=(o.loaded||0)+1;o.gid=Date.now();delete o.auto;
   S=o;sel=null;mode=null;pending=null;aimList=[];if(typeof winClose==='function')winClose();save();renderAll();setStatus(t('Loaded. This game no longer moves your rating.'));}
 $('btnSave').addEventListener('click',saveGame);$('btnLoad').addEventListener('click',loadGame);
 $('btnSaveCopy').addEventListener('click',async()=>{let tx=null;try{tx=localStorage.getItem('cc_save1');}catch(_){}if(!saveRead(tx)){if(!saveOk()){setStatus(t('No saved game yet.'));return;}tx=JSON.stringify(S);}
   if(await clipPut(tx)){copiedMark($('btnSaveCopy'));setStatus(t('Save copied.'));}else copyBox(tx,t('Copy this:'));});
-$('btnSavePaste').addEventListener('click',()=>{const tx=prompt(t('Paste a save here:'));if(tx==null)return;if(!saveRead(tx.trim())){setStatus(t('That is not a save from this game.'));return;}
+$('btnSavePaste').addEventListener('click',async()=>{const tx=await askText(t('Paste a save here:'),t('Use this save'));if(tx==null)return;if(!saveRead(tx.trim())){setStatus(t('That is not a save from this game.'));return;}
   try{localStorage.setItem('cc_save1',tx.trim());}catch(_){setStatus(t('Could not save.'));return;}saveBtns();setStatus(t('Saved game replaced. Press Load to play it.'));});
 /* v1.132.0 THE CLEAN SCREEN (user: "lots of small writing on the screen. lets have that turned off by default. We will have a spot in setting call
    beginner settings That will let them turn all the writing on"). cc_beginner '1' shows everything; anything else is the clean screen. */
@@ -6626,7 +6654,7 @@ function rpExit(){if(!RP)return;rpStop();const h=RP.hold;SNAME[YOU]=RP.names[0];
   on('rpSpeed',()=>{if(!RP)return;RP.speed=RP.speed===1?2:RP.speed===2?4:1;rpDraw();});on('rpExit',rpExit);
   on('btnRecCopy',async()=>{const rec=recPick();if(!rec){setStatus(t('No game to copy yet. Play a few moves first.'));return;}const code=await recCode(rec);
     if(await clipPut(code)){copiedMark($('btnRecCopy'));setStatus(t`Replay copied: ${rec.f.length} steps.`);}else copyBox(code,t('Copy this:'));});
-  on('btnRecPaste',async()=>{const tx=prompt(t('Paste a replay code here:'));if(tx==null)return;const rec=await recRead(tx);if(!rec){setStatus(t('That is not a replay code.'));return;}rpStart(rec);});
+  on('btnRecPaste',async()=>{const tx=await askText(t('Paste a replay code here:'),t('Watch'));if(tx==null)return;const rec=await recRead(tx);if(!rec){setStatus(t('That is not a replay code.'));return;}rpStart(rec);});
   on('btnRecWatch',()=>{const rec=recPick();if(!rec){setStatus(t('No game to watch yet. Play a few moves first.'));return;}rpStart(JSON.parse(JSON.stringify(rec,(k,v)=>k==='k'?undefined:v)));});
 })();
 </script>
