@@ -3637,8 +3637,8 @@ const ES={
 // ================= Constellation Commander, one board =================
 // Rules: see rules.html (second draft, 2026-09-27). One 11x11 board, stars born at the seam row,
 // fog of war, drones born where the shape was made, free rides on their own star color.
-const VERSION='1.141.0';
-const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0','1.138.1','1.139.0','1.140.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
+const VERSION='1.143.0';
+const SAVE_OK=['1.101.2','1.101.3','1.101.4','1.101.5','1.102.0','1.102.1','1.103.0','1.103.1','1.103.2','1.104.0','1.104.1','1.104.2','1.105.0','1.106.0','1.107.0','1.107.1','1.108.0','1.109.0','1.110.0','1.111.0','1.112.0','1.113.0','1.114.0','1.114.1','1.114.2','1.115.0','1.116.0','1.116.1','1.117.0','1.118.0','1.119.0','1.120.0','1.121.0','1.122.0','1.123.0','1.123.1','1.123.2','1.123.3','1.123.4','1.123.5','1.123.6','1.123.7','1.123.8','1.124.0','1.125.0','1.126.0','1.126.1','1.127.0','1.128.0','1.129.0','1.130.0','1.131.0','1.131.1','1.132.0','1.133.0','1.133.1','1.133.2','1.134.0','1.134.1','1.135.0','1.136.0','1.137.0','1.138.0','1.138.1','1.139.0','1.140.0','1.141.0','1.142.0']; // older versions whose unfinished saved game has the same shape and still loads. Empty this list when the shape of S changes.
 let simQuiet=false; // true while the bot tries a move on a copy of the board: no sounds, no boss lines, no ratings
 const N=11,KINDS=5,ROCK=9,SEAM=5,YOU=1,BOT=2,MAXP=3,MAXD=9,RANGE=5,WIN_DEFAULT=69,HUNTER_STEPS=2,FUSE=3;
 const KNAME=LANG==='fr'?KNAME_FR:LANG==='es'?KNAME_ES:['red','gold','green','blue','violet'];
@@ -3763,8 +3763,14 @@ const cleared=(side,r,c)=>!S.fog||(S.fog===1&&half(side,r))||S.own[key(r,c)]===s
 function reveal(side,r,c){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const a=r+dr,b=c+dc;if(!inb(a,b))continue;const k=key(a,b);if(!S.seen[side].includes(k))S.seen[side].push(k);}}
 
 // ---------- shapes ----------
-function detectShapes(g,anchor){
+function detectShapes(g,anchor,anchor2){
   const cells=new Set(),spawns=[];
+  /* v1.142.0 (user: "I thought the star that move was the location of it and if there were 9 drones out it would try to stack it"). A line
+     already built its drone on the star that was moved. The X of 5, the V, the crossings and the L of 4 built on their own middle star, so an X
+     made around a drone stacked into that drone. Now every shape that holds a moved star builds there (the second tapped star first, then the
+     first), and mid keeps the old square. The 2 × 2 block is left on its top left square: a block made under the guard is how a guard is
+     stacked (v1.135.0), and the guard lesson shows it. */
+  const anc=cc=>{for(const A of [anchor,anchor2])if(A&&cc.includes(key(A[0],A[1])))return [A[0],A[1]];return null;};
   const get=(r,c)=>inb(r,c)?g[r][c]:null;
   const box=new Set(),boxes=[];
   for(let r=0;r<N-1;r++)for(let c=0;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
@@ -3785,7 +3791,7 @@ function detectShapes(g,anchor){
   for(let r=1;r<N-1;r++)for(let c=1;c<N-1;c++){const v=g[r][c];if(!isStar(v))continue;
     if(g[r-1][c-1]===v&&g[r-1][c+1]===v&&g[r+1][c-1]===v&&g[r+1][c+1]===v){
       const cc=[[0,0],[-1,-1],[-1,1],[1,-1],[1,1]].map(([dr,dc])=>key(r+dr,c+dc));for(const k of cc)cells.add(k);
-      spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('an X of 5')});}}
+      spawns.push({letters:['H'],cell:anc(cc)||[r,c],mid:[r,c],cells:cc,color:v,label:t('an X of 5')});}}
   /* v1.107.1 (user: "always build the warp drone over a scout or raider even if there are them options"). Two changes. (1) The crossings that make
      a warp (lengths adding to 8 or more) are paired first, so a run is never spent on a lesser crossing when it could cross into a warp. (2) A
      3-line that leans on a 2×2 block used to stop a 5 crossing it: the 5 paid a raider and the block a guard. Now a crossing that makes a warp
@@ -3802,7 +3808,7 @@ function detectShapes(g,anchor){
     if(a.weak||b.weak){if(a.len+b.len<8||a.di<2||b.di<2||a.color!==b.color)continue;} /* a diagonal 3 only joins another diagonal, and only for a warp */
     const shared=a.run.find(k=>b.run.includes(k));if(shared==null)continue;
     if(a.weak||b.weak){for(const k of a.run)cells.add(k);for(const k of b.run)cells.add(k);
-      for(let n=spawns.length-1;n>=0;n--)if(spawns[n].cell[0]===rc(shared)[0]&&spawns[n].cell[1]===rc(shared)[1]&&spawns[n].letters.join('')==='H')spawns.splice(n,1);} /* an X of 5 at the same crossing gives way: the warp wins */
+      for(let n=spawns.length-1;n>=0;n--)if(spawns[n].mid&&spawns[n].mid[0]===rc(shared)[0]&&spawns[n].mid[1]===rc(shared)[1]&&spawns[n].letters.join('')==='H')spawns.splice(n,1);} /* an X of 5 at the same crossing gives way: the warp wins */
     if(a.boxed||b.boxed){ // a T, L or plus of 3s that also touches a 2×2 block: the crossing wins when it reaches 2 cells past the block (so a 2×3 or 3×3 block stays a block)
       const un=[...new Set([...a.run,...b.run])];
       if(a.len!==3||b.len!==3){if(a.len+b.len<8)continue;} /* not a warp: the block and the long line each pay their own, as before */
@@ -3810,14 +3816,15 @@ function detectShapes(g,anchor){
       box.clear();for(const grp of boxes){if(grp.some(k=>un.includes(k)))continue;for(const k of grp)box.add(k);}
       for(const k of un)cells.add(k);}
     a.used=b.used=true;
-    const cell=rc(shared),sum=a.len+b.len,cc=[...a.run,...b.run],label=t`a ${a.len} crossing a ${b.len}`;
+    const cc=[...a.run,...b.run],mid=rc(shared),cell=anc(cc)||mid,sum=a.len+b.len,label=t`a ${a.len} crossing a ${b.len}`;
     if(sum>=9)spawns.push({letters:['W','X'],cell,cells:cc,color:a.color,label});
     else if(sum===8)spawns.push({letters:['W'],cell,cells:cc,color:a.color,label});
     else if(sum===7)spawns.push({letters:['X'],cell,cells:cc,color:a.color,label:t('an L of 4 and 3')});
     else{const am=a.run[1]===shared,bm=b.run[1]===shared;
       if(am&&bm)spawns.push({letters:['H'],cell,cells:cc,color:a.color,label:t('a plus')});
       else if(am||bm)spawns.push({letters:['S'],sq:0,cap:'missile',cell,cells:cc,color:a.color,label:t('a T of two 3-lines')});
-      else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:t('an L of two 3-lines')});}}};
+      else spawns.push({letters:['B'],cap:'always',cell,cells:cc,color:a.color,label:t('an L of two 3-lines')});}
+    spawns[spawns.length-1].mid=mid;}};
   pair(0);
   // the V (v1.23, user): two diagonal arms of 2 meeting at a corner, the bomb's L turned 45 degrees. Pays a hunter.
   /* v1.123.7 (user: "I just made a v with stars and it made a scout there was 2 stars going up giving it 3 up and down and the v a scout should
@@ -3831,12 +3838,12 @@ function detectShapes(g,anchor){
     const arms=DIAG.filter(([dr,dc])=>get(r+dr,c+dc)===v&&get(r+2*dr,c+2*dc)===v&&!taken.has(key(r+dr,c+dc))&&!taken.has(key(r+2*dr,c+2*dc)));
     let done=false;for(let i=0;i<arms.length&&!done;i++)for(let j=i+1;j<arms.length&&!done;j++){const a=arms[i],b=arms[j];if(a[0]+b[0]===0&&a[1]+b[1]===0)continue; // opposite arms are a straight diagonal, not a V
       const cc=[key(r,c),key(r+a[0],c+a[1]),key(r+2*a[0],c+2*a[1]),key(r+b[0],c+b[1]),key(r+2*b[0],c+2*b[1])];
-      for(const k of cc){cells.add(k);taken.add(k);vset.add(k);}spawns.push({letters:['H'],cell:[r,c],cells:cc,color:v,label:t('a V of two diagonals')});done=true;}}}
+      for(const k of cc){cells.add(k);taken.add(k);vset.add(k);}spawns.push({letters:['H'],cell:anc(cc)||[r,c],mid:[r,c],cells:cc,color:v,label:t('a V of two diagonals')});done=true;}}}
   pair(1);
   for(const x of runs){if(x.used||x.len===3||x.weak)continue;
-    const inRun=anchor&&x.run.includes(key(anchor[0],anchor[1]));
-    const k=inRun?key(anchor[0],anchor[1]):x.run[Math.floor(x.len/2)];
-    const sp={cell:rc(k),cells:x.run,color:x.color,label:t`${x.len} in a line`};
+    const A=anc(x.run),km=x.run[Math.floor(x.len/2)];
+    const k=A?key(A[0],A[1]):km;
+    const sp={cell:rc(k),mid:rc(km),cells:x.run,color:x.color,label:t`${x.len} in a line`};
     if(x.len===4)sp.letters=['C'];else if(x.len===5){sp.letters=['S'];sp.sq=1;sp.cap='missile';}else if(x.len===6){sp.letters=['H'];sp.cap='asteroid';}else sp.letters=['W'];
     spawns.push(sp);}
   // the L of 4 (v1.25, user): a 3-line with one star of its color hooked at a right angle at either end pays a raider (red)
@@ -3844,7 +3851,7 @@ function detectShapes(g,anchor){
     const [dr,dc]=LINE_DIRS[x.di];let hook=null;
     for(const e of [x.run[0],x.run[2]]){const [r,c]=rc(e);for(const [pr,pc] of (dr?[[0,-1],[0,1]]:[[-1,0],[1,0]])){const a=r+pr,b=c+pc;if(inb(a,b)&&g[a][b]===x.color&&!cells.has(key(a,b))&&!box.has(key(a,b))){hook=key(a,b);break;}}if(hook!=null)break;}
     if(hook==null)continue;x.used=true;cells.add(hook);
-    spawns.push({letters:['S'],sq:0,cap:'missile',cell:rc(hook),cells:[...x.run,hook],color:x.color,label:t('an L of 4')});}
+    spawns.push({letters:['S'],sq:0,cap:'missile',cell:anc([...x.run,hook])||rc(hook),mid:rc(hook),cells:[...x.run,hook],color:x.color,label:t('an L of 4')});}
   const seen=new Set();
   for(const k0 of box){if(seen.has(k0))continue;const comp=new Set([k0]);const q=[k0];seen.add(k0);
     while(q.length){const k=q.pop();const [r,c]=rc(k);
@@ -3916,7 +3923,9 @@ function spawnFrom(side,sp){
   for(const letter0 of sp.letters){const letter=letter0;const locked=!!(S.allow&&!S.allow.includes(letter0));
     if(locked){const j=storyJoins(letter0);if(side!==YOU){note(t`${who(side)} made ${sp.label}: ${aname(letter0)} is not in this sector's fleet yet, nothing built.`,{why:'nopay'});grantRock(side,sp);continue;} /* v1.131.1: the other side's locked shape says whose it was, and leaves out the line meant for the player */note(t('{0} is not in this sector\'s fleet yet: stars cleared, nothing built.',cap(aname(letter0)))+(j?' '+t('It joins the fleet in {0}.',j):''),{why:'nopay'});grantRock(side,sp);continue;} /* v1.88: a locked ship's shape clears and builds nothing (v1.82 gave a scout; the user's mother: that confuses a new player) */
     let [r,c]=at;let o=droneAt(r,c);
-    const full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
+    let full=droneCount(side)>=MAXD&&!(o&&o.side===side); // turrets count half toward the cap
+    if(full){ /* v1.142.0: at nine drones a shape stacks into one of your drones standing on its stars, the middle star first */
+      for(const k of [...(sp.mid?[key(sp.mid[0],sp.mid[1])]:[]),...sp.cells]){const [a,b]=rc(k);const x=droneAt(a,b);if(x&&x.side===side&&x.kind!=='B'&&half(side,a)){r=a;c=b;o=x;full=false;break;}}}
     if(full&&sp.cap!=='always'){
       if(sp.cap==='missile'){S.missiles[side]++;note(t`${who(side)} made ${sp.label} at ${MAXD} drones: 1 missile instead.`);}
       else if(sp.cap==='asteroid'){rockOnto(other(side));note(t`${who(side)} made ${sp.label} at ${MAXD} drones: an asteroid lands on ${landName(other(side))}.`);}
@@ -3934,16 +3943,16 @@ function mergeInto(o,d){o.power=Math.min(MAXP,o.power+d.power);
   if(d.fuse!=null){if(o.kind==='X'){o.charge=1;} /* v1.57: a siege turns the bomb into a shield charge it can hand to a drone beside it */
     else if(o.kind==='H'){o.ammo=0;o.bombAmmo=1;} /* a hunter drops its missiles for one bomb missile */
     else o.fuse=o.fuse!=null?Math.min(o.fuse,d.fuse):d.fuse;} /* v1.45: anyone else carries the fuse */if(o.kind==='M')S.missiles[o.side]+=ammoOf(d);else if(shotsOf(o))o.ammo=Math.min(shotsOf(o),ammoOf(o)+ammoOf(d));for(const k of d.colors)if(!o.colors.includes(k))o.colors.push(k);if(o.kind==='C'&&d.kind==='C')o.claims=Math.min(2,(o.claims||0)+(d.claims||0));}
-async function resolve(side,anchor){
+async function resolve(side,anchor,anchor2){
   let chain=0;
   while(true){
-    const sh=detectShapes(S.grid,anchor);if(!sh.cells.size)break;
+    const sh=detectShapes(S.grid,anchor,anchor2);if(!sh.cells.size)break;
     chain++;sfx(chain>1?'cascade':'clear');
     for(const sp of sh.spawns)spawnFrom(side,sp);
     renderBoard(sh.cells);await sleep(CLEAR_MS);
     for(const k of sh.cells){const [r,c]=rc(k);S.grid[r][c]=-1;if(half(side,r))S.cleared[side]=(S.cleared[side]||0)+1;}
     const {born,fall}=gravity(S.grid,side);renderBoard(null,born,null,fall);sfx('fall',120);await sleep(FALL_MS);
-    anchor=null;if(chain>12)break;
+    anchor=anchor2=null;if(chain>12)break;
   }
 }
 /* v1.131.0 (user: "I am thinking we should stop the 3 star swaps to cut down on the forever cascade of stars breaking out. but If you are out of
@@ -3964,7 +3973,7 @@ function validSwaps(side){
     const r2=r+dr,c2=c+dc;if(r2>=N||c2>=N)continue;if(!isStar(g[r][c])||!isStar(g[r2][c2])||g[r][c]===g[r2][c2])continue;
     if(side!=null&&!(vis(side,r,c)&&vis(side,r2,c2)))continue;
     if(side!=null&&(S.own[key(r,c)]===other(side)||S.own[key(r2,c2)]===other(side)))continue; // v1.19: no swapping on the other side's land
-    [g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];const sh=detectShapes(g,[r2,c2]);[g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];
+    [g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];const sh=detectShapes(g,[r2,c2],[r,c]);[g[r][c],g[r2][c2]]=[g[r2][c2],g[r][c]];
     if(swapMakes(sh))out.push({a:[r,c],b:[r2,c2],sh});}
   return out;
 }
@@ -4317,7 +4326,7 @@ function replyDamage(me){const him=other(me);const myM=cmdOf(me);const near=(a,b
 const AHEAD_K=[8,4,3,2,2],AHEAD_MS=6000,AHEAD_W=0.8,AHEAD_WIN=5000;let aheadT0=0; /* v1.89: options kept per level of the search, the time cap, and how much of the other side's best line counts */
 function simCopy(){const log=S.log;S.log=[];const c=JSON.parse(JSON.stringify(S));S.log=log;return c;}
 function simApply(me,o){const him=other(me);const d=o.d?S.drones.find(x=>x.id===o.d.id):null;
-  if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
+  if(o.type==='swap'){const {a,b}=o.sw;const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];const sh=detectShapes(g,b,a);for(const sp of sh.spawns)spawnFrom(me,sp);for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;}}
   else if(o.type==='claim')applyClaim(d);else if(o.type==='warp')applyWarp(d,o.r,o.c);else if(o.type==='turret')applyTurret(me,o.r,o.c);else if(o.type==='ram')applyRam(d);else if(o.type==='move')applyMove(d,o.r,o.c);else if(o.type==='shield')applyShield(d,S.drones.find(x=>x.id===o.o.id));else if(o.type==='field')applyField(d,o.r,o.c);else if(o.type==='cclaim')applyCmdClaim(d);else if(o.type==='throw')applyThrow(d,S.drones.find(x=>x.id===o.o.id));else return false;
   reload(him);return true;}
 // the best line `side` can find on the current (copied) board, `depth` moves deep: its best option less a share of what the other side gets back. Past the time cap it is the best option as it stands.
@@ -4394,7 +4403,7 @@ function botDepth(){if(S.tut)return 0;if(S.story)return (S.hard||S.ahead)?1:0;le
 let driftExact=false;
 function driftOdds(me,sw){const K=6;let hit=0;
   for(let s=0;s<K;s++){const g=S.grid.map(r=>r.slice());const {a,b}=sw;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];let n=0,anchor=b,chain=0,rnd0=true;
-    while(true){const sh=detectShapes(g,anchor);if(!sh.cells.size)break;chain++;for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;if(half(me,r))n++;}if(n>=8||chain>12)break;gravity(g,me);anchor=null;rnd0=false;}
+    while(true){const sh=detectShapes(g,anchor,anchor&&a);if(!sh.cells.size)break;chain++;for(const k of sh.cells){const [r,c]=rc(k);g[r][c]=-1;if(half(me,r))n++;}if(n>=8||chain>12)break;gravity(g,me);anchor=null;rnd0=false;}
     if(n>=8)hit++;if(rnd0){return n>=8?1:0;}} /* no new stars were drawn: every run would be the same */
   return hit/K;}
 function botOptions(me,L){const him=other(me);
@@ -4526,7 +4535,7 @@ async function botTurn(me){
   if(!opts.length){note(t`${who(me)} had nothing to do.`);await afterAction();return;}
   const depth=botDepth();let deep=null;if(smart&&depth>0&&opts.length>1){if(depth>=2&&!(window.ccOldAhead&&window.ccOldAhead[me])){setStatus(t('The bot is thinking ahead.'));await sleep(40);deep=lookDeep(me,opts,depth);}else lookAhead(me,opts,depth);} /* v1.99: from 2 moves ahead the deep search picks; window.ccOldAhead is a test switch back to the old one */ /* v1.89: Settings → Thinks ahead, 0 to 5 moves in free play */
   let pick;if(smart){opts.sort((a,b)=>b.v-a.v);pick=deep||opts[0];}else{const safe=opts.filter(o=>o.v>-500&&!(o.type==='move'&&o.d&&o.d.kind==='M'&&!(myM&&sdist(myM.r,myM.c)<=2)));pick=safe.length?safe[rnd(safe.length)]:opts[rnd(opts.length)];} /* a random turn never walks the Command drone either */ /* v1.55: an off turn is a random move, never a losing one (walking the Command drone up to a siege) */
-  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);const sh=detectShapes(g,b);await resolve(me,sh.cells.has(key(b[0],b[1]))?b:a);}
+  if(pick.type==='swap'){const {a,b}=pick.sw;const g=S.grid;note(t`${who(me)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard(null,null,[a,b]);await sleep(300);[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];renderBoard();await sleep(200);await resolve(me,b,a);}
   else if(pick.type==='claim'){applyClaim(pick.d);renderBoard();await sleep(400);}
   else if(pick.type==='fire'){if(applyFire(pick.d)){save();renderAll();return;}renderBoard();await sleep(400);}
   else if(pick.type==='shield'){applyShield(pick.d,pick.o);renderBoard();await playFX();}
@@ -4554,12 +4563,12 @@ function aimNo(r,c,msg){setStatus(msg);tapNote(r,c,msg);sfx('swap-no');}
 async function humanSwap(a,b){
   if(S.lesson&&!lessonSwapOk(a,b)){setStatus(S.lesson.made?t('In this lesson the stars stay put now. Follow the marked squares.'):t('In this lesson, swap only the two marked stars.'));sfx('swap-no');sel=null;renderBoard();return;} /* v1.103.0 */
   const g=S.grid;[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];
-  const sh=detectShapes(g,b);
+  const sh=detectShapes(g,b,a);
   if(!sh.cells.size){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('No line there. Try another swap.'));sfx('swap-no');sel=null;renderBoard();return;}
   if(!swapMakes(sh)){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];setStatus(t('A line of 3 builds nothing. With this rule a swap must make a drone.'));sfx('swap-no');sel=null;renderBoard();return;} /* v1.131.0 */
   if(netGuest()){[g[a[0]][a[1]],g[b[0]][b[1]]]=[g[b[0]][b[1]],g[a[0]][a[1]]];netSend({type:'swap',a,b});return;}
   busy=true;sel=null;note(t`${who(YOU)} swapped ${sq(...a)} and ${sq(...b)}.`,{why:'swap',at:[a,b],lab:[t('swapped'),'']});renderBoard();
-  await resolve(YOU,sh.cells.has(key(b[0],b[1]))?b:a);
+  await resolve(YOU,b,a);
   tutAdvance('swap');busy=false;await afterAction();
 }
 async function humanMove(d,r,c){if(netSend({type:'move',id:d.id,r,c}))return;busy=true;sel=null;const from=[d.r,d.c];const o=droneAt(r,c);const extra=o?(o.side===YOU?'merge':'take'):null;applyMove(d,r,c);await movedAnim(d,from);await sleep(80);tutAdvance('move',d,extra);busy=false;await afterAction();}
@@ -5395,7 +5404,7 @@ async function netApplyAct(a){ // the guest's action, in the host's frame; the g
       if(!d.bombAmmo)d.ammo=ammoOf(d)-list.length;d.shots=(d.shots||0)+list.length;await fireShots(me,list,d);closeAction(me);save();renderAll();}
     else if(a.type==='swap'){const p=a.a,q=a.b,g=S.grid;if(!p||!q||!inb(p[0],p[1])||!inb(q[0],q[1])||Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])!==1||!isStar(g[p[0]][p[1]])||!isStar(g[q[0]][q[1]])||S.own[key(p[0],p[1])]===YOU||S.own[key(q[0],q[1])]===YOU)throw 0;
       [g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];const sh=detectShapes(g,q);if(!swapMakes(sh)){[g[p[0]][p[1]],g[q[0]][q[1]]]=[g[q[0]][q[1]],g[p[0]][p[1]]];throw 0;}
-      note(t`${who(me)} swapped ${sq(p[0],p[1])} and ${sq(q[0],q[1])}.`,{why:'swap',at:[p,q],lab:[t('swapped'),'']});renderBoard();await resolve(me,sh.cells.has(key(q[0],q[1]))?q:p);await afterAction();}
+      note(t`${who(me)} swapped ${sq(p[0],p[1])} and ${sq(q[0],q[1])}.`,{why:'swap',at:[p,q],lab:[t('swapped'),'']});renderBoard();await resolve(me,q,p);await afterAction();}
     else if(a.type==='move'){const d=byId(a.id);if(!d||d.side!==me||!inb(a.r,a.c)||!targets(d).has(key(a.r,a.c)))throw 0;const from=[d.r,d.c];applyMove(d,a.r,a.c);await movedAnim(d,from);await afterAction();}
     else if(a.type==='cclaim'){const d=byId(a.id);if(!d||d.side!==me||!cmdClaimOk(d))throw 0;applyCmdClaim(d);renderBoard();await afterAction();}
     else if(a.type==='claim'){const d=byId(a.id);if(!d||d.side!==me||d.kind!=='C'||!(d.claims>0)||!claimGain(d))throw 0;applyClaim(d);renderBoard();await afterAction();}
@@ -5688,11 +5697,21 @@ const BARK_GAP=2;let barkTimer=null,barkHide=null;
 function bossSec(){return S&&S.story&&!S.over?secById(S.story):null;}
 function showBark(ev){const sec=bossSec();if(!sec||!sec.b||!sec.b[ev])return;S.barked=S.barked||{};if(S.barked[ev])return;
   if(ev!=='start'&&ev!=='low'&&ev!=='yourlow'&&S.barkT!=null&&S.turnNo-S.barkT<BARK_GAP)return;S.barked[ev]=1;S.barkT=S.turnNo;
-  const line=t(sec.b[ev]);note(t`${t(sec.title)}: ${line}`);
-  const el=$('bark');$('barkWho').textContent=t(sec.title);$('barkText').textContent='“'+line+'”';el.querySelector('.dr').innerHTML=cmdSVG(BOT)+'<b class="lt">'+LETTER.M+'</b>';
-  el.hidden=false;el.classList.remove('show','out');void el.offsetWidth;el.classList.add('show');clearTimeout(barkTimer);clearTimeout(barkHide);const hold=ms=>{clearTimeout(barkTimer);barkTimer=setTimeout(()=>{el.classList.add('out');barkHide=setTimeout(()=>{el.hidden=true;el.classList.remove('show','out');},400);},ms);};hold(7000);
+  const line=t(sec.b[ev]);const hold=barkBubble(t(sec.title),line);
   const a=storyPlay(sec,ev);if(a){const fit=()=>{const d=a.duration;if(isFinite(d)&&d*1000+900>7000)hold(Math.min(13000,d*1000+900));};if(a.readyState>=1)fit();else a.addEventListener('loadedmetadata',fit,{once:true});}}
-function storyBark(w){if(!bossSec()||!w||!w.why)return;const why=w.why,actor=S.turn;
+/* v1.143.0: THE BOT SAYS SOMETHING WHEN YOU BUILD A DRONE. The lines are the user's own (2026-11-28: "When the enemy bot see you built a Siege
+   drone it can say 'only the best for you'..."). Said the first time you build each kind in a game, in the story by the sector's boss and in a
+   plain game by the bot. Not in lessons, the coached game, two-phone play or a replay. Text only: there are no voice clips for these yet.
+   Keys are the drone kinds: X siege, H hunter, C scout, S raider, B bomb, G guard, W warp, T turret (the last two added the same day;
+   a turret is built with missiles, so its note is 'turret', handed on here as born_T when it is yours). */
+const BUILT_SAY={X:'Only the best for you.',H:"Hope you're huntin' rabbit.",C:"I see you're getting serious.",S:'Just a bunch of pirates.',B:'You licensed and bonded for that?',G:'Hope you know all the rules.',W:'Those are only good for one way trips.',T:"You won't be able to move that to a good location."};
+function barkBubble(who,line){note(t`${who}: ${line}`);const el=$('bark');$('barkWho').textContent=who;$('barkText').textContent='“'+line+'”';el.querySelector('.dr').innerHTML=cmdSVG(BOT)+'<b class="lt">'+LETTER.M+'</b>';
+  el.hidden=false;el.classList.remove('show','out');void el.offsetWidth;el.classList.add('show');clearTimeout(barkTimer);clearTimeout(barkHide);const hold=ms=>{clearTimeout(barkTimer);barkTimer=setTimeout(()=>{el.classList.add('out');barkHide=setTimeout(()=>{el.hidden=true;el.classList.remove('show','out');},400);},ms);};hold(7000);return hold;}
+function builtBark(w){if(!S||S.over||S.tut||S.lesson||online||S.turn!==YOU)return;if(typeof RP!=='undefined'&&RP)return;
+  const k=w.why.slice(5),line=BUILT_SAY[k];if(!line)return;const ev='built_'+k;S.barked=S.barked||{};if(S.barked[ev])return;
+  if(S.barkT!=null&&S.turnNo-S.barkT<BARK_GAP)return;S.barked[ev]=1;S.barkT=S.turnNo;
+  const sec=bossSec();barkBubble(sec?t(sec.title):SNAME[BOT],t(line));}
+function storyBark(w){if(w&&w.why&&w.why.indexOf('born_')===0){builtBark(w);return;}if(w&&w.why==='turret'&&S.turn===YOU){builtBark({why:'born_T'});return;}if(!bossSec()||!w||!w.why)return;const why=w.why,actor=S.turn;
   if(why==='take'||why==='sweep'||why==='fire_kill'||why==='surround')showBark(actor===BOT?'took':'lost');
   else if(why==='claim'&&actor===YOU)showBark('claim');
   else if(why==='turret'&&actor===BOT)showBark('turret');
